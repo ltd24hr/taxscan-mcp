@@ -271,6 +271,29 @@ def verifica_scheda(scheda: dict) -> dict:
     }
 
 
+_ALIAS_F24 = {
+    "codice_tributo": ["codice_tributo", "codice", "tributo", "cod_tributo", "causale", "causale_contributo", "codice_causale", "code"],
+    "anno_riferimento": ["anno_riferimento", "anno", "periodo_riferimento", "periodo", "anno_di_riferimento", "year"],
+    "importo": ["importo", "importo_debito", "importo_a_debito", "importi_a_debito", "debito", "amount", "importo_versato"],
+    "rateazione": ["rateazione", "rata", "rateazione_regione", "rate"],
+    "data_versamento": ["data_versamento", "data", "data_pagamento", "eseguito_il", "date"],
+}
+
+
+def _normalizza_riga_f24(r: dict) -> dict:
+    """Accetta le chiavi con cui Claude potrebbe passare una riga F24 e le riporta a quelle standard."""
+    if not isinstance(r, dict):
+        return {}
+    low = {str(k).strip().lower().replace(" ", "_"): v for k, v in r.items()}
+    out = {}
+    for std, alias in _ALIAS_F24.items():
+        for a in alias:
+            if a in low and low[a] not in (None, ""):
+                out[std] = low[a]
+                break
+    return out
+
+
 def interpreta_f24(righe: list, data_versamento: str = "") -> dict:
     """Classifica le righe di uno o più F24 dai codici tributo.
 
@@ -278,6 +301,7 @@ def interpreta_f24(righe: list, data_versamento: str = "") -> dict:
     """
     esito, totale, sconosciuti = [], 0.0, []
     for r in righe or []:
+        r = _normalizza_riga_f24(r)
         codice = str(r.get("codice_tributo", "")).strip().upper()
         importo = _num(r.get("importo")) or 0.0
         anno = _anno(r.get("anno_riferimento"))
@@ -301,6 +325,8 @@ def interpreta_f24(righe: list, data_versamento: str = "") -> dict:
         totale += importo
         esito.append(voce)
 
+    rateizzati = [v for v in esito if v.get("rateazione") and v["rateazione"] not in ("0101", "0100", "0000", "")]
+    ha_interessi = any(v["codice_tributo"] == "1668" for v in esito)
     per_categoria = {}
     for v in esito:
         per_categoria[v["categoria"]] = round(per_categoria.get(v["categoria"], 0.0) + v["importo"], 2)
@@ -318,8 +344,11 @@ def interpreta_f24(righe: list, data_versamento: str = "") -> dict:
         elif v["categoria"] in ("sanzioni", "interessi"):
             spiegazione.append(f"{_eur(v['importo'], 2)} € di {v['categoria']} ({v['natura']}): segnale di un pagamento tardivo o rateizzato.")
 
+    if rateizzati and not ha_interessi:
+        spiegazione.append("Alcuni versamenti risultano rateizzati (campo rateazione diverso da 0101) ma non vedo il codice 1668 "
+                           "degli interessi di rateazione: se mancano davvero, va sistemato con un piccolo ravvedimento.")
     return {"righe": esito, "totale_versato": round(totale, 2), "per_categoria": per_categoria,
-            "codici_sconosciuti": sconosciuti, "spiegazione": spiegazione}
+            "codici_sconosciuti": sconosciuti, "rateizzato": bool(rateizzati), "spiegazione": spiegazione}
 
 
 # --------------------------------------------------------------------------- quadro
@@ -491,6 +520,13 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
     da_accantonare = None
     if calc_corr:
         da_accantonare = calc_corr["pressione_fiscale_su_incassato"]
+
+    if soglia and calc_prec and soglia["previsione_fine_anno"] < ricavi_prec * 0.8:
+        avvisi.append({"livello": "informativo", "titolo": "Quest'anno incassi meno: acconti forse troppo alti",
+                       "testo": f"Gli acconti {anno} sono calcolati sui {_eur(ricavi_prec)} € del {anno - 1}, ma a questo ritmo chiuderai "
+                                f"intorno a {_eur(soglia['previsione_fine_anno'])} €. Puoi valutare con un professionista il metodo "
+                                "previsionale per ridurre il secondo acconto; altrimenti la differenza torna come credito nella "
+                                "dichiarazione dell'anno prossimo."})
 
     # --- prossimi passi
     gest = s.get("gestione_previdenziale") if s.get("gestione_previdenziale") in ("separata", "artigiani", "commercianti", "cassa") else "separata"
