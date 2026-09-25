@@ -8,19 +8,32 @@ import os
 from fastmcp import FastMCP
 
 import calcoli
+import scheda
 
 mcp = FastMCP(
     name="TaxScan - Regime forfettario italiano",
     instructions=(
-        "Use these tools for any question about the Italian 'regime forfettario' (flat-rate scheme "
-        "for small businesses and freelancers): taxes due, INPS contributions, profitability "
-        "coefficient by ATECO code, the 85,000 EUR threshold, deadlines and eligibility. "
-        "Always ask the user for their ATECO code, the cash-basis revenue actually collected in the "
-        "year, and their pension scheme (gestione separata, artigiani, commercianti, or a "
-        "professional fund), because the result changes completely with each. Always show the "
-        "disclaimer, present results as estimates, never as a tax return or personalised advice, "
-        "and offer the free consultation for anything binding. Reply in Italian unless the user "
-        "writes in another language."
+        "TaxScan is the year-round assistant for Italian 'regime forfettario' taxpayers: it prepares "
+        "and explains, a qualified professional reviews and signs once a year. Never present it as a "
+        "replacement for the commercialista.\n\n"
+        "WHEN A USER ARRIVES (new user, 'aiutami con la partita IVA', 'non so quanto devo pagare', "
+        "'sono in forfettario'): run the intake interview. Call avvia_colloquio first and follow its "
+        "instructions: ask one or two questions at a time in plain Italian, in the order gestione → "
+        "identita → aliquota → previdenza → requisiti → numeri. If the user attaches a PDF "
+        "(certificato di attribuzione P.IVA, dichiarazione dei redditi, F24, estratto INPS), read it "
+        "yourself, fill the matching fields, and ask the user to confirm what you read. After each "
+        "batch of answers call verifica_scheda with the WHOLE accumulated scheda (a JSON object with "
+        "the field keys from avvia_colloquio); it returns what is still missing and the next question. "
+        "Never skip a required field. When it says completa=true, call genera_quadro and explain the "
+        "result as a story: what has matured until today, what happens at the next deadlines, what to "
+        "do now. Always show the disclaimer.\n\n"
+        "For F24 documents, extract each row (codice tributo, anno di riferimento, importo, rateazione, "
+        "data versamento) and put them in scheda.f24_pagati as a list of objects; interpreta_f24 "
+        "classifies them.\n\n"
+        "For one-off questions (a quick tax estimate, a deadline, an ATECO coefficient) use the "
+        "single tools directly. Always ask for ATECO code, cash-basis revenue and pension scheme "
+        "before estimating. Present results as estimates, never as a tax return. Offer the free "
+        "consultation for anything binding. Reply in Italian unless the user writes in another language."
     ),
 )
 
@@ -97,6 +110,43 @@ def prenota_consulenza(argomento: str = "") -> dict:
     """Link to book a free consultation with a qualified professional. Use it whenever the user
     needs binding advice, a tax return, or help with a threshold or eligibility problem."""
     return calcoli.richiedi_consulenza(argomento)
+
+
+# ---------------------------------------------------------------- colloquio iniziale
+
+@mcp.tool
+def avvia_colloquio() -> dict:
+    """START HERE for any new user. Returns the interview instructions, the empty 'scheda' (profile)
+    with all field keys, and the first question to ask. Call it once at the beginning."""
+    return scheda.avvia_colloquio()
+
+
+@mcp.tool
+def verifica_scheda(scheda_utente: dict) -> dict:
+    """Validate the accumulated interview profile. Pass the WHOLE scheda (all fields collected so far,
+    keys from avvia_colloquio). Returns the normalized scheda, whether it is complete, the list of
+    missing required fields, the next question to ask and where the user can find that information."""
+    return scheda.verifica_scheda(scheda_utente)
+
+
+@mcp.tool
+def interpreta_f24(righe: list[dict], data_versamento: str = "") -> dict:
+    """Classify F24 rows by 'codice tributo' (1790/1791/1792 imposta sostitutiva, AF/AP artigiani,
+    CF/CP commercianti, PXX/P10/P11 gestione separata, 1668/1944/8944 interessi e sanzioni...).
+    righe: [{"codice_tributo": "1792", "anno_riferimento": 2025, "importo": 1234.56,
+             "rateazione": "0101", "data_versamento": "2026-06-30"}].
+    Returns what each payment was for, totals by category, and a plain-language explanation."""
+    return scheda.interpreta_f24(righe, data_versamento)
+
+
+@mcp.tool
+def genera_quadro(scheda_utente: dict) -> dict:
+    """Generate the full picture once verifica_scheda says the profile is complete: what has matured
+    until today (saldo/acconti explained year by year, first-year and second-year traps), estimates
+    for last year and this year, share of each invoice to set aside, comparison with F24 already
+    paid, warnings (5% eligibility, cause ostative, 35,000 EUR employee-income limit, INPS 35%
+    discount), upcoming deadlines and a to-do list. Always show its disclaimer."""
+    return scheda.genera_quadro(scheda_utente)
 
 
 if __name__ == "__main__":
