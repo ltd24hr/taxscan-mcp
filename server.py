@@ -26,7 +26,8 @@ mcp = FastMCP(
         "the field keys from avvia_colloquio); it returns what is still missing and the next question. "
         "Never skip a required field. When it says completa=true, call genera_quadro and explain the "
         "result as a story: what has matured until today, what happens at the next deadlines, what to "
-        "do now. Always show the disclaimer.\n\n"
+        "do now. Then call piano_pagamenti and give them the month-by-month plan: it answers the single most "
+        "common pain, knowing what to set aside and when. Always show the disclaimer.\n\n"
         "For F24 documents, extract each row (codice tributo, anno di riferimento, importo, rateazione, "
         "data versamento) and put them in scheda.f24_pagati as a list of objects; interpreta_f24 "
         "classifies them.\n\n"
@@ -147,6 +148,16 @@ def genera_quadro(scheda_utente: dict) -> dict:
     paid, warnings (5% eligibility, cause ostative, 35,000 EUR employee-income limit, INPS 35%
     discount), upcoming deadlines and a to-do list. Always show its disclaimer."""
     return scheda.genera_quadro(scheda_utente)
+
+
+@mcp.tool
+def piano_pagamenti(scheda_utente: dict, accantonamento_attuale: float = 0.0) -> dict:
+    """Month-by-month payment plan built from a completed scheda: which deadlines are coming with their
+    estimated amounts and codici tributo, how much to set aside each month to arrive covered, the share of
+    each invoice to put away, whether the user would end up short, and any credit arising from overpaid
+    acconti. Use it right after genera_quadro, or whenever the user asks 'quanto devo mettere da parte',
+    'quando pago', 'come mi organizzo con le scadenze'. accantonamento_attuale: money already set aside."""
+    return scheda.piano_pagamenti(scheda_utente, "", accantonamento_attuale)
 
 
 if __name__ == "__main__":
