@@ -1300,7 +1300,8 @@ async def dashboard_attivita_salva(request):
     try:
         corpo = await request.json() or {}
         esito = await asyncio.to_thread(dashboard.imposta_attivita, id_dashboard, corpo.get("voci"),
-                                        corpo.get("principale"), corpo.get("altro", ""), corpo.get("pct"), corpo.get("anno"))
+                                        corpo.get("principale"), corpo.get("altro", ""), corpo.get("pct"), corpo.get("anno"),
+                                        corpo.get("ricavi"), corpo.get("gia"))
     except Exception as e:
         return JSONResponse({"errore": str(e)}, status_code=500)
     if esito is None:
