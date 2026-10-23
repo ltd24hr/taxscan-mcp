@@ -242,14 +242,66 @@ def stima(scheda_utente: dict, voci, principale: str | None, ricavi, pct=None) -
 
 # ---------------------------------------------------------------- per la dashboard
 
+def _gia_validi(gia, voci) -> list[str]:
+    """Codici che l'utente dice di avere gia' sulla partita IVA: solo quelli dei servizi scelti."""
+    ammessi = {_PER_ID[v["id"]]["codice"] for v in (voci or []) if v.get("id") in _PER_ID}
+    out = []
+    for c in (gia or []):
+        c = str(c).strip()
+        if c in ammessi and c not in out:
+            out.append(c)
+    return out
+
+
+def risparmio(scheda_utente: dict) -> dict | None:
+    """Risparmio stimato del check, in due numeri onesti: POTENZIALE (se tutti i servizi hanno il loro codice) e ATTIVATO
+    (solo per i servizi i cui codici l'utente dice di avere gia' sulla partita IVA). Sempre stime, mai promesse."""
+    s = scheda_utente or {}
+    a = s.get("attivita") if isinstance(s.get("attivita"), dict) else None
+    if not a or not a.get("voci"):
+        return None
+    voci, principale = voci_valide(a.get("voci"), a.get("principale"))
+    if not voci:
+        return None
+    pct = pct_valide(a.get("pct")) if a.get("fonte") == "fatture" else {}
+    ricavi = a.get("ricavi") or 0
+    pot = stima(s, voci, principale, ricavi, pct or None)
+    if "errore" in pot:
+        return None
+    gia = _gia_validi(a.get("gia"), voci)
+    att = 0
+    if gia:
+        attive = [v for v in voci if _PER_ID[v["id"]]["codice"] in gia]
+        if attive:
+            pct2 = None
+            if pct:
+                pct2 = {"principale": pct.get("principale", 0)}
+                for v in voci:
+                    if v in attive:
+                        pct2[v["id"]] = pct.get(v["id"], 0)
+                    else:
+                        pct2["principale"] += pct.get(v["id"], 0)
+            parziale = stima(s, attive, principale, ricavi, pct2)
+            if "errore" not in parziale and parziale.get("risparmio_affidabile", True):
+                att = max(0, parziale["differenza"])
+    affidabile = bool(pot.get("risparmio_affidabile", True))
+    return {"potenziale": max(0, pot["differenza"]) if affidabile else None, "attivato": att if affidabile else None,
+            "affidabile": affidabile, "costa_di_piu": affidabile and pot["differenza"] < 0}
+
+
 def riepilogo(scheda_utente: dict) -> dict:
     """Quello che la dashboard mostra: se il check e' fatto e con quali numeri."""
     s = scheda_utente or {}
     r = righe(s)
     if not r:
         return {"fatto": False}
+    a = s.get("attivita") or {}
+    voci, _ = voci_valide(a.get("voci"), a.get("principale"))
+    gia = _gia_validi(a.get("gia"), voci)
+    nuovi = [{"codice": x["codice"], "titolo": x["titolo"], "gia": x["codice"] in gia} for x in r if x["id"] != "principale"]
     return {"fatto": True, "coefficiente": descrizione_coefficiente(s),
-            "da_fatture": bool((s.get("attivita") or {}).get("fonte") == "fatture"),
+            "da_fatture": bool(a.get("fonte") == "fatture"),
+            "codici_nuovi": nuovi, "risparmio": risparmio(s),
             "attivita": [{"titolo": x["titolo"], "codice": x["codice"], "coefficiente": f"{x['coeff'] * 100:.0f}%",
                           "quota": round(x["quota"] * 100)} for x in r]}
 
@@ -454,9 +506,9 @@ def pagina(id_dashboard: str, scheda_utente: dict, fic_stato: dict | None = None
         "salvato": {"voci": salvato.get("voci") or [], "principale": salvato.get("principale") or "quasi_tutto",
                     "altro": salvato.get("altro") or "",
                     "pct": (pct_valide(salvato.get("pct")) if salvato.get("fonte") == "fatture" else None) or None,
-                    "anno": salvato.get("anno")},
+                    "anno": salvato.get("anno"), "gia": salvato.get("gia") or []},
         "fic": {"registrato": bool((fic_stato or {}).get("registrato")), "collegata": bool((fic_stato or {}).get("collegata"))},
-        "ricavi": round(_ricavi_di_riferimento(s)) or "",
+        "ricavi": (salvato.get("ricavi") or round(_ricavi_di_riferimento(s))) or "",
         "chat": _chat_attiva(),
     }
     js_dati = json.dumps(dati, ensure_ascii=False).replace("</", "<\\/")
@@ -620,6 +672,7 @@ var $=function(i){return document.getElementById(i)};
 function h(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function eur(n){return Number(n).toLocaleString('it-IT')+' €'}
 var scelte={}; // id -> peso
+var gia={}; (D.salvato.gia||[]).forEach(function(c){gia[c]=true});
 (D.salvato.voci||[]).forEach(function(v){scelte[v.id]=v.peso});
 var principale=D.salvato.principale||'quasi_tutto';
 var pct=D.salvato.pct||null, annoPct=D.salvato.anno||null;
@@ -677,7 +730,7 @@ $('suggerisci').onclick=function(){
   disegnaElenco();
 };
 function corpo(){
-  return {voci:Object.keys(scelte).map(function(id){return {id:id,peso:scelte[id]}}),principale:principale,ricavi:Number($('ricavi').value||0),altro:$('altro').value,pct:pct,anno:annoPct};
+  return {voci:Object.keys(scelte).map(function(id){return {id:id,peso:scelte[id]}}),principale:principale,ricavi:Number($('ricavi').value||0),altro:$('altro').value,pct:pct,anno:annoPct,gia:Object.keys(gia).filter(function(k){return gia[k]})};
 }
 function chiama(url,body){
   return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})});
@@ -704,7 +757,7 @@ function mostra(r){
   disegnaCodici(r);
   $('passo3').scrollIntoView({behavior:'smooth',block:'start'});
 }
-var gia={}, nuoviCodici=[];
+var nuoviCodici=[], salvatoOk=!!(D.salvato.voci||[]).length;
 function aggiornaRiassunto(){
   var da=nuoviCodici.filter(function(x){return !gia[x.codice]});
   $('riassunto').textContent=da.length?('Variazione dati della partita IVA (modello AA9/12): aggiunta dei seguenti codici ATECO (indicativi, da verificare con la classificazione ATECO 2025)\n'+da.map(function(x){return '- '+x.codice+' · '+x.titolo}).join('\n')+'\nDa presentare entro 30 giorni dall\'inizio della nuova attività. Il codice principale resta invariato.'):'Hai già tutti i codici sulla partita IVA: non serve nessuna variazione.';
@@ -714,7 +767,7 @@ function disegnaCodici(r){
   if(!nuoviCodici.length){$('passo4').className='box nascosto';return}
   $('passo4').className='box';
   $('codici').innerHTML=nuoviCodici.map(function(x){return '<label><input type="checkbox" data-c="'+h(x.codice)+'"'+(gia[x.codice]?' checked':'')+'><span><b>'+h(x.codice)+'</b> · '+h(x.titolo)+' (coefficiente '+h(x.coefficiente)+') <span class="piccolo">— ce l\'ho già sulla partita IVA</span></span></label>'}).join('');
-  Array.prototype.forEach.call($('codici').querySelectorAll('input'),function(c){c.onchange=function(){gia[c.getAttribute('data-c')]=c.checked;aggiornaRiassunto()}});
+  Array.prototype.forEach.call($('codici').querySelectorAll('input'),function(c){c.onchange=function(){gia[c.getAttribute('data-c')]=c.checked;aggiornaRiassunto();if(salvatoOk){chiama('/api/dashboard/'+D.id+'/attivita/salva',corpo())}}});
   aggiornaRiassunto();
 }
 $('copia-b').onclick=function(){
@@ -726,7 +779,7 @@ $('salva').onclick=function(){
   chiama('/api/dashboard/'+D.id+'/attivita/salva',corpo()).then(function(x){
     $('salva').disabled=false;
     if(!x.ok||x.j.errore){$('esito').className='err';$('esito').textContent=x.j.errore||'Non riesco a salvare adesso.';return}
-    $('esito').className='ok'; $('esito').innerHTML='Fatto. <a href="/d/'+D.id+'#ottimizzazione">Torna alla dashboard</a>';
+    salvatoOk=true; $('esito').className='ok'; $('esito').innerHTML='Fatto. <a href="/d/'+D.id+'#ottimizzazione">Torna alla dashboard</a>';
   }).catch(function(){$('salva').disabled=false;$('esito').className='err';$('esito').textContent='Non riesco a salvare adesso.'});
 };
 $('togli').onclick=function(){
@@ -882,6 +935,6 @@ disegnaElenco();
   window.chiediAssistente=function(testo){apri(); invia(testo)};
 })();
 
-if(Object.keys(scelte).length&&D.ricavi){/* check gia' fatto: si puo' rivedere con un clic */}
+if(Object.keys(scelte).length&&D.ricavi&&/^#passo[34]$/.test(location.hash)){$('calcola').click()}
 </script></body></html>
 """

@@ -221,6 +221,11 @@ def dati_pubblici(id_dashboard: str) -> dict | None:
         pubblici["ottimizzazione"] = ottimizzazione.spunti(pubblici, dati.get("_scheda") or {}, risp, id_dashboard, bool(dati.get("_email")))
     except Exception as e:
         print(f"ottimizzazione non calcolata: {e}")
+    try:
+        import percorso
+        pubblici["percorso"] = percorso.costruisci(pubblici, id_dashboard)
+    except Exception as e:
+        print(f"percorso non calcolato: {e}")
     pubblici["fic_collegata"] = False
     if dati.get("_email"):
         try:
@@ -366,7 +371,8 @@ def imposta_strumento(id_dashboard: str, valore: str) -> dict | None:
     return dati_pubblici(id_dashboard)
 
 
-def imposta_attivita(id_dashboard: str, voci, principale: str | None = None, altro: str = "", pct=None, anno=None) -> dict | None:
+def imposta_attivita(id_dashboard: str, voci, principale: str | None = None, altro: str = "", pct=None, anno=None,
+                     ricavi=None, gia=None) -> dict | None:
     """Salva il 'check delle attivita'' (servizi svolti e loro peso) e rifa' tutti i calcoli. Voci vuote = toglie il check."""
     import attivita
     dati = db.carica_dashboard(id_dashboard)
@@ -378,6 +384,15 @@ def imposta_attivita(id_dashboard: str, voci, principale: str | None = None, alt
     pct = attivita.pct_valide(pct)
     if pulite:
         scheda_utente["attivita"] = {"voci": pulite, "principale": princ, "altro": altro}
+        try:
+            r = float(ricavi)
+            if 0 < r <= 10_000_000:
+                scheda_utente["attivita"]["ricavi"] = round(r)
+        except (TypeError, ValueError):
+            pass
+        giusti = attivita._gia_validi(gia, pulite)
+        if giusti:  # codici che l'utente dice di avere gia' sulla partita IVA
+            scheda_utente["attivita"]["gia"] = giusti
         if pct:  # pesi presi dalle fatture (l'utente li ha confermati)
             scheda_utente["attivita"].update({"fonte": "fatture", "pct": pct})
             try:
@@ -787,6 +802,24 @@ button.btn{width:100%;border:0;font:inherit;font-weight:600;cursor:pointer}
 .sub2{font-size:13px;font-weight:700;color:var(--ink2);margin:14px 0 2px}
 .cur{padding:10px 0;border-top:1px solid var(--line);font-size:14px}
 .cur b{display:block}
+.perc{list-style:none;margin:6px 0 0;padding:0}
+.perc li{position:relative;display:flex;gap:12px;padding:0 0 18px}
+.perc li:last-child{padding-bottom:0}
+.perc li:not(:last-child)::before{content:"";position:absolute;left:15px;top:32px;bottom:2px;width:2px;background:var(--line)}
+.perc .pn{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:var(--bg);border:2px solid var(--line);color:var(--ink2);z-index:1}
+.perc li.fatto .pn{background:var(--ok,#0f8f6a);border-color:var(--ok,#0f8f6a);color:#fff}
+.perc li.adesso .pn{border-color:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 4px rgba(67,85,204,.18)}
+.perc li.qui .pn{border-color:var(--ink2)}
+.perc .pt2{flex:1;min-width:0}
+.perc .pt2 b{display:block;font-size:15px}
+.perc .pt2 p{font-size:14px;color:var(--ink2);margin:2px 0 4px}
+.perc .pt2 a{font-size:14px;font-weight:700;color:var(--accent-ink);text-decoration:none}
+.perc li.adesso .pt2 a{display:inline-block;background:var(--accent);color:#fff;padding:7px 14px;margin-top:2px}
+.perc .tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-ink);margin-left:6px}
+.risp-box{display:flex;gap:10px;margin-top:12px}
+.risp-box div{flex:1;border:1px solid var(--line);padding:10px;text-align:center;font-size:12px;color:var(--ink2)}
+.risp-box big{display:block;font-size:22px;font-weight:800;color:var(--ink);margin:2px 0}
+.risp-box .att big{color:var(--ok,#0f8f6a)}
 .by{font-size:12px;color:var(--ink3);margin-top:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .by a{display:inline-flex;align-items:center;color:var(--ink2);font-weight:700;text-decoration:none}
 .by img{height:20px;width:auto}
@@ -998,6 +1031,21 @@ function render(d){
     +'<div class="card tile">'+VASO(d.quota_per_fattura)+'<div class="eyebrow">Da ogni fattura incassata</div><div class="valore">'+h(d.quota_per_fattura||"–")+'</div><div class="nota">metti da parte questa quota</div></div>'
     +'<div class="card tile">'+MONETE+'<div class="eyebrow">Netto stimato '+h(d.anno||"")+'</div><div class="valore">'+eur(ac.netto,0)+'</div><div class="nota">su '+eur(ac.ricavi_finora,0)+' incassati finora</div></div>'
     +'</div>';
+
+  // il tuo percorso: tappe dall'alto verso il basso, come un gioco da tavolo
+  const pc=d.percorso;
+  if(pc&&(pc.passi||[]).length){
+    html+='<section class="card" id="percorso">'+T('ott','Il tuo percorso')+'<div class="lead">Segui le tappe, una alla volta: <b>'+pc.fatti+' su '+pc.totale+'</b> completate. Ogni tappa porta a pagare meglio, non a leggere di più.</div><ol class="perc">'
+      +pc.passi.map((x,i)=>{const cl=x.stato==='fatto'?'fatto':(x.id===pc.adesso?'adesso':(x.stato==='qui'?'qui':''));
+        return '<li class="'+cl+'"><span class="pn" aria-hidden="true">'+(x.stato==='fatto'?'✓':(i+1))+'</span><div class="pt2"><b>'+h(x.titolo)+(x.id===pc.adesso?'<span class="tag">Prossimo passo</span>':'')+'</b><p>'+h(x.testo)+'</p>'
+          +(x.link?'<a href="'+h(x.link)+'">'+h(x.link_testo||'Apri')+(x.id===pc.adesso?'':' →')+'</a>':'')+'</div></li>'}).join('')+'</ol>';
+    const rs=pc.risparmio||{};
+    if(rs.fatto&&rs.affidabile&&!rs.costa_di_piu&&rs.potenziale>0){
+      html+='<div class="risp-box"><div>Risparmio potenziale<big>'+eur(rs.potenziale,0)+'</big>all\'anno, stima</div><div class="att">Già attivato<big>'+eur(rs.attivato||0,0)+'</big>codici sulla partita IVA</div></div>'
+        +'<p class="foot" style="margin-top:8px">Stime sul fatturato indicato, non promesse. Il risparmio è reale solo per servizi davvero distinti e con il loro codice sulla partita IVA.</p>';
+    }
+    html+='</section>';
+  }
 
   // in parole semplici
   if((d.in_breve||[]).length){
@@ -1384,6 +1432,7 @@ function apriTour(d,mostraTab,vai){
     {tab:'s',sel:'.tabs',titolo:'Quattro sezioni',testo:'In alto scegli tra **Situazione**, **Ottimizzazione fiscale**, **Bandi e agevolazioni** e **I tuoi dati**. Le giriamo insieme.'},
     {tab:'s',sel:'.hero',titolo:'La prossima scadenza',testo:'Quanto devi **versare** e **quando**, in grande. Per molte scadenze puoi vedere anche le **righe dell\'F24** da copiare in banca.'},
     {tab:'s',sel:'.grid',titolo:'Da ogni fattura, una quota',testo:'Ogni volta che incassi **metti da parte questa quota**: quando arriva la scadenza i soldi ci sono già. Accanto, il **netto** che ti resta.'},
+    {tab:'s',sel:'#percorso',titolo:'Il tuo percorso',testo:'Le tappe, **dall\'alto verso il basso**: dove sei, quanto metti da parte, **check delle attività**, analisi delle fatture e **confronto prima/dopo**. Segui il **prossimo passo** evidenziato e vedi quanto puoi **risparmiare**.'},
     {tab:'s',sel:'#soglia',titolo:'La soglia degli 85.000 €',testo:'Per restare nel forfettario contano i **ricavi di tutte le attività sommati**. Qui vedi quanto manca e la **previsione a fine anno**.'},
     {tab:'o',sel:'#ottimizza .cur',titolo:'Qui si ottimizza davvero',testo:'È la sezione che può farti **pagare meno**, in modo legale. Il passo che pesa di più è il **check delle attività**: ogni attività ha il suo **coefficiente**, quindi più **informazioni** ci dai su cosa fai **davvero** per i clienti, più il calcolo è giusto e, spesso, più si **risparmia**.'},
     {tab:'b',sel:'#bandi',titolo:'Bandi e agevolazioni',testo:'**Bandi aperti e in arrivo** per la tua zona e il tuo settore, ricontrollati ogni settimana. Con **«Verifica se hai i requisiti»** capisci in pochi clic se fanno per te.'},
