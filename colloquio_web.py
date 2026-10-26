@@ -63,12 +63,17 @@ def _evento(tipo: str, riferimento: str | None = None, dettaglio: dict | None = 
         pass
 
 
+def _casa(id_colloquio: str) -> str:
+    """Dove porta l'utente a questionario finito: il prototipo /prova (se PROVA_FLUSSO non e' "0") o la dashboard."""
+    return f"/prova?c={id_colloquio}" if os.environ.get("PROVA_FLUSSO", "1") != "0" else f"/d/{id_colloquio}"
+
+
 def _link_dashboard(id_colloquio: str, stato: str) -> str | None:
     """Percorso della dashboard di questo colloquio, se esiste (ha lo stesso id del colloquio)."""
     if stato != "completato":
         return None
     try:
-        return f"/d/{id_colloquio}" if dashboard.dati_dashboard(id_colloquio) is not None else None
+        return _casa(id_colloquio) if dashboard.dati_dashboard(id_colloquio) is not None else None
     except Exception:
         return None
 
@@ -119,7 +124,7 @@ def registra_risposte(id_colloquio: str, scheda_utente: dict) -> dict | None:
         try:
             esito = dashboard.crea_dashboard(normalizzata, 0.0, id_dashboard=id_colloquio)
             if "errore" not in esito:
-                link = f"/d/{id_colloquio}"
+                link = _casa(id_colloquio)
                 _evento("dashboard_creata", id_colloquio, {"stato": esito.get("stato"), "da": "web"})
         except Exception as e:
             print(f"dashboard non creata per {id_colloquio}: {e}")

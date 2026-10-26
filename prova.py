@@ -53,6 +53,105 @@ def pagina() -> str:
     return _cache["html"]
 
 
+_MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre",
+         "ottobre", "novembre", "dicembre"]
+
+
+def _it(n) -> str:
+    return f"{int(round(float(n))):,}".replace(",", ".")
+
+
+def _primo_importo(righe, i):
+    try:
+        m = re.match(r"\s*([\d.]+),(\d\d)", righe[i])
+        return float(m.group(1).replace(".", "") + "." + m.group(2))
+    except Exception:
+        return None
+
+
+def personalizza(t: str, d: dict) -> str:
+    """Sostituisce nel prototipo le cifre di esempio con quelle vere della dashboard di questo utente."""
+    import datetime
+    try:
+        ps = d.get("prossima_scadenza") or {}
+        sc = d.get("scadenze") or []
+        s2 = sc[1] if len(sc) > 1 else {}
+        ac = d.get("anno_corrente") or {}
+        so = d.get("soglia") or {}
+        pr = d.get("profilo") or {}
+        num = d.get("numeri") or {}
+        ricavi = float(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora") or 0)
+        det = ps.get("dettaglio") or []
+        imp1, con1 = _primo_importo(det, 0), _primo_importo(det, 1)
+        quota = str(d.get("quota_per_fattura") or "").replace(".0%", "%")
+        data = datetime.date.fromisoformat(ps["data"])
+        data2 = datetime.date.fromisoformat(s2["data"]) if s2.get("data") else None
+        mp = {}
+        mp["3.951 €"] = f"{_it(ps['importo'])} €"
+        if imp1 is not None:
+            mp["764 €"] = f"{_it(imp1)} €"
+        if con1 is not None:
+            mp["3.187 €"] = f"{_it(con1)} €"
+        if s2.get("importo"):
+            mp["8.417 €"] = f"{_it(s2['importo'])} €"
+        if ac.get("imposta"):
+            mp["1.528 €"] = f"{_it(ac['imposta'])} €"
+        if ac.get("netto"):
+            mp["32.744 €"] = f"{_it(ac['netto'])} €"
+        if ricavi:
+            mp["42.000 €"] = f"{_it(ricavi)} €"
+        if so.get("previsione"):
+            mp["50.400 €"] = f"{_it(so['previsione'])} €"
+        if so.get("margine"):
+            mp["43.000 €"] = f"{_it(so['margine'])} €"
+        if quota:
+            mp["22%"] = quota
+        mp["tra 38 giorni"] = f"tra {int(ps.get('giorni') or 0)} giorni"
+        mp["30 nov 2026"] = f"{data.day} {_MESI[data.month-1][:3]} {data.year}"
+        mp["30 novembre"] = f"{data.day} {_MESI[data.month-1]}"
+        if data2:
+            mp["30 giu 2027"] = f"{data2.day} {_MESI[data2.month-1][:3]} {data2.year}"
+            mp["30 giugno 2027"] = f"{data2.day} {_MESI[data2.month-1]} {data2.year}"
+        if ps.get("etichetta"):
+            mp["2° acconto 2026"] = ps["etichetta"]
+        mp["<i>NOV</i><b>30</b>"] = f"<i>{_MESI[data.month-1][:3].upper()}</i><b>{data.day}</b>"
+        mp["giorniA(10,30)"] = f"giorniA({data.month-1},{data.day})"
+        nome = html.escape(str(d.get("nome") or "")).strip() or "Marco"
+        netto_i = _it(ac.get("netto") or 0)
+        mp["var D={nome:'Marco',perc:22,netto:'32.744',imp:'3.951',imp2:'8.417'};"] = (
+            "var D={nome:%s,perc:%s,netto:'%s',imp:'%s',imp2:'%s'};" % (
+                json.dumps(nome), re.sub(r"[^0-9]", "", quota.split("%")[0].split(".")[0]) or "22", netto_i,
+                _it(ps["importo"]), _it(s2.get("importo") or 0)))
+        mp["INCASSATO=42000"] = f"INCASSATO={int(ricavi)}"
+        mp["CINC=42000"] = f"CINC={int(ricavi)}"
+        try:
+            al = float(str(pr.get("aliquota") or "").replace("%", "")) / 100
+            mp["CALIQ=.05"] = f"CALIQ={al}"
+            mp["Imposta sostitutiva al 5%"] = f"Imposta sostitutiva al {pr.get('aliquota')}"
+        except ValueError:
+            pass
+        try:
+            co = float(str(pr.get("coefficiente") or "").replace("%", "")) / 100
+            mp["CCOEF=.78"] = f"CCOEF={co}"
+        except ValueError:
+            pass
+        rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
+        t = rx.sub(lambda m: mp[m.group(0)], t)
+        t = t.replace("var TS_REAL=0;", "var TS_REAL=1;")
+    except Exception as e:
+        print(f"personalizza prova: {e}")
+    return t
+
+
+def _dashboard(idc):
+    try:
+        import dashboard
+        return dashboard.dati_pubblici(idc)
+    except Exception as e:
+        print(f"prova: dashboard non letta: {e}")
+        return None
+
+
 def _tabella():
     global _tabella_ok
     if _tabella_ok:
@@ -182,6 +281,15 @@ def registra(mcp, avvisi):
 
     @mcp.custom_route("/prova", methods=["GET", "HEAD"])
     async def prova_pagina(request):
+        from starlette.responses import RedirectResponse
+        qp = request.query_params
+        idc = re.sub(r"[^A-Za-z0-9_-]", "", qp.get("c", ""))[:64]
+        if idc:
+            dati = await asyncio.to_thread(_dashboard, idc)
+            if dati:
+                return HTMLResponse(personalizza(pagina(), dati), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+        if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
+            return RedirectResponse("/colloquio/nuovo", status_code=302)
         return HTMLResponse(pagina(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
 
     @mcp.custom_route("/api/prova/doc", methods=["POST"])
