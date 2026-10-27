@@ -180,6 +180,27 @@ html.settled #stage{gap:18px}
 .ohelp{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:0 0 16px;padding:14px 16px;background:var(--accent-soft);border-radius:12px}
 .ohelp b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}.ohelp p{margin:4px 0 0;font-size:15px;line-height:1.5;color:var(--ink)}
 .ogh.ai{color:#fff;background:var(--accent)}
+</style><style id="mpcss">.narr,#gnarr,#snarr{display:none!important}
+#sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
+#obar{display:none!important}
+@media (min-width:641px){button.astab.astab{width:84px;height:84px}#gview{padding-left:112px}
+.dbub.mp{width:min(440px,calc(100vw - 130px))}}
+.dbub.mp{padding:14px 40px 12px 18px;overflow:visible}
+.dbub.mp .mpt{font-size:17px;line-height:1.5;max-height:42vh;overflow:auto;scrollbar-width:thin}
+.mpq{font-size:13px;color:var(--mute);font-style:italic;margin:0 0 8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.mpq[hidden],.mpr[hidden],.mpn[hidden]{display:none}
+.mpc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.mpc:empty{display:none}
+.mpc button{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}.mpc button:hover{border-color:var(--accent)}
+.mpr{display:flex;justify-content:flex-end;margin:10px 0 0}
+.mpn{font:inherit;font-weight:800;font-size:15px;color:#fff;background:var(--accent);border:0;border-radius:999px;padding:7px 20px;cursor:pointer;animation:mpn 1.8s ease-in-out infinite}
+@keyframes mpn{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.mpw{display:flex;gap:6px;margin:10px 0 0;border:2px solid var(--line);border-radius:12px;padding:4px;background:var(--bg)}
+.mpw:focus-within{border-color:var(--accent)}
+.mpw input{flex:1;min-width:0;font:inherit;font-size:15px;border:0;background:transparent;color:var(--ink);padding:6px 8px}.mpw input:focus{outline:none}
+.mpw button{font:inherit;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:9px;padding:6px 12px;cursor:pointer}
+.mpf{display:block;margin:8px 0 0;font:inherit;font-size:12px;color:var(--mute);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mpn,:root:not([data-theme="light"]) .mpw button{color:#0a1330}}
+@media (prefers-reduced-motion:reduce){.mpn{animation:none}}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -665,7 +686,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 30</div>
+<div class="ver">Prototipo versione 31</div>
 </div>
 
 <script>
@@ -678,13 +699,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     return '<b>Attenzione</b>: con l\'andamento attuale rischi di superare gli 85.000 €. Ne parliamo subito.'}
   var T={
     t1:'Ciao <b>'+D.nome+'</b>, sono Marcello, il primo agente IA di TaxScan, specializzato nel <b>risparmio fiscale</b> per le partite IVA forfettarie. Il mio unico obiettivo: farti <b>pagare meno tasse</b>, in modo corretto. Ho studiato le informazioni che mi hai lasciato e voglio spiegarti in meno di due minuti come lavoro. Iniziamo.',
-    t2:'Oggi, di ogni fattura incassata, <b>metti da parte il '+D.perc+'%</b>. Ti resta un netto stimato di <b>'+D.netto+' €</b>. Le prossime scadenze: <b>'+D.imp+' €</b> a novembre, <b>'+D.imp2+' €</b> a giugno.',
+    t2:'Partiamo da quello che è più vicino: il <b>30 novembre</b> devi pagare <b>'+D.imp+' €</b>. Per arrivarci tranquillo, di ogni fattura incassata <b>metti da parte il '+D.perc+'%</b>: ti resta un netto stimato di <b>'+D.netto+' €</b>. A giugno la scadenza è di <b>'+D.imp2+' €</b>.',
     t4:riskMsg(),
     t5:'Complimenti! Abbiamo guardato insieme la tua situazione. La ritrovi sempre qui, nella <b>Panoramica</b>. Per risparmiare di più continua in <b>Ottimizzazione fiscale</b>: ti accompagno io.',
     t6:'Adesso proviamo il <b>futuro</b>. Scegli un «e se?» e ti dico subito cosa cambierebbe. Ricorda: è solo una prova, non cambia niente di vero.',
     t7:'Ultima cosa: ti dico <b>dove potresti inciampare</b>. Sono i punti in cui siamo vicini a un limite. Nessuna paura: li guardiamo prima, così non ti sorprendono.',
-    t2b:'Puoi <b>toccare i numeri</b> per capire da dove arrivano. Provaci: tocca <b>3.951 €</b> oppure il <b>22%</b>. Poi tocca il mio <b>volto</b> a lato: ti spiego la funzione, approfondisco la sezione o i numeri, tutto ciò che non ti è chiaro.',
-    t3:'Trovi tutti questi dati in <span class="link">Scadenze</span>. Se vuoi sapere come ho calcolato le tue informazioni, tocca i numeri e chiedi a me, dal mio pallino. Ecco la tua situazione attuale.'
+    t2b:'Puoi <b>toccare i numeri</b> per capire da dove arrivano. Provaci: tocca <b>3.951 €</b> oppure il <b>22%</b> e te lo spiego qui. Se preferisci, scrivimi la tua domanda nella casella qui sotto.',
+    t3:'Trovi tutti questi dati in <span class="link">Scadenze</span>. Se vuoi sapere come ho calcolato le tue informazioni, tocca i numeri o scrivimi qui sotto. Ecco la tua situazione attuale.'
   };
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $=function(i){return document.getElementById(i)};
@@ -898,7 +919,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function put(x,y,save){var c=clamp(x,y);if(window.__pb)setTimeout(window.__pb,0);d.style.left=c[0]+'px';d.style.top=c[1]+'px';d.classList.toggle('flip',c[0]+d.offsetWidth/2>innerWidth/2);
       if(save){try{sessionStorage.setItem('astpos',c[0]+','+c[1])}catch(e){}}}
     var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}
-    if(st){var a=st.split(',');put(+a[0],+a[1])}else if(innerWidth<=640)put(12,innerHeight-80);else put(14,innerHeight*.42);
+    if(st){var a=st.split(',');put(+a[0],+a[1])}else if(innerWidth<=640)put(12,innerHeight-80);else put(14,innerHeight-132);
     d.addEventListener('pointerdown',function(e){down=true;mv=false;sx=e.clientX;sy=e.clientY;var r=d.getBoundingClientRect();ox=r.left;oy=r.top;try{d.setPointerCapture(e.pointerId)}catch(x){}});
     d.addEventListener('pointermove',function(e){if(!down)return;var dx=e.clientX-sx,dy=e.clientY-sy;if(!mv&&Math.hypot(dx,dy)>6){mv=true;d.classList.add('drag')}if(mv)put(ox+dx,oy+dy,false)});
     function up(){if(!down)return;down=false;d.classList.remove('drag');if(mv){just=true;setTimeout(function(){just=false},120);var r=d.getBoundingClientRect();put(r.left,r.top,true);tap('sposta_pallino');if(!$('aspanel').hidden)placePanel()}}
@@ -1602,6 +1623,56 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     $('gview').appendChild(bar);bar.onsubmit=function(e){e.preventDefault();var i=$('o_in'),v=i.value;i.value='';oWrite(v)}})();
   oBuild();oNodes();oPh();
   var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){oShow();oNodes();oPh();if(OT.open)oFill(OT.open);else say(OT.done[1]?'Da dove vuoi riprendere? Tocca il passo che preferisci.':oIntro())}};
+    // ================= Marcello-pallino: un solo avatar mobile, con fumetto, ">" e barra per scrivere =================
+  var MP={last:'',qa:false,typing:false};
+  var MPGREET='Ciao <b>'+D.nome+'</b>! Sono Marcello. Scrivimi qui sotto quello che vuoi sapere, oppure scegli una domanda.';
+  var MPCHIPS=[['Quando è la prossima scadenza?',function(){return ANS.scad}],['Quanto metto da parte?',function(){return ANS.perc}],['Cosa fai tu per me?',function(){return 'Ogni giorno guardo <b>scadenze, soglie e codici</b>, ti dico cosa pagare e quanto mettere da parte, e cerco dove puoi <b>risparmiare</b>. Il lavoro più grosso lo facciamo insieme in <b>Ottimizzazione fiscale</b>.'}]];
+  function mpView(){return !$('gview').hidden?'g':!$('sview').hidden?'s':'p'}
+  function mpPh(){var m=$('mp_in');if(!m)return;m.placeholder=(mpView()==='g'&&OTPH[OT.open||0])?OTPH[OT.open||0]:'Scrivi a Marcello…'}
+  function mpFrame(){var b=$('dbub');if(b.querySelector('.mpt'))return b;
+    b.className='dbub mp';
+    b.innerHTML='<button class="bx" aria-label="Chiudi">&times;</button><div class="mpq" hidden></div><div class="mpt"></div><div class="mpc"></div><div class="mpr" hidden><button type="button" class="mpn" aria-label="Avanti">Avanti &rsaquo;</button></div><form class="mpw"><input id="mp_in" type="text" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello" placeholder="Scrivi a Marcello…"><button type="submit">Invia</button></form><button type="button" class="mpf">Qualcosa non è chiaro? Lascia un feedback</button>';
+    b.querySelector('.bx').onclick=function(){hideBub()};
+    b.querySelector('.mpn').onclick=mpNext;
+    b.querySelector('.mpw').onsubmit=function(e){e.preventDefault();var i=$('mp_in'),v=i.value;i.value='';mpSend(v)};
+    b.querySelector('.mpf').onclick=function(){hideBub(true);openPanel(false);tap('feedback_da_fumetto')};
+    return b}
+  function mpNextBtn(){var b=$('dbub'),r=b.querySelector('.mpr');if(!r)return;r.hidden=!(mpView()==='p'&&!MP.typing&&!(typeof trOn!=='undefined'&&trOn)&&!chain&&step>=0)}
+  function mpChips(on){var c=$('dbub').querySelector('.mpc');c.innerHTML='';if(!on)return;
+    MPCHIPS.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
+  showBub=function(html,chips){var b=mpFrame();b.querySelector('.mpt').innerHTML=html;MP.last=html;MP.typing=false;$('astab').classList.remove('talk');
+    if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);mpPh();b.hidden=false;mpNextBtn();placeBub()};
+  function mpNarr(el){var c=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
+    var h=c.innerHTML,fin=!el.querySelector('.gh'),b=mpFrame();MP.last=h;MP.typing=!fin;
+    b.querySelector('.mpt').innerHTML=h;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpPh();b.hidden=false;
+    $('astab').classList.toggle('talk',!fin);mpNextBtn();placeBub()}
+  var _mpdraw=draw;draw=function(el,segs,n){_mpdraw(el,segs,n);if(el.id!=='dbub'&&el.classList.contains('bub')&&!el.closest('[hidden]'))mpNarr(el)};
+  var _mpss=setStep;setStep=function(n){var p=step;_mpss(n);if(n!==p){MP.qa=false;var id=IDS[n];
+    if(id&&done[id]&&!(run[id]&&!run[id].fin)&&mpView()==='p')showBub(T[id])}};
+  function mpNext(){tap('avanti');MP.qa=false;var id=IDS[Math.max(0,step)],r=run[id];
+    if(r&&!r.fin){end(id);return}
+    if(step>=5){var g=navb[2];if(g)g.click();return}
+    var sc=$('scroller'),r0=sc.getBoundingClientRect(),span=r0.height-innerHeight,S=[0,.073,.182,.382,.545,.69],p=S[step+1]+.025;
+    scrollTo({top:scrollY+r0.top+p*span,behavior:reduce?'auto':'smooth'})}
+  function mpSend(v){v=(v||'').trim();if(!v)return;var b=mpFrame(),q=b.querySelector('.mpq');MP.qa=true;q.textContent='«'+v+'»';q.hidden=false;
+    if(mpView()==='g'&&window.__oWrite){window.__oWrite(v);return}
+    tap('domanda_libera');var area=CTX?'Domanda su: '+CTX.label:'Domanda generale';saveVoce(area,v);
+    var ctx=CTX?'L\'utente sta guardando «'+CTX.label+'»'+(EX[CTX.k]?': '+plain(EX[CTX.k]):'')+'. ':(MP.last?'Marcello ha appena detto: «'+plain(MP.last).slice(0,500)+'». ':'');
+    var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');
+    say('Ci penso un attimo…');
+    ask(PERS+ctx+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Domanda dell\'utente: '+v).then(function(t){
+      if(t){HIST.push(['Utente',v]);HIST.push(['Marcello',t]);say(esc(t))}else say('Grazie, ho segnato la tua domanda. Sono ancora una versione di prova e non so rispondere a tutto, ma la leggeremo per migliorare.')})}
+  $('astab').onclick=function(){var dd=$('astab'),b=$('dbub');tap('assistente');if(!$('aspanel').hidden)closePanel();
+    if(b.hidden){dd.classList.add('happy');clearTimeout(window.__ht);window.__ht=setTimeout(function(){dd.classList.remove('happy')},1800);
+      if(MP.last)showBub(MP.last);else showBub(MPGREET,true);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
+    else{hideBub();playSeq(SG,85)}};
+  window.__oWrite=oWrite;
+  if(!(function(){try{return sessionStorage.getItem('astpos')}catch(e){return null}})()&&innerWidth>640&&window.__putDot)window.__putDot(14,innerHeight-132,false);
+  placeBub=function(){var b=$('dbub');if(b.hidden||innerWidth<=640)return;var d=$('astab'),r=d.getBoundingClientRect(),w=b.offsetWidth||440,fl=r.left+r.width/2>innerWidth/2,x=fl?r.left-14-w:r.right+14;
+    x=Math.max(10,Math.min(innerWidth-w-10,x));var h=b.offsetHeight,y=Math.max(16,Math.min(r.top-16,innerHeight-h-16));
+    b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
+  window.__pb=placeBub;
+  var _mpsv=showView;showView=function(v){MP.qa=false;_mpsv(v)};
   window.__showView=showView;
   var nota=$('nota'),nt;
   document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
