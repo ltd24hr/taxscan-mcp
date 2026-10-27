@@ -21,7 +21,7 @@ _FILE = Path(__file__).with_name("prova.html")
 _UID = re.compile(r"^[A-Za-z0-9_-]{6,48}$")
 _PERCORSI = re.compile(r"^(sessioni|feedback)/([A-Za-z0-9_-]{6,48})$")
 MAX_BYTE_DOC = 80_000
-LIMITE_CHAT_UTENTE = int(os.environ.get("PROVA_CHAT_LIMITE", "15"))
+LIMITE_CHAT_UTENTE = int(os.environ.get("PROVA_CHAT_LIMITE", "60"))
 LIMITE_CHAT_GLOBALE = int(os.environ.get("PROVA_CHAT_GLOBALE", "300"))
 
 _SHIM = r"""<script>
@@ -315,7 +315,7 @@ def chat(uid: str, prompt: str) -> dict:
         return {"ok": False}
     if not ai.attiva():
         return {"ok": False, "errore": "non attivo"}
-    prompt = (prompt or "").strip()[:2500]
+    prompt = (prompt or "").strip()[-7000:]
     if not prompt:
         return {"ok": False}
     try:
@@ -330,13 +330,10 @@ def chat(uid: str, prompt: str) -> dict:
     except Exception:
         pass
     try:
-        if assistente.attiva():
-            testo, _ = assistente._genera(_SISTEMA, [{"role": "user", "content": prompt}], ricerca_web=False)
-        else:
-            testo = ai.genera(_SISTEMA, prompt, 700)
+        testo = ai.genera(_SISTEMA, prompt, 700)
     except Exception as e:
         print(f"prova: errore chat: {e}")
-        return {"ok": False}
+        return {"ok": False, "errore": str(e)[:200]}
     return {"ok": bool(testo), "testo": testo}
 
 
