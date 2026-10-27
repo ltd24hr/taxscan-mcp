@@ -581,12 +581,24 @@ function mostraDomanda(v) {
   } else if (campo === "codice_ateco") {
     html += '<input class="testo" id="val" placeholder="es. 62.01.00" inputmode="decimal">';
     html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
+    html += '<div class="riga"><textarea class="testo" id="descr" rows="2" maxlength="300" placeholder="Non lo conosci? Descrivi cosa fai, per esempio: scrivo testi per le aziende"></textarea></div>';
+    html += '<div class="riga"><button class="secondario" id="trova">Trovami il codice</button></div><div id="trovati"></div>';
     html += '<button class="link" id="nonso">Non conosco il codice: scelgo il mio settore</button>';
     html += '<div id="settori" class="nascosto"><p class="hint">Scegli quello che ti somiglia di più: il codice esatto lo potrai controllare dopo.</p><div class="opzioni">' +
       ((ultima && ultima.settori) || []).map((s, i) => `<button class="opz" data-i="${i}"><span class="n set">${icoSettore(s.codice)}</span><span>${esc(s.etichetta)}</span></button>`).join("") + '</div></div>';
     box.innerHTML = html; $("val").focus();
     $("ok").onclick = () => { const t = $("val").value.trim(); if (t) rispondi({codice_ateco: t}); };
     $("val").onkeydown = e => { if (e.key === "Enter") $("ok").click(); };
+    $("trova").onclick = () => { const d = $("descr").value.trim(); if (d.length < 4) { $("trovati").innerHTML = '<p class="hint">Scrivimi almeno una riga su cosa fai.</p>'; return; }
+      $("trovati").innerHTML = '<p class="hint">Sto cercando il codice giusto per te…</p>';
+      fetch("/api/prova/ai", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({c: ID, task: "ateco", dati: {descrizione: d}})})
+        .then(r => r.json()).then(j => {
+          if (!j || !j.ok || !j.codici || !j.codici.length) { $("trovati").innerHTML = '<p class="hint">Non sono riuscito a trovarlo: scegli il tuo settore qui sotto, il codice esatto lo potrai controllare dopo.</p>'; $("nonso").click(); return; }
+          $("trovati").innerHTML = '<p class="hint">Ho trovato questi codici. Scegli quello che ti somiglia di più:</p><div class="opzioni">' +
+            j.codici.map((c, i) => `<button class="opz" data-i="${i}"><span class="n set">${i + 1}</span><span><b>${esc(c.codice_ateco)}</b> · ${esc(c.etichetta)}<br><small>${esc(c.motivo)}</small></span></button>`).join("") + '</div>';
+          $("trovati").querySelectorAll("button.opz").forEach(b => b.onclick = () => { const c = j.codici[parseInt(b.dataset.i, 10)];
+            rispondi({codice_ateco: c.codice_ateco, codice_ateco_stimato: true, descrizione_attivita: c.etichetta || d}); });
+        }).catch(() => { $("trovati").innerHTML = '<p class="hint">Non riesco a cercare adesso: scegli il tuo settore qui sotto.</p>'; $("nonso").click(); }); };
     $("nonso").onclick = () => { $("settori").classList.remove("nascosto"); $("nonso").classList.add("nascosto"); $("settori").scrollIntoView({behavior: "smooth"}); };
     box.querySelectorAll("#settori button.opz").forEach(b => b.onclick = () => {
       const s = ultima.settori[parseInt(b.dataset.i, 10)];
