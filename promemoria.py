@@ -513,6 +513,16 @@ def esegui(prova: bool = False) -> dict:
     esito["previsti"] += fb["previsti"]
     esito["falliti"] += fb["falliti"]
     gia |= fb["email"]
+    # promemoria per le azioni della strategia di risparmio non fatte (e richiesta di recensione dopo un beneficio)
+    try:
+        import azioni
+        az = azioni.promemoria(prova, gia)
+        esito["mandati"] += az["mandati"]
+        esito["previsti"] += az["previsti"]
+        esito["falliti"] += az["falliti"]
+        gia |= az["email"]
+    except Exception as e:
+        print(f"promemoria azioni: {e}")
     # bandi nuovi approvati dall'amministratore: una email a chi ha accettato le email con spunti e ha il settore/la regione giusti
     esito["bandi_nuovi"] = 0
     try:

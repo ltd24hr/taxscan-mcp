@@ -24,7 +24,7 @@ import emailtpl
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_URL = "https://api.resend.com/emails"
-MITTENTE = "TaxScan <no-reply@taxscan.ltd24.co.uk>"
+MITTENTE = os.environ.get("EMAIL_MITTENTE", "TaxScan <no-reply@taxscan.ltd24.co.uk>")
 
 _ALFABETO_TOKEN = string.ascii_letters + string.digits
 _CODICE_DURATA_SECONDI = 10 * 60  # 10 minuti per usare il codice ricevuto

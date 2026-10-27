@@ -22,6 +22,7 @@ aperta da meno di 5 anni) → previdenza (solo se serve) → situazioni (1 scelt
 numeri (Fatture in Cloud o 2 importi). L'email si chiede DOPO il quadro, non prima.
 """
 
+import os
 from datetime import date
 
 import dati_fisco as D
@@ -330,7 +331,13 @@ def _anni_nel_regime(s: dict, anno: int | None = None) -> int | None:
     return (anno - ingresso) if ingresso else None
 
 
+# Questionario breve: queste domande si fanno dopo, quando servono (con QUESTIONARIO_BREVE=0 tornano subito).
+_RINVIATE = {"origine_attivita", "situazioni_particolari", "ricavi_anno_precedente"}
+
+
 def _obbligatorio(campo, scheda):
+    if campo["chiave"] in _RINVIATE and os.environ.get("QUESTIONARIO_BREVE", "1") != "0":
+        return False
     o = campo["obbligatorio"]
     if o is True or o is False:
         return o

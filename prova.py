@@ -69,7 +69,7 @@ def _primo_importo(righe, i):
         return None
 
 
-def personalizza(t: str, d: dict) -> str:
+def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
     """Sostituisce nel prototipo le cifre di esempio con quelle vere della dashboard di questo utente."""
     import datetime
     try:
@@ -87,6 +87,7 @@ def personalizza(t: str, d: dict) -> str:
         data = datetime.date.fromisoformat(ps["data"])
         data2 = datetime.date.fromisoformat(s2["data"]) if s2.get("data") else None
         mp = {}
+        al_v, co_v = .05, .78
         mp["3.951 €"] = f"{_it(ps['importo'])} €"
         if imp1 is not None:
             mp["764 €"] = f"{_it(imp1)} €"
@@ -126,18 +127,25 @@ def personalizza(t: str, d: dict) -> str:
         mp["CINC=42000"] = f"CINC={int(ricavi)}"
         try:
             al = float(str(pr.get("aliquota") or "").replace("%", "")) / 100
+            al_v = al
             mp["CALIQ=.05"] = f"CALIQ={al}"
             mp["Imposta sostitutiva al 5%"] = f"Imposta sostitutiva al {pr.get('aliquota')}"
         except ValueError:
             pass
         try:
             co = float(str(pr.get("coefficiente") or "").replace("%", "")) / 100
+            co_v = co
             mp["CCOEF=.78"] = f"CCOEF={co}"
         except ValueError:
             pass
+        mp["var INC=INCASSATO,COEF=.78,IMP=.05,CON=.2607;"] = "var INC=INCASSATO,COEF=%s,IMP=%s,CON=.2607;" % (
+            co_v, al_v)
+        mp["Cifre di esempio. Ti avviso"] = "Stime sui tuoi dati. Ti avviso"
         rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
         t = rx.sub(lambda m: mp[m.group(0)], t)
-        t = t.replace("var TS_REAL=0;", "var TS_REAL=1;")
+        extra = "<script>window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;</script>" % (
+            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]))
+        t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
         print(f"personalizza prova: {e}")
     return t
@@ -287,7 +295,7 @@ def registra(mcp, avvisi):
         if idc:
             dati = await asyncio.to_thread(_dashboard, idc)
             if dati:
-                return HTMLResponse(personalizza(pagina(), dati), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+                return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
             return RedirectResponse("/colloquio/nuovo", status_code=302)
         return HTMLResponse(pagina(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
@@ -297,6 +305,26 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(documento, c.get("uid", ""), c.get("op", ""), c.get("path", ""), c.get("data"))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/azione", methods=["POST"])
+    async def prova_azione(request):
+        try:
+            import azioni
+            c = await request.json()
+            esito = await asyncio.to_thread(azioni.registra, c.get("c", ""), c.get("azione", ""), c.get("euro", 0))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/email", methods=["POST"])
+    async def prova_email(request):
+        try:
+            import azioni
+            c = await request.json()
+            esito = await asyncio.to_thread(azioni.salva_email, c.get("c", ""), c.get("email", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)

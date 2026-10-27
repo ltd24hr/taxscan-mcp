@@ -6,8 +6,8 @@ PAGINA_HTML = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TaxScan - La tua partita IVA forfettaria sotto controllo</title>
-<meta name="description" content="Scopri in 2 minuti quanto hai maturato di tasse, quando paghi e quanto mettere da parte.">
+<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title>
+<meta name="description" content="TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse. Per partite IVA in regime forfettario. Scopri quanto puoi risparmiare.">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
 @font-face{font-family:"Poppins";font-weight:500;font-display:swap;src:url(/font/Poppins-Medium.ttf) format("truetype")}
@@ -140,8 +140,8 @@ li span{font-size:14px;color:var(--ink2)}
 <div class="logo">Tax<span>Scan</span></div>
 <div class="hero">
 <div class="txt">
-<h1>La tua partita IVA forfettaria, sotto controllo.</h1>
-<p class="lead">In 2 minuti scopri quanto hai maturato di tasse, quando paghi e quanto mettere da parte. Senza domande difficili.</p>
+<h1>TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse.</h1>
+<p class="lead">Per partite IVA in regime forfettario. In 2 minuti scopri quanto puoi risparmiare, in euro, e cosa fare per ottenerlo. Senza domande difficili.</p>
 </div>
 <div class="scena">
 <svg viewBox="0 16 360 204" role="img" aria-label="Il certificato della partita IVA viene letto e diventa tre risposte: quanto hai maturato, quando paghi, quanto mettere da parte.">
@@ -209,7 +209,7 @@ li span{font-size:14px;color:var(--ink2)}
 </svg>
 </div>
 <div class="azione">
-<a class="cta" href="/colloquio/nuovo">Inizia, è gratis</a>
+<a class="cta" href="/colloquio/nuovo">Scopri quanto puoi risparmiare</a>
 <p class="sub">Basta il certificato della partita IVA, oppure qualche tocco sul telefono.</p>
 <p class="sub">Hai già un profilo? <a href="/accedi">Accedi</a></p>
 </div>
