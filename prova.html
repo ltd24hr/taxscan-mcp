@@ -60,24 +60,45 @@ html.settled #stage{gap:18px}
  #gnarr .bub,#snarr .bub{min-height:0;font-size:16px;padding:10px 16px}
 }
 </style><style id="ottcss">
-#gview .ogrid{display:grid;grid-template-columns:minmax(270px,360px) minmax(0,1fr);gap:28px;align-items:start;margin-top:6px}
-#gview #gnarr{flex-direction:column;align-items:flex-start;gap:10px}
-#gview #gnarr .fc,#gview #gnarr .fc .face{width:92px}
-#gview #gnarr .bub{max-width:none;width:100%;font-size:15.5px;line-height:1.5;padding:12px 16px;min-height:0;box-sizing:border-box}
-#gview #gnarr .bub::before{left:36px;top:-9px;border:0;border-left:3px solid var(--clay);border-top:3px solid var(--clay);transform:rotate(45deg)}
-@media (min-width:761px){
- #gview #gnarr{position:sticky;top:calc(var(--navh,52px) + 10px);z-index:25;background:none;box-shadow:none;margin:0;padding:0}
- #gview #gnarr .bub{max-height:calc(100vh - var(--navh,52px) - 170px);overflow-y:auto;scrollbar-width:none}
- #gview #gnarr .bub::-webkit-scrollbar{display:none}
-}
-@media (max-width:760px){
- #gview .ogrid{grid-template-columns:1fr;gap:14px}
- #gview #gnarr{flex-direction:row;align-items:flex-start}
- #gview #gnarr .fc,#gview #gnarr .fc .face{width:62px}
- #gview #gnarr .bub::before{left:-9px;top:22px;border:0;border-left:3px solid var(--clay);border-bottom:3px solid var(--clay);transform:rotate(45deg)}
-}
+#gview #gnarr{display:flex;flex-direction:row;align-items:flex-start;gap:12px;background:var(--bg);padding:8px 0 10px;margin:0 0 8px}
+#gview #gnarr .fc,#gview #gnarr .fc .face{width:72px}
+#gview #gnarr .fc .face{transform:scaleX(-1)}
+#gview #gnarr .bub{max-width:760px;font-size:16px;line-height:1.45;padding:10px 16px;min-height:0;max-height:26vh;overflow-y:auto;scrollbar-width:none}
+#gview #gnarr .bub::-webkit-scrollbar{display:none}
+@media (min-width:761px){#gview #gnarr{position:sticky;top:var(--navh,52px);z-index:25;box-shadow:0 10px 12px -10px rgba(18,36,82,.25)}}
+@media (max-width:760px){#gview #gnarr .fc,#gview #gnarr .fc .face{width:56px}}
+.opath{width:100%;max-width:980px;margin:0 auto}
+.ost{display:flex;align-items:center;gap:14px;width:100%;max-width:440px;margin:0 auto}
+.ost.R{flex-direction:row-reverse;text-align:right}
+.onode{flex:none;width:76px;height:76px;border-radius:50%;border:0;font:inherit;font-weight:700;font-size:28px;cursor:pointer;display:grid;place-items:center;background:var(--accent);color:#fff;box-shadow:0 7px 0 rgba(18,36,82,.28);transition:transform .15s,filter .2s}
+.onode:active{transform:translateY(4px);box-shadow:0 3px 0 rgba(18,36,82,.28)}
+.onode:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.olab{display:flex;flex-direction:column;gap:2px;font-size:16px}.olab small{color:var(--mute);font-size:13px}
+.ost.cur .onode{animation:opulse 1.6s ease-in-out infinite}
+.ost.done .onode{background:#0f8f6a}
+.ost.avail .onode{background:var(--accent)}
+.ost.lock{filter:grayscale(1) blur(1.2px);opacity:.55}.ost.lock .onode{background:#9aa3b8;cursor:not-allowed}
+.ost.open .onode{outline:4px solid var(--accent-soft);outline-offset:3px}
+.ost.shake{animation:oshake .35s}
+@keyframes opulse{0%,100%{box-shadow:0 7px 0 rgba(18,36,82,.28),0 0 0 0 rgba(67,85,204,.5)}50%{box-shadow:0 7px 0 rgba(18,36,82,.28),0 0 0 14px rgba(67,85,204,0)}}
+@keyframes oshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.ost.cur .onode,.ost.shake{animation:none}}
+.ocon{display:block;width:100%;max-width:440px;height:52px;margin:0 auto;color:var(--line)}
+.opanel{width:100%;margin:12px 0 8px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-sizing:border-box}
+.opanel .kbox{background:var(--bg)}
+#obar{position:sticky;bottom:12px;z-index:24;display:flex;gap:8px;max-width:760px;margin:18px auto 0;background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:6px;box-shadow:0 8px 24px rgba(18,36,82,.2)}
+#obar input{flex:1;font:inherit;font-size:16px;border:0;background:transparent;color:var(--ink);padding:8px 10px;min-width:0}
+#obar input:focus{outline:none}
+.orow{display:grid;grid-template-columns:12px 1fr auto 18px;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:10px 12px;cursor:pointer}
+.orow:hover,.orow[aria-expanded=true]{border-color:var(--accent)}
+.orow i{font-style:normal;color:var(--mute);transition:transform .2s}.orow[aria-expanded=true] i{transform:rotate(180deg)}
+.odet{padding:10px 12px 12px;background:var(--surface);border:1px solid var(--line);border-top:0;margin-top:-10px}
+.tok{color:#0b7a5a;font-weight:700}.tko{color:#d03b3b;font-weight:700}
+.obw{margin:0}
+#gview{padding-bottom:70px}
+@media (max-width:760px){#obar{padding-left:62px}}
+@media (min-width:761px){#gview{padding-left:84px}}
 #opane{min-width:0}
-@media (min-width:761px){#gview{padding-left:72px}}
 .oprog{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;margin:0 0 14px;padding:0}
 .oprog li{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);font-weight:600}
 .oprog i{font-style:normal;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;background:var(--surface)}
@@ -596,20 +617,16 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 </div>
 
   <div id="gview" hidden>
-    <h2 class="gt">Ottimizzazione fiscale</h2>
-    <div class="ogrid">
-      <aside class="narr" id="gnarr"><span class="fc" data-from="sl2"></span><div class="bub" id="tg"></div></aside>
-      <section id="opane" aria-live="polite"></section>
-    </div>
+    <aside class="narr" id="gnarr"><span class="fc" data-from="sl2"></span><div class="bub" id="tg"></div></aside>
+    <section id="opane" aria-live="polite"></section>
     <div id="gold" hidden>
+    <h2 class="gt">Ottimizzazione fiscale</h2>
     <p class="gs">Qui ti aiuto a pagare il giusto.</p>
-<div id="gperc"></div><div id="gscene" hidden></div>
+    <div id="gperc"></div><div id="gscene" hidden></div>
     <div class="gh">Da fare per te</div>
     <div id="gtodo"></div>
-    <div class="gacc"><button class="gah" aria-expanded="false" data-a="1"><span>E se…? <small>prova uno scenario, senza conseguenze</small></span><i aria-hidden="true">⌄</i></button><div class="gab" id="gab1" hidden></div></div>
-    <div class="gacc"><button class="gah" aria-expanded="false" data-a="2"><span>Dove potresti inciampare <small>limiti e scadenze da tenere d'occhio</small></span><i aria-hidden="true">⌄</i></button><div class="gab" id="gab2" hidden></div></div>
-    <div class="gacc"><button class="gah" aria-expanded="false" data-a="3"><span>Il futuro <small>cosa ti aspetta nei prossimi anni</small></span><i aria-hidden="true">⌄</i></button><div class="gab" id="gab3" hidden></div></div>
-      </div>
+    <div id="gab1"></div><div id="gab2"></div><div id="gab3"></div>
+    </div>
   </div>
   <div id="sview" hidden>
     <div class="narr dx" id="snarr"><div class="bub" id="tsc"></div><span class="fc" data-from="sl2"></span></div>
@@ -622,7 +639,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 27</div>
+<div class="ver">Prototipo versione 28</div>
 </div>
 
 <script>
@@ -1325,229 +1342,203 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // l'altezza della barra delle sezioni, per tenere Marcello visibile sotto di essa
   function navH(){document.documentElement.style.setProperty('--navh',(document.querySelector('nav').offsetHeight)+'px')}
   navH();addEventListener('resize',navH);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(navH);
-  // ================= Ottimizzazione fiscale: consulenza a form dinamico con Marcello =================
+  // ================= Ottimizzazione fiscale: percorso a passi con Marcello =================
   var OTMAIN={nome:'Consulenza marketing',cod:'73.20.00'};
-  var OT={s:'intro',fonte:'',sel:{},pct:{},cus:[],sub:{},subOn:{},desc:'',how:'',cod2:'',mesi:'',res:null,read:null,ex:false,task:{}};
-  var OTST=['intro','fonte','analisi','attivita','tempo','dettaglio','dom','esito'];
-  var OTPR=[['fonte','Fatture'],['attivita','Attività'],['tempo','Il tuo tempo'],['dettaglio','Dettagli'],['dom','Ultime domande'],['esito','Risultato']];
-  var OTSUB=['Consulenza','Strategia','Email marketing','Social media','SEO','Copywriting'];
+  var OT;
+  function otNew(){return {open:0,done:{},fonte:'',sel:{},solo:false,pct:{},seed:null,touched:false,sub:{},subOn:{},desc:'',how:'',cod2:'',mesi:'',read:null,ex:false,task:{},tp:0,det:{},seen:{}}}
+  OT=otNew();
+  var OTN=[[1,'Le fatture','Ti dico cosa fai davvero'],[2,'Altre attività','Quelle che potresti avere'],[3,'Il tuo tempo','Decidi tu le percentuali'],[4,'Tre domande','Scelte veloci'],[5,'Il risultato','Prima e dopo, in euro']];
   var OTCOL=['#4355cc','#0f8f6a','#efac35','#d03b3b','#7a4fd0','#2f9bb8','#a35f2c','#6b7280'];
+  var OTMK=/^(73|70)\./.test(OTMAIN.cod);
+  var OTSUB=OTMK?['Consulenza marketing','Marketing strategy','Email marketing','Social media','SEO','Copywriting']:['Consulenza','Realizzazione del lavoro','Formazione','Assistenza ai clienti'];
   var op=$('opane');
-  function oCoef(){return CCOEF}
-  function oAct(){var a=[{id:'principale',nome:OTMAIN.nome,cod:OTMAIN.cod,coef:oCoef()}];
-    Object.keys(OT.sel).forEach(function(id){if(OT.sel[id]&&SVm[id])a.push(SVm[id])});
-    OT.cus.forEach(function(c){if(OT.sel[c.id])a.push(c)});return a}
   function oEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
-  function oNorm(items,key){ // porta la somma a 100 con numeri interi
-    var t=items.reduce(function(a,i){return a+Math.max(0,OT[key][i.id]||0)},0);
-    if(t<=0){var q=Math.floor(100/items.length);items.forEach(function(i,k){OT[key][i.id]=k?q:100-q*(items.length-1)});return}
-    var s=0;items.forEach(function(i,k){var v=Math.round((OT[key][i.id]||0)*100/t);OT[key][i.id]=v;s+=v});
-    var big=items.slice().sort(function(a,b){return OT[key][b.id]-OT[key][a.id]})[0];OT[key][big.id]+=100-s}
-  function oSet(items,key,id,val){val=Math.max(0,Math.min(100,Math.round(+val||0)));
-    var old=OT[key][id]||0,others=items.filter(function(i){return i.id!==id});
-    if(!others.length){OT[key][id]=100;return}
-    var rest=100-val,tot=others.reduce(function(a,i){return a+(OT[key][i.id]||0)},0);
-    OT[key][id]=val;
-    if(tot<=0){var q=Math.floor(rest/others.length);others.forEach(function(i,k){OT[key][i.id]=k?q:rest-q*(others.length-1)});return}
-    var s=0;others.forEach(function(i){var v=Math.round((OT[key][i.id]||0)*rest/tot);OT[key][i.id]=v;s+=v});
-    var big=others.slice().sort(function(a,b){return OT[key][b.id]-OT[key][a.id]})[0];OT[key][big.id]+=rest-s}
-  function oBar(items,key){var h='<div class="obar" role="img" aria-label="Ripartizione in percentuale">';
-    items.forEach(function(i,k){var v=OT[key][i.id]||0;if(v>0)h+='<span style="width:'+v+'%;background:'+OTCOL[k%OTCOL.length]+'" title="'+oEsc(i.nome)+' '+v+'%">'+(v>=9?v+'%':'')+'</span>'});return h+'</div>'}
-  function oSplit(items,key,box,onchange){ // righe con cursore + casella numerica, somma sempre 100
-    var h=oBar(items,key)+'<div class="osp">';
-    items.forEach(function(i,k){var v=OT[key][i.id]||0;
-      h+='<div class="osr"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><label class="osn" for="osl_'+key+k+'">'+oEsc(i.nome)+(i.coef?'<small>coefficiente '+pc(i.coef)+'</small>':'')+'</label>'+
-        '<input type="range" id="osl_'+key+k+'" min="0" max="100" step="1" value="'+v+'" data-i="'+oEsc(i.id)+'" aria-label="Percentuale '+oEsc(i.nome)+'">'+
-        '<span class="onum"><input type="number" min="0" max="100" inputmode="numeric" value="'+v+'" data-i="'+oEsc(i.id)+'" aria-label="Scrivi la percentuale per '+oEsc(i.nome)+'"><b>%</b></span></div>'});
-    h+='</div><div class="otot">Totale <b>100%</b></div>';
-    box.innerHTML=h;
-    function ch(e){var id=e.target.getAttribute('data-i');oSet(items,key,id,e.target.value);oSplit(items,key,box,onchange);onchange&&onchange()}
-    [].slice.call(box.querySelectorAll('input[type=range]')).forEach(function(r){r.oninput=function(e){var id=r.getAttribute('data-i');oSet(items,key,id,r.value);
-      // aggiorna senza ricostruire (così il cursore non si blocca)
-      items.forEach(function(it,k){var v=OT[key][it.id]||0;var rr=box.querySelectorAll('input[type=range]')[k],nn=box.querySelectorAll('input[type=number]')[k];if(rr!==r)rr.value=v;nn.value=v});
-      var b=box.querySelector('.obar');b.outerHTML=oBar(items,key);onchange&&onchange()}});
-    [].slice.call(box.querySelectorAll('input[type=number]')).forEach(function(n){n.onchange=ch;n.onkeydown=function(e){if(e.key==='Enter'){n.blur()}}})}
-  function oProg(){var ix=-1;OTPR.forEach(function(p,i){if(p[0]===OT.s||(OT.s==='analisi'&&p[0]==='fonte'))ix=i});
-    if(OT.s==='intro')return '';
-    return '<ol class="oprog" aria-label="Avanzamento">'+OTPR.map(function(p,i){return '<li class="'+(i<ix?'done':i===ix?'cur':'')+'"'+(i===ix?' aria-current="step"':'')+'><i>'+(i<ix?'✓':i+1)+'</i><span>'+p[1]+'</span></li>'}).join('')+'</ol>'}
-  function oGo(s){OT.s=s;tap('ott_'+s);oRender();if(!reduce){var g=$('gview');try{scrollTo({top:Math.max(0,g.getBoundingClientRect().top+scrollY-(document.querySelector('nav').offsetHeight+8)),behavior:'smooth'})}catch(e){scrollTo(0,0)}}}
-  function oRender(){var f={intro:oIntro,fonte:oFonte,analisi:oAnalisi,attivita:oAttivita,tempo:oTempo,dettaglio:oDettaglio,dom:oDom,esito:oEsito}[OT.s];op.innerHTML=oProg()+'<div id="obody"></div>';f($('obody'))}
-  function oBtn(id,txt,cl){return '<button class="'+(cl||'cta s')+'" id="'+id+'">'+txt+'</button>'}
-  function oNav(back,next,nextTxt){return '<div class="onav">'+(back?'<button class="lnk" id="o_back">Indietro</button>':'<span></span>')+(next?oBtn('o_next',nextTxt||'Avanti','kb'):'')+'</div>'}
-
-  // ---- 0 · Marcello spiega
-  function oIntro(b){
-    say('Ciao, sono Marcello. Questa è la sezione più importante di TaxScan: qui capiamo insieme se puoi <b>pagare meno tasse</b>, in modo corretto. Nel regime forfettario le tasse non si calcolano sulle spese ma su una <b>percentuale dei tuoi incassi</b>, il <b>coefficiente di redditività</b>, e questa percentuale dipende dal codice dell\'attività: <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Se oltre al lavoro principale svolgi anche altre attività con un coefficiente più basso, e le fatturi con il loro codice, la parte di incassi che viene tassata <b>scende</b>. Faremo una vera consulenza, a domande: partiamo dalle tue <b>fatture</b>, che leggo io; ti mostro in percentuale cosa fai davvero; ti suggerisco le attività collegate; poi mi dici tu quanto tempo dedichi a ciascuna. Il <b>prima e dopo in euro</b> lo vedi solo alla fine, quando abbiamo completato tutto. Se non emerge nessun risparmio, nessun problema: userai TaxScan per tenere sotto controllo la tua partita IVA.');
-    b.innerHTML='<div class="kbox"><div class="lbl">Come funziona · 6 passi</div><ol class="oway">'+
-      '<li><b>Le fatture</b><span>Le carichi o le colleghi, le leggo io.</span></li>'+
-      '<li><b>Cosa fai davvero</b><span>Ti mostro le percentuali per attività.</span></li>'+
-      '<li><b>Attività collegate</b><span>Ti suggerisco quelle che potresti svolgere senza accorgertene.</span></li>'+
-      '<li><b>Il tuo tempo</b><span>Scrivi tu la percentuale per ogni attività.</span></li>'+
-      '<li><b>Qualche domanda</b><span>Poche scelte rapide.</span></li>'+
-      '<li><b>Il risultato</b><span>Solo alla fine: prima e dopo, in euro.</span></li></ol></div>'+
-      oBtn('o_go','Iniziamo la consulenza','cta');
-    $('o_go').onclick=function(){oGo('fonte')}}
-
-  // ---- 1 · le fatture
-  function oFonte(b){
-    say('Partiamo dalle <b>fatture</b>: sono la fotografia di quello che fai davvero. Come preferisci darmele?');
-    var o=[['file','Carico i file','XML, PDF o foto delle fatture'],['fic','Collego Fatture in Cloud','le leggo direttamente da lì'],['altro','Uso un altro programma','Aruba, TeamSystem, Zucchetti…'],['esempio','Non le ho qui','provo con tre fatture di esempio'],['parole','Preferisco descrivere','te lo scrivo con parole mie']];
-    b.innerHTML='<div class="lbl">Da dove le prendo?</div><div class="ocards">'+o.map(function(x){return '<button class="kc" data-f="'+x[0]+'" aria-pressed="'+(OT.fonte===x[0]?'true':'false')+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'}).join('')+'</div><div id="ofd"></div>';
-    [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(x){x.onclick=function(){OT.fonte=x.getAttribute('data-f');tap('ott_fonte_'+OT.fonte);
-      [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});oFd()}});
-    if(OT.fonte)oFd()}
-  function oFd(){var d=$('ofd'),f=OT.fonte;
-    if(f==='file'){d.innerHTML='<div class="kbox"><label class="sxdrop" for="o_file"><input type="file" id="o_file" multiple accept=".xml,.pdf,.jpg,.jpeg,.png"><span>Scegli i file delle fatture (anche più d\'uno)</span></label><div id="o_fl" class="sxfl"></div><p class="sxn">Leggo PDF, foto e XML. Prendo solo descrizione e importo delle righe, mai i dati dei clienti, e non conservo i file.</p></div>'+oBtn('o_an','Leggi le fatture','cta s');
-      $('o_file').onchange=function(){SX.fil=[].slice.call(this.files||[]);OT.ex=false;var l=$('o_fl');l.innerHTML='';SX.fil.forEach(function(x){var s=document.createElement('span');s.textContent='✓ '+x.name;l.appendChild(s)});tap('strategia_file');srv('fattura_caricata',0)};
-      $('o_an').onclick=function(){if(!SX.fil.length){say('Scegli prima almeno <b>un file</b> con una fattura, oppure usa le fatture di esempio.');return}oLeggi()}}
-    else if(f==='fic'||f==='altro'){var n=f==='fic'?'Fatture in Cloud':'il tuo programma di fatturazione';
-      d.innerHTML='<div class="kbox"><div class="lbl">Collegamento automatico</div><p class="onote">Il collegamento diretto con '+n+' lo stiamo attivando. Intanto puoi esportare le fatture da '+n+' (in XML o PDF) e caricarle qui: le leggo allo stesso modo.</p></div>'+oBtn('o_tofile','Carico i file adesso','cta s');
-      $('o_tofile').onclick=function(){OT.fonte='file';oFonte($('obody'))};say('Il collegamento automatico con '+n+' non è ancora attivo. Nessun problema: <b>esporta le fatture</b> e caricale qui, le leggo uguale.')}
-    else if(f==='esempio'){d.innerHTML='<div class="kbox"><div class="lbl">Fatture di esempio</div><div class="sxfl"><span>✓ Fattura_01.xml</span><span>✓ Fattura_02.xml</span><span>✓ Fattura_03.xml</span></div><p class="onote">Tre fatture di una consulente di marketing che ha fatto anche un sito e configurato un CRM.</p></div>'+oBtn('o_an','Leggi le fatture di esempio','cta s');
-      $('o_an').onclick=function(){OT.ex=true;SX.fil=[];oLeggi()}}
-    else if(f==='parole'){d.innerHTML='<div class="kbox"><div class="lbl">Dimmi cosa fai</div><textarea id="o_txt" class="otx" maxlength="800" rows="4" placeholder="Es. Consulenza marketing, campagne social, ho creato il sito di un cliente e configurato il CRM…">'+oEsc(OT.desc)+'</textarea></div>'+oBtn('o_pa','Continua','cta s');
-      $('o_pa').onclick=function(){OT.desc=$('o_txt').value.trim();if(!OT.desc){say('Scrivimi almeno una riga su <b>cosa fai</b> per i clienti.');return}OT.read=null;oTrova(OT.desc);oGo('attivita')}}}
-  function oLeggi(){OT.s='analisi';tap('ott_analisi');oRender();
-    var steps=['Apro le fatture','Leggo le righe di lavoro','Le confronto con il tuo codice '+OTMAIN.cod,'Calcolo le percentuali per attività'],ul=$('oran');
-    say('Un momento: <b>leggo le fatture</b> e metto insieme le righe che parlano della stessa attività.');
-    var fin=false,res=null;
-    function show(){if(fin&&res!==undefined&&ul.dataset.ok==='1')oAnRes(res)}
-    steps.forEach(function(s,i){timers.push(setTimeout(function(){var e=$('oan'+i);if(e)e.className='on';if(i===steps.length-1){ul.dataset.ok='1';show()}},reduce?0:700*(i+1)))});
-    if(OT.ex||!window.TS_C||!SX.fil.length){res=OT.ex||!SX.fil.length?OTEX():OTEX(true);fin=true;show()}
-    else sxServer(function(r){res=r;fin=true;show()})}
-  function OTEX(dem){return {ok:true,esempio:true,demo:!!dem,riepilogo:[{voce:'principale',titolo:OTMAIN.nome,pct:82},{voce:'sito',titolo:'Creazione di siti web',pct:13},{voce:'assistenza',titolo:'Assistenza tecnica e configurazioni',pct:5}],generiche:[],non_letti:[]}}
-  function oAnalisi(b){b.innerHTML='<div class="kbox"><div class="lbl">Sto lavorando</div><ul class="sxrun" id="oran">'+['Apro le fatture','Leggo le righe di lavoro','Le confronto con il tuo codice '+OTMAIN.cod,'Calcolo le percentuali per attività'].map(function(s,i){return '<li id="oan'+i+'">'+s+'</li>'}).join('')+'</ul></div><div id="oares"></div>'}
-  function oAnRes(res){var box=$('oares');if(!box)return;
-    if(!res||res.ok===false||res.vuoto||!res.riepilogo){var m=(res&&(res.errore||res.vuoto))||'Non sono riuscito a leggere le fatture.';
-      say(m+' Possiamo andare avanti in un altro modo: <b>descrivimi a parole</b> cosa fai.');
-      box.innerHTML='<div class="kbox"><p class="onote">'+oEsc(m)+'</p></div>'+oBtn('o_alt','Preferisco descrivere','cta s')+'<button class="lnk" id="o_ret">Riprova con altri file</button>';
-      $('o_alt').onclick=function(){OT.fonte='parole';oGo('fonte')};$('o_ret').onclick=function(){OT.fonte='file';oGo('fonte')};return}
-    OT.read=res;OT.pct={};OT.sel={};var items=[];
-    res.riepilogo.forEach(function(v){var id=v.voce==='principale'?'principale':v.voce;var nm=v.voce==='principale'?OTMAIN.nome:(SVm[v.voce]?SVm[v.voce].nome:v.titolo);
-      items.push({id:id,nome:nm,coef:v.voce==='principale'?oCoef():(SVm[v.voce]?SVm[v.voce].coef:0),pct:v.pct});if(v.voce!=='principale'&&SVm[v.voce])OT.sel[v.voce]=true});
-    if(!items.some(function(i){return i.id==='principale'}))items.unshift({id:'principale',nome:OTMAIN.nome,coef:oCoef(),pct:Math.max(50,100-items.length*10)});
-    items.forEach(function(i){OT.pct[i.id]=i.pct});oNorm(items,'pct');OT.seed=JSON.parse(JSON.stringify(OT.pct));OT.items0=items;
-    var h='<div class="kbox"><div class="lbl">Cosa risulta dalle fatture'+(res.esempio?' (esempio)':'')+'</div>'+oBar(items,'pct')+'<div class="osp">';
-    items.forEach(function(i,k){h+='<div class="osr ro"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><span class="osn">'+oEsc(i.nome)+(i.coef?'<small>coefficiente '+pc(i.coef)+'</small>':'')+'</span><b class="opp">'+OT.pct[i.id]+'%</b></div>'});
-    h+='</div><p class="onote">Sono le percentuali sugli <b>importi fatturati</b> nelle righe che ho letto'+(res.demo?'. In questa versione di prova uso le fatture di esempio':'')+'. Nel passo «Il tuo tempo» le correggi tu.</p></div>';
-    var gen=(res.generiche||[]).length;if(gen)h+='<div class="kbox"><p class="onote"><b>'+gen+' righe</b> sono troppo generiche per capire di che lavoro si tratta: te le chiedo nel prossimo passo.</p></div>';
-    h+=oBtn('o_next','Bene, cerchiamo altre attività','cta s');box.innerHTML=h;
-    var altre=items.filter(function(i){return i.id!=='principale'});
-    say(altre.length?'Dalle fatture vedo che fai soprattutto <b>'+oEsc(items[0].nome.toLowerCase())+'</b> ('+OT.pct[items[0].id]+'%), ma anche <b>'+altre.map(function(a){return oEsc(a.nome.toLowerCase())+' ('+OT.pct[a.id]+'%)'}).join('</b> e <b>')+'</b>. Vediamo se ce ne sono altre.':'Dalle fatture vedo <b>solo '+oEsc(OTMAIN.nome.toLowerCase())+'</b>: il <b>100%</b>. Prima di concludere controlliamo se, senza accorgertene, fai anche altro.');
-    $('o_next').onclick=function(){oGo('attivita')}}
-
-  // ---- 2 · attività collegate (elenco a scorrimento + testo libero)
+  function oCoef(){return CCOEF}
+  function oAct(){var a=[{id:'principale',nome:OTMAIN.nome,cod:OTMAIN.cod,coef:oCoef()}];Object.keys(OT.sel).forEach(function(id){if(OT.sel[id]&&SVm[id])a.push(SVm[id])});return a}
+  function oNSel(){return Object.keys(OT.sel).filter(function(k){return OT.sel[k]}).length}
+  function oTot(){return oAct().reduce(function(a,i){return a+(OT.pct[i.id]||0)},0)}
+  function oAvail(n){return n===1||!!OT.done[n-1]}
+  // ---- percorso
+  function oBuild(){var h='<div class="opath" id="opath">';
+    OTN.forEach(function(s,k){var n=s[0],R=k%2===1;
+      h+='<div class="ost '+(R?'R':'L')+'" id="ost'+n+'"><button class="onode" data-n="'+n+'" aria-label="Passo '+n+': '+s[1]+'"><span>'+n+'</span></button><div class="olab"><b>'+s[1]+'</b><small id="osm'+n+'">'+s[2]+'</small></div></div>'+
+        '<div class="opanel" id="opn'+n+'" hidden></div>';
+      if(n<5)h+='<svg class="ocon" viewBox="0 0 440 52" preserveAspectRatio="none" aria-hidden="true"><path d="'+(R?'M404 0 C404 44, 36 8, 36 52':'M36 0 C36 44, 404 8, 404 52')+'" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>'});
+    op.innerHTML=h+'</div>';
+    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){oClick(+b.getAttribute('data-n'))}})}
+  function oNodes(){var cur=0;OTN.forEach(function(s){var n=s[0];if(!OT.done[n]&&oAvail(n)&&!cur)cur=n});
+    OTN.forEach(function(s){var n=s[0],r=$('ost'+n);if(!r)return;var st=OT.done[n]?'done':oAvail(n)?'cur':'lock';
+      r.className=r.className.replace(/\b(done|cur|lock|open)\b/g,'').trim()+' '+(st==='cur'&&n!==cur?'avail':st)+(OT.open===n?' open':'');
+      r.querySelector('.onode span').textContent=OT.done[n]?'✓':n;r.querySelector('.onode').setAttribute('aria-disabled',st==='lock'?'true':'false');
+      var sm=$('osm'+n);sm.textContent=OT.done[n]?oSummary(n):s[2]})}
+  function oSummary(n){if(n===1)return OT.read?'Fatture lette':'Descrizione ricevuta';if(n===2)return OT.solo?'Solo il lavoro principale':oNSel()+(oNSel()===1?' attività in più':' attività in più');if(n===3)return 'Ripartito al 100%';if(n===4)return 'Risposte date';return ''}
+  function oClick(n){if(!oAvail(n)){say('Prima completa il passo <b>'+(n-1)+'</b>: è come un percorso, si va in ordine.');var r=$('ost'+n);r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake');return}
+    if(OT.open===n){OT.open=0;oShow();oNodes();return}
+    oOpen(n)}
+  function oShow(){OTN.forEach(function(s){$('opn'+s[0]).hidden=(OT.open!==s[0])})}
+  function oOpen(n){OT.open=n;tap('ott_passo_'+n);oShow();oNodes();oFill(n);oPh();
+    if(!reduce){var r=$('ost'+n);try{scrollTo({top:Math.max(0,r.getBoundingClientRect().top+scrollY-(document.querySelector('nav').offsetHeight+110)),behavior:'smooth'})}catch(e){}}}
+  function oFill(n){var b=$('opn'+n);({1:oP1,2:oP2,3:oP3,4:oP4,5:oP5})[n](b)}
+  function oDone(n,msg){if(OT.done[n]){if(msg)say(msg);return}OT.done[n]=true;oNodes();if(msg)say(msg);
+    var nx=$('ost'+(n+1));if(nx&&!reduce)setTimeout(function(){try{nx.scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},900)}
+  function oUndone(n){var ch=false;for(var k=n;k<=5;k++)if(OT.done[k]){delete OT.done[k];ch=true}if(ch)oNodes()}
+  var OTPH={0:'Scrivimi qui cosa fai per i clienti…',1:'Oppure descrivimi qui cosa fai per i clienti…',2:'Scrivi un\'attività e la cerco per te…',3:'Es. «principale 60, siti 25, video 15»',4:'Hai un dubbio? Chiedimi…',5:'Chiedimi qualcosa sul risultato…'};
+  function oPh(){var i=$('o_in');if(i)i.placeholder=OTPH[OT.open||0]}
+  // ---- barra per scrivere, sempre disponibile
+  function oWrite(t){t=(t||'').trim();if(!t)return;tap('ott_scrive');saveVoce('Ottimizzazione: '+(OT.open||'inizio'),t);
+    var n=OT.open;
+    if(n===3&&oParsePct(t)){OT.touched=true;oFill(3);oCheck3();say('Fatto, ho impostato le percentuali come mi hai scritto. Controlla il totale: deve arrivare a <b>100%</b>.');return}
+    var q=/\?\s*$|^(come|cosa|perch|quando|quanto|posso|devo|che |chi |dove)/i.test(t);
+    var before=Object.keys(OT.sel).filter(function(k){return OT.sel[k]});OT.desc=(OT.desc+' '+t).trim();
+    var found=oTrova(t);var nuovi=Object.keys(OT.sel).filter(function(k){return OT.sel[k]&&before.indexOf(k)<0&&SVm[k]});
+    if(nuovi.length&&!q){OT.solo=false;if(!OT.done[1]){OT.done[1]=true}
+      var m='Dalla tua descrizione ho aggiunto: <b>'+nuovi.map(function(k){return oEsc(SVm[k].nome)}).join('</b>, <b>')+'</b>.';
+      if(OT.open===2)oFill(2);oNodes();oCheck2(true);say(m+(OT.done[2]?' Controlla che sia giusto, poi passa al <b>3</b>.':''));return}
+    if(q||n>=4){say('Ci penso un attimo…');ask(PERS+'L\'utente sta facendo il percorso «Ottimizzazione fiscale» (passo '+(n||1)+' di 5). Rispondi in massimo 3 frasi semplici, senza certezze, con stime. Domanda: '+t).then(function(r){say(r?esc(r):'Grazie, ho segnato la domanda: la leggeremo per migliorare.')});return}
+    say(n===0||n===1?'Ho capito, ma non trovo un\'attività precisa. Dimmi <b>cosa consegni al cliente</b> (un sito, un video, una configurazione…) oppure carica una fattura.':'Non trovo un\'attività simile in elenco. Prova a dire <b>cosa consegni al cliente</b>: un sito, un video, una configurazione, un corso…')}
+  function oParsePct(t){t=t.toLowerCase();var got=0;
+    oAct().forEach(function(a){var keys=(SXK[a.id]||[]).concat(a.nome.toLowerCase().split(/[^a-zàèéìòù]+/).filter(function(w){return w.length>=4}));if(a.id==='principale')keys=keys.concat(['principale','lavoro principale']);
+      for(var k=0;k<keys.length;k++){var i=t.indexOf(keys[k]);if(i<0)continue;var aft=t.slice(i+keys[k].length,i+keys[k].length+16).match(/(\d{1,3})/),bef=t.slice(Math.max(0,i-12),i).match(/(\d{1,3})\s*%?\s*(?:di|per|a)?\s*$/),m=aft||bef;if(m){OT.pct[a.id]=Math.min(100,+m[1]);got++;return}}});return got}
   function oTrova(txt){var t=(txt||'').toLowerCase(),n=0;Object.keys(SXK).forEach(function(id){if(SVm[id]&&!OT.sel[id]&&SXK[id].some(function(k){return t.indexOf(k)>-1})){OT.sel[id]=true;n++}});
     SV.forEach(function(s){if(OT.sel[s[0]])return;var w=(s[2]+' '+s[3]).toLowerCase().split(/[^a-zàèéìòù]+/).filter(function(x){return x.length>5});if(w.some(function(x){return t.indexOf(x)>-1})){OT.sel[s[0]]=true;n++}});return n}
-  function oAttivita(b){
-    var m=oCoef(),sug=SV.filter(function(s){return s[5]<m}),altri=SV.filter(function(s){return s[5]>=m});
+
+  // ---- barre e cursori (liberi: decide l'utente come arrivare a 100)
+  function oBar(items,key){var tot=Math.max(100,items.reduce(function(a,i){return a+(OT[key][i.id]||0)},0)),h='<div class="obar" role="img" aria-label="Ripartizione in percentuale">';
+    items.forEach(function(i,k){var v=OT[key][i.id]||0;if(v>0)h+='<span style="width:'+(v*100/tot)+'%;background:'+OTCOL[k%OTCOL.length]+'" title="'+oEsc(i.nome)+' '+v+'%">'+(v>=9?v+'%':'')+'</span>'});return h+'</div>'}
+  function oTotTxt(items,key){var t=items.reduce(function(a,i){return a+(OT[key][i.id]||0)},0);
+    return t===100?'<span class="tok">Totale 100% ✓</span>':t<100?'Totale '+t+'% · ti mancano <b>'+(100-t)+'%</b>':'<span class="tko">Totale '+t+'% · sono <b>'+(t-100)+'%</b> in più</span>'}
+  function oSplit(items,key,box,onchange){var h='<div class="obw">'+oBar(items,key)+'</div><div class="osp">';
+    items.forEach(function(i,k){var v=OT[key][i.id]||0;
+      h+='<div class="osr"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><label class="osn" for="osl_'+key+k+'">'+oEsc(i.nome)+(i.coef?'<small>coefficiente '+pc(i.coef)+'</small>':'')+'</label>'+
+        '<input type="range" id="osl_'+key+k+'" min="0" max="100" step="1" value="'+v+'" data-k="'+k+'" aria-label="Percentuale '+oEsc(i.nome)+'">'+
+        '<span class="onum"><input type="number" min="0" max="100" inputmode="numeric" value="'+v+'" data-k="'+k+'" aria-label="Scrivi la percentuale per '+oEsc(i.nome)+'"><b>%</b></span></div>'});
+    box.innerHTML=h+'</div><div class="otot" id="otot_'+key+'">'+oTotTxt(items,key)+'</div>';
+    var rg=[].slice.call(box.querySelectorAll('input[type=range]')),nm=[].slice.call(box.querySelectorAll('input[type=number]'));
+    function ref(except){items.forEach(function(it,k){var v=OT[key][it.id]||0;if(rg[k]!==except)rg[k].value=v;if(nm[k]!==except)nm[k].value=v});box.querySelector('.obw').innerHTML=oBar(items,key);$('otot_'+key).innerHTML=oTotTxt(items,key);onchange&&onchange()}
+    rg.forEach(function(r){r.oninput=function(){OT[key][items[+r.getAttribute('data-k')].id]=+r.value;ref(r)}});
+    nm.forEach(function(n){n.oninput=function(){var v=Math.max(0,Math.min(100,Math.round(+n.value||0)));OT[key][items[+n.getAttribute('data-k')].id]=v;ref(n)};n.onblur=function(){n.value=OT[key][items[+n.getAttribute('data-k')].id]||0}})}
+
+  // ---- 1 · fatture
+  function oP1(b){
+    var o=[['file','Carico i file','XML, PDF o foto delle fatture'],['fic','Fatture in Cloud','le leggo direttamente da lì'],['altro','Altro programma','Aruba, TeamSystem, Zucchetti…'],['esempio','Uso un esempio','tre fatture di prova']];
+    b.innerHTML='<div class="ocards">'+o.map(function(x){return '<button class="kc" data-f="'+x[0]+'" aria-pressed="'+(OT.fonte===x[0]?'true':'false')+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'}).join('')+'</div>'+
+      '<input type="file" id="o_file" multiple accept=".xml,.pdf,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>'+
+      '<button class="lnk" id="o_more">Vuoi capire meglio i coefficienti?</button>';
+    [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(x){x.onclick=function(){OT.fonte=x.getAttribute('data-f');tap('ott_fonte_'+OT.fonte);
+      [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});
+      if(OT.fonte==='file'){$('o_file').click()}
+      else if(OT.fonte==='esempio'){OT.ex=true;SX.fil=[];oLeggi()}
+      else{var n=OT.fonte==='fic'?'Fatture in Cloud':'il tuo programma';$('o1n').innerHTML='<p class="onote">Il collegamento diretto con '+n+' lo stiamo attivando. Intanto esporta le fatture (XML o PDF) e caricale con «Carico i file»: le leggo uguale.</p>';say('Il collegamento con '+n+' non è ancora attivo. <b>Esporta le fatture</b> e caricale con «Carico i file»: le leggo uguale.')}}});
+    $('o_file').onchange=function(){SX.fil=[].slice.call(this.files||[]);if(!SX.fil.length)return;OT.ex=false;tap('strategia_file');srv('fattura_caricata',0);$('o1n').innerHTML='<p class="onote">'+SX.fil.map(function(f){return '✓ '+oEsc(f.name)}).join(' · ')+'</p>';oLeggi()};
+    $('o_more').onclick=function(){say('Per esempio: <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Se oltre al lavoro principale fai altre attività con un coefficiente più basso e le fatturi con il loro codice, la parte di incassi che viene tassata <b>scende</b>.')};
+    if(OT.read)oAnRes(OT.read,true);else say('Parto dalle <b>fatture</b>: mi dicono cosa fai davvero. Come me le dai?')}
+  function oLeggi(){var box=$('o1res');var steps=['Apro le fatture','Leggo le righe di lavoro','Le confronto con il tuo codice '+OTMAIN.cod,'Calcolo le percentuali'];
+    box.innerHTML='<div class="kbox"><ul class="sxrun" id="oran">'+steps.map(function(s,i){return '<li id="oan'+i+'">'+s+'</li>'}).join('')+'</ul></div>';
+    say('Un momento: <b>leggo le fatture</b>.');var fin=false,res=null,ok=false;
+    function show(){if(fin&&ok)oAnRes(res)}
+    steps.forEach(function(s,i){timers.push(setTimeout(function(){var e=$('oan'+i);if(e)e.className='on';if(i===steps.length-1){ok=true;show()}},reduce?0:650*(i+1)))});
+    if(OT.ex||!window.TS_C||!SX.fil.length){res=OTEX(!OT.ex&&SX.fil.length>0);fin=true;show()}else sxServer(function(r){res=r;fin=true;show()})}
+  function OTEX(dem){return {ok:true,esempio:true,demo:!!dem,riepilogo:[{voce:'principale',titolo:OTMAIN.nome,pct:82},{voce:'sito',titolo:'Creazione di siti web',pct:13},{voce:'assistenza',titolo:'Assistenza tecnica e configurazioni',pct:5}],generiche:[],non_letti:[]}}
+  function oItems0(){return OT.read?OT.read.items:[]}
+  function oAnRes(res,quiet){var box=$('o1res');if(!box)return;
+    if(!res||res.ok===false||res.vuoto||!res.riepilogo){var m=(res&&(res.errore||res.vuoto))||'Non sono riuscito a leggere le fatture.';
+      box.innerHTML='<div class="kbox"><p class="onote">'+oEsc(m)+'</p></div>';say(m+' Riprova con un altro file, oppure <b>scrivimi qui sotto</b> cosa fai.');return}
+    if(!res.items){var items=[];res.riepilogo.forEach(function(v){var main=v.voce==='principale';items.push({id:main?'principale':v.voce,nome:main?OTMAIN.nome:(SVm[v.voce]?SVm[v.voce].nome:v.titolo),coef:main?oCoef():(SVm[v.voce]?SVm[v.voce].coef:0),pct:v.pct})});
+      if(!items.some(function(i){return i.id==='principale'}))items.unshift({id:'principale',nome:OTMAIN.nome,coef:oCoef(),pct:Math.max(50,100-items.length*10)});
+      var t=items.reduce(function(a,i){return a+i.pct},0),s=0;items.forEach(function(i){i.pct=Math.round(i.pct*100/t);s+=i.pct});items[0].pct+=100-s;res.items=items;
+      OT.sel={};items.forEach(function(i){if(i.id!=='principale'&&SVm[i.id])OT.sel[i.id]=true});OT.seed={};items.forEach(function(i){OT.seed[i.id]=i.pct});OT.pct={};items.forEach(function(i){OT.pct[i.id]=i.pct});OT.touched=false}
+    OT.read=res;var items=res.items,alt=items.filter(function(i){return i.id!=='principale'});
+    var h='<div class="kbox"><div class="lbl">Il tuo lavoro è il 100%: dalle fatture lo divido così'+(res.esempio?' (esempio)':'')+'</div><div class="obw">'+oBar(items.map(function(i){return {id:i.id,nome:i.nome}}),'seed')+'</div><div class="osp">';
+    items.forEach(function(i,k){h+='<button class="orow" data-id="'+oEsc(i.id)+'" aria-expanded="false"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><span class="osn">'+oEsc(i.nome)+'<small>coefficiente '+pc(i.coef)+' · tocca per i dettagli</small></span><b class="opp">'+i.pct+'%</b><i aria-hidden="true">⌄</i></button><div class="odet" id="od_'+oEsc(i.id)+'" hidden></div>'});
+    h+='</div><p class="onote">Sono le percentuali sugli <b>importi fatturati</b> nelle righe che ho letto'+(res.demo?'. In questa prova uso le fatture di esempio':'')+'.</p></div>';box.innerHTML=h;
+    [].slice.call(box.querySelectorAll('.orow')).forEach(function(r){r.onclick=function(){var id=r.getAttribute('data-id'),d=$('od_'+id),open=d.hidden;
+      [].slice.call(box.querySelectorAll('.odet')).forEach(function(x){x.hidden=true});[].slice.call(box.querySelectorAll('.orow')).forEach(function(x){x.setAttribute('aria-expanded','false')});
+      if(open){oDet(id,d);d.hidden=false;r.setAttribute('aria-expanded','true');tap('ott_dettaglio_'+id)}}});
+    if(!quiet){oDone(1,alt.length?'Vedo soprattutto <b>'+oEsc(items[0].nome.toLowerCase())+'</b> ('+items[0].pct+'%), ma anche <b>'+alt.map(function(a){return oEsc(a.nome.toLowerCase())+' ('+a.pct+'%)'}).join('</b> e <b>')+'</b>. Tocca un\'attività per i dettagli, poi passa al <b>2</b>.':'Dalle fatture vedo <b>solo '+oEsc(OTMAIN.nome.toLowerCase())+'</b>: il 100%. Prima di concludere, passa al <b>2</b>: controlliamo se fai anche altro.')}
+    else if(OT.done[1])say('Il tuo lavoro è il 100%: dalle fatture lo divido così. Tocca un\'attività per i dettagli, poi passa al <b>2</b>.')}
+  function oDet(id,d){
+    if(id==='principale'){var on=OTSUB.filter(function(c){return OT.subOn[c]});
+      d.innerHTML='<p class="onote">È il tuo lavoro principale, con il codice <b>'+oEsc(OTMAIN.cod)+'</b> e coefficiente <b>'+pc(oCoef())+'</b>. Dentro questo lavoro, cosa fai di preciso?</p><div class="ochips">'+OTSUB.map(function(c){return '<button class="och" data-c="'+oEsc(c)+'" aria-pressed="'+(OT.subOn[c]?'true':'false')+'">'+oEsc(c)+'</button>'}).join('')+'</div><div class="kbox" id="o_ssp"'+(on.length?'':' hidden')+'></div>';
+      if(on.length)oSplit(on.map(function(c){return {id:c,nome:c}}),'sub',$('o_ssp'));
+      [].slice.call(d.querySelectorAll('.och')).forEach(function(x){x.onclick=function(){var c=x.getAttribute('data-c');OT.subOn[c]=!OT.subOn[c];var l=OTSUB.filter(function(k){return OT.subOn[k]});OTSUB.forEach(function(k){OT.sub[k]=OT.subOn[k]?Math.floor(100/l.length)+(k===l[0]?100-Math.floor(100/l.length)*l.length:0):0});tap('ott_sub');oDet(id,d)}})}
+    else{var s=SVm[id];d.innerHTML=s?'<p class="onote"><b>'+oEsc(s.nome)+'</b>: '+oEsc(s.es)+'.</p><p class="onote">Codice <b>'+s.cod+'</b>, coefficiente <b>'+pc(s.coef)+'</b>: '+(s.coef<oCoef()?'più basso del tuo ('+pc(oCoef())+'). Se la fatturi con il suo codice, su questa parte paghi meno tasse.':'uguale o più alto del tuo: nessun vantaggio fiscale.')+'</p>':'<p class="onote">Attività letta dalle fatture.</p>'}}
+
+  // ---- 2 · altre attività
+  function oCheck2(auto){var n=oNSel();
+    if(n>0||OT.solo){if(!OT.done[2])OT.done[2]=true;oNodes()}else if(OT.done[2])oUndone(2);}
+  function oP2(b){var m=oCoef(),sug=SV.filter(function(s){return s[5]<m}),altri=SV.filter(function(s){return s[5]>=m});
     var vis=function(s){return OT.read&&OT.read.riepilogo.some(function(v){return v.voce===s[0]})};
     sug.sort(function(a,c){return (vis(c)?1:0)-(vis(a)?1:0)||(OT.sel[c[0]]?1:0)-(OT.sel[a[0]]?1:0)});
-    say('Ora cerco le <b>attività collegate</b>. Sono quelle che molti fanno per i clienti senza accorgersene, e che hanno un coefficiente <b>più basso</b> del tuo ('+pc(m)+'). Spunta quelle che fai, anche poco. Se ne manca qualcuna, descrivila qui sotto: ti aiuto a trovarla.');
     var row=function(s){var low=s[5]<m;return '<label class="oit'+(OT.sel[s[0]]?' on':'')+'"><input type="checkbox" data-id="'+s[0]+'"'+(OT.sel[s[0]]?' checked':'')+'><span class="oin"><b>'+s[2]+'</b><small>'+s[3]+'</small></span><span class="otg'+(low?' low':'')+'">'+(vis(s)?'visto nelle fatture · ':'')+(low?'coefficiente '+pc(s[5])+' (−'+Math.round((m-s[5])*100)+' punti)':'stesso coefficiente o più alto')+'</span></label>'};
-    var h='<div class="lbl">Attività che potresti svolgere</div><input type="search" id="o_q" class="oq" placeholder="Cerca tra le attività…" aria-label="Cerca tra le attività"><div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle attività">'+
-      '<div class="ogh">Con un coefficiente più basso del tuo</div>'+sug.map(row).join('')+'<div class="ogh">Senza vantaggio fiscale (le puoi indicare lo stesso)</div>'+altri.map(row).join('')+
-      OT.cus.map(function(c){return '<label class="oit on"><input type="checkbox" data-id="'+c.id+'" checked><span class="oin"><b>'+oEsc(c.nome)+'</b><small>aggiunta da te</small></span><span class="otg">coefficiente da verificare</span></label>'}).join('')+'</div>'+
-      '<div class="kbox"><div class="lbl">Descrivi con parole tue</div><textarea id="o_txt" class="otx" maxlength="800" rows="3" placeholder="Es. oltre al marketing ho creato il sito di un cliente e gli ho configurato il CRM…">'+oEsc(OT.desc)+'</textarea><button class="cta s o2" id="o_cerca">Trova attività simili</button>'+
-      '<div class="oadd"><input type="text" id="o_add" maxlength="80" placeholder="Un\'altra attività non in elenco" aria-label="Aggiungi un\'altra attività"><button class="kb" id="o_addb">Aggiungi</button></div><p class="onote">Un\'attività che aggiungi tu ha un coefficiente che va verificato con il suo codice: per ora la calcolo come la tua principale.</p></div>'+
-      '<div class="osum" id="o_sum"></div>'+oNav(true,true,'Avanti: il tuo tempo');
-    b.innerHTML=h;oSum();
-    function bind(){[].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){OT.sel[c.getAttribute('data-id')]=c.checked;c.closest('.oit').classList.toggle('on',c.checked);tap('ott_attivita_'+c.getAttribute('data-id'));oSum()}})}
-    bind();
-    $('o_q').oninput=function(){var q=this.value.toLowerCase();[].slice.call(b.querySelectorAll('.oit')).forEach(function(l){l.hidden=q&&l.textContent.toLowerCase().indexOf(q)<0})};
-    $('o_cerca').onclick=function(){OT.desc=$('o_txt').value.trim();if(!OT.desc){say('Scrivimi una riga su cosa fai e cerco io le attività più vicine.');return}
-      var before=Object.keys(OT.sel).filter(function(k){return OT.sel[k]}).length,n=oTrova(OT.desc);tap('ott_descrizione');
-      if(n){var nuovi=Object.keys(OT.sel).filter(function(k){return OT.sel[k]&&SVm[k]}).slice(before).map(function(k){return SVm[k].nome});oAttivita(b);say('Dalla tua descrizione ho aggiunto: <b>'+nuovi.map(oEsc).join('</b>, <b>')+'</b>. Controlla che sia giusto e togli la spunta se non è così.')}
-      else say('Non trovo corrispondenze chiare. Prova a descrivere <b>cosa consegni al cliente</b> (un sito, un video, una configurazione…), oppure aggiungi l\'attività con il campo qui sotto.')};
-    $('o_addb').onclick=function(){var v=$('o_add').value.trim();if(!v)return;var id='x'+(OT.cus.length+1);OT.cus.push({id:id,nome:v,cod:'da verificare',coef:oCoef(),area:'Altro',custom:true});OT.sel[id]=true;tap('ott_attivita_libera');oAttivita(b);say('Ho aggiunto <b>'+oEsc(v)+'</b>. Per calcolarla bene servirà il suo codice ATECO: lo verifichiamo alla fine.')};
-    $('o_add').onkeydown=function(e){if(e.key==='Enter')$('o_addb').click()};
-    $('o_back').onclick=function(){oGo('fonte')};
-    $('o_next').onclick=function(){oGo('tempo')}}
-  function oSum(){var n=Object.keys(OT.sel).filter(function(k){return OT.sel[k]}).length,e=$('o_sum');if(e)e.innerHTML=n?'Hai indicato <b>'+n+'</b> '+(n===1?'attività oltre alla principale':'attività oltre alla principale')+'.':'Per ora solo il tuo lavoro principale. Va bene anche così: se non ne aggiungi altre, il tuo codice è già quello giusto.'}
+    var sc=b.querySelector('#o_list'),top=sc?sc.scrollTop:0;
+    b.innerHTML='<input type="search" id="o_q" class="oq" placeholder="Cerca tra le attività…" aria-label="Cerca tra le attività"><div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle attività"><div class="ogh">Con un coefficiente più basso del tuo</div>'+sug.map(row).join('')+'<div class="ogh">Senza vantaggio fiscale</div>'+altri.map(row).join('')+'</div>'+
+      '<div class="ochips"><button class="och" id="o_solo" aria-pressed="'+(OT.solo?'true':'false')+'">Faccio solo il mio lavoro principale</button></div><div class="osum" id="o_sum"></div>';
+    $('o_list').scrollTop=top;oSum();
+    [].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){OT.sel[c.getAttribute('data-id')]=c.checked;if(c.checked)OT.solo=false;$('o_solo').setAttribute('aria-pressed',OT.solo?'true':'false');c.closest('.oit').classList.toggle('on',c.checked);tap('ott_attivita_'+c.getAttribute('data-id'));oSum();oCheck2();
+      if(OT.done[2]&&!OT.seen.d2){OT.seen.d2=1;say('Bene. Ora passa al <b>3</b>: mi dici quanto tempo dedichi a ciascuna.')}}});
+    $('o_q').oninput=function(){var q=this.value.toLowerCase();[].slice.call(b.querySelectorAll('.oit')).forEach(function(l){l.hidden=!!q&&l.textContent.toLowerCase().indexOf(q)<0})};
+    $('o_solo').onclick=function(){OT.solo=!OT.solo;if(OT.solo)OT.sel={};tap('ott_solo');oP2(b);oCheck2();if(OT.solo)say('Va bene: solo il lavoro principale. Passa al <b>3</b>.')};
+    say(OT.done[2]?'Ho già spuntato le attività viste nelle fatture. Controlla, poi passa al <b>3</b>.':'Molti fanno per i clienti <b>altre attività</b> senza accorgersene, con un coefficiente più basso del '+pc(m)+'. Spunta quelle che fai, oppure <b>scrivimelo qui sotto</b>.');
+    if(!OT.done[2])oCheck2()}
+  function oSum(){var n=oNSel(),e=$('o_sum');if(e)e.innerHTML=n?'Hai indicato <b>'+n+'</b> '+(n===1?'attività':'attività')+' oltre alla principale.':'Per ora solo il lavoro principale.'}
 
-  // ---- 3 · il tempo, in percentuale scritta dall'utente
-  function oTempo(b){var it=oAct();
-    var ids=it.map(function(i){return i.id}),has=ids.every(function(i){return OT.pct[i]!=null});
-    if(!has||ids.length!==Object.keys(OT.pct).length){var seed=OT.seed||{};var np={};ids.forEach(function(i){np[i]=seed[i]!=null?seed[i]:(i==='principale'?70:10)});OT.pct=np;oNorm(it,'pct')}
-    if(it.length===1){OT.pct.principale=100}
-    say(it.length===1?'Fai solo il tuo lavoro principale: il <b>100%</b> del tuo tempo. Controlla e vai avanti.':'Ora dimmi <b>quanto del tuo tempo dedichi a ciascuna attività</b>. Scrivi tu la percentuale nella casella, oppure muovi il cursore: le altre si adattano e il totale resta <b>100%</b>. Se fatturi tutto il tuo tempo di lavoro, è anche la quota dei tuoi incassi.');
-    b.innerHTML='<div class="lbl">Quanto tempo dedichi a ciascuna?</div><div class="kbox" id="o_sp"></div>'+(OT.seed&&OT.read?'<button class="lnk" id="o_seed">Riparti dalle percentuali lette nelle fatture</button>':'')+oNav(true,true,'Avanti');
-    oSplit(it,'pct',$('o_sp'));
-    var sd=$('o_seed');if(sd)sd.onclick=function(){OT.pct=JSON.parse(JSON.stringify(OT.seed));oAct().forEach(function(i){if(OT.pct[i.id]==null)OT.pct[i.id]=0});oNorm(oAct(),'pct');oSplit(oAct(),'pct',$('o_sp'))};
-    $('o_back').onclick=function(){oGo('attivita')};$('o_next').onclick=function(){oGo('dettaglio')}}
+  // ---- 3 · tempo
+  function oCheck3(){var t=oTot(),ok=t===100&&(OT.touched||!!OT.read);if(ok){if(!OT.done[3]){OT.done[3]=true;oNodes();say('Perfetto, siamo al <b>100%</b>. Passa al <b>4</b>.')}}else if(OT.done[3])oUndone(3)}
+  function oP3(b){var it=oAct(),ids={};it.forEach(function(i){ids[i.id]=1});Object.keys(OT.pct).forEach(function(k){if(!ids[k])delete OT.pct[k]});
+    it.forEach(function(i){if(OT.pct[i.id]==null)OT.pct[i.id]=0});
+    if(it.length===1)OT.pct.principale=100;else if(oTot()===0||(!OT.touched&&!OT.read))OT.pct.principale=100-it.slice(1).reduce(function(a,i){return a+(OT.pct[i.id]||0)},0);
+    b.innerHTML='<div class="kbox" id="o_sp"></div>'+(OT.seed&&OT.read&&it.length>1?'<button class="lnk" id="o_seed">Riparti dalle percentuali delle fatture</button>':'');
+    oSplit(it,'pct',$('o_sp'),function(){OT.touched=true;oCheck3()});
+    var sd=$('o_seed');if(sd)sd.onclick=function(){it.forEach(function(i){OT.pct[i.id]=OT.seed[i.id]||0});var t=oTot();if(t!==100)OT.pct.principale=Math.max(0,OT.pct.principale+100-t);oP3(b);oCheck3()};
+    say(it.length===1?'Fai solo il tuo lavoro principale: il <b>100%</b> del tuo tempo.':'Quanto tempo dedichi a ciascuna? Muovi i cursori o <b>scrivi tu la percentuale</b>: decidi tu come arrivare a <b>100%</b>. Se fatturi tutto il tuo tempo, è anche la quota dei tuoi incassi.');
+    if(it.length===1||(OT.read&&oTot()===100)){OT.touched=OT.touched||it.length===1;oCheck3()}}
 
-  // ---- 4 · dentro l'attività principale
-  function oDettaglio(b){
-    var q=OT.pct.principale||0;
-    var chips=OTSUB.concat(Object.keys(OT.sub).filter(function(k){return OTSUB.indexOf(k)<0}));
-    function onList(){return chips.filter(function(c){return OT.subOn[c]})}
-    function fix(){var on=onList();chips.forEach(function(c){if(!OT.subOn[c])OT.sub[c]=0});if(!on.length)return;
-      var its=on.map(function(c){return {id:c,nome:c}}),t=on.reduce(function(a,c){return a+(OT.sub[c]||0)},0);
-      if(t!==100){if(!t)on.forEach(function(c,k){OT.sub[c]=k?Math.floor(100/on.length):100-Math.floor(100/on.length)*(on.length-1)});else oNorm(its,'sub')}}
-    fix();var on=onList();
-    say('Un ultimo dettaglio sul tuo lavoro principale (<b>'+q+'%</b> del tempo). Dentro «'+oEsc(OTMAIN.nome.toLowerCase())+'» cosa fai? Spunta le voci e dimmi quanto pesa ciascuna: mi serve per capire se una di queste ha un codice diverso. Puoi anche <b>saltare</b>.');
-    b.innerHTML='<div class="lbl">Dentro «'+oEsc(OTMAIN.nome)+'» faccio…</div><div class="ochips">'+chips.map(function(c){return '<button class="och" data-c="'+oEsc(c)+'" aria-pressed="'+(OT.subOn[c]?'true':'false')+'">'+oEsc(c)+'</button>'}).join('')+'</div>'+
-      '<div class="oadd"><input type="text" id="o_sadd" maxlength="60" placeholder="Un\'altra voce, scrivila tu" aria-label="Aggiungi una voce"><button class="kb" id="o_saddb">Aggiungi</button></div>'+
-      '<div class="kbox" id="o_ssp"'+(on.length?'':' hidden')+'></div><p class="onote">Per ora il calcolo usa il codice della tua attività principale. Se una voce ne richiede uno diverso, te lo dico nel risultato.</p>'+oNav(true,true,on.length?'Avanti':'Salta questo passo');
-    if(on.length)oSplit(on.map(function(c){return {id:c,nome:c}}),'sub',$('o_ssp'));
-    [].slice.call(b.querySelectorAll('.och')).forEach(function(x){x.onclick=function(){var c=x.getAttribute('data-c');OT.subOn[c]=!OT.subOn[c];if(OT.subOn[c]){var n0=onList().length;OT.sub[c]=Math.round(100/n0)}else OT.sub[c]=0;tap('ott_sub');oDettaglio(b)}});
-    $('o_saddb').onclick=function(){var v=$('o_sadd').value.trim();if(!v)return;OT.subOn[v]=true;OT.sub[v]=0;OT.sub[v]=Math.round(100/Math.max(1,Object.keys(OT.subOn).filter(function(x){return OT.subOn[x]}).length));oDettaglio(b)};
-    $('o_sadd').onkeydown=function(e){if(e.key==='Enter')$('o_saddb').click()};
-    $('o_back').onclick=function(){oGo('tempo')};$('o_next').onclick=function(){oGo('dom')}}
-
-  // ---- 5 · ultime domande (menu a tendina, scelte, elenco a scorrimento)
-  function oDom(b){
-    say('Ultime tre domande, veloci. Mi servono per dirti cosa fare in pratica, non cambiano il calcolo.');
-    var hows=[['','— scegli —'],['una','Una sola fattura, una sola riga'],['righe','Una fattura con righe separate per attività'],['sep','Fatture separate per ogni attività'],['nso','Non lo so']];
+  // ---- 4 · domande
+  function oCheck4(){if(OT.how&&OT.cod2&&OT.mesi){if(!OT.done[4]){OT.done[4]=true;oNodes();say('Ho tutto. Ultimo passo: il <b>5</b>, dove ti mostro il risultato.')}}}
+  function oP4(b){var hows=[['','— scegli —'],['una','Una sola fattura, una sola riga'],['righe','Una fattura con righe separate per attività'],['sep','Fatture separate per ogni attività'],['nso','Non lo so']];
     var cods=[['tutti','Sì, tutti'],['princ','Solo quello principale'],['nso','Non lo so']];
     var mesi=[['m3','Meno di 3 mesi'],['m6','Da 3 a 6 mesi'],['m12','Da 6 a 12 mesi'],['a1','Più di un anno'],['sempre','Da sempre']];
     b.innerHTML='<div class="kbox"><label class="oqq" for="o_how">1 · Oggi come fatturi queste attività?</label><select id="o_how" class="osel">'+hows.map(function(x){return '<option value="'+x[0]+'"'+(OT.how===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div>'+
       '<div class="kbox"><div class="oqq">2 · Hai già i codici di queste attività sulla partita IVA?</div><div class="ocards">'+cods.map(function(x){return '<button class="kc" data-k="'+x[0]+'" aria-pressed="'+(OT.cod2===x[0]?'true':'false')+'"><b>'+x[1]+'</b></button>'}).join('')+'</div></div>'+
-      '<div class="kbox"><div class="oqq" id="o_mq">3 · Da quanto tempo svolgi le attività accessorie?</div><select id="o_mesi" size="5" class="osel lb" aria-labelledby="o_mq">'+mesi.map(function(x){return '<option value="'+x[0]+'"'+(OT.mesi===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div>'+
-      oNav(true,true,'Calcola il risultato');
-    $('o_how').onchange=function(){OT.how=this.value};$('o_mesi').onchange=function(){OT.mesi=this.value};
-    [].slice.call(b.querySelectorAll('[data-k]')).forEach(function(x){x.onclick=function(){OT.cod2=x.getAttribute('data-k');[].slice.call(b.querySelectorAll('[data-k]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')})}});
-    $('o_back').onclick=function(){oGo('dettaglio')};$('o_next').onclick=function(){oGo('esito')}}
+      '<div class="kbox"><div class="oqq" id="o_mq">3 · Da quanto tempo le svolgi?</div><select id="o_mesi" size="5" class="osel lb" aria-labelledby="o_mq">'+mesi.map(function(x){return '<option value="'+x[0]+'"'+(OT.mesi===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div>';
+    $('o_how').onchange=function(){OT.how=this.value;oCheck4()};$('o_mesi').onchange=function(){OT.mesi=this.value;oCheck4()};
+    [].slice.call(b.querySelectorAll('[data-k]')).forEach(function(x){x.onclick=function(){OT.cod2=x.getAttribute('data-k');[].slice.call(b.querySelectorAll('[data-k]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});oCheck4()}});
+    say('Tre domande veloci, servono per dirti cosa fare in pratica. Non cambiano il calcolo.');oCheck4()}
 
-  // ---- 6 · il risultato: solo qui il prima e dopo
-  function oCalc(){var it=oAct(),red=0,rows=[];
-    it.forEach(function(a){var q=(OT.pct[a.id]||0)/100;rows.push({a:a,q:q,ric:CINC*q,red:CINC*q*a.coef});red+=CINC*q*a.coef});
-    var oggi=ccalc(CINC*CCOEF),dopo=ccalc(red);return {rows:rows,red:red,mix:red/CINC,oggi:oggi,dopo:dopo,diff:oggi.tot-dopo.tot,riv:!!(OT.sel.rivendita),cus:OT.cus.filter(function(c){return OT.sel[c.id]}).length}}
-  function oEsito(b){
-    b.innerHTML='<div class="kbox"><div class="lbl">Metto insieme tutto</div><ul class="sxrun" id="oer">'+['Ricompongo le tue attività','Applico a ognuna il suo coefficiente','Calcolo imposta e contributi','Confronto il prima e il dopo'].map(function(s,i){return '<li id="oe'+i+'">'+s+'</li>'}).join('')+'</ul></div><div id="oeres"></div>';
-    say('Abbiamo finito le domande. Adesso metto insieme tutto e ti mostro il <b>prima e dopo</b>.');
-    [0,1,2,3].forEach(function(i){timers.push(setTimeout(function(){var e=$('oe'+i);if(e)e.className='on';if(i===3)timers.push(setTimeout(oRis,reduce?0:450))},reduce?0:600*(i+1)))})}
-  function oRis(){var r=OT.res=oCalc(),d=Math.round(r.diff),box=$('oeres');if(!box)return;var h='';
-    if(d<=0||Object.keys(OT.sel).filter(function(k){return OT.sel[k]}).length===0){
-      srv('risparmio_calcolato',0);tap('ott_zero');
-      say('Il risultato è onesto: con quello che mi hai detto <b>non c\'è un risparmio</b>. Il tuo codice è già quello giusto e questo è un buon segno. Da qui in poi userò TaxScan per tenerti sotto controllo: <b>scadenze, soglia degli 85.000 €, quanto mettere da parte</b>.');
-      box.innerHTML='<div class="kbox"><div class="lbl">Risparmio individuato</div><div class="kbig">0 €</div><div class="sub">Nessuna attività con un coefficiente più basso del tuo.</div></div>'+
-        '<div class="kbox"><div class="lbl">Cosa fa TaxScan per te</div><ul class="olis"><li>Ti ricorda ogni scadenza e quanto mettere da parte.</li><li>Controlla la soglia degli 85.000 € mentre fatturi.</li><li>Ti avvisa se cambiano regole o agevolazioni che ti riguardano.</li></ul></div>'+
-        '<div class="onav"><button class="lnk" id="o_rif">Rifai la consulenza</button><span class="obtns"><button class="kb" id="o_sc">Vai alle Scadenze</button></span></div>';
-      $('o_rif').onclick=function(){oReset()};$('o_sc').onclick=function(){showView('s')};return}
-    srv('risparmio_calcolato',d);tap('ott_risultato');
-    var m=Math.round(d/12),m5=d*5;
-    say('Ecco il risultato. Con le attività che hai indicato, il tuo coefficiente medio scende da <b>'+pc(CCOEF)+'</b> a <b>'+pc(r.mix)+'</b>: puoi risparmiare circa <b>'+eur(d)+' all\'anno</b> (stima). Sotto trovi il confronto e cosa fare per ottenerlo.'+(r.riv?' <b>Attenzione</b> alla rivendita di prodotti: può cambiare la tua gestione INPS.':'')+(r.cus?' Per le attività che hai aggiunto tu il calcolo è prudente: serve verificare il loro codice.':''));
-    h+='<div class="otre"><div class="kbox"><div class="lbl">Ogni anno</div><div class="kbig ok">'+eur(d)+'</div><div class="sub">tasse e contributi in meno</div></div>'+
-       '<div class="kbox"><div class="lbl">Ogni mese</div><div class="kbig ok">'+eur(m)+'</div><div class="sub">in più nel tuo netto</div></div>'+
-       '<div class="kbox"><div class="lbl">In 5 anni</div><div class="kbig ok">'+eur(m5)+'</div><div class="sub">a parità di incassi</div></div></div>';
+  // ---- 5 · risultato
+  function oCalc(){var it=oAct(),t=Math.max(1,oTot()),red=0,rows=[];
+    it.forEach(function(a){var q=(OT.pct[a.id]||0)/t;rows.push({a:a,q:q});red+=CINC*q*a.coef});
+    var oggi=ccalc(CINC*CCOEF),dopo=ccalc(red);return {rows:rows,red:red,mix:red/CINC,oggi:oggi,dopo:dopo,diff:oggi.tot-dopo.tot,riv:!!OT.sel.rivendita}}
+  function oP5(b){
+    b.innerHTML='<div class="kbox"><ul class="sxrun" id="oer">'+['Ricompongo le tue attività','Applico a ognuna il suo coefficiente','Calcolo imposta e contributi','Confronto il prima e il dopo'].map(function(s,i){return '<li id="oe'+i+'">'+s+'</li>'}).join('')+'</ul></div><div id="oeres"></div>';
+    say('Metto insieme tutto e ti mostro il <b>prima e dopo</b>.');
+    [0,1,2,3].forEach(function(i){timers.push(setTimeout(function(){var e=$('oe'+i);if(e)e.className='on';if(i===3)timers.push(setTimeout(oRis,reduce?0:450))},reduce?0:550*(i+1)))})}
+  function oRis(){var r=calcR=oCalc(),d=Math.round(r.diff),box=$('oeres');if(!box)return;var h='';
+    if(d<=0||oNSel()===0){srv('risparmio_calcolato',0);tap('ott_zero');
+      say('Il risultato è onesto: <b>non c\'è un risparmio</b>. Il tuo codice è già quello giusto, ed è un buon segno. Userò TaxScan per tenerti sotto controllo: <b>scadenze, soglia degli 85.000 € e quanto mettere da parte</b>.');
+      box.innerHTML='<div class="kbox"><div class="lbl">Risparmio individuato</div><div class="kbig">0 €</div><div class="sub">Nessuna attività con un coefficiente più basso del tuo.</div></div><div class="kbox"><div class="lbl">Cosa fa TaxScan per te</div><ul class="olis"><li>Ti ricorda ogni scadenza e quanto mettere da parte.</li><li>Controlla la soglia degli 85.000 € mentre fatturi.</li><li>Ti avvisa se cambiano regole o agevolazioni che ti riguardano.</li></ul></div><div class="onav"><button class="lnk" id="o_rif">Rifai il percorso</button><button class="kb" id="o_sc">Vai alle Scadenze</button></div>';
+      $('o_rif').onclick=oReset;$('o_sc').onclick=function(){showView('s')};return}
+    srv('risparmio_calcolato',d);tap('ott_risultato');var m=Math.round(d/12);
+    say('Ecco il risultato: il tuo coefficiente medio scende da <b>'+pc(CCOEF)+'</b> a <b>'+pc(r.mix)+'</b>. Puoi risparmiare circa <b>'+eur(d)+' all\'anno</b> (stima).'+(r.riv?' <b>Attenzione</b> alla rivendita di prodotti: può cambiare la tua gestione INPS.':''));
+    h+='<div class="otre"><div class="kbox"><div class="lbl">Ogni anno</div><div class="kbig ok">'+eur(d)+'</div><div class="sub">tasse e contributi in meno</div></div><div class="kbox"><div class="lbl">Ogni mese</div><div class="kbig ok">'+eur(m)+'</div><div class="sub">in più nel tuo netto</div></div><div class="kbox"><div class="lbl">In 5 anni</div><div class="kbig ok">'+eur(d*5)+'</div><div class="sub">a parità di incassi</div></div></div>';
     var L=function(a,x,y){var dd=y-x;return '<tr><td>'+a+'</td><td>'+eur(x)+'</td><td>'+eur(y)+'</td><td class="'+(dd<0?'okc':'')+'">'+(dd>=0?'+':'−')+' '+eur(Math.abs(dd))+'</td></tr>'};
-    h+='<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div><div class="kbox-t"><table class="kt"><tr><th></th><th>Oggi</th><th>Con la strategia</th><th>Differenza</th></tr>'+
-       L('Reddito su cui paghi',CINC*CCOEF,r.red)+L('Imposta sostitutiva',r.oggi.imp,r.dopo.imp)+L('Contributi',r.oggi.con,r.dopo.con)+L('Totale tasse e contributi',r.oggi.tot,r.dopo.tot)+L('Quello che ti resta',r.oggi.net,r.dopo.net)+'</table></div><p class="onote">Stima sui tuoi incassi di '+eur(CINC)+' e sull\'aliquota attuale. Non è una promessa di risultato.</p></div>';
-    h+='<div class="kbox"><div class="lbl">Come ho diviso i tuoi incassi</div>'+oBar(r.rows.map(function(x){return x.a}),'pct')+'<div class="kbox-t"><table class="kt"><tr><th>Attività</th><th>Codice</th><th>Coeff.</th><th>Quota</th></tr>'+
-       r.rows.map(function(x){return '<tr><td>'+oEsc(x.a.nome)+'</td><td>'+oEsc(x.a.cod||'')+'</td><td>'+pc(x.a.coef)+'</td><td>'+Math.round(x.q*100)+'%</td></tr>'}).join('')+'</table></div></div>';
-    var tasks=[['task_cod','Aggiungi i codici delle nuove attività','Comunichi la variazione all\'Agenzia delle Entrate (modello AA9/12). Senza il codice sulla partita IVA il risparmio resta solo una stima.'],
-      ['task_fatture','Una riga per ogni attività in fattura','Dalle prossime fatture scrivi le righe separate, così i ricavi di ogni attività restano distinti.'],
-      ['task_contratto','Fai verificare i numeri','Se vuoi, un commercialista controlla il calcolo prima di agire. È una tua scelta, non è obbligatorio.']];
-    h+='<div class="kbox"><div class="lbl">Cosa fare ora, in 3 passi</div><ul class="otask">'+tasks.map(function(t){return '<li><label><input type="checkbox" data-t="'+t[0]+'"'+(OT.task[t[0]]?' checked':'')+'><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span></label></li>'}).join('')+'</ul></div>';
-    h+='<div id="otp"></div><div class="onav"><button class="lnk" id="o_mod">Modifica le percentuali</button><button class="lnk" id="o_rif">Rifai da capo</button></div>';
+    h+='<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div><div class="kbox-t"><table class="kt"><tr><th></th><th>Oggi</th><th>Con la strategia</th><th>Differenza</th></tr>'+L('Reddito su cui paghi',CINC*CCOEF,r.red)+L('Imposta sostitutiva',r.oggi.imp,r.dopo.imp)+L('Contributi',r.oggi.con,r.dopo.con)+L('Totale tasse e contributi',r.oggi.tot,r.dopo.tot)+L('Quello che ti resta',r.oggi.net,r.dopo.net)+'</table></div><p class="onote">Stima sui tuoi incassi di '+eur(CINC)+' e sull\'aliquota attuale. Non è una promessa di risultato.</p></div>';
+    var it=r.rows.map(function(x){return x.a}),tmp={};r.rows.forEach(function(x){tmp[x.a.id]=Math.round(x.q*100)});OT.fin=tmp;
+    h+='<div class="kbox"><div class="lbl">Come ho diviso i tuoi incassi</div>'+oBar(it,'fin')+'<div class="kbox-t"><table class="kt"><tr><th>Attività</th><th>Codice</th><th>Coeff.</th><th>Quota</th></tr>'+r.rows.map(function(x){return '<tr><td>'+oEsc(x.a.nome)+'</td><td>'+oEsc(x.a.cod||'')+'</td><td>'+pc(x.a.coef)+'</td><td>'+Math.round(x.q*100)+'%</td></tr>'}).join('')+'</table></div></div>';
+    var tasks=[['task_cod','Aggiungi i codici delle nuove attività','Comunichi la variazione all\'Agenzia delle Entrate (modello AA9/12). Senza il codice sulla partita IVA il risparmio resta solo una stima.'],['task_fatture','Una riga per ogni attività in fattura','Dalle prossime fatture scrivi le righe separate, così i ricavi di ogni attività restano distinti.'],['task_contratto','Fai verificare i numeri','Se vuoi, un commercialista controlla il calcolo prima di agire. È una tua scelta, non è obbligatorio.']];
+    h+='<div class="kbox"><div class="lbl">Cosa fare ora, in 3 passi</div><ul class="otask">'+tasks.map(function(t){return '<li><label><input type="checkbox" data-t="'+t[0]+'"'+(OT.task[t[0]]?' checked':'')+'><span><b>'+t[1]+'</b><small>'+t[2]+'</small></span></label></li>'}).join('')+'</ul></div><div id="otp"></div><div class="onav"><button class="lnk" id="o_mod">Modifica le percentuali</button><button class="lnk" id="o_rif">Rifai da capo</button></div>';
     box.innerHTML=h;
     [].slice.call(box.querySelectorAll('[data-t]')).forEach(function(c){c.onchange=function(){var k=c.getAttribute('data-t');OT.task[k]=c.checked;if(c.checked){srv(k,d);tap('ott_'+k);
-      if(TPURL&&!OT.tp){OT.tp=1;var o=$('otp');o.innerHTML='<div class="kbox otp"><b>Ti è stata utile questa consulenza?</b><p class="onote">Una recensione sincera aiuta altri professionisti a trovarci.</p><a class="kb" id="otpa" href="'+oEsc(TPURL)+'" target="_blank" rel="noopener">Lascia una recensione su Trustpilot</a></div>';$('otpa').onclick=function(){srv('trustpilot_click',d)}}}}});
-    $('o_mod').onclick=function(){oGo('tempo')};$('o_rif').onclick=function(){oReset()}}
-  function oReset(){OT={s:'intro',fonte:'',sel:{},pct:{},cus:[],sub:{},subOn:{},desc:'',how:'',cod2:'',mesi:'',res:null,read:null,ex:false,task:{}};SX.fil=[];oGo('intro')}
-  // quando si apre la sezione, Marcello riprende da dove eravamo
-  var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){oRender();if(!reduce&&OT.s!=='intro')scrollTo(0,0)}};
+      if(TPURL&&!OT.tp){OT.tp=1;$('otp').innerHTML='<div class="kbox otp"><b>Ti è stata utile questa consulenza?</b><p class="onote">Una recensione sincera aiuta altri professionisti a trovarci.</p><a class="kb" id="otpa" href="'+oEsc(TPURL)+'" target="_blank" rel="noopener">Lascia una recensione su Trustpilot</a></div>';$('otpa').onclick=function(){srv('trustpilot_click',d)}}}}});
+    $('o_mod').onclick=function(){oOpen(3)};$('o_rif').onclick=oReset}
+  var calcR=null;
+  function oReset(){OT=otNew();SX.fil=[];oBuild();oNodes();oPh();say(oIntro())}
+  function oIntro(){return 'Qui capiamo se puoi <b>pagare meno tasse</b>. Nel forfettario le tasse si calcolano su una percentuale dei tuoi incassi, il <b>coefficiente di redditività</b>, che dipende dal codice della tua attività. Partiamo dal <b>1</b>: toccalo.'}
+  // sezione: costruzione, barra per scrivere, ingresso
+  (function(){var bar=document.createElement('form');bar.id='obar';bar.innerHTML='<input type="text" id="o_in" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello"><button type="submit" class="kb">Invia</button>';
+    $('gview').appendChild(bar);bar.onsubmit=function(e){e.preventDefault();var i=$('o_in'),v=i.value;i.value='';oWrite(v)}})();
+  oBuild();oNodes();oPh();
+  var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){oShow();oNodes();oPh();if(OT.open&&!$('opn'+OT.open).innerHTML)oFill(OT.open);else if(OT.open)oFill(OT.open);else say(OT.done[1]?'Dove eravamo? Tocca il passo da cui vuoi riprendere.':oIntro())}};
   window.__showView=showView;
   var nota=$('nota'),nt;
   document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
