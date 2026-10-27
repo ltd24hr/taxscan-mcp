@@ -156,6 +156,13 @@ def costruisci(scheda_utente: dict, accantonamento_attuale: float = 0.0) -> dict
             "nome_cassa": prof.get("nome_cassa"),
         },
         "scadenze": [_norm_sc(s) for s in scadenze],
+        "anno_precedente": ({
+            "anno": prec.get("anno"), "ricavi": prec.get("ricavi_incassati"),
+            "reddito": prec.get("reddito_forfettario_lordo"), "coefficiente": prec.get("coefficiente_applicato"),
+            "imposta": prec.get("imposta_sostitutiva"), "aliquota": prec.get("aliquota_imposta"),
+            "contributi": (prec.get("contributi_previdenziali") or {}).get("totale_contributi"),
+        } if prec.get("ricavi_incassati") else None),
+        "acconti_imposta": ((quadro.get("acconti_anno_corrente") or {}).get("rate") or []),
         "mensile": [{"mese": m.get("mese"), "fondo": m.get("fondo_a_fine_mese"),
                      "da_accantonare": m.get("da_accantonare"), "in_uscita": m.get("in_uscita"),
                      "scoperto": m.get("scoperto")} for m in mensile],

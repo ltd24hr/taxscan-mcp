@@ -23,6 +23,30 @@ nav button:nth-child(1){order:1}nav button:nth-child(3){order:2}nav button:nth-c
 .sxwarn{margin-top:10px;font-size:14px;border-left:4px solid #d98a1a;padding:6px 10px;background:var(--bg)}
 .sxtp{background:var(--surface);border:2px solid var(--ok);padding:12px 14px;margin-bottom:10px}.sxtp p{margin:4px 0}
 .kw .kn small{display:block;font-weight:400;color:var(--mute)}
+</style><style>
+.wrap{max-width:1560px!important}
+body{padding-inline:max(clamp(16px,4vw,72px),env(safe-area-inset-left,0px)) max(clamp(16px,4vw,72px),env(safe-area-inset-right,0px))}
+.bub{max-width:780px}
+html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+#stage{max-height:none!important;overflow:visible!important;overflow-y:visible!important}
+nav{scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+.aspanel,.dbub{scrollbar-width:thin}
+html.settled #scroller{height:auto!important}
+html.settled #stage{position:static!important;top:auto!important}
+html.settled #sl1,html.settled #sl2,html.settled #sl2b,html.settled #sl3,html.settled #sl4,html.settled #sl5,html.settled #sl6,html.settled #sl7,html.settled #slP,html.settled #slK,html.settled #slS,html.settled #slR{display:none!important}
+html.settled #slN,html.settled #slC,html.settled #slD,html.settled #slT,html.settled #slSo{grid-template-rows:1fr!important;opacity:1!important;margin-block:0!important;display:grid!important}
+html.settled .fade{opacity:1!important;transform:none!important}
+html.settled .cards{display:grid!important}
+html.noprec #slT{display:none!important}
+.cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))!important}
+.dgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))!important}
+html.settled #stage{gap:18px}
+#schint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;align-items:center;gap:0;opacity:0;pointer-events:none;transition:opacity .4s;color:var(--accent);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+#schint.on{opacity:1}
+#schint i{display:block;width:16px;height:16px;border-right:4px solid var(--accent);border-bottom:4px solid var(--accent);transform:rotate(45deg);margin-top:-6px;animation:schint 1.4s infinite}
+#schint i:nth-child(3){animation-delay:.18s}#schint i:nth-child(4){animation-delay:.36s}
+@keyframes schint{0%{opacity:0;transform:translateY(-8px) rotate(45deg)}50%{opacity:1}100%{opacity:0;transform:translateY(8px) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){#schint i{animation:none;opacity:1}}
 </style></head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -506,7 +530,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 24</div>
+<div class="ver">Prototipo versione 25</div>
 </div>
 
 <script>
@@ -1010,7 +1034,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function unspot(){trOn=false;navEl.classList.remove('spotlit');navb.forEach(function(x){x.classList.remove('spot')});$('veil').classList.remove('on');root.classList.remove('lock','tour')}
   function tourStart(){if(step!==5)return;trI=TR.length;var g=navb[2];if(g&&!g.getAttribute('aria-current'))g.classList.add('spot')}
   var chain=false;
-  function tourChain(){if(trI>=TR.length){unspot();say(FIN,function(){timers.push(setTimeout(function(){showView('g')},reduce?0:2200))});return}
+  function tourChain(){if(trI>=TR.length){unspot();say(FIN,function(){timers.push(setTimeout(function(){settle(true);showView('g')},reduce?0:2200))});return}
     spot();say(TR[trI].d,function(){timers.push(setTimeout(function(){trI++;tourChain()},reduce?0:2300))})}
   function tourClick(i){if(!trOn)return false;if(chain||i!==TR[0].b||trI!==0)return true;chain=true;tap('tour_'+i);tourChain();return true}
   var tick=false;
@@ -1064,7 +1088,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     $('sask').innerHTML='<img class="av" alt="" src="'+$('astab').querySelector('.dotimg').src+'"><div><h3 data-ex="s_ask" tabindex="0" role="button">30 novembre · 3.951 €</h3><p>'+(ans==='si'?'Messi da parte: bene. Te lo ricordo comunque a fine mese.':ans==='no'?'Nessun problema: te lo ripropongo tra 10 giorni (il '+(function(){var d=new Date(t.getTime()+864e6*10);return d.getDate()+' '+MESI[d.getMonth()]})()+').':'Mancano '+n+' giorni.')+'</p>'+(ans?'':'<div class="ga"><button data-g="si">Sì, messi da parte</button><button class="l" data-g="no">Non ancora</button></div>')+'</div>';
     [].slice.call($('sask').querySelectorAll('[data-g]')).forEach(function(b){b.onclick=function(){GT.acc=b.dataset.g;tap('scadenza_'+b.dataset.g);say(GT.acc==='si'?'Bene, <b>bravo</b>! Così arrivi tranquillo alla scadenza.':'Va bene, nessun problema. Te lo ripropongo <b>tra 10 giorni</b>: intanto metti da parte circa il <b>22%</b> di ogni incasso.');if(GT.acc==='si')setTimeout(wink,1500);renderScad()}});
     $('scal').innerHTML='<tr><th>Data</th><th>Cosa</th><th>Imposta</th><th>Contributi</th><th>Totale</th><th></th></tr>'+
-      [['s_r1','30 nov 2026','2° acconto 2026','764 €','3.187 €','3.951 €'],['s_r2','30 giu 2027','Saldo 2026 + 1° acconto 2027','—','—','8.417 €'],['s_r3','30 nov 2027','2° acconto 2027','—','—','—']].map(function(r){return '<tr data-ex="'+r[0]+'" tabindex="0" role="button"><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td><button class="pf24" data-ex="s_f24">Paga F24</button></td></tr>'}).join('');
+      (window.TS_SC&&window.TS_SC.length?window.TS_SC.map(function(s,i){return ['s_r'+(i+1),s.d,s.e,s.i,s.c,s.t]}):[['s_r1','30 nov 2026','2° acconto 2026','764 €','3.187 €','3.951 €'],['s_r2','30 giu 2027','Saldo 2026 + 1° acconto 2027','—','—','8.417 €'],['s_r3','30 nov 2027','2° acconto 2027','—','—','—']]).map(function(r){return '<tr data-ex="'+r[0]+'" tabindex="0" role="button"><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td><button class="pf24" data-ex="s_f24">Paga F24</button></td></tr>'}).join('');
     return msg}
   var VW={p:'scroller',g:'gview',s:'sview'};
   function showView(v){hideBub();Object.keys(VW).forEach(function(k){$(VW[k]).hidden=(k!==v)});$('again').hidden=(v!=='p');
@@ -1097,7 +1121,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
    '<div class="sxq">2 · Cosa fai davvero per i clienti?</div>'+
    '<textarea id="sxd" maxlength="800" rows="4" placeholder="Es. Consulenza marketing, campagne social, ho creato il sito di un cliente e configurato CRM e email…"></textarea>'+
    '<button class="cta s" id="sxan">Calcola quanto posso risparmiare</button>'+
-   '<p class="sxn">Per ora leggo la tua descrizione e le fatture in formato XML. PDF e foto li leggerà l\'analisi completa.</p></div>'+
+   '<p class="sxn">Leggo PDF, foto e XML. Prendo solo descrizione e importo delle righe, mai i dati dei clienti, e non conservo i file.</p></div>'+
    '<div id="sxout"></div>';
   $('gview').querySelector('.gs').insertAdjacentElement('afterend',sxf);
   $('gview').querySelector('.gs').textContent='Scopri quanto puoi risparmiare e cosa fare per ottenerlo.';
@@ -1109,15 +1133,28 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   $('sxex').onclick=function(){SX.fil=['Fattura_01.xml','Fattura_02.xml','Fattura_03.xml'];SX.txt='Consulenza marketing e supporto tecnico. Ho creato il sito di un cliente e configurato CRM e email.';sxFiles();$('sxd').value='Consulenza marketing mensile. Ho creato il sito di un cliente e configurato CRM e strumenti di email.';tap('strategia_esempio')};
   function sxRead(cb){var fs=SX.fil.filter(function(f){return f&&f.name&&/\.xml$/i.test(f.name)}),acc='',n=fs.length;if(!n){cb('');return}
     fs.forEach(function(f){var r=new FileReader();r.onload=function(){var m=String(r.result).match(/<Descrizione>[^<]*<\/Descrizione>/gi)||[];acc+=' '+m.join(' ');if(--n===0)cb(acc)};r.onerror=function(){if(--n===0)cb(acc)};r.readAsText(f)})}
+  function sxB64(f,cb){var isImg=/^image\/(jpeg|png|webp)$/.test(f.type);
+    if(!isImg||f.size<1.5*1024*1024){var r=new FileReader();r.onload=function(){cb(String(r.result).split(',')[1]||'',f.type)};r.onerror=function(){cb('',f.type)};r.readAsDataURL(f);return}
+    var img=new Image(),u=URL.createObjectURL(f);img.onload=function(){var m=2000,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.82).split(',')[1],'image/jpeg')};img.onerror=function(){cb('',f.type)};img.src=u}
+  function sxServer(cb){var fs=SX.fil.filter(function(f){return f&&f.name}).slice(0,6);if(!window.TS_C||!fs.length){cb(null);return}
+    var out=[],n=fs.length;
+    function send(){if(!out.length){cb({ok:false,errore:'Non riesco a leggere questi file. Prova con PDF, JPG, PNG o XML.'});return}
+      fetch('/api/prova/fatture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,files:out})}).then(function(r){return r.json()}).then(cb).catch(function(){cb(null)})}
+    fs.forEach(function(f){sxB64(f,function(b,t){if(b)out.push({nome:f.name,tipo:t||f.type,dati:b});if(--n===0)send()})})}
   $('sxan').onclick=function(){var d=$('sxd').value.trim();if(!SX.fil.length&&!d){say('Mi serve almeno <b>una fattura</b> o due righe su cosa fai davvero. Oppure usa le fatture di esempio.');return}
-    tap('strategia_analizza');srv('analisi_avviata',0);sxRead(function(extra){var cor=(d+' '+SX.txt+' '+extra).toLowerCase(),sel={};
-      Object.keys(SXK).forEach(function(id){if(SVm[id]&&SXK[id].some(function(k){return cor.indexOf(k)>-1}))sel[id]=true});
-      var m=cor.match(/(?:cliente|per|con)\s+([A-Z][\w&.]+(?:\s+(?:srl|spa|snc))?)/i);SX.cli=SX.cli||'';
-      SX.sel=sel;SX.pos={};Object.keys(sel).forEach(function(i){SX.pos[i]='parecchio'});sxRun()})};
+    tap('strategia_analizza');srv('analisi_avviata',0);SX.read=null;var b=$('sxan');b.disabled=true;b.textContent='Leggo le fatture…';
+    sxServer(function(res){b.disabled=false;b.textContent='Calcola quanto posso risparmiare';
+      if(res&&res.ok&&res.riepilogo){SX.read=res}else if(res&&res.errore){say(res.errore);if(!d)return}else if(res&&res.vuoto&&!d){say(res.vuoto+' Scrivimi due righe su cosa fai e ci provo con quelle.');return}
+      sxRead(function(extra){var cor=(d+' '+SX.txt+' '+extra).toLowerCase(),sel={};
+        if(SX.read){SX.read.riepilogo.forEach(function(v){if(v.voce!=='principale'&&SVm[v.voce])sel[v.voce]=true})}
+        Object.keys(SXK).forEach(function(id){if(SVm[id]&&SXK[id].some(function(k){return cor.indexOf(k)>-1}))sel[id]=true});
+        SX.sel=sel;SX.pos={};Object.keys(sel).forEach(function(i){SX.pos[i]='parecchio'});
+        if(SX.read){K.w={};K.main='n_principale';var pr=0;SX.read.riepilogo.forEach(function(v){W['n_'+v.voce]=Math.max(.5,v.pct);if(v.voce==='principale')pr=1});if(!pr)W.n_principale=Math.max(.5,100-Object.keys(sel).length*10);Object.keys(sel).forEach(function(i){SX.pos[i]='n_'+i;if(!W['n_'+i])W['n_'+i]=10});SX.fonte=1}else SX.fonte=0;
+        sxRun()})})};
   function sxRun(){var o=$('sxout'),steps=['Leggo fatture e descrizione','Confronto con il tuo codice '+(SVm.sito?'73.20.00':''),'Scompongo l\'attività in prestazioni','Cerco i coefficienti più bassi','Calcolo il risparmio'],h='<div class="kbox"><div class="sxq">Sto lavorando</div><ul class="sxrun">'+steps.map(function(s,i){return '<li id="sxs'+i+'">'+s+'</li>'}).join('')+'</ul></div>';
     o.innerHTML=h;$('sxform').hidden=true;say('Un momento: <b>scompongo la tua attività</b> in prestazioni e cerco se qualcuna ha un coefficiente più basso.');
     steps.forEach(function(s,i){timers.push(setTimeout(function(){var e=$('sxs'+i);if(e)e.className='on';if(i===steps.length-1)timers.push(setTimeout(sxResult,reduce?0:500))},reduce?0:650*(i+1)))})}
-  function sxCalc(){K.sel=SX.sel;K.w=SX.pos;K.main='quasi_tutto';var r=compute();CRES=r;return r}
+  function sxCalc(){K.sel=SX.sel;K.w=SX.pos;K.main=SX.fonte?'n_principale':'quasi_tutto';var r=compute();CRES=r;return r}
   function sxResult(){var r=sxCalc(),d=Math.round(r.diff),o=$('sxout'),cinc=CINC,imp0=cinc*CCOEF,imp1=cinc*r.mix,h='';SX.res={d:d,r:r};
     if(!r.ids.length||d<=0){say('Dalle fatture e dalla descrizione <b>non trovo prestazioni con un coefficiente più basso</b>: il tuo codice sembra già quello giusto. Se fai altro, raccontamelo meglio e rifaccio il calcolo.');
       o.innerHTML='<div class="kbox"><div class="lbl">Risparmio individuato</div><div class="kbig">0 €</div><div class="sub">Nessuna prestazione con coefficiente più basso.</div><button class="cta s" id="sxre">Descrivi meglio cosa fai</button></div>';$('sxre').onclick=function(){$('sxform').hidden=false;o.innerHTML=''};SX.tasks=[];tap('strategia_zero');renderTodo();return}
@@ -1131,10 +1168,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       R('sx_risp','<b>Risparmio all\'anno</b>','',' <b class="sxg">'+eur(d)+'</b>','Imposta in meno <b>'+eur(r.oggi.imp-r.dopo.imp)+'</b> più contributi in meno <b>'+eur(r.oggi.con-r.dopo.con)+'</b>.')+'</table>'+
       '<p class="sxn">Stima su '+eur(cinc)+' di incassi. Cifre da verificare prima di agire.</p></div>';
     h+='<div class="kbox"><div class="lbl">Come ho diviso la tua attività · cambia il peso</div>'+r.rows.map(function(x){var w=x.id==='principale'?null:SX.pos[x.id];
-      return '<div class="kw"><span class="kn">'+x.nome+' <small>'+x.cod+' · coeff. '+pc(x.coef)+'</small></span>'+(w?'<div class="kp" data-sx="'+x.id+'">'+Object.keys(PL).filter(function(p){return p!=='meta'||1}).map(function(p){return '<button class="kpb" data-p="'+p+'" aria-pressed="'+(p===w?'true':'false')+'">'+PL[p]+'</button>'}).join('')+'</div>':'<div class="sxn">Resta sul tuo codice principale</div>')+'</div>'}).join('')+
+      return '<div class="kw"><span class="kn">'+x.nome+' <small>'+x.cod+' · coeff. '+pc(x.coef)+(SX.fonte?' · dalle tue fatture: '+Math.round(x.q*100)+'%':'')+'</small></span>'+(w?'<div class="kp" data-sx="'+x.id+'">'+Object.keys(PL).filter(function(p){return p!=='meta'||1}).map(function(p){return '<button class="kpb" data-p="'+p+'" aria-pressed="'+(p===w?'true':'false')+'">'+PL[p]+'</button>'}).join('')+'</div>':'<div class="sxn">Resta sul tuo codice principale</div>')+'</div>'}).join('')+
       (r.riv?'<div class="sxwarn"><b>Attenzione</b>: vendere prodotti o licenze può cambiare la tua gestione INPS. Verifica prima.</div>':'')+'</div>';
     o.innerHTML=h;
-    [].slice.call(o.querySelectorAll('[data-sx]')).forEach(function(g){[].slice.call(g.querySelectorAll('.kpb')).forEach(function(b){b.onclick=function(){SX.pos[g.getAttribute('data-sx')]=b.getAttribute('data-p');tap('strategia_peso');sxResult()}})});
+    [].slice.call(o.querySelectorAll('[data-sx]')).forEach(function(g){[].slice.call(g.querySelectorAll('.kpb')).forEach(function(b){b.onclick=function(){SX.fonte=0;Object.keys(SX.pos).forEach(function(k){if(/^n_/.test(SX.pos[k]))SX.pos[k]='parecchio'});SX.pos[g.getAttribute('data-sx')]=b.getAttribute('data-p');tap('strategia_peso');sxResult()}})});
     if(window.TS_C&&!SX.mail)h+='';sxBuild(r,d);renderTodo();sxMail()}
   function sxMail(){if(!window.TS_C||SX.mail||$('sxmail'))return;var b=document.createElement('div');b.className='kbox';b.id='sxmail';
     b.innerHTML='<div class="sxq">Vuoi il piano anche via email?</div><p class="sxn" style="margin:0 0 8px">Ti scrivo quando fai un passo avanti e ti ricordo cosa resta da fare, con un link per riprendere da qui. Una sola email al giorno, al massimo.</p><div class="sxsend"><input id="sxmi" type="email" placeholder="La tua email" autocomplete="email"><button class="cta s" id="sxmb">Sì, mandamelo</button></div>';
@@ -1176,6 +1213,21 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   $('gperc').hidden=true;$('gscene').hidden=true;
   if(window.TS_VAI==='g')setTimeout(function(){showView('g')},400);
   window.__gl=function(){$('gperc').hidden=true;$('gscene').hidden=true};
+  // ================= introduzione: Marcello solo all'inizio, poi dashboard compatta =================
+  var SETTLED=false,hintEl=document.createElement('div');hintEl.id='schint';hintEl.setAttribute('aria-hidden','true');hintEl.innerHTML='<span>Scorri</span><i></i><i></i><i></i>';document.body.appendChild(hintEl);
+  function hint(on){hintEl.classList.toggle('on',!!on&&!SETTLED)}
+  function settle(on){SETTLED=on;document.documentElement.classList.toggle('settled',on);hint(false);
+    try{localStorage.setItem('ts_intro_'+(window.TS_C||'demo'),on?'1':'')}catch(e){}
+    if(on){timers.forEach(clearTimeout);timers=[];document.querySelectorAll('.fade,.tb').forEach(function(e){e.classList.add('in')});var c=document.querySelector('.cards');if(c)c.classList.add('go');try{renderRisk(false)}catch(e){}}}
+  var _ss=setStep;setStep=function(n){if(SETTLED)return;if(step>=0&&n<step)return;hint(false);_ss(n)};
+  var _end=end;end=function(id){_end(id);if(!SETTLED&&step>=0&&step<5&&IDS[step]===id)hint(true)};
+  var _sv=showView;showView=function(v){if(v!=='p'&&!SETTLED)settle(true);_sv(v)};
+  var _ag=$('again').onclick;$('again').onclick=function(){settle(false);_ag()};
+  try{if(window.TS_VAI==='g'||localStorage.getItem('ts_intro_'+(window.TS_C||'demo'))==='1')settle(true)}catch(e){}
+  // scadenze vere dell'utente (se la pagina arriva dal questionario)
+  if(window.TS_SC&&window.TS_SC.length){var s0=window.TS_SC;
+    s0.forEach(function(s,i){var l=(s.det||[]).map(function(x){return '• '+x}).join('<br>');EX['s_r'+(i+1)]='Il <b>'+s.d+'</b>: '+s.e+'. Totale <b>'+s.t+'</b>.'+(l?'<div class="sm">'+l+'</div>':'')+'<div class="sm">Stima sui tuoi dati.</div>'});
+    EX.d1=EX.s_r1;if(s0[1])EX.d2=EX.s_r2}
   window.__showView=showView;
   var nota=$('nota'),nt;
   document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){

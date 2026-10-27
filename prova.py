@@ -141,9 +141,87 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         mp["var INC=INCASSATO,COEF=.78,IMP=.05,CON=.2607;"] = "var INC=INCASSATO,COEF=%s,IMP=%s,CON=.2607;" % (
             co_v, al_v)
         mp["Cifre di esempio. Ti avviso"] = "Stime sui tuoi dati. Ti avviso"
+        # ---- blocchi che nel prototipo avevano cifre di esempio
+        oggi = datetime.date.today()
+        pv = d.get("scheda_vista") or {}
+        tipo = str(pv.get("tipo_attivita") or "").replace("_", " ").strip()
+        mp["<b>Consulente marketing</b>"] = "<b>%s</b>" % html.escape((tipo or "Partita IVA forfettaria").capitalize())
+        mp["<b>73.20.00 · 78%</b>"] = "<b>%s · %s</b>" % (html.escape(str(pr.get("codice_ateco") or "")), html.escape(str(pr.get("coefficiente") or "")))
+        if pr.get("coefficiente"):
+            mp["78%"] = str(pr["coefficiente"])
+        anno_ap = str(pv.get("data_apertura") or "")[:4]
+        n_anno = pr.get("anni_nel_regime")
+        if anno_ap.isdigit() and n_anno:
+            mp["<b>2025 · 2° anno</b>"] = "<b>%s · %s° anno</b>" % (anno_ap, n_anno)
+        if pr.get("aliquota"):
+            mp["<span>Aliquota</span><b>5%</b>"] = "<span>Aliquota</span><b>%s</b>" % pr["aliquota"]
+            if not str(pr["aliquota"]).startswith("5"):
+                mp["Hai il <b>5%</b> perché sei nei primi cinque anni di attività. Poi sale al <b>15%</b>."] = (
+                    "Hai il <b>%s</b>: è l\\'aliquota ordinaria. Il 5%% vale solo per i primi cinque anni di una attività nuova, se rispetti i requisiti." % pr["aliquota"])
+        gest = {"separata": "Gestione separata", "artigiani": "Artigiani", "commercianti": "Commercianti",
+                "cassa": "Cassa professionale"}.get(str(pr.get("gestione") or ""), "")
+        if gest:
+            mp["<b>Gestione separata</b>"] = "<b>%s</b>" % gest
+        mp["Cifre di esempio."] = "Stime sui tuoi dati."
+        mp["Dati di esempio."] = "Stime sui tuoi dati."
+        mp["Dato di esempio."] = "Stima sui tuoi dati."
+        if so.get("previsione"):
+            mp["4.200 €"] = f"{_it(float(so['previsione']) / 12)} €"
+        mp["in 10 mesi"] = "in %d mesi" % max(1, oggi.month - 1)
+        # anno scorso e acconti
+        pa = d.get("anno_precedente") or {}
+        if pa:
+            mp["39.180 €"] = f"{_it(pa['ricavi'])} €"
+            mp["30.560 €"] = f"{_it(pa['reddito'])} €"
+            mp["1.528 €"] = f"{_it(pa['imposta'])} €"
+            mp["7.967 €"] = f"{_it(pa['contributi'])} €"
+            mp["Il 2025 · anno scorso"] = f"Il {oggi.year - 1} · anno scorso"
+        elif ac.get("imposta"):
+            mp["1.528 €"] = f"{_it(ac['imposta'])} €"
+        rate = d.get("acconti_imposta") or []
+        if rate:
+            mp["764 €"] = f"{_it(rate[0]['importo'])} €"
+        elif imp1 is not None:
+            mp["764 €"] = f"{_it(imp1)} €"
+        mp["Imposta: il 100% di quella 2025"] = "Imposta: il 100% di quella dell'anno scorso"
+        if n_anno:
+            mp["Il 2026 · 2° anno di partita IVA"] = f"Il {oggi.year} · {n_anno}° anno di partita IVA"
+            if int(n_anno) != 2:
+                mp["A giugno paghi il saldo 2025 e il primo acconto 2026. A novembre il secondo acconto."] = (
+                    "A giugno paghi il saldo dell'anno scorso e il primo acconto. A novembre il secondo acconto.")
+                mp["<p class=\"em\">È l'anno più pesante: paghi quasi due annualità in una.</p>"] = ""
+        m1 = _MESI[data.month - 1]
+        if data2:
+            mp[" a novembre, "] = f" a {m1}, "
+            mp[" a giugno."] = f" a {_MESI[data2.month-1]}."
+        else:
+            mp["Le prossime scadenze: <b>'+D.imp+' €</b> a novembre, <b>'+D.imp2+' €</b> a giugno."] = (
+                f"La prossima scadenza: <b>'+D.imp+' €</b> a {m1}.")
+            t = re.sub(r"<div class=\"due\" data-ex=\"d2\".*?</div>", "", t, count=1, flags=re.S)
+        # scadenze reali (tabella e spiegazioni)
+        def _somma(righe, parola):
+            tot = 0.0
+            for r in righe or []:
+                if parola in r.lower():
+                    v = _primo_importo([r], 0)
+                    tot += v or 0
+            return tot
+        scj = []
+        for x in sc[:6]:
+            try:
+                dd = datetime.date.fromisoformat(x["data"])
+            except Exception:
+                continue
+            det = x.get("dettaglio") or []
+            ii, cc = _somma(det, "imposta"), _somma(det, "contribut")
+            scj.append({"d": f"{dd.day} {_MESI[dd.month-1][:3]} {dd.year}", "e": x.get("etichetta") or "",
+                        "i": (f"{_it(ii)} €" if ii else "—"), "c": (f"{_it(cc)} €" if cc else "—"),
+                        "t": f"{_it(x.get('importo') or 0)} €", "det": det})
+        extra_real = "window.TS_SC=%s;window.TS_PREC=%s;" % (json.dumps(scj), "true" if pa else "false")
+        mp.pop("__REAL__", None)
         rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
         t = rx.sub(lambda m: mp[m.group(0)], t)
-        extra = "<script>window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;</script>" % (
+        extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;</script>" % (
             json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]))
         t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
@@ -242,6 +320,46 @@ def chat(uid: str, prompt: str) -> dict:
     return {"ok": bool(testo), "testo": testo}
 
 
+LIMITE_FATTURE_ID = int(os.environ.get("PROVA_FATTURE_LIMITE", "12"))
+
+
+def fatture(c: str, files) -> dict:
+    """Legge le fatture caricate (XML, PDF, foto) con i lettori gia' presenti in attivita/fatture_file:
+    restano solo descrizione e importo delle righe, mai i dati dei clienti. Nulla viene salvato."""
+    c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
+    dati = _dashboard(c) if c else None
+    if not dati:
+        return {"ok": False, "errore": "Apri la pagina dal link del tuo questionario."}
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT count(*) FROM eventi WHERE tipo = 'prova_fatture' AND riferimento = %s "
+                            "AND creato_il >= date_trunc('day', now())", (c,))
+                n = cur.fetchone()[0]
+        if n >= LIMITE_FATTURE_ID:
+            return {"ok": False, "errore": "Per oggi hai caricato abbastanza fatture: riprova domani."}
+        db.registra_evento("prova_fatture", c)
+    except Exception:
+        pass
+    try:
+        import attivita
+        full = db.carica_dashboard(c) or {}
+        esito = attivita.analizza_file(files, full.get("_scheda") or {})
+    except ValueError as e:
+        return {"ok": False, "errore": str(e)}
+    except Exception as e:
+        print(f"prova: fatture non lette: {e}")
+        return {"ok": False, "errore": "Non sono riuscito a leggere le fatture. Riprova o scrivi cosa fai."}
+    if esito.get("vuoto") or not esito.get("riepilogo"):
+        return {"ok": True, "vuoto": esito.get("vuoto") or "Non ho trovato righe di prestazioni.",
+                "non_letti": esito.get("non_letti") or []}
+    return {"ok": True, "riepilogo": esito["riepilogo"], "totale": esito.get("totale_incassato"),
+            "righe": [{"testo": r["testo"], "importo": r["importo"], "voce": r["voce"], "sicura": r["sicura"]}
+                      for r in esito.get("righe", [])[:40]],
+            "generiche": esito.get("generiche") or [], "non_letti": esito.get("non_letti") or [],
+            "consigli": esito.get("consigli") or []}
+
+
 def _e(x):
     return html.escape(str(x if x is not None else ""))
 
@@ -327,6 +445,15 @@ def registra(mcp, avvisi):
             esito = await asyncio.to_thread(azioni.salva_email, c.get("c", ""), c.get("email", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/fatture", methods=["POST"])
+    async def prova_fatture(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(fatture, c.get("c", ""), c.get("files"))
+        except Exception:
+            return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
         return JSONResponse(esito)
 
     @mcp.custom_route("/api/prova/chat", methods=["POST"])
