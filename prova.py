@@ -69,6 +69,19 @@ def _primo_importo(righe, i):
         return None
 
 
+_FILE_INGRESSO = Path(__file__).with_name("prova_ingresso.html")
+
+
+def ingresso() -> str:
+    """Pagina d'ingresso: home di Marcello e domande iniziali. Da qui si passa al questionario vero."""
+    if "ingresso" not in _cache:
+        try:
+            _cache["ingresso"] = _FILE_INGRESSO.read_text(encoding="utf-8")
+        except OSError:
+            return '<meta http-equiv="refresh" content="0;url=/colloquio/nuovo">'
+    return _cache["ingresso"]
+
+
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
     """Sostituisce nel prototipo le cifre di esempio con quelle vere della dashboard di questo utente."""
     import datetime
@@ -146,6 +159,8 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         pv = d.get("scheda_vista") or {}
         tipo = str(pv.get("tipo_attivita") or "").replace("_", " ").strip()
         mp["<b>Consulente marketing</b>"] = "<b>%s</b>" % html.escape((tipo or "Partita IVA forfettaria").capitalize())
+        mp["var OTMAIN={nome:'Consulenza marketing',cod:'73.20.00'};"] = "var OTMAIN={nome:%s,cod:%s};" % (
+            json.dumps((tipo or "Il mio lavoro principale").capitalize()), json.dumps(str(pr.get("codice_ateco") or "")))
         mp["<b>73.20.00 · 78%</b>"] = "<b>%s · %s</b>" % (html.escape(str(pr.get("codice_ateco") or "")), html.escape(str(pr.get("coefficiente") or "")))
         if pr.get("coefficiente"):
             mp["78%"] = str(pr["coefficiente"])
@@ -415,7 +430,7 @@ def registra(mcp, avvisi):
             if dati:
                 return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
-            return RedirectResponse("/colloquio/nuovo", status_code=302)
+            return HTMLResponse(ingresso(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
         return HTMLResponse(pagina(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
 
     @mcp.custom_route("/api/prova/doc", methods=["POST"])

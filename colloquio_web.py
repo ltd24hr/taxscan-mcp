@@ -603,7 +603,7 @@ function mostraDomanda(v) {
     html += '<input class="testo" id="val" placeholder="es. 18000" inputmode="numeric">';
     html += scheda.usa_fatture_in_cloud === "si"
       ? '<p class="hint">Il collegamento a Fatture in Cloud lo fai dalla chat, dopo: intanto scrivi una cifra approssimativa.</p>'
-      : '<p class="hint">Va bene una cifra tonda, più o meno.</p>';
+      : '<p class="hint">Va bene una cifra tonda.</p>';
     html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
     box.innerHTML = html; $("val").focus();
     $("ok").onclick = () => { const t = $("val").value.replace(/[^\d]/g, ""); if (t === "") return alert("Scrivi un importo (anche 0).");

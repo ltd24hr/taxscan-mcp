@@ -202,7 +202,7 @@ CAMPI = [
                  ("dipendenti_collaboratori", "Ho dipendenti o collaboratori che pago"),
                  ("nessuna", "Nessuna di queste")]},
     {"chiave": "redditi_dipendente_pensione", "gruppo": "situazioni", "obbligatorio": "se_dipendente", "tipo": "numero",
-     "domanda": "Il reddito lordo da dipendente o pensione dell'anno scorso, più o meno, era:",
+     "domanda": "Il reddito lordo da dipendente o pensione dell'anno scorso era:",
      "opzioni": [("sotto_30000", "Sotto 30.000 €"), ("tra_30000_e_35000", "Tra 30.000 e 35.000 €"),
                  ("sopra_35000", "Sopra 35.000 €"), ("non_so", "Non lo so")],
      "dove_trovarlo": "Certificazione Unica (CU), punto 1 o 2."},
@@ -216,15 +216,15 @@ CAMPI = [
      "opzioni": [("sotto_20000", "Meno di 20.000 €"), ("sopra_20000", "Più di 20.000 €")]},
 
     # --- numeri: Fatture in Cloud, oppure i due soli importi che restano da chiedere
-    {"chiave": "usa_fatture_in_cloud", "gruppo": "numeri", "obbligatorio": "se_ricavi_mancanti",
+    {"chiave": "usa_fatture_in_cloud", "gruppo": "numeri", "obbligatorio": False,
      "domanda": "Per gli incassi: usi Fatture in Cloud? Se sì lo collego e leggo tutto io.",
      "opzioni": [("si", "Sì, collegalo"), ("no", "No, uso un altro programma o nessuno")]},
     {"chiave": "ricavi_anno_precedente", "gruppo": "numeri", "obbligatorio": "se_non_aperta_quest_anno", "tipo": "numero",
-     "domanda": "Più o meno, quanto hai incassato in totale l'anno scorso?",
+     "domanda": "Quanto hai incassato in totale l'anno scorso?",
      "dove_trovarlo": "Somma delle fatture incassate (non emesse) nell'anno. Ultima dichiarazione: quadro LM, "
                       "rigo LM22 colonna 3."},
     {"chiave": "ricavi_anno_corrente", "gruppo": "numeri", "obbligatorio": True, "tipo": "numero",
-     "domanda": "E quest'anno, da gennaio a oggi, più o meno quanto hai incassato?"},
+     "domanda": "E quest'anno, da gennaio a oggi, quanto hai incassato?"},
     {"chiave": "contributi_versati_anno_precedente", "gruppo": "numeri", "obbligatorio": False, "tipo": "numero"},
     {"chiave": "f24_pagati", "gruppo": "numeri", "obbligatorio": False, "tipo": "lista"},
 

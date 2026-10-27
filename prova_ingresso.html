@@ -163,7 +163,7 @@ h1{margin:0;font-family:var(--display);font-weight:700;line-height:1.15;text-wra
   /* domande */
   var SI=['Sì','Più o meno','Non lo so'];
   var Q=[
-    {k:'inc',ask:'Per iniziare: quanto hai incassato quest\'anno, più o meno?',opts:['Meno di 20.000 €','Da 20.000 a 50.000 €','Da 50.000 a 85.000 €','Più di 85.000 €'],
+    {k:'inc',ask:'Per iniziare: quanto hai incassato quest\'anno?',opts:['Meno di 20.000 €','Da 20.000 a 50.000 €','Da 50.000 a 85.000 €','Più di 85.000 €'],
       re:function(i){return i===3?'Più di 85.000 €? Mettiamo subito in chiaro cosa significa: ne parliamo dopo.':'Grazie, mi basta una cifra approssimativa. Ora 4 domande veloci: servono a me per capire da dove partire, non sono un esame.'}},
     {k:'soglia',ask:'Sai quanto puoi incassare in un anno restando nel forfettario?',opts:['Sì, 85.000 €','Più o meno','Non lo so'],
       re:function(i){return i===0?'Bene! Una cosa che molti dimenticano: <b>sopra 100.000 €</b> esci dal forfettario subito, nello stesso anno.':'Il limite è <b>85.000 €</b> incassati in un anno. Lo superi? L\'anno dopo esci dal forfettario. Oltre 100.000 € esci subito. Ti avviso io prima che succeda.'}},
