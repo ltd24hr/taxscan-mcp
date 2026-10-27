@@ -606,6 +606,12 @@ def registra(mcp, avvisi):
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
 
+    @mcp.custom_route("/admin/ai", methods=["GET"])
+    async def prova_admin_ai(request):
+        if not avvisi._ammin_ok(request.query_params.get("chiave", "")):
+            return JSONResponse({"errore": "non autorizzato"}, status_code=403)
+        return JSONResponse(await asyncio.to_thread(ai.diagnosi), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
     @mcp.custom_route("/admin/prova", methods=["GET"])
     async def prova_admin(request):
         if not avvisi._ammin_ok(request.query_params.get("chiave", "")):

@@ -30,28 +30,58 @@ def fornitore() -> str:
     return "anthropic" if _anthropic() else "openrouter" if _openrouter() else ""
 
 
+def _via_anthropic(sistema: str, utente: str, max_token: int) -> str:
+    import assistente
+    r = requests.post(assistente.API_URL, headers=assistente.intestazioni(), timeout=75,
+                      json={"model": assistente.MODELLO, "max_tokens": max_token, "system": sistema,
+                            "messages": [{"role": "user", "content": utente}]})
+    if r.status_code >= 400:
+        raise RuntimeError(f"anthropic {r.status_code}: {r.text[:200]}")
+    return "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip()
+
+
+def _via_openrouter(sistema: str, utente: str, max_token: int) -> str:
+    modello = (os.environ.get("OPENROUTER_MODELLO") or "anthropic/claude-sonnet-4.5").strip()
+    r = requests.post(OPENROUTER_URL, timeout=75,
+                      headers={"Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"].strip(),
+                               "content-type": "application/json", "X-Title": "TaxScan"},
+                      json={"model": modello, "max_tokens": max_token,
+                            "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": utente}]})
+    if r.status_code >= 400:
+        raise RuntimeError(f"openrouter {r.status_code}: {r.text[:200]}")
+    return (r.json()["choices"][0]["message"]["content"] or "").strip()
+
+
 def genera(sistema: str, utente: str, max_token: int = 1200) -> str:
-    """Una domanda, una risposta di testo. Solleva RuntimeError se la chiamata fallisce."""
+    """Una domanda, una risposta di testo. Se Anthropic fallisce e c'e' anche OpenRouter, prova con quella."""
+    errore = None
     if _anthropic():
-        import assistente
-        r = requests.post(assistente.API_URL, headers=assistente.intestazioni(), timeout=75,
-                          json={"model": assistente.MODELLO, "max_tokens": max_token, "system": sistema,
-                                "messages": [{"role": "user", "content": utente}]})
-        if r.status_code >= 400:
-            raise RuntimeError(f"anthropic {r.status_code}: {r.text[:200]}")
-        return "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip()
+        try:
+            return _via_anthropic(sistema, utente, max_token)
+        except Exception as e:
+            errore = e
+            print(f"ai: anthropic non risponde: {e}")
+            if not _openrouter():
+                raise
     if _openrouter():
-        modello = (os.environ.get("OPENROUTER_MODELLO") or "anthropic/claude-sonnet-4.5").strip()
-        r = requests.post(OPENROUTER_URL, timeout=75,
-                          headers={"Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"].strip(),
-                                   "content-type": "application/json", "X-Title": "TaxScan"},
-                          json={"model": modello, "max_tokens": max_token,
-                                "messages": [{"role": "system", "content": sistema},
-                                             {"role": "user", "content": utente}]})
-        if r.status_code >= 400:
-            raise RuntimeError(f"openrouter {r.status_code}: {r.text[:200]}")
-        return (r.json()["choices"][0]["message"]["content"] or "").strip()
-    raise RuntimeError("nessuna chiave AI configurata")
+        return _via_openrouter(sistema, utente, max_token)
+    raise errore or RuntimeError("nessuna chiave AI configurata")
+
+
+def diagnosi() -> dict:
+    """Prova reale, per capire perche' l'AI non risponde (pagina /admin/ai)."""
+    out = {"anthropic_chiave": _anthropic(), "openrouter_chiave": _openrouter(),
+           "openrouter_modello": (os.environ.get("OPENROUTER_MODELLO") or "(non impostato: uso anthropic/claude-sonnet-4.5)")}
+    for nome, f, ok in (("anthropic", _via_anthropic, _anthropic()), ("openrouter", _via_openrouter, _openrouter())):
+        if not ok:
+            out[nome] = "chiave non impostata"
+            continue
+        try:
+            t = f("Rispondi solo con la parola: ok", "Test", 20)
+            out[nome] = "FUNZIONA (risposta: %s)" % (t[:30] or "vuota")
+        except Exception as e:
+            out[nome] = "ERRORE: %s" % str(e)[:300]
+    return out
 
 
 def genera_json(sistema: str, utente: str, max_token: int = 1500):
