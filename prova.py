@@ -48,7 +48,7 @@ _lock = threading.Lock()
 def pagina() -> str:
     if _cache["html"] is None:
         t = _FILE.read_text(encoding="utf-8")
-        if "ts_uid" not in t:
+        if "Fuori da claude.ai: stessa interfaccia" not in t:
             t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + _SHIM, t, count=1)
         t = t.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
         _cache["html"] = t
