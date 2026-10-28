@@ -366,18 +366,6 @@ PAGINA_HTML = r"""<!doctype html>
   @keyframes q-luce { 0% { transform:translateY(-9px); opacity:0; } 15% { opacity:1; } 50% { transform:translateY(17px); } 85% { opacity:1; } 100% { transform:translateY(-9px); opacity:0; } }
   @keyframes ill-raggio { 0% { transform:translateY(-50px); opacity:0; } 8% { opacity:1; } 80% { opacity:1; } 88%,100% { transform:translateY(166px); opacity:0; } }
   @keyframes pronto { from { opacity:0; transform:scale(.6) translateY(6px); } to { opacity:1; transform:none; } }
-  .chied { margin-top:22px; padding-top:18px; border-top:1px solid var(--bordo); }
-  .chied h2 { font-size:17px; margin:0 0 4px; }
-  .chied .sub { font-size:14px; color:var(--grigio); margin:0 0 10px; }
-  .chied .chp { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-  .chied .chp button { font:inherit; font-size:14.5px; color:var(--testo); background:var(--verde-chiaro); border:1.5px solid var(--bordo); border-radius:20px; padding:8px 14px; cursor:pointer; }
-  .chied .chp button:hover { border-color:var(--verde); }
-  .chied .riga2 { display:flex; gap:8px; }
-  .chied input { flex:1; min-width:0; font:inherit; font-size:16px; padding:12px 14px; border:1.5px solid var(--bordo); border-radius:12px; }
-  .chied .invia2 { font:inherit; font-weight:700; font-size:16px; color:#fff; background:var(--verde); border:0; border-radius:12px; padding:0 18px; cursor:pointer; }
-  .chied .invia2:disabled { opacity:.6; cursor:default; }
-  .chied .risp { margin-top:12px; background:var(--verde-chiaro); border-radius:12px; padding:12px 14px; font-size:16px; }
-  .chied button:focus-visible, .chied input:focus-visible { outline:3px solid var(--testo); outline-offset:2px; }
 </style>
 </head>
 <body>
@@ -386,7 +374,7 @@ PAGINA_HTML = r"""<!doctype html>
   <div class="barra"><div id="barra"></div></div>
   <div class="scheda" id="scheda"><p class="hint">Un attimo...</p></div>
   <div class="riga" id="nav"></div>
-  <footer>TaxScan prepara e spiega: le cifre sono stime e la responsabilità è tua; se vuoi, le fai controllare a un professionista. Niente di quello che scrivi qui è una dichiarazione fiscale. <a href="/privacy" style="color:inherit">Privacy</a></footer>
+  <footer>TaxScan prepara e spiega: le cifre sono stime e la responsabilità è tua; se vuoi, le fai controllare a un professionista. Niente di quello che scrivi qui è una dichiarazione fiscale. <a href="/termini" style="color:inherit">Termini e condizioni</a> · <a href="/privacy" style="color:inherit">Privacy policy</a> · <a href="#" class="tsck-open" style="color:inherit">Cookie</a></footer>
   <p class="by" style="font-size:12px;color:#7c7a74;margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">TaxScan è un servizio offerto da <a href="https://ltd24.co.uk" target="_blank" rel="noopener" style="display:inline-flex;font-weight:700;color:inherit;text-decoration:none"><img src="/logo-ltd24.png" alt="LTD24" style="height:20px;width:auto" onerror="this.replaceWith(document.createTextNode('LTD24'))"></a></p>
 </div>
 <script>
@@ -509,44 +497,10 @@ function mostraIntro() {
       <input type="file" id="pdf" accept="application/pdf" class="nascosto">
       <button class="opz" id="senza"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.tocco}</svg></span><span>Non ce l'ho sotto mano: rispondo a un paio di domande</span></button>
     </div>
-    <div id="esito"></div>
-    <div class="chied">
-      <h2>Hai una domanda prima di cominciare?</h2>
-      <p class="sub">Chiedila a Marcello: ti risponde subito.</p>
-      <div class="chp">
-        <button type="button" data-r="0">A cosa serve il questionario?</button>
-        <button type="button" data-r="1">Che fine fanno i miei dati?</button>
-        <button type="button" data-r="2">Marcello è una persona vera?</button>
-      </div>
-      <div class="riga2"><input id="chq" type="text" maxlength="300" placeholder="Scrivi qui la tua domanda…" aria-label="La tua domanda per Marcello"><button type="button" class="invia2" id="chb">Invia</button></div>
-      <div class="risp" id="chr" role="status" hidden></div>
-    </div>`;
+    <div id="esito"></div>`;
   nav([]);
   $("pdf").onchange = caricaCertificato;
-  initChiedi();
   $("senza").onclick = () => { fase = "domanda"; invia(); };
-}
-
-const RISP_PRE = [
-  "Con poche risposte capisco il tuo regime, i contributi e le scadenze, così ti dico cosa pagare e quando. Ci vogliono circa <b>2 minuti</b> e puoi tornare indietro quando vuoi.",
-  "Servono solo a prepararti i calcoli, e puoi chiedere di cancellarli quando vuoi. Il testo completo sulla privacy lo trovi in fondo alla pagina.",
-  "No, sono un <b>assistente virtuale</b> (intelligenza artificiale): il mio nome omaggia Marcello Mastroianni. Se vuoi, un professionista può controllare i tuoi numeri."];
-function initChiedi() {
-  const box = $("chr"), q = $("chq"), b = $("chb");
-  const mostra = h => { box.innerHTML = h; box.hidden = false; };
-  document.querySelectorAll(".chied .chp button").forEach(bt => { bt.onclick = () => mostra(RISP_PRE[+bt.dataset.r]); });
-  const manda = async () => {
-    const t = q.value.trim(); if (!t) return;
-    b.disabled = true; mostra("Ci penso un attimo…");
-    try {
-      const r = await fetch("/api/prova/chat", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({uid: ID, prompt: t})});
-      const j = await r.json();
-      mostra(j && j.ok && j.testo ? esc(j.testo) : (j && j.limite ? "Per oggi ho risposto a tante domande: riprova domani, oppure vai avanti col questionario." : "Non riesco a risponderti adesso. Intanto puoi andare avanti col questionario: è breve."));
-    } catch (e) { mostra("Non riesco a risponderti adesso. Intanto puoi andare avanti col questionario: è breve."); }
-    b.disabled = false; q.value = "";
-  };
-  b.onclick = manda;
-  q.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); manda(); } };
 }
 
 async function caricaCertificato(ev) {
@@ -656,26 +610,45 @@ function mostraDomanda(v) {
       const agg = {}; agg[campo] = val; rispondi(agg);
     });
   } else if (campo === "codice_ateco") {
-    html += '<input class="testo" id="val" placeholder="es. 62.01.00" inputmode="decimal">';
-    html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
-    html += '<div class="riga"><textarea class="testo" id="descr" rows="5" maxlength="400" placeholder="Non lo conosci? Descrivi cosa fai, per esempio: scrivo testi per le aziende"></textarea></div>';
-    html += '<div class="riga"><button class="secondario" id="trova">Trovami il codice</button></div><div id="trovati"></div>';
-    html += '<button class="link" id="nonso">Non conosco il codice: scelgo il mio settore</button>';
+    html += '<p class="hint">Se conosci il <b>codice ATECO</b> scrivilo. Se no, <b>descrivimi cosa fai</b> con parole tue e ti propongo i codici compatibili.</p>';
+    html += '<textarea class="testo" id="descr" rows="4" maxlength="400" aria-label="Codice ATECO o descrizione dell\'attività" placeholder="Il codice (es. 62.01.00) oppure cosa fai (es. scrivo testi per le aziende)"></textarea>';
+    html += '<div class="riga"><button class="primario" id="trova">Avanti</button></div><div id="trovati" role="status"></div>';
+    html += '<button class="link" id="nonso">Preferisco scegliere il mio settore</button>';
     html += '<div id="settori" class="nascosto"><p class="hint">Scegli quello che ti somiglia di più: il codice esatto lo potrai controllare dopo.</p><div class="opzioni">' +
       ((ultima && ultima.settori) || []).map((s, i) => `<button class="opz" data-i="${i}"><span class="n set">${icoSettore(s.codice)}</span><span>${esc(s.etichetta)}</span></button>`).join("") + '</div></div>';
-    box.innerHTML = html; $("val").focus();
-    $("ok").onclick = () => { const t = $("val").value.trim(); if (t) rispondi({codice_ateco: t}); };
-    $("val").onkeydown = e => { if (e.key === "Enter") $("ok").click(); };
-    $("trova").onclick = () => { const d = $("descr").value.trim(); if (d.length < 4) { $("trovati").innerHTML = '<p class="hint">Scrivimi almeno una riga su cosa fai.</p>'; return; }
-      $("trovati").innerHTML = '<p class="hint">Sto cercando il codice giusto per te…</p>';
-      fetch("/api/prova/ai", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({c: ID, task: "ateco", dati: {descrizione: d}})})
-        .then(r => r.json()).then(j => {
-          if (!j || !j.ok || !j.codici || !j.codici.length) { $("trovati").innerHTML = '<p class="hint">Non sono riuscito a trovarlo: scegli il tuo settore qui sotto, il codice esatto lo potrai controllare dopo.</p>'; $("nonso").click(); return; }
-          $("trovati").innerHTML = '<p class="hint">Ho trovato questi codici. Scegli quello che ti somiglia di più:</p><div class="opzioni">' +
-            j.codici.map((c, i) => `<button class="opz" data-i="${i}"><span class="n set">${i + 1}</span><span><b>${esc(c.codice_ateco)}</b> · ${esc(c.etichetta)}<br><small>${esc(c.motivo)}</small></span></button>`).join("") + '</div>';
-          $("trovati").querySelectorAll("button.opz").forEach(b => b.onclick = () => { const c = j.codici[parseInt(b.dataset.i, 10)];
-            rispondi({codice_ateco: c.codice_ateco, codice_ateco_stimato: true, descrizione_attivita: c.etichetta || d}); });
-        }).catch(() => { $("trovati").innerHTML = '<p class="hint">Non riesco a cercare adesso: scegli il tuo settore qui sotto.</p>'; $("nonso").click(); }); };
+    box.innerHTML = html; $("descr").focus();
+    const T = $("trovati");
+    const pc = c => (c.coefficiente ? " · coefficiente " + Math.round(c.coefficiente * 100) + "%" : "");
+    const mostra = (lista, testoIntro, d) => {
+      T.innerHTML = testoIntro + '<div class="opzioni">' + lista.map((c, i) => `<button class="opz" data-i="${i}"><span class="n set">${i + 1}</span><span><b>${esc(c.codice_ateco)}</b> · ${esc(c.etichetta)}${esc(pc(c))}<br><small>${esc(c.motivo || "")}</small></span></button>`).join("") + '</div>';
+      T.querySelectorAll("button.opz").forEach(b => b.onclick = () => { const c = lista[parseInt(b.dataset.i, 10)];
+        rispondi({codice_ateco: c.codice_ateco, codice_ateco_stimato: true, descrizione_attivita: c.etichetta || d || ""}); });
+    };
+    const chiama = dati => fetch("/api/prova/ai", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(Object.assign({c: ID}, dati))}).then(r => r.json());
+    const settori = msg => { T.innerHTML = '<p class="hint">' + msg + '</p>'; $("nonso").click(); };
+    const verifica = t => {
+      T.innerHTML = '<p class="hint">Controllo il codice…</p>';
+      chiama({task: "ateco_verifica", dati: {codice: t}}).then(j => {
+        if (!j || !j.ok) { rispondi({codice_ateco: t}); return; }
+        if (j.valido) { rispondi({codice_ateco: j.codice || t}); return; }
+        const err = '<div class="errore">Il codice <b>' + esc(t) + '</b> non risulta tra i codici ATECO. Capita spesso di sbagliare una cifra.</div>';
+        if (j.codici && j.codici.length) mostra(j.codici, err + '<p class="hint">Forse volevi scrivere uno di questi? Tocca quello giusto, oppure correggi il codice qui sopra.</p>', "");
+        else T.innerHTML = err + '<p class="hint">Controlla le cifre, oppure descrivimi cosa fai e ti propongo io i codici compatibili.</p>';
+      }).catch(() => rispondi({codice_ateco: t}));
+    };
+    const cerca = d => {
+      T.innerHTML = '<p class="hint">Sto cercando i codici compatibili con quello che fai…</p>';
+      chiama({task: "ateco", dati: {descrizione: d}}).then(j => {
+        if (!j || !j.ok || !j.codici || !j.codici.length) { settori("Non sono riuscito a trovarli: scegli il tuo settore qui sotto, il codice esatto lo potrai controllare dopo."); return; }
+        mostra(j.codici, '<p class="hint">Per quello che mi racconti, questi codici sono compatibili. Scegli quello che ti somiglia di più:</p>', d);
+      }).catch(() => settori("Non riesco a cercare adesso: scegli il tuo settore qui sotto."));
+    };
+    $("trova").onclick = () => { const t = $("descr").value.trim();
+      if (t.length < 2) { T.innerHTML = '<p class="hint">Scrivi il codice oppure una riga su cosa fai.</p>'; return; }
+      if (/^[\d.\s]{2,12}$/.test(t) || /^\d{2}[.\s]?\d{2}/.test(t)) verifica(t);
+      else if (t.length < 4) T.innerHTML = '<p class="hint">Scrivimi almeno una riga su cosa fai.</p>';
+      else cerca(t); };
+    $("descr").onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("trova").click(); } };
     $("nonso").onclick = () => { $("settori").classList.remove("nascosto"); $("nonso").classList.add("nascosto"); $("settori").scrollIntoView({behavior: "smooth"}); };
     box.querySelectorAll("#settori button.opz").forEach(b => b.onclick = () => {
       const s = ultima.settori[parseInt(b.dataset.i, 10)];

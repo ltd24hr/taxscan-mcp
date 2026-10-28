@@ -243,6 +243,11 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
         print(f"personalizza prova: {e}")
+    try:
+        import cookie_banner
+        t = cookie_banner.inietta(t)
+    except Exception as e:
+        print(f"banner cookie prova: {e}")
     return t
 
 
@@ -361,6 +366,16 @@ _SYS_ATECO = (
     "Dalla descrizione a parole dell'attivita' proponi da 1 a 3 codici ATECO (formato NN.NN.NN) plausibili, dal piu' al meno probabile, "
     "con una breve etichetta in italiano semplice e il motivo in una frase. Formato: "
     '{"codici":[{"codice_ateco":"NN.NN.NN","etichetta":"...","motivo":"..."}]}')
+_DIVISIONI_ATECO = set(["01","02","03","05","06","07","08","09"] + [str(n) for n in range(10, 34)] + ["35","36","37","38","39","41","42","43","45","46","47",
+    "49","50","51","52","53","55","56","58","59","60","61","62","63","64","65","66","68","69","70","71","72","73","74","75","77","78","79","80","81","82",
+    "84","85","86","87","88","90","91","92","93","94","95","96","97","98","99"])
+_SYS_ATECO_VERIFICA = (
+    "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
+    "L'utente ha scritto un codice ATECO (classificazione italiana ATECO 2007 e ATECO 2025: accetta i codici di entrambe). Dimmi se il codice esiste davvero. "
+    "Se esiste: esiste=true e una breve etichetta in italiano semplice. Se NON esiste (o non e' scritto in modo valido): esiste=false e proponi da 1 a 3 codici "
+    "che esistono davvero e che l'utente potrebbe aver voluto scrivere (errore di battitura, cifre scambiate, codice vicino), dal piu' al meno probabile. "
+    "Non inventare codici: se non sei sicuro che un codice esista, non proporlo. Formato: "
+    '{"esiste":true,"etichetta":"...","codici":[{"codice_ateco":"NN.NN.NN","etichetta":"...","motivo":"..."}]}')
 _SYS_TASK = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
     "L'utente ha completato l'ottimizzazione fiscale. Scrivi da 3 a 5 compiti pratici, in ordine, per ottenere davvero il risparmio "
@@ -446,6 +461,25 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                 out.append({"codice_ateco": cod, "etichetta": _pulisci(a.get("etichetta"), 90),
                             "motivo": _pulisci(a.get("motivo"), 200), "coefficiente": co["coefficiente"]})
             return {"ok": True, "codici": out}
+ 
+        if task == "ateco_verifica":
+            raw = _pulisci(dati.get("codice"), 20)
+            cod = _codice(raw)
+            div_ok = bool(cod) and cod[:2] in _DIVISIONI_ATECO
+            r = ai.genera_json(_SYS_ATECO_VERIFICA, "Codice scritto dall'utente: «%s». Controllo di formato: %s." % (
+                raw, "ben formato" if div_ok else "non ben formato o con una divisione inesistente")) or {}
+            esiste = bool(r.get("esiste")) and div_ok
+            out = []
+            for a in (r.get("codici") or [])[:3]:
+                c2 = _codice(a.get("codice_ateco")) if isinstance(a, dict) else ""
+                if not c2 or c2[:2] not in _DIVISIONI_ATECO or c2 == cod:
+                    continue
+                co = calcoli.coefficiente_da_ateco(c2)
+                if co.get("errore"):
+                    continue
+                out.append({"codice_ateco": c2, "etichetta": _pulisci(a.get("etichetta"), 90),
+                            "motivo": _pulisci(a.get("motivo"), 200), "coefficiente": co["coefficiente"]})
+            return {"ok": True, "valido": esiste, "codice": cod, "etichetta": _pulisci(r.get("etichetta"), 90) if esiste else "", "codici": out}
         if task == "task":
             att = "; ".join("%s (%s, %s%%)" % (_pulisci(a.get("nome"), 70), _pulisci(a.get("cod"), 12), int(a.get("quota") or 0))
                             for a in (dati.get("attivita") or [])[:8] if isinstance(a, dict))

@@ -26,6 +26,8 @@ import landing
 import prova
 import promemoria
 import privacy
+import termini
+import cookie_banner
 import db
 import fic
 import scheda
@@ -879,7 +881,13 @@ async def cron_controlla_avvisi(request):
 @mcp.custom_route("/privacy", methods=["GET"])
 async def pagina_privacy(request):
     from starlette.responses import HTMLResponse
-    return HTMLResponse(privacy.pagina())
+    return HTMLResponse(cookie_banner.inietta(privacy.pagina()))
+
+
+@mcp.custom_route("/termini", methods=["GET"])
+async def pagina_termini(request):
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(cookie_banner.inietta(termini.pagina()))
 
 
 @mcp.custom_route("/cron/promemoria", methods=["GET"])
@@ -1076,7 +1084,7 @@ async def colloquio_nuovo(request):
 async def colloquio_pagina(request):
     from starlette.responses import HTMLResponse
     id_colloquio = request.path_params.get("id_colloquio", "")
-    return HTMLResponse(colloquio_web.pagina(id_colloquio),
+    return HTMLResponse(cookie_banner.inietta(colloquio_web.pagina(id_colloquio)),
                         headers={"Cache-Control": "no-store"})
 
 
@@ -1506,7 +1514,7 @@ def _logo(nome_file: str):
 @mcp.custom_route("/accedi", methods=["GET"])
 async def accedi_pagina(request):
     from starlette.responses import HTMLResponse
-    return HTMLResponse(landing.ACCEDI_HTML, headers={"Cache-Control": "no-store"})
+    return HTMLResponse(cookie_banner.inietta(landing.ACCEDI_HTML), headers={"Cache-Control": "no-store"})
 
 
 @mcp.custom_route("/api/accedi/email", methods=["POST"])
@@ -1620,7 +1628,7 @@ async def home(request):
     from starlette.responses import HTMLResponse
     if os.environ.get("HOME_PROVA") == "1":      # su Render: HOME_PROVA=1 mostra il prototipo nella home
         return HTMLResponse(prova.pagina(), headers={"Cache-Control": "no-cache"})
-    return HTMLResponse(landing.PAGINA_HTML)
+    return HTMLResponse(cookie_banner.inietta(landing.PAGINA_HTML))
 
 
 if __name__ == "__main__":

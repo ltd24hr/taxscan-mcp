@@ -762,7 +762,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 41</div>
+<div class="ver">Prototipo versione 42</div>
 </div>
 
 <script>
@@ -1037,7 +1037,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var _rc=renderCtx;renderCtx=function(){if(!CTX)resetChips();_rc()};
   async function saveVoce(area,testo){var voce={ts:new Date().toISOString(),sid:M.sid,area:area,scena:Math.max(0,step),testo:testo};
     try{if(!DBX||!UIDX)throw 0;var ref=DBX.doc('feedback/'+UIDX),g=await ref.get(),voci=g.exists?(g.data().voci||[]):[];await ref.set({uid:UIDX,voci:voci.concat([voce])});M.fb++;return true}catch(e){return false}}
-  var PERS='Sei Marcello, il consulente virtuale di TaxScan per chi ha la partita IVA in regime forfettario in Italia. Il tuo nome è un omaggio a Marcello Mastroianni, grande attore italiano. Rispondi in italiano semplice, in 2-4 frasi, con tono caldo e un po\' ironico, senza gergo. Sul fisco dai informazioni generali: le cifre sono stime, di\' di verificare, non promettere risparmi, non dare consulenza personalizzata. Se la domanda è fuori tema rispondi comunque con simpatia e brevità (anche con una battuta), poi riporta con leggerezza al tema fiscale. Non chiedere né usare dati personali. Dati di esempio: incassi 42.000 €, prossima scadenza 30 novembre 3.951 €, soglia 85.000 €. ';
+  var PERS='Sei Marcello, il consulente virtuale di TaxScan per chi ha la partita IVA in regime forfettario in Italia. Il tuo nome è un omaggio a Marcello Mastroianni, grande attore italiano. Rispondi in italiano semplice, in 2-4 frasi, con tono caldo e un po\' ironico, senza gergo. Sul fisco dai informazioni generali: le cifre sono stime, di\' di verificare, non promettere risparmi, non dare consulenza personalizzata. Se la domanda è fuori tema rispondi comunque con simpatia e brevità (anche con una battuta), poi riporta con leggerezza al tema fiscale. Se la persona ti segnala un dubbio, un errore o qualcosa che non capisce del servizio, ringraziala in poche parole e rispondi comunque nel merito; se ha ragione dillo. Non chiedere né usare dati personali. Dati di esempio: incassi 42.000 €, prossima scadenza 30 novembre 3.951 €, soglia 85.000 €. ';
   var HIST=[];
   function plain(h){return String(h||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()}
   function esc(t){return String(t).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
@@ -1066,6 +1066,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function flushSoon(){dirty=true;clearTimeout(ftm);ftm=setTimeout(flush,3000)}
   function snap(){return {sid:M.sid,inizio:M.t0,att_sec:M.att,scene_sec:M.sc,tocchi:M.tp,scena_max:M.max,assistente_aperto_a_sec:M.apri,feedback_inviati:M.fb,completata:M.fine,ruolo:RUOLO,aggiornato:new Date().toISOString()}}
   async function flush(){
+    if(!(window.TS_CONSENT&&window.TS_CONSENT.s===1))return;
     if(off||!DBX||!UIDX||busy||!dirty)return;busy=true;dirty=false;
     try{var ref=DBX.doc('sessioni/'+UIDX),v={};v[M.sid]=snap();
       if(!made){var g=await ref.get();if(g.exists)await ref.update({visite:v});else await ref.set({uid:UIDX,visite:v});made=true}
@@ -1358,7 +1359,6 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   sxf.innerHTML='<div class="cta-wrap"><button class="cta" id="sxgo">Elaborami una strategia di risparmio fiscale su misura</button></div>'+
    '<div class="kbox" id="sxform" hidden><div class="sxq">1 · Carica una o più fatture</div>'+
    '<label class="sxdrop" for="sxf"><input type="file" id="sxf" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png"><span>Scegli i file delle fatture</span></label><div id="sxfl" class="sxfl"></div>'+
-   '<button class="sxl" id="sxex" type="button">Non le ho qui: usa 3 fatture di esempio</button>'+
    '<div class="sxq">2 · Cosa fai davvero per i clienti?</div>'+
    '<textarea id="sxd" maxlength="800" rows="4" placeholder="Es. Consulenza marketing, campagne social, ho creato il sito di un cliente e configurato CRM e email…"></textarea>'+
    '<button class="cta s" id="sxan">Calcola quanto posso risparmiare</button>'+
@@ -1371,7 +1371,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   $('sxgo').onclick=function(){tap('strategia_apri');var f=$('sxform');f.hidden=!f.hidden;if(!f.hidden){say('Dammi due cose: <b>almeno una fattura</b> e <b>cosa fai davvero</b> per i clienti. Poi calcolo il risparmio in euro.');if(!reduce)f.scrollIntoView({behavior:'smooth',block:'nearest'})}};
   $('sxf').onchange=function(){SX.fil=[].slice.call(this.files||[]);sxFiles();tap('strategia_file');srv('fattura_caricata',0)};
   function sxFiles(){var l=$('sxfl');l.innerHTML='';SX.fil.forEach(function(f){var s=document.createElement('span');s.textContent='✓ '+(f.name||f);l.appendChild(s)})}
-  $('sxex').onclick=function(){SX.fil=['Fattura_01.xml','Fattura_02.xml','Fattura_03.xml'];SX.txt='Consulenza marketing e supporto tecnico. Ho creato il sito di un cliente e configurato CRM e email.';sxFiles();$('sxd').value='Consulenza marketing mensile. Ho creato il sito di un cliente e configurato CRM e strumenti di email.';tap('strategia_esempio')};
+  var _sxe=$('sxex');if(_sxe)_sxe.onclick=function(){SX.fil=['Fattura_01.xml','Fattura_02.xml','Fattura_03.xml'];SX.txt='Consulenza marketing e supporto tecnico. Ho creato il sito di un cliente e configurato CRM e email.';sxFiles();$('sxd').value='Consulenza marketing mensile. Ho creato il sito di un cliente e configurato CRM e strumenti di email.';tap('strategia_esempio')};
   function sxRead(cb){var fs=SX.fil.filter(function(f){return f&&f.name&&/\.xml$/i.test(f.name)}),acc='',n=fs.length;if(!n){cb('');return}
     fs.forEach(function(f){var r=new FileReader();r.onload=function(){var m=String(r.result).match(/<Descrizione>[^<]*<\/Descrizione>/gi)||[];acc+=' '+m.join(' ');if(--n===0)cb(acc)};r.onerror=function(){if(--n===0)cb(acc)};r.readAsText(f)})}
   function sxB64(f,cb){var isImg=/^image\/(jpeg|png|webp)$/.test(f.type);
@@ -1382,7 +1382,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function send(){if(!out.length){cb({ok:false,errore:'Non riesco a leggere questi file. Prova con PDF, JPG, PNG o XML.'});return}
       fetch('/api/prova/fatture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C||'',files:out})}).then(function(r){return r.json()}).then(cb).catch(function(){cb(null)})}
     fs.forEach(function(f){sxB64(f,function(b,t){if(b)out.push({nome:f.name,tipo:t||f.type,dati:b});if(--n===0)send()})})}
-  $('sxan').onclick=function(){var d=$('sxd').value.trim();if(!SX.fil.length&&!d){say('Mi serve almeno <b>una fattura</b> o due righe su cosa fai davvero. Oppure usa le fatture di esempio.');return}
+  $('sxan').onclick=function(){var d=$('sxd').value.trim();if(!SX.fil.length&&!d){say('Mi serve almeno <b>una fattura</b> o due righe su cosa fai davvero.');return}
     tap('strategia_analizza');srv('analisi_avviata',0);SX.read=null;var b=$('sxan');b.disabled=true;b.textContent='Leggo le fatture…';
     sxServer(function(res){b.disabled=false;b.textContent='Calcola quanto posso risparmiare';
       if(res&&res.ok&&res.riepilogo){SX.read=res}else if(res&&res.errore){say(res.errore);if(!d)return}else if(res&&res.vuoto&&!d){say(res.vuoto+' Scrivimi due righe su cosa fai e ci provo con quelle.');return}
@@ -1527,8 +1527,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var OTP={
     'Cos\'è il coefficiente di redditività?':{a:'Ogni attività ha una percentuale stabilita dalla legge: le tasse si calcolano solo su quella parte dei tuoi incassi. Per esempio <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Più è bassa, meno tasse paghi.',n:['Come faccio a pagarne meno?']},
     'Come faccio a pagarne meno?':{a:'Se oltre al lavoro principale fai prestazioni che per il fisco rientrano in categorie con un coefficiente più basso, e le fatturi con quel codice, la parte di incassi tassata scende. Lo scopriamo insieme ai passi 2 e 3.',n:['Devo cambiare codice ATECO?']},
-    'Cosa leggi dalle mie fatture?':{a:'Prendo solo la descrizione e l\'importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.',n:['Posso provare prima con un esempio?']},
-    'Posso provare prima con un esempio?':{a:'Sì: scegli «Usa tre fatture di esempio» e vedi come funziona senza caricare nulla.',n:[]},
+    'Cosa leggi dalle mie fatture?':{a:'Prendo solo la descrizione e l\'importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.',n:[]},
     'Devo cambiare codice ATECO?':{a:'Per usare un coefficiente diverso serve che il codice di quella categoria sia attivo sulla tua partita IVA. Te lo spiego alla fine, tra i compiti da fare: non devi fare nulla adesso.',n:[]},
     'Perché alcune prestazioni valgono meno?':{a:'Per il fisco alcune piccole prestazioni rientrano in una categoria con un coefficiente più basso del tuo: su quella parte di incassi il reddito tassato è più basso.',n:['Devo cambiare codice ATECO?']},
     'E se non faccio nulla di questo?':{a:'Nessun problema: scegli «Faccio solo il mio lavoro principale». Il risultato sarà sincero, anche se è zero.',n:[]},
@@ -1609,7 +1608,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 
   // ---- 1 · le fatture
   function oP1(b){
-    var o=[['file','Carica le fatture','XML, PDF o foto: le leggo io'],['collega','Collega le tue fatture','Fatture in Cloud, Aruba, TeamSystem…'],['esempio','Usa tre fatture di esempio','per provare subito']];
+    var o=[['file','Carica le fatture','XML, PDF, Excel o foto: le leggo io'],['collega','Collega le tue fatture','Fatture in Cloud, Aruba, TeamSystem…']];
     b.innerHTML='<div class="ocards">'+o.map(function(x){return '<button class="kc" data-f="'+x[0]+'" aria-pressed="'+(OT.fonte===x[0]?'true':'false')+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'}).join('')+'</div>'+
       '<input type="file" id="o_file" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>';
     [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(x){x.onclick=function(){if(OT.busy)return;OT.fonte=x.getAttribute('data-f');tap('ott_fonte_'+OT.fonte);
@@ -1984,7 +1983,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   (function(){var f=document.createElement('form');f.id='mpbar';f.setAttribute('aria-label','Scrivi a Marcello');
     f.innerHTML='<input id="mp_in" type="text" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello" placeholder="Scrivi a Marcello…"><button type="submit">Invia</button>';
     document.body.appendChild(f);f.onsubmit=function(e){e.preventDefault();var i=$('mp_in'),v=i.value,fb=MP.fbShow;i.value='';
-      if(fb&&v.trim()){MP.fbShow=false;i.placeholder='Scrivi a Marcello…';tap('feedback_da_barra');$('fbtx').value=v.trim();$('fbgo').click();hideBub(true);showBub('Grazie! Ho segnato il tuo feedback: ci aiuta a migliorare. Se vuoi, continua pure a scrivermi.');return}
+      if(fb){MP.fbShow=false;i.placeholder='Scrivi a Marcello…'}
       mpSend(v)}})();
   // ---- ogni tanto la barra invita a lasciare un feedback: si scrive da sola e poi si cancella
   (function(){var FB='Qualcosa non è chiaro? Lascia un feedback',BASE='Scrivi a Marcello…';
