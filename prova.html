@@ -222,6 +222,11 @@ html.settled #stage{gap:18px}
 .scr{display:flex;justify-content:space-between;font-size:16px}.scb{height:8px;background:var(--accent-soft);border-radius:4px;overflow:hidden}.scb span{display:block;height:100%;background:var(--accent)}.scb.c2 span{background:#05a89e}
 .scw table.kt{width:100%;border-collapse:collapse;font-size:16px}.scw table.kt th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);padding:6px 4px;border-bottom:1px solid var(--line)}.scw table.kt td{padding:10px 4px;border-bottom:1px solid var(--line)}
 .scw[data-ex=sc_next] .sub{padding-right:76px}
+
+/* trascinamento diretto dei blocchi */
+.wgt{touch-action:pan-y}.wgt.wlift{position:relative;z-index:60;cursor:grabbing!important;box-shadow:0 18px 40px rgba(18,36,90,.28);transition:none!important;opacity:.96;touch-action:none}
+.wgt.wlift *{cursor:grabbing!important}.wgdragging,.wgdragging *{user-select:none!important;-webkit-user-select:none!important}
+.wgdragging #dbub,.wgdragging #astab{opacity:.12;pointer-events:none;transition:opacity .15s}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -762,7 +767,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 43</div>
+<div class="ver">Prototipo versione 44</div>
 </div>
 
 <script>
@@ -1864,12 +1869,35 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var i=vis.indexOf(el),t=vis[i+d];if(!t)return;var a=all.indexOf(el),b=all.indexOf(t);all[a]=t;all[b]=el;wgApply(cont,key,sel,all);tap('widget_sposta');
     try{el.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'})}catch(e){}}
   function wgDrop(cont,key,sel,el,tg,after){var all=wgSorted(cont,sel).filter(function(x){return x!==el}),i=all.indexOf(tg);all.splice(after?i+1:i,0,el);wgApply(cont,key,sel,all);tap('widget_trascina')}
+  // ---- trascinamento diretto: si tiene premuto su un blocco e lo si muove, come le app su uno schermo
+  function wgPress(cont,key,sel,el){if(el.__wgd)return;el.__wgd=1;
+    el.addEventListener('click',function(e){if(el.__wgj){e.preventDefault();e.stopPropagation();el.__wgj=0}},true);
+    el.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;if(e.target.closest('input,textarea,select,a,button,label,.wc,[contenteditable]'))return;
+      var touch=e.pointerType==='touch',sx=e.clientX,sy=e.clientY,on=false,tm=null,tg=null,aft=false,iv=null,px=sx,py=sy,r0=null,s0=scrollY;
+      function clear(){[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')})}
+      function begin(){on=true;r0=el.getBoundingClientRect();el.classList.add('wlift');document.body.classList.add('wgdragging');try{getSelection().removeAllRanges()}catch(x){}
+        iv=setInterval(function(){if(py<90)scrollBy(0,-14);else if(py>innerHeight-90)scrollBy(0,14);place()},30)}
+      function place(){if(!on)return;var r=el.getBoundingClientRect();
+        el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
+        var pe=el.style.pointerEvents;el.style.pointerEvents='none';var u=document.elementFromPoint(px,py);el.style.pointerEvents=pe;
+        var t=u&&u.closest&&u.closest(sel);clear();tg=null;if(t&&t!==el&&cont.contains(t)){tg=t;var q=t.getBoundingClientRect(),dx=px-(q.left+q.width/2),dy=py-(q.top+q.height/2);
+          aft=Math.abs(dy)*q.width>Math.abs(dx)*q.height?dy>0:dx>0;t.classList.add('wover')}}
+      function mv(ev){if(ev.pointerId!==e.pointerId)return;px=ev.clientX;py=ev.clientY;
+        if(!on){var d=Math.hypot(px-sx,py-sy);if(touch){if(d>10){end(true)}return}if(d>6)begin();else return}
+        ev.preventDefault();place()}
+      function end(cancel){clearTimeout(tm);clearInterval(iv);removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',cn);removeEventListener('touchmove',tmv);
+        document.body.classList.remove('wgdragging');var was=on;on=false;clear();
+        if(was){el.classList.remove('wlift');el.style.transform='';el.__wgj=1;setTimeout(function(){el.__wgj=0},50);if(!cancel&&tg)wgDrop(cont,key,sel,el,tg,aft)}}
+      function up(ev){if(ev.pointerId===e.pointerId)end(false)}function cn(ev){if(ev.pointerId===e.pointerId)end(true)}
+      function tmv(ev){if(on)ev.preventDefault()}
+      addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',cn);addEventListener('touchmove',tmv,{passive:false});
+      if(touch)tm=setTimeout(function(){if(!on){begin();place()}},380)})}
   function wgInit(cont,key,sel){if(!cont)return;var els=[].slice.call(cont.querySelectorAll(sel));if(!els.length)return;var ord=wgLoad(key);
-    els.forEach(function(el,i){var k=wgKey(el,i);el.setAttribute('data-wk',k);el.classList.add('wgt');
+    els.forEach(function(el,i){var k=wgKey(el,i);el.setAttribute('data-wk',k);el.classList.add('wgt');wgPress(cont,key,sel,el);
       var p=ord.indexOf(k);el.style.order=p<0?ord.length+i:p;
       var host=el.classList.contains('slot')?el.querySelector('.in-s'):el;if(!host||host.querySelector(':scope>.wc'))return;
       var c=document.createElement('span');c.className='wc';c.setAttribute('role','group');c.setAttribute('aria-label','Sposta questo blocco');
-      c.innerHTML='<button type="button" data-d="-1" aria-label="Sposta su" title="Sposta su">↑</button><button type="button" data-d="1" aria-label="Sposta giù" title="Sposta giù">↓</button><button type="button" class="wd" aria-label="Trascina per spostare" title="Trascina">⠿</button>';
+      c.innerHTML='<button type="button" data-d="-1" aria-label="Sposta su" title="Sposta su">↑</button><button type="button" data-d="1" aria-label="Sposta giù" title="Sposta giù">↓</button><button type="button" class="wd" aria-label="Trascina per spostare" title="Tieni premuto il blocco e trascinalo dove vuoi">⠿</button>';
       [].slice.call(c.querySelectorAll('[data-d]')).forEach(function(b){b.onclick=function(e){e.stopPropagation();wgMove(cont,key,sel,el,+b.getAttribute('data-d'))}});
       var h=c.querySelector('.wd');h.onclick=function(e){e.stopPropagation()};h.onmousedown=function(){el.draggable=true};
       el.addEventListener('dragstart',function(e){if(!el.draggable)return;e.stopPropagation();try{e.dataTransfer.setData('text/plain',wgKey(el,0));e.dataTransfer.effectAllowed='move'}catch(x){}el.classList.add('wdrag')});
