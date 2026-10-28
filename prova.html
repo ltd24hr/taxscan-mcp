@@ -739,7 +739,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 38</div>
+<div class="ver">Prototipo versione 39</div>
 </div>
 
 <script>
@@ -1428,7 +1428,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call($('gtodo').querySelectorAll('[data-sxtp]')).forEach(function(a){a.onclick=function(){tap('trustpilot_click');srv('trustpilot_click',0)}})};
   gMsg=function(){return SX.res&&SX.res.d>0?'Hai individuato <b>'+eur(SX.res.d)+'</b> di risparmio l\'anno. Completa le azioni qui sotto per ottenerlo davvero.':'Premi il pulsante: ti preparo una <b>strategia su misura</b> e ti dico quanto puoi risparmiare, in euro.'};
   $('gperc').hidden=true;$('gscene').hidden=true;
-  if(window.TS_VAI==='g')setTimeout(function(){showView('g')},400);
+  if(/^[gsbf]$/.test(window.TS_VAI||''))setTimeout(function(){showView(window.TS_VAI)},400);
   window.__gl=function(){$('gperc').hidden=true;$('gscene').hidden=true};
   // ================= introduzione: Marcello solo all'inizio, poi dashboard compatta =================
   var SETTLED=false,hintEl=document.createElement('div');hintEl.id='schint';hintEl.setAttribute('aria-hidden','true');hintEl.innerHTML='<span>Scorri</span><i></i><i></i><i></i>';document.body.appendChild(hintEl);
@@ -1440,7 +1440,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var _end=end;end=function(id){_end(id);if(!SETTLED&&step>=0&&step<5&&IDS[step]===id)hint(true)};
   var _sv=showView;showView=function(v){if(v!=='p'&&!SETTLED)settle(true);_sv(v)};
   var _ag=$('again').onclick;$('again').onclick=function(){settle(false);_ag()};
-  try{if(window.TS_VAI==='g'||localStorage.getItem('ts_intro_'+(window.TS_C||'demo'))==='1')settle(true)}catch(e){}
+  try{if(/^[gsbf]$/.test(window.TS_VAI||'')||localStorage.getItem('ts_intro_'+(window.TS_C||'demo'))==='1')settle(true)}catch(e){}
   // scadenze vere dell'utente (se la pagina arriva dal questionario)
   if(window.TS_SC&&window.TS_SC.length){var s0=window.TS_SC;
     s0.forEach(function(s,i){var l=(s.det||[]).map(function(x){return '• '+x}).join('<br>');EX['s_r'+(i+1)]='Il <b>'+s.d+'</b>: '+s.e+'. Totale <b>'+s.t+'</b>.'+(l?'<div class="sm">'+l+'</div>':'')+'<div class="sm">Stima sui tuoi dati.</div>'});
