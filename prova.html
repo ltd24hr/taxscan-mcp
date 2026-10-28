@@ -712,7 +712,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 35</div>
+<div class="ver">Prototipo versione 36</div>
 </div>
 
 <script>
@@ -1518,6 +1518,16 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oCtx(){var m=oMics().filter(function(x){return OT.mic[x[0]]}).map(function(x){return x[2]}),st=OTN[(OT.open||1)-1];
     return 'Contesto: l\'utente è nel percorso «Ottimizzazione fiscale» di TaxScan (regime forfettario), '+(OT.open?'passo '+OT.open+' di 5 «'+st[1]+'»':'prima di iniziare')+'. Attività principale: '+OTMAIN.nome+' (coefficiente '+pc(oCoef())+'). Prestazioni in più scelte: '+(m.length?m.join('; '):'nessuna')+'. '+(OT.done[5]||OT.fin?'Il calcolo del risparmio è stato fatto. ':'')+
       'Il percorso: 1 fatture, 2 prestazioni in più, 3 livello di tempo per attività, 4 periodicità, 5 risultato in euro con report PDF. '}
+  // il lavoro descritto non somiglia al codice ATECO che abbiamo: Marcello lo dice e propone di verificarlo
+  function oAtecoCheck(t){say('Ci penso un attimo…');
+    aiCall('ateco',{descrizione:(OT.desc||t)}).then(function(j){var c=j&&j.codici&&j.codici[0];
+      if(!c||String(c.codice_ateco).slice(0,5)===String(OTMAIN.cod).slice(0,5)){oChat(t);return}
+      var pool={'Come lo verifico?':{a:'Guarda il certificato di attribuzione della partita IVA o la visura: c\'è scritto il codice attivo. Se non corrisponde a ciò che fai davvero, si può aggiungere o cambiare con la comunicazione di variazione dati (modello AA9/12). Meglio sentire un commercialista prima.',n:['Perché il codice è importante?']},
+        'Perché il codice è importante?':{a:'Il coefficiente, e quindi le tasse, dipende dal codice attivo sulla tua partita IVA. Un codice sbagliato può farti pagare di più o di meno del dovuto.',n:[]},
+        'Rifai il calcolo con questo codice':{a:function(){OTMAIN={nome:c.etichetta||OTMAIN.nome,cod:c.codice_ateco};CCOEF=c.coefficiente;tap('ott_cambia_codice');oReset();say('Ho rifatto ripartendo dal codice <b>'+oEsc(c.codice_ateco)+'</b> (coefficiente '+pc(c.coefficiente)+'). È solo una simulazione: il codice attivo sulla tua partita IVA non cambia finché non lo comunichi. Tocca il <b>passo 1</b> per ripartire.')},e:1},
+        'No, il mio codice è giusto':{a:'Perfetto, restiamo sul tuo codice. Raccontami le prestazioni in più che fai insieme al lavoro principale.',n:[]}};
+      say('Da come descrivi il tuo lavoro, il codice più adatto potrebbe essere <b>'+oEsc(c.codice_ateco)+'</b>'+(c.etichetta?' ('+oEsc(c.etichetta.toLowerCase())+')':'')+', coefficiente <b>'+pc(c.coefficiente)+'</b>. Quello che ho per te è <b>'+oEsc(OTMAIN.cod)+'</b> ('+pc(oCoef())+'). Il codice è quello attivo sulla tua partita IVA: se non corrisponde a ciò che fai, conviene verificarlo.');
+      window.__chips(pool,['Come lo verifico?','Rifai il calcolo con questo codice','No, il mio codice è giusto'])})}
   function oChat(t){var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');say('Ci penso un attimo…');
     ask(PERS+oCtx()+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Rispondi in massimo 3 frasi semplici e calde, dando del tu, senza certezze (solo stime). Se l\'utente saluta o fa una domanda generica, rispondi con naturalezza e poi, se serve, ricordagli cosa può fare in questo passo. Se sta descrivendo cosa fa, aiutalo a capirlo e dì quale prestazione spuntare. Messaggio dell\'utente: '+t).then(function(r){
       if(r){HIST.push(['Utente',t]);HIST.push(['Marcello',r]);say(esc(r))}else say('Non riesco a rispondere bene in questo momento, ma ho segnato quello che hai scritto. Intanto puoi continuare con il passo in corso.');oChips(OT.open||1)})}
@@ -1526,7 +1536,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     oAct().forEach(function(a){var keys=(SXK[a.id]||[]).concat(a.nome.toLowerCase().split(/[^a-zàèéìòù]+/).filter(function(w){return w.length>=4}));if(a.id==='principale')keys=keys.concat(['principale','lavoro principale']);
       for(var k=0;k<keys.length;k++){var i=t.indexOf(keys[k]);if(i<0)continue;var aft=t.slice(i+keys[k].length,i+keys[k].length+16).match(/(\d{1,3})/),bef=t.slice(Math.max(0,i-12),i).match(/(\d{1,3})\s*%?\s*(?:di|per|a)?\s*$/),m=aft||bef;if(m){OT.pct[a.id]=Math.min(100,+m[1]);got++;return}}});return got}
   function oTrova(txt){var t=(txt||'').toLowerCase(),n=0;Object.keys(SXK).forEach(function(id){if(SVm[id]&&!OT.sel[id]&&SXK[id].some(function(k){return t.indexOf(k)>-1})){OT.sel[id]=true;n++}});
-    SV.forEach(function(s){if(OT.sel[s[0]])return;var w=(s[2]+' '+s[3]).toLowerCase().split(/[^a-zàèéìòù]+/).filter(function(x){return x.length>5});if(w.some(function(x){return t.indexOf(x)>-1})){OT.sel[s[0]]=true;n++}});return n}
+    return n}
 
   // ---- barre e cursori: a decine, liberi (decidi tu come arrivare a 100)
   function oBar(items,key){var tot=Math.max(100,items.reduce(function(a,i){return a+(OT[key][i.id]||0)},0)),h='<div class="obar" role="img" aria-label="Ripartizione in percentuale">';
@@ -1634,7 +1644,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       pre.forEach(function(m){OT.mic[m]=true});if(pre.length){OT.solo=false;oMicSync();if(OT.open===1&&!OT.done[1]){OT.chatPend='';OT.aiN=n;OT.done[1]=true;oNodes();oOpen(2);return}}
       OT.aiN=n;if(OT.open===2){oFill(2);if(pre.length)say('Ho capito: ho spuntato <b>'+pre.map(function(m){return oEsc(oMics().filter(function(x){return x[0]===m})[0][2])}).join('</b>, <b>')+'</b>. Controlla e, se ti torna, confermalo.')}
       else if(pre.length){oNodes()}
-      if(testo&&OT.chatPend===testo){OT.chatPend='';if(!pre.length)oChat(testo)}
+      if(testo&&OT.chatPend===testo){OT.chatPend='';if(!pre.length){if(OT.open<=1&&!OT.done[1])oAtecoCheck(testo);else oChat(testo)}}
       if(OT.aiQ){var qq=OT.aiQ;OT.aiQ='';OT.aiOn=0;oAiAtt(qq)}})}
   // ---- 2 · le prestazioni in più
   function oP2(b){if(!OT.aiOn&&!OT.aiBusy)oAiAtt();oMicSync();var m=oCoef();
@@ -1768,7 +1778,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     return b}
   // scelte cliccabili nel fumetto (domande che l'utente potrebbe farsi)
   function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||!MP.xc||MP.typing)return;c.innerHTML='';
-    MP.xc.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;q[1]()};c.appendChild(x)});if(!b.hidden)placeBub()}
+    MP.xc.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;if(typeof vsTm!=='undefined')clearTimeout(vsTm);var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;q[1]()};c.appendChild(x)});if(!b.hidden)placeBub()}
   // motore dei suggerimenti: pool {domanda:{a:risposta|funzione, n:[domande successive], e:1=fine}}; la domanda scelta sparisce e puo' portarne di nuove
   MP.asked={};
   window.__chips=function(pool,labels){function draw(ls){ls=ls.filter(function(l){return pool[l]&&!MP.asked[l]}).slice(0,4);
@@ -1794,6 +1804,24 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     x=Math.max(10,Math.min(innerWidth-w-10,x));var h=b.offsetHeight,y=Math.max(16,Math.min(r.top-16,innerHeight-h-112));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
   window.__pb=placeBub;
+  // suggerimenti per la Panoramica
+  var QP='Perché metto da parte il '+D.perc+'%?';
+  var PPOOL={'Cosa fai tu per me?':{a:function(){return ANS.cosa||'Ogni giorno guardo <b>scadenze, soglie e codici</b>, ti dico cosa pagare e quanto mettere da parte, e cerco dove puoi <b>risparmiare</b>.'},n:['È una consulenza vera?']},
+    'È una consulenza vera?':{a:'Sono un assistente IA: preparo e spiego, e le cifre sono stime. Puoi gestire tutto da solo oppure far controllare i numeri a un commercialista quando vuoi: è facoltativo.',n:['Come tratti i miei dati?']},
+    'Come tratti i miei dati?':{a:'Uso quello che mi hai detto nel questionario. Nelle fatture leggo solo descrizione e importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.',n:[]},
+    [QP]:{a:'È una stima della quota di ogni incasso che serve per imposta e contributi: così, quando arriva la scadenza, i soldi ci sono già.',n:['Cosa succede se non pago?']},
+    'Cosa succede se non pago?':{a:'Non è la fine: ci sono sanzioni e interessi, ma puoi <b>regolarizzare</b> con il ravvedimento. Meglio farlo presto.',n:['Come posso pagare?']},
+    'Come posso pagare?':{a:'Con il modello F24. In TaxScan lo preparo io con codici e importi: nel prototipo non si paga davvero, la funzione arriva dopo.',n:[]},
+    'Da dove arriva questa cifra?':{a:function(){return EX.d1||'Sono il 2° acconto: imposta più contributi, calcolati sui tuoi incassi.'},n:['Posso cambiare i numeri?']},
+    'Posso cambiare i numeri?':{a:'Sono stime sui tuoi dati. Se cambiano gli incassi cambiano anche loro: per questo conviene ricontrollarli ogni tanto.',n:[]},
+    'Dove ritrovo le scadenze?':{a:'In <b>Scadenze</b>, nel menu in alto: sono tutte in ordine, con data e importi.',n:['Sono cifre vere?']},
+    'Sono cifre vere?':{a:'Sono stime sui tuoi incassi e sulla tua attività. Diventano più precise quando carichi le fatture.',n:[]},
+    'Cos\'è la soglia degli 85.000 €?':{a:'È il massimo che puoi incassare in un anno restando nel forfettario. Se la superi esci dal regime dall\'anno dopo; oltre i 100.000 € esci subito, nello stesso anno.',n:['Come la tengo sotto controllo?']},
+    'Come la tengo sotto controllo?':{a:'Te la guardo io mentre fatturi e ti avviso quando ti avvicini.',n:[]},
+    'Come posso risparmiare di più?':{a:'In <b>Ottimizzazione fiscale</b> guardiamo se fai prestazioni che per il fisco valgono meno: è il prossimo passo.',n:['Quanto ci vuole?']},
+    'Quanto ci vuole?':{a:'Pochi minuti: cinque passi, e ti accompagno io.',n:[]}};
+  var PPL={t1:['Cosa fai tu per me?','È una consulenza vera?'],t2:[QP,'Cosa succede se non pago?'],t2b:['Da dove arriva questa cifra?'],t3:['Dove ritrovo le scadenze?','Sono cifre vere?'],t4:['Cos\'è la soglia degli 85.000 €?'],t5:['Come posso risparmiare di più?','Come tratti i miei dati?']};
+  Object.keys(PPOOL).forEach(function(k){var p=PPOOL[k],a=p.a;if(typeof a==='function')p.a=function(){(mpView()==='p'?showBub:say)(a())};else p.a=(function(h){return function(){(mpView()==='p'?showBub:say)(h)}})(a)});
   // ---- Panoramica a scorrimento "virtuale": si svela scorrendo (o da sola dopo 7 secondi), le tabelle restano
   var VS=0,vsLast=0,vsTm=null;
   target=function(){return VS};
@@ -1803,13 +1831,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function vsAdvance(){if(vsBusy())return;var now=Date.now();if(now-vsLast<1100)return;vsLast=now;clearTimeout(vsTm);MP.qa=false;
     if(VS>=5){var g=navb[2];if(g)g.click();return}
     VS++;setStep(VS);[1500,3500,6000].forEach(function(ms){setTimeout(vsFollow,ms)})}
-  function vsArm(){clearTimeout(vsTm);if(vsBusy())return;vsTm=setTimeout(function(){var i=$('mp_in');if(vsBusy()||CTX||(i&&(i.value||document.activeElement===i)))return vsArm();vsAdvance()},7000)}
+  function vsArm(){clearTimeout(vsTm);if(vsBusy())return;vsTm=setTimeout(function(){var i=$('mp_in');if(vsBusy()||CTX||(i&&(i.value||document.activeElement===i)))return vsArm();vsAdvance()},MP.xc?13000:7000)}
   addEventListener('wheel',function(e){if(e.target.closest&&e.target.closest('#dbub,#mpbar'))return;if(e.deltaY>6)vsAdvance()},{passive:true});
   var vsY=null;addEventListener('touchstart',function(e){vsY=e.touches[0].clientY},{passive:true});
   addEventListener('touchmove',function(e){if(vsY!=null&&vsY-e.touches[0].clientY>30){vsY=null;vsAdvance()}},{passive:true});
   addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(['ArrowDown','PageDown',' ','End'].indexOf(e.key)>-1)vsAdvance()});
   ['pointerdown','keydown'].forEach(function(ev){addEventListener(ev,function(){if(!MP.typing)vsArm()},{passive:true})});
-  var _mpss=setStep;setStep=function(n){var p=step;_mpss(n);if(n!==p){MP.qa=false;var id=IDS[n];
+  var _mpss=setStep;setStep=function(n){var p=step;_mpss(n);if(n!==p){MP.qa=false;MP.asked={};var id=IDS[n];if(mpView()==='p'&&PPL[id])window.__chips(PPOOL,PPL[id]);
     if(id&&done[id]&&!(run[id]&&!run[id].fin)&&mpView()==='p'){showBub(T[id]);vsArm()}}};
   var _mpag=$('again').onclick;$('again').onclick=function(){VS=0;clearTimeout(vsTm);_mpag.apply(this,arguments)};
   // ---- scrivere a Marcello
