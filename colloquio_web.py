@@ -366,6 +366,18 @@ PAGINA_HTML = r"""<!doctype html>
   @keyframes q-luce { 0% { transform:translateY(-9px); opacity:0; } 15% { opacity:1; } 50% { transform:translateY(17px); } 85% { opacity:1; } 100% { transform:translateY(-9px); opacity:0; } }
   @keyframes ill-raggio { 0% { transform:translateY(-50px); opacity:0; } 8% { opacity:1; } 80% { opacity:1; } 88%,100% { transform:translateY(166px); opacity:0; } }
   @keyframes pronto { from { opacity:0; transform:scale(.6) translateY(6px); } to { opacity:1; transform:none; } }
+  .chied { margin-top:22px; padding-top:18px; border-top:1px solid var(--bordo); }
+  .chied h2 { font-size:17px; margin:0 0 4px; }
+  .chied .sub { font-size:14px; color:var(--grigio); margin:0 0 10px; }
+  .chied .chp { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .chied .chp button { font:inherit; font-size:14.5px; color:var(--testo); background:var(--verde-chiaro); border:1.5px solid var(--bordo); border-radius:20px; padding:8px 14px; cursor:pointer; }
+  .chied .chp button:hover { border-color:var(--verde); }
+  .chied .riga2 { display:flex; gap:8px; }
+  .chied input { flex:1; min-width:0; font:inherit; font-size:16px; padding:12px 14px; border:1.5px solid var(--bordo); border-radius:12px; }
+  .chied .invia2 { font:inherit; font-weight:700; font-size:16px; color:#fff; background:var(--verde); border:0; border-radius:12px; padding:0 18px; cursor:pointer; }
+  .chied .invia2:disabled { opacity:.6; cursor:default; }
+  .chied .risp { margin-top:12px; background:var(--verde-chiaro); border-radius:12px; padding:12px 14px; font-size:16px; }
+  .chied button:focus-visible, .chied input:focus-visible { outline:3px solid var(--testo); outline-offset:2px; }
 </style>
 </head>
 <body>
@@ -496,10 +508,44 @@ function mostraIntro() {
       <input type="file" id="pdf" accept="application/pdf" class="nascosto">
       <button class="opz" id="senza"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.tocco}</svg></span><span>Non ce l'ho sotto mano: rispondo a un paio di domande</span></button>
     </div>
-    <div id="esito"></div>`;
+    <div id="esito"></div>
+    <div class="chied">
+      <h2>Hai una domanda prima di cominciare?</h2>
+      <p class="sub">Chiedila a Marcello: ti risponde subito.</p>
+      <div class="chp">
+        <button type="button" data-r="0">A cosa serve il questionario?</button>
+        <button type="button" data-r="1">Che fine fanno i miei dati?</button>
+        <button type="button" data-r="2">Marcello è una persona vera?</button>
+      </div>
+      <div class="riga2"><input id="chq" type="text" maxlength="300" placeholder="Scrivi qui la tua domanda…" aria-label="La tua domanda per Marcello"><button type="button" class="invia2" id="chb">Invia</button></div>
+      <div class="risp" id="chr" role="status" hidden></div>
+    </div>`;
   nav([]);
   $("pdf").onchange = caricaCertificato;
+  initChiedi();
   $("senza").onclick = () => { fase = "domanda"; invia(); };
+}
+
+const RISP_PRE = [
+  "Con poche risposte capisco il tuo regime, i contributi e le scadenze, così ti dico cosa pagare e quando. Ci vogliono circa <b>2 minuti</b> e puoi tornare indietro quando vuoi.",
+  "Servono solo a prepararti i calcoli, e puoi chiedere di cancellarli quando vuoi. Il testo completo sulla privacy lo trovi in fondo alla pagina.",
+  "No, sono un <b>assistente virtuale</b> (intelligenza artificiale): il mio nome omaggia Marcello Mastroianni. Se vuoi, un professionista può controllare i tuoi numeri."];
+function initChiedi() {
+  const box = $("chr"), q = $("chq"), b = $("chb");
+  const mostra = h => { box.innerHTML = h; box.hidden = false; };
+  document.querySelectorAll(".chied .chp button").forEach(bt => { bt.onclick = () => mostra(RISP_PRE[+bt.dataset.r]); });
+  const manda = async () => {
+    const t = q.value.trim(); if (!t) return;
+    b.disabled = true; mostra("Ci penso un attimo…");
+    try {
+      const r = await fetch("/api/prova/chat", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({uid: ID, prompt: t})});
+      const j = await r.json();
+      mostra(j && j.ok && j.testo ? esc(j.testo) : (j && j.limite ? "Per oggi ho risposto a tante domande: riprova domani, oppure vai avanti col questionario." : "Non riesco a risponderti adesso. Intanto puoi andare avanti col questionario: è breve."));
+    } catch (e) { mostra("Non riesco a risponderti adesso. Intanto puoi andare avanti col questionario: è breve."); }
+    b.disabled = false; q.value = "";
+  };
+  b.onclick = manda;
+  q.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); manda(); } };
 }
 
 async function caricaCertificato(ev) {

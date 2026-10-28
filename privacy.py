@@ -13,7 +13,7 @@ import os
 
 import dati_fisco as D
 
-AGGIORNATA = "5 ottobre 2026"
+AGGIORNATA = "28 ottobre 2026"
 
 
 def _e(x) -> str:
@@ -99,7 +99,10 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <p>Se hai collegato Fatture in Cloud e scegli «Leggi le mie fatture» nel check delle attività, leggiamo solo la <b>descrizione e l'importo delle righe</b> delle fatture incassate, per riconoscere i servizi che svolgi. <b>Non leggiamo né conserviamo i dati dei tuoi clienti</b> e non salviamo le descrizioni: conserviamo soltanto le percentuali per servizio che confermi tu. Le descrizioni delle righe (senza importi) vengono analizzate da un fornitore di intelligenza artificiale (Anthropic) per proporre l'attribuzione; sei tu a confermare o correggere ogni attribuzione. Se una descrizione contiene un nome di cliente, quel nome è nel testo che viene analizzato: per questo ti consigliamo descrizioni che indichino il servizio e non la persona.</p>
 
 <h2>Fatture caricate a mano (facoltativo)</h2>
-<p>Se non usi Fatture in Cloud puoi allegare nel check delle attività una o più fatture (XML, PDF o foto). Il file viene letto <b>solo per estrarre descrizione e importo delle prestazioni</b>. I file XML sono letti dal nostro programma; i PDF e le foto sono letti da un fornitore di intelligenza artificiale (Anthropic), con l'istruzione di ignorare i dati dei clienti. <b>Non salviamo i file né le righe lette</b>: restano in memoria il tempo della richiesta. Conserviamo soltanto le percentuali per servizio che confermi tu. Una fattura contiene dati di terzi (i tuoi clienti): se preferisci, oscurali prima di caricarla. Il caricamento è sempre facoltativo e richiede una conferma esplicita.</p>
+<p>Se non usi Fatture in Cloud puoi allegare nel check delle attività una o più fatture (XML, PDF, foglio Excel o foto). Il file viene letto <b>solo per estrarre descrizione e importo delle prestazioni</b>, più la causale della fattura se c'è, perché spesso chiarisce di che prestazione si tratta. I file XML sono letti dal nostro programma; i PDF, i fogli Excel e le foto sono letti da un fornitore di intelligenza artificiale (Anthropic), con l'istruzione di ignorare i dati dei clienti. <b>Non salviamo i file né le righe lette</b>: restano in memoria il tempo della richiesta. Conserviamo soltanto le percentuali per servizio che confermi tu. Una fattura contiene dati di terzi (i tuoi clienti): se preferisci, oscurali prima di caricarla. Il caricamento è sempre facoltativo e richiede una conferma esplicita.</p>
+
+<h2>Report con la metodologia (facoltativo)</h2>
+<p>Dopo il calcolo del risparmio puoi scaricare un report in PDF con le stime e il metodo usato. Per farlo ti chiediamo l'email: la salviamo come le altre email del servizio (vedi sopra). Il PDF viene preparato al momento con le cifre che hai già visto e <b>non lo conserviamo</b>.</p>
 
 <h2>Con chi condividiamo i dati</h2>
 <p>Solo con i fornitori tecnici che ci servono per far funzionare il servizio, nominati responsabili del trattamento:</p>
