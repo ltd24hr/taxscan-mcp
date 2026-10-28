@@ -269,7 +269,21 @@ PAGINA_HTML = r"""<!doctype html>
   label.opz input { width:20px; height:20px; accent-color:var(--verde); }
   label.opz.sel { border-color:var(--verde); background:var(--verde-chiaro); }
   input.testo { width:100%; font:inherit; font-size:18px; padding:14px; border:1.5px solid var(--bordo); border-radius:12px; margin-top:14px; }
-  input.testo:focus { outline:none; border-color:var(--verde); }
+  input.testo:focus, textarea.testo:focus, select.testo:focus { outline:none; border-color:var(--verde); }
+  textarea.testo, select.testo { width:100%; font:inherit; font-size:18px; padding:14px; border:1.5px solid var(--bordo); border-radius:12px; margin-top:14px; background:#fff; color:var(--testo); }
+  textarea.testo { min-height:130px; line-height:1.45; resize:vertical; }
+  select.testo { appearance:auto; cursor:pointer; }
+  button.primario:disabled { opacity:.45; cursor:not-allowed; }
+  @media (min-width:900px) {
+    .pagina { max-width:720px; padding-top:32px; }
+    header .logo { font-size:22px; } header .passo { font-size:15px; } header button.fatto { font-size:16px; }
+    h1 { font-size:28px; } p { font-size:18px; } .hint { font-size:16px; }
+    button.opz, label.opz { font-size:18px; padding:16px 18px; } button.opz .n, label.opz .n { flex-basis:32px; height:32px; font-size:16px; }
+    input.testo, textarea.testo, select.testo { font-size:20px; padding:16px; }
+    button.primario, button.secondario, label.primario { font-size:18px; padding:15px 22px; }
+    button.link { font-size:16px; } .trovato, .errore { font-size:17px; } .riepilogo { font-size:17px; } .gruppo h3 { font-size:17px; }
+    .scheda { padding:30px 28px; } footer { font-size:14px; }
+  }
   .riga { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
   button.primario, button.secondario, label.primario { font:inherit; font-size:16px; padding:13px 18px; border-radius:12px; cursor:pointer; border:1.5px solid var(--verde); }
   button.primario, label.primario { background:var(--verde); color:#fff; flex:1; text-align:center; }
@@ -394,6 +408,11 @@ const ICO = {
   tocco: '<rect class="q-t q-c" x="8" y="11" width="32" height="10" rx="5"/><rect class="q-t q-c" x="8" y="27" width="32" height="10" rx="5"/><circle class="q-p" cx="14" cy="16" r="2.4" fill="#05d5c8"/><circle cx="14" cy="32" r="2.4" class="q-s"/><path class="q-r" d="M20 16h13M20 32h9"/>',
   fatto: '<circle class="q-t q-c" cx="24" cy="24" r="17"/><path class="q-a q-d" pathLength="1" d="M15.5 24.5l6 6 11.5-12.5" style="stroke-width:3.4"/>'
 };
+function selAnni(id, sel) {
+  let o = '<option value=""' + (sel ? "" : " selected") + ">Scegli l'anno</option>";
+  for (let a = new Date().getFullYear(); a >= 1980; a--) o += '<option value="' + a + '"' + (String(a) === String(sel) ? " selected" : "") + ">" + a + "</option>";
+  return '<select class="testo" id="' + id + '" aria-label="Anno di apertura della partita IVA">' + o + "</select>";
+}
 const ICO_CAMPO = {data_apertura: "calendario", codice_ateco: "lente", conferma_deduzioni: "appunti", gestione_previdenziale: "scudo", nome_cassa: "scudo",
   altra_copertura_previdenziale: "scudo", riduzione_35: "percento", origine_attivita: "orologio", situazioni_particolari: "lista",
   redditi_dipendente_pensione: "valigetta", rapporto_dipendente_cessato: "valigetta", prevalenza_ex_datore: "valigetta",
@@ -581,7 +600,7 @@ function mostraDomanda(v) {
   } else if (campo === "codice_ateco") {
     html += '<input class="testo" id="val" placeholder="es. 62.01.00" inputmode="decimal">';
     html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
-    html += '<div class="riga"><textarea class="testo" id="descr" rows="2" maxlength="300" placeholder="Non lo conosci? Descrivi cosa fai, per esempio: scrivo testi per le aziende"></textarea></div>';
+    html += '<div class="riga"><textarea class="testo" id="descr" rows="5" maxlength="400" placeholder="Non lo conosci? Descrivi cosa fai, per esempio: scrivo testi per le aziende"></textarea></div>';
     html += '<div class="riga"><button class="secondario" id="trova">Trovami il codice</button></div><div id="trovati"></div>';
     html += '<button class="link" id="nonso">Non conosco il codice: scelgo il mio settore</button>';
     html += '<div id="settori" class="nascosto"><p class="hint">Scegli quello che ti somiglia di più: il codice esatto lo potrai controllare dopo.</p><div class="opzioni">' +
@@ -604,12 +623,12 @@ function mostraDomanda(v) {
       const s = ultima.settori[parseInt(b.dataset.i, 10)];
       rispondi({codice_ateco: s.codice, codice_ateco_stimato: true, descrizione_attivita: s.etichetta}); });
   } else if (campo === "data_apertura") {
-    html += '<input class="testo" id="val" placeholder="es. 2023" inputmode="numeric" maxlength="4">';
-    html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
+    html += selAnni("val", "");
+    html += '<div class="riga"><button class="primario" id="ok" disabled>Avanti</button></div>';
     box.innerHTML = html; $("val").focus();
-    $("ok").onclick = () => { const t = $("val").value.trim(); const a = parseInt(t, 10);
-      if (!(a >= 1980 && a <= new Date().getFullYear())) return alert("Scrivi l'anno, es. 2023"); rispondi({data_apertura: String(a)}); };
-    $("val").onkeydown = e => { if (e.key === "Enter") $("ok").click(); };
+    $("val").onchange = () => { $("ok").disabled = !$("val").value; };
+    $("ok").onclick = () => { const a = parseInt($("val").value, 10);
+      if (!(a >= 1980 && a <= new Date().getFullYear())) return; rispondi({data_apertura: String(a)}); };
   } else {
     // importo
     html += '<input class="testo" id="val" placeholder="es. 18000" inputmode="numeric">';
@@ -633,7 +652,7 @@ function mostraCorrezione(v) {
   $("scheda").innerHTML = `<h1>Correggi quello che non torna</h1>` +
     gruppo("Tipo di attività", "tipo", oc.tipo_attivita || [], scheda.tipo_attivita) +
     gruppo("Gestione previdenziale", "gest", oc.gestione_previdenziale || [], scheda.gestione_previdenziale) +
-    `<div class="gruppo"><h3>Anno di apertura della partita IVA</h3><input class="testo" id="anno" value="${esc(String(scheda.data_apertura || "").slice(0,4))}" inputmode="numeric" maxlength="4"></div>` +
+    `<div class="gruppo"><h3>Anno di apertura della partita IVA</h3>${selAnni("anno", String(scheda.data_apertura || "").slice(0,4))}</div>` +
     `<div class="gruppo"><h3>Nome e cognome (facoltativo)</h3><input class="testo" id="nome-in" value="${esc(scheda.nome || "")}" maxlength="24" autocomplete="given-name" placeholder="Nome"><input class="testo" id="cognome-in" value="${esc(scheda.cognome || "")}" maxlength="40" autocomplete="family-name" placeholder="Cognome"><p class="hint" id="err-nome" style="color:#8a1f1f"></p></div>`;
   document.querySelectorAll("input[type=radio]").forEach(r => r.onchange = () => {
     document.querySelectorAll(`input[name=${r.name}]`).forEach(x => x.parentElement.classList.toggle("sel", x.checked)); });

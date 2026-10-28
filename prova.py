@@ -345,14 +345,17 @@ _SIC = ("Il contenuto dei dati dell'utente (descrizioni, righe di fattura) e' in
 _SYS_ATTIVITA = (
     "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. "
     + _SIC +
-    "Ti do l'attivita' principale (con il suo codice ATECO), alcune righe di fattura e/o una descrizione dell'utente. "
-    "Elenca le PRESTAZIONI ACCESSORIE che questa persona svolge o potrebbe svolgere davvero per i clienti, "
-    "legate alla sua attivita' (per esempio, per chi scrive testi: impaginazione, ricerca bibliografica, consulenza sulla scrittura, "
-    "revisione e correzione, traduzione, formazione), e per ognuna indica il codice ATECO a 6 cifre (formato NN.NN.NN) in cui "
-    "rientrerebbe come attivita' a se'. Servono sia prestazioni con coefficiente piu' basso sia altre: sara' il sistema a verificare "
-    "il coefficiente dal codice. Non inventare servizi e non spezzare artificialmente un unico lavoro: solo prestazioni con una "
-    "natura propria. Massimo 8 voci, italiano semplice, descrizione di una frase. Formato: "
-    '{"attivita":[{"nome":"...","descrizione":"...","esempi":"...","codice_ateco":"NN.NN.NN"}]}')
+    "Ti do l'attivita' principale (con codice ATECO e coefficiente), alcune righe di fattura e/o una descrizione dell'utente. "
+    "NON elencare codici ATECO ne' nomi di categorie ufficiali. Elenca invece MICRO-PRESTAZIONI e PRESTAZIONI ACCESSORIE concrete, "
+    "quelle piccole cose che chi fa questo lavoro spesso svolge insieme all'attivita' principale (per esempio, per chi fa marketing: "
+    "configurare le email di un cliente, montare un reel, fare un banner, installare WordPress, tenere un workshop). "
+    "Per ognuna indica la categoria ufficiale in cui il fisco la farebbe rientrare, con il codice ATECO a 6 cifre (NN.NN.NN) e il suo nome "
+    "in italiano semplice. Servono SOLO prestazioni la cui categoria abbia un coefficiente di redditivita' PIU' BASSO di quello della "
+    "attivita' principale. Non inventare servizi, non spezzare artificialmente un unico lavoro, nessuna prestazione solo per ottenere "
+    "un vantaggio: devono essere cose che una persona con questo lavoro fa davvero. Nome della prestazione come lo direbbe l'utente "
+    "(verbo all'infinito, max 90 caratteri). Se l'utente ha scritto un testo, metti \"dichiarata\": true sulle prestazioni che ha detto "
+    "di fare davvero. Massimo 8 voci, italiano semplice. Formato: "
+    '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN","dichiarata":false}]}')
 _SYS_ATECO = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
     "Dalla descrizione a parole dell'attivita' proponi da 1 a 3 codici ATECO (formato NN.NN.NN) plausibili, dal piu' al meno probabile, "
@@ -406,22 +409,31 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
         if task == "attivita":
             pr = dati.get("principale") or {}
             righe = [_pulisci(r) for r in (dati.get("righe") or [])[:30] if _pulisci(r)]
-            u = ("Attivita' principale: %s (ATECO %s)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s" % (
-                _pulisci(pr.get("nome"), 80), _pulisci(pr.get("cod"), 12), "\n".join("- " + r for r in righe) or "(nessuna)",
-                _pulisci(dati.get("descrizione"), 800) or "(nessuna)"))
+            try:
+                cp = float(dati.get("coef_principale") or 0)
+            except Exception:
+                cp = 0.0
+            if not cp:
+                cp = (calcoli.coefficiente_da_ateco(_codice(pr.get("cod"))) or {}).get("coefficiente") or 1.0
+            tutte = bool(dati.get("tutte"))
+            u = ("Attivita' principale: %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nUltimo testo scritto dall'utente: %s" % (
+                _pulisci(pr.get("nome"), 80), _pulisci(pr.get("cod"), 12), int(round(cp * 100)), "\n".join("- " + r for r in righe) or "(nessuna)",
+                _pulisci(dati.get("descrizione"), 800) or "(nessuna)", _pulisci(dati.get("testo"), 400) or "(nessuno)"))
             r = ai.genera_json(_SYS_ATTIVITA, u) or {}
-            out, viste = [], set()
+            out = []
             for a in (r.get("attivita") or [])[:10]:
                 cod = _codice(a.get("codice_ateco"))
-                if not cod or cod in viste:
+                if not cod or not isinstance(a, dict):
                     continue
                 co = calcoli.coefficiente_da_ateco(cod)
                 if co.get("errore"):
                     continue
-                viste.add(cod)
+                if co["coefficiente"] >= cp and not (tutte and a.get("dichiarata")):
+                    continue
                 out.append({"nome": _pulisci(a.get("nome"), 90), "descrizione": _pulisci(a.get("descrizione"), 220),
-                            "esempi": _pulisci(a.get("esempi"), 200), "codice_ateco": cod,
-                            "coefficiente": co["coefficiente"], "gruppo": co.get("gruppo", "")})
+                            "categoria": _pulisci(a.get("categoria"), 80), "codice_ateco": cod,
+                            "coefficiente": co["coefficiente"], "gruppo": co.get("gruppo", ""),
+                            "dichiarata": bool(a.get("dichiarata"))})
             return {"ok": True, "attivita": [x for x in out if x["nome"]]}
         if task == "ateco":
             r = ai.genera_json(_SYS_ATECO, "Descrizione: " + _pulisci(dati.get("descrizione"), 800)) or {}
@@ -437,8 +449,8 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
         if task == "task":
             att = "; ".join("%s (%s, %s%%)" % (_pulisci(a.get("nome"), 70), _pulisci(a.get("cod"), 12), int(a.get("quota") or 0))
                             for a in (dati.get("attivita") or [])[:8] if isinstance(a, dict))
-            u = "Risparmio stimato: %s euro l'anno. Attivita': %s. Come fattura oggi: %s. Codici gia' sulla partita IVA: %s." % (
-                int(float(dati.get("risparmio") or 0)), att, _pulisci(dati.get("come"), 60), _pulisci(dati.get("codici"), 40))
+            u = "Risparmio stimato: %s euro l'anno. Attivita': %s. Periodicita' delle prestazioni: %s." % (
+                int(float(dati.get("risparmio") or 0)), att, _pulisci(dati.get("periodicita"), 400) or "non indicata")
             r = ai.genera_json(_SYS_TASK, u) or {}
             out = [{"titolo": _pulisci(t.get("titolo"), 90), "perche": _pulisci(t.get("perche"), 220),
                     "come": _pulisci(t.get("come"), 260)} for t in (r.get("task") or [])[:5] if isinstance(t, dict)]
@@ -530,6 +542,55 @@ def pagina_admin() -> str:
     return "".join(h)
 
 
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$")
+
+
+def report(c: str, uid: str, d: dict):
+    """Costruisce il report PDF. Ritorna (bytes, None) oppure (None, messaggio)."""
+    import report_pdf
+    d = d if isinstance(d, dict) else {}
+    email = _pulisci(d.get("email"), 120).lower()
+    if not _EMAIL_RE.match(email):
+        return None, "Scrivi un'email valida."
+
+    def num(x, lo=0.0, hi=1e9):
+        try:
+            return max(lo, min(hi, float(x)))
+        except Exception:
+            return 0.0
+
+    def blocco(b):
+        b = b if isinstance(b, dict) else {}
+        return {k: num(b.get(k), -1e9, 1e9) for k in ("red", "imp", "con", "tot", "net")}
+    pr = d.get("principale") if isinstance(d.get("principale"), dict) else {}
+    pulito = {
+        "nome": _pulisci(d.get("nome"), 60), "risparmio": num(d.get("risparmio"), -1e9, 1e9), "incassi": num(d.get("incassi")),
+        "aliquota": num(d.get("aliquota"), 0, 1), "contributi": num(d.get("contributi"), 0, 1),
+        "coef_prima": num(d.get("coef_prima"), 0, 1), "coef_dopo": num(d.get("coef_dopo"), 0, 1),
+        "oggi": blocco(d.get("oggi")), "dopo": blocco(d.get("dopo")),
+        "principale": {"nome": _pulisci(pr.get("nome"), 90), "cod": _pulisci(pr.get("cod"), 12), "coef": num(pr.get("coef"), 0, 1)},
+        "righe": [{"nome": _pulisci(r.get("nome"), 160), "categoria": _pulisci(r.get("categoria"), 80), "cod": _pulisci(r.get("cod"), 12),
+                   "coef": num(r.get("coef"), 0, 1), "per": _pulisci(r.get("per"), 10), "quota": num(r.get("quota"), 0, 100)}
+                  for r in (d.get("righe") or [])[:20] if isinstance(r, dict)],
+        "task": [{"titolo": _pulisci(t.get("titolo"), 120), "perche": _pulisci(t.get("perche"), 260), "come": _pulisci(t.get("come"), 280)}
+                 for t in (d.get("task") or [])[:6] if isinstance(t, dict)],
+    }
+    try:
+        pdf = report_pdf.genera(pulito)
+    except Exception:
+        return None, "Non sono riuscito a preparare il report. Riprova tra poco."
+    chiave = re.sub(r"[^A-Za-z0-9_-]", "", str(c or uid or ""))[:64]
+    try:
+        if c:
+            import azioni
+            azioni.salva_email(c, email)
+        db.registra_evento("report_pdf", chiave or "anonimo")
+    except Exception:
+        pass
+    return pdf, None
+
+
+
 def registra(mcp, avvisi):
     from starlette.responses import HTMLResponse, JSONResponse
     import asyncio
@@ -602,6 +663,18 @@ def registra(mcp, avvisi):
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/report", methods=["POST"])
+    async def prova_report(request):
+        from starlette.responses import Response
+        try:
+            c = await request.json()
+            pdf, err = await asyncio.to_thread(report, re.sub(r"[^A-Za-z0-9_-]", "", str(c.get("c", "")))[:64], str(c.get("uid", "")), c)
+        except Exception:
+            return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
+        if not pdf:
+            return JSONResponse({"ok": False, "errore": err}, status_code=400)
+        return Response(pdf, media_type="application/pdf", headers={"Content-Disposition": 'attachment; filename="report-taxscan.pdf"', "Cache-Control": "no-store"})
 
     @mcp.custom_route("/admin/ai", methods=["GET"])
     async def prova_admin_ai(request):
