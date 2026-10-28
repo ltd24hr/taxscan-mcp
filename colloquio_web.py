@@ -498,6 +498,7 @@ function indietro() {
 
 // ---------------------------------------------------------------- intro
 function mostraIntro() {
+  nomeChiesto = false;
   $("passo").textContent = ""; barra(0.05);
   $("scheda").innerHTML = ILL_CERT + `
     <h1>La tua situazione fiscale in 2 minuti</h1>
@@ -579,7 +580,18 @@ async function caricaCertificato(ev) {
 }
 
 // ---------------------------------------------------------------- ciclo domanda → risposta
+let nomeChiesto = false;
+function mostraNome() {
+  fase = "nome"; $("passo").textContent = "Per iniziare"; barra(0.08);
+  $("scheda").innerHTML = '<h1>Come ti chiami?</h1><p class="hint">Così posso salutarti per nome. Se preferisci non dirlo, vai avanti.</p><input id="nm" class="testo" type="text" maxlength="40" autocomplete="given-name" aria-label="Il tuo nome" placeholder="Il tuo nome">';
+  const vai = () => { const v = ($("nm").value || "").trim(); if (v) scheda.nome = v; fase = "domanda"; invia(); };
+  nav([{testo: "Indietro", azione: () => { nomeChiesto = false; fase = "intro"; mostraIntro(); }}, {testo: "Avanti", classe: "primario", azione: vai}]);
+  $("nm").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); vai(); } };
+  setTimeout(() => { try { $("nm").focus(); } catch (e) {} }, 50);
+}
+
 async function invia() {
+  if (fase === "domanda" && !scheda.nome && !nomeChiesto) { nomeChiesto = true; return mostraNome(); }
   $("scheda").innerHTML = '<p class="hint">Un attimo...</p>'; nav([]);
   try { ultima = await api("POST", {scheda}); } catch (e) { $("scheda").innerHTML = '<div class="errore">Connessione persa: riprova tra un momento.</div>'; return; }
   scheda = ultima.scheda;
