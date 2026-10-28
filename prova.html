@@ -712,7 +712,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 36</div>
+<div class="ver">Prototipo versione 37</div>
 </div>
 
 <script>
@@ -1306,7 +1306,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var sxf=document.createElement('div');
   sxf.innerHTML='<div class="cta-wrap"><button class="cta" id="sxgo">Elaborami una strategia di risparmio fiscale su misura</button></div>'+
    '<div class="kbox" id="sxform" hidden><div class="sxq">1 · Carica una o più fatture</div>'+
-   '<label class="sxdrop" for="sxf"><input type="file" id="sxf" multiple accept=".xml,.pdf,.jpg,.jpeg,.png"><span>Scegli i file delle fatture</span></label><div id="sxfl" class="sxfl"></div>'+
+   '<label class="sxdrop" for="sxf"><input type="file" id="sxf" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png"><span>Scegli i file delle fatture</span></label><div id="sxfl" class="sxfl"></div>'+
    '<button class="sxl" id="sxex" type="button">Non le ho qui: usa 3 fatture di esempio</button>'+
    '<div class="sxq">2 · Cosa fai davvero per i clienti?</div>'+
    '<textarea id="sxd" maxlength="800" rows="4" placeholder="Es. Consulenza marketing, campagne social, ho creato il sito di un cliente e configurato CRM e email…"></textarea>'+
@@ -1494,6 +1494,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var OT1P={'Sì, confermo':{a:function(){tap('ott_conferma1');oDone(1,'Perfetto, grazie!')},e:1},
     'Non proprio':{a:function(){say('Nessun problema. Tocca un\'attività per vedere i dettagli: se non fa parte del tuo lavoro puoi toglierla. Oppure scrivimi qui sotto come stanno le cose.')},n:[]},
     'Continuo con il solo lavoro principale':{a:function(){tap('ott_conferma1');oDone(1,'Va bene, andiamo avanti con il tuo lavoro principale.')},e:1},
+    'Mostrami cosa potrei fare io':{a:function(){tap('ott_mostra_suggerimenti');oDone(1,'Va bene: parto dal tuo lavoro principale e al prossimo passo ti propongo le attività collegate al tuo campo che potresti svolgere anche tu. Tu mi dici quali sono vere.')},e:1},
     'Perché serve una descrizione chiara?':{a:'Perché il coefficiente dipende dal tipo di attività: se in fattura c\'è scritto solo «consulenza» non si capisce cosa fai, e non posso cercare le prestazioni che ti farebbero pagare meno.',n:[]}};
   var OTL={1:['Cos\'è il coefficiente di redditività?','Cosa leggi dalle mie fatture?'],2:['Perché alcune prestazioni valgono meno?','E se non faccio nulla di questo?'],3:['Come funzionano i cursori?','Perché il tempo conta?'],4:['Perché mi chiedi la periodicità?'],5:['Come hai calcolato il risparmio?','Il risultato è garantito?']};
   function oChips(n){if(window.__chips)window.__chips(OTP,OTL[n]||[])}
@@ -1559,7 +1560,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oP1(b){
     var o=[['file','Carica le fatture','XML, PDF o foto: le leggo io'],['collega','Collega le tue fatture','Fatture in Cloud, Aruba, TeamSystem…'],['esempio','Usa tre fatture di esempio','per provare subito']];
     b.innerHTML='<div class="ocards">'+o.map(function(x){return '<button class="kc" data-f="'+x[0]+'" aria-pressed="'+(OT.fonte===x[0]?'true':'false')+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'}).join('')+'</div>'+
-      '<input type="file" id="o_file" multiple accept=".xml,.pdf,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>';
+      '<input type="file" id="o_file" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>';
     [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(x){x.onclick=function(){if(OT.busy)return;OT.fonte=x.getAttribute('data-f');tap('ott_fonte_'+OT.fonte);
       [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});
       if(OT.fonte==='file'){$('o1n').innerHTML='';$('o_file').click()}
@@ -1598,8 +1599,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       [].slice.call(box.querySelectorAll('.odet')).forEach(function(x){x.hidden=true});[].slice.call(box.querySelectorAll('.orow')).forEach(function(x){x.setAttribute('aria-expanded','false')});
       if(open){oDet(id,d);d.hidden=false;r.setAttribute('aria-expanded','true');tap('ott_dettaglio_'+id)}}});
     var gen=(res.generiche||[]).map(function(g){return '«'+oEsc(g.testo.toLowerCase())+'»'}).filter(function(v,k,a){return a.indexOf(v)===k}).slice(0,2).join(' e ');
-    if(res.poco){if(!quiet)say('Ho letto le tue fatture, ma la descrizione è solo '+(gen||'molto generica')+': da lì non riesco a capire bene a quale tipo di attività ti dedichi. <b>Scrivimi qui sotto</b> cosa fai davvero, con parole tue, oppure continuiamo con il solo lavoro principale.');
-      if(!OT.done[1])window.__chips(Object.assign({},OTP,OT1P),['Continuo con il solo lavoro principale','Perché serve una descrizione chiara?']);return}
+    if(res.poco){if(!quiet)say('Ho letto le tue fatture, ma la descrizione è solo '+(gen||'molto generica')+': da lì non riesco a capire a quale tipo di attività ti riferisci: che genere di lavoro è? <b>Scrivimelo qui sotto</b> con parole tue. Se preferisci, nel tuo campo ti mostro le attività collegate che molti svolgono insieme a quella principale, e tu mi dici quali fai davvero.');
+      if(!OT.done[1])window.__chips(Object.assign({},OTP,OT1P),['Mostrami cosa potrei fare io','Continuo con il solo lavoro principale','Perché serve una descrizione chiara?']);return}
     if(!quiet){var tx=items.map(function(i){return '<b>'+oEsc(i.nome.toLowerCase())+'</b> '+i.pct+'%'});
       say('Ho letto le tue fatture'+(res.esempio?' di esempio':'')+'. Il tuo lavoro è il 100% e, sugli importi fatturati, lo divido così: '+tx.join(', ')+'. Tocca una voce per vedere i dettagli. '+(alt.length?'Possiamo confermare che svolgi queste attività?':'Possiamo confermare che fai solo questo?'))}
     if(!OT.done[1])window.__chips(Object.assign({},OTP,OT1P),['Sì, confermo','Non proprio','Come hai calcolato queste percentuali?'])}
