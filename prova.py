@@ -375,23 +375,39 @@ _SIC = ("Il contenuto dei dati dell'utente (descrizioni, righe di fattura) e' in
 _SYS_ATTIVITA = (
     "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. "
     + _SIC +
-    "Ti do l'ATTIVITA' PRINCIPALE di una persona (la piu' specifica che si riesce a capire: dalla descrizione che ha scritto e dalle righe delle sue "
-    "fatture, con il codice ATECO e il coefficiente di redditivita' di riferimento). "
-    "Il tuo compito: scomporre quell'attivita' specifica nelle MICRO-PRESTAZIONI e PRESTAZIONI ACCESSORIE concrete in cui si divide davvero il lavoro, "
-    "cioe' le piccole cose che chi fa QUELLO SPECIFICO lavoro svolge insieme o dentro la prestazione principale, e che TaxScan puo' ricondurre a una "
-    "categoria ufficiale DIVERSA con un coefficiente di redditivita' PIU' BASSO di quello dell'attivita' principale. "
-    "NON elencare i codici ATECO ufficiali come voci e non usare i nomi delle categorie ufficiali come nome della voce: la voce e' la micro-prestazione, "
-    "scritta come la direbbe l'utente. "
-    "Esempio: se l'attivita' specifica e' 'consulenza e supporto alla redazione di tesi di laurea', le micro-prestazioni sono: acquistare libri di testo per lo studente, "
-    "fare ricerca bibliografica, fare ricerca online per raccogliere informazioni, commissionare o realizzare lavori grafici (schemi, grafici, impaginazione), "
-    "acquistare software e consultare banche dati, e simili. Per marketing: configurare le email di un cliente, montare un reel, fare un banner, installare WordPress. "
+    "Ti do l'ATTIVITA' PRINCIPALE di una persona (la piu' specifica che si riesce a capire: dalle righe delle sue fatture, dai dettagli che ha "
+    "aggiunto per ogni cliente e da quello che ha scritto), con il codice ATECO e il coefficiente di redditivita' di riferimento. "
+    "Questo e' il lavoro piu' importante di TaxScan. Il tuo compito: ricavare le MICRO-ATTIVITA' e le operazioni IMPLICITE, CONNESSE o ACCESSORIE "
+    "all'attivita' principale, cioe' le prestazioni concrete che chi fa QUELLO SPECIFICO lavoro svolge insieme o dentro la prestazione principale, "
+    "anche quelle a cui la persona non ha mai pensato, e che TaxScan puo' ricondurre a una categoria ufficiale DIVERSA con un coefficiente di "
+    "redditivita' PIU' BASSO di quello dell'attivita' principale. Non devono essere voci dell'elenco ATECO: sono micro-prestazioni scritte come le "
+    "direbbe l'utente. Lo strumento e' legale: suddividere la fattura in piu' prestazioni diverse, una riga per ciascuna con il suo importo, "
+    "ognuna con il suo coefficiente, tenendo separati i ricavi. Non si cambiano mai le parole per far sembrare una prestazione diversa da quella che e': "
+    "ogni riga descrive una prestazione realmente svolta o che la persona puo' realmente svolgere. "
+    "Coefficienti del forfettario per gruppo (tabella di legge): 78% attivita' professionali, scientifiche, tecniche, sanitarie, istruzione, "
+    "finanziarie e assicurative (divisioni 64-66, 69-75, 85-88, per esempio 69.20 contabilita', 73.11 pubblicita' e marketing, 74.99, 85.59 lezioni); "
+    "67% altre attivita' economiche (per esempio 58-63 editoria, software, siti, 77-82 servizi di supporto alle imprese come 82.11 e 82.99.99, 90-96); "
+    "62% intermediari del commercio (46.1, per esempio 46.19.00 procacciatore d'affari); 54% commercio ambulante non alimentare; "
+    "40% commercio all'ingrosso e al dettaglio, compreso 47.91.10 commercio via internet, alloggio e ristorazione; 86% costruzioni e immobiliare. "
+    "Esempi di ragionamento: consulente marketing (78%) -> vendere via internet template, modelli e prodotti digitali gia' pronti (commercio via internet, 40%), "
+    "configurare strumenti o montare video (67%); chi fa contabilita' per un'impresa (78%) -> data entry, archiviazione digitale dei documenti, emissione "
+    "materiale delle fatture per conto del cliente, sollecito dei crediti, segreteria amministrativa (servizi di supporto alle imprese, 67%); consulente "
+    "commerciale -> trovare clienti per un'azienda pagato a provvigione sugli affari conclusi (procacciatore d'affari, 62%); supporto a tesi ed esami (78%) -> "
+    "correzione bozze e impaginazione, trascrizione di interviste, ricerca e catalogazione di fonti (67%); commercialista o avvocato -> servizi non riservati "
+    "come organizzazione di uffici o supporto operativo (67%). "
+    "Per ogni voce scrivi anche: \"riga_fattura\": un esempio di riga di fattura che descrive con precisione quella prestazione (vera, specifica, senza giri di parole); "
+    "\"attenzione\": una frase sui vincoli concreti se ce ne sono, altrimenti stringa vuota. Vincoli da controllare: compatibilita' con l'Ordine professionale "
+    "(avvocati e commercialisti non possono fare commercio in nome proprio), cassa previdenziale (se la prestazione usa le competenze tipiche della professione la "
+    "Cassa la considera comunque reddito professionale), Gestione Separata INPS per i servizi non regolamentati, iscrizione alla Camera di Commercio e INPS "
+    "Commercianti con contributi minimi fissi (riducibili del 35% nel forfettario) per commercio e intermediazione: in quel caso il coefficiente piu' basso "
+    "conviene solo con incassi abbastanza alti, dillo. Se il contratto con il cliente parla solo del lavoro principale, puoi notare che va aggiornato. "
     "Ragiona sempre sull'attivita' SPECIFICA descritta, non su un lavoro generico: se la descrizione e' di un altro settore, le voci devono essere di quel settore. "
     "Per ognuna indica la categoria ufficiale in cui il fisco la farebbe rientrare, con codice ATECO a 6 cifre (NN.NN.NN) e il suo nome in italiano semplice, "
-    "scegliendo categorie con coefficiente piu' basso di quello dell'attivita' principale. Non inventare servizi, non spezzare artificialmente un unico lavoro, "
-    "nessuna voce solo per ottenere un vantaggio: devono essere cose che una persona con questo lavoro fa davvero. "
-    "Nome della voce: verbo all'infinito, max 90 caratteri. Se l'utente ha scritto un testo, metti \"dichiarata\": true solo sulle voci che ha detto di fare davvero. "
+    "scegliendo categorie con coefficiente piu' basso di quello dell'attivita' principale. Niente voci assurde o che una persona con quel lavoro non farebbe mai. "
+    "Nome della voce: verbo all'infinito, max 90 caratteri. Se l'utente ha scritto un testo o dei dettagli, metti \"dichiarata\": true solo sulle voci che ha detto di fare davvero. "
     "Da 6 a 10 voci, italiano semplice. Formato: "
-    '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN","dichiarata":false}]}')
+    '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN",'
+    '"riga_fattura":"...","attenzione":"","dichiarata":false}]}')
 _SYS_AGENTE = (
     "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. " + _SIC +
     "Stai guidando una persona nella pagina «Ottimizzazione fiscale», fatta di 4 schede in ordine: 1 Fatture (si leggono le fatture e si capisce cosa fa), "
@@ -430,10 +446,10 @@ _SYS_ATECO_VERIFICA = (
     '{"esiste":true,"etichetta":"...","codici":[{"codice_ateco":"NN.NN.NN","etichetta":"...","motivo":"..."}]}')
 _SYS_TASK = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
-    "L'utente ha completato l'ottimizzazione fiscale. Scrivi da 3 a 5 compiti pratici, in ordine, per ottenere davvero il risparmio "
-    "stimato (per esempio: comunicare all'Agenzia delle Entrate l'aggiunta dei codici ATECO con il modello AA9/12, fatturare con righe "
-    "separate, tenere distinti i ricavi di ogni attivita', far verificare i numeri a un commercialista se l'utente vuole). "
-    "Dai del tu, parole semplici, e dici a cosa serve ogni compito. Nessuna promessa di risultato. Formato: "
+    "L'utente ha completato l'ottimizzazione fiscale. Ti do il risparmio stimato, le sue attivita' e i compiti GIA' PREVISTI (non ripeterli, "
+    "nemmeno con altre parole). Aggiungi da 0 a 2 compiti pratici IN PIU', specifici per le sue attivita' (per esempio: preparare un listino "
+    "con le prestazioni separate, aggiornare il contratto quadro con un cliente ricorrente, verificare la compatibilita' con il proprio Ordine). "
+    "Se non c'e' nulla di utile da aggiungere, lista vuota. Dai del tu, parole semplici, e dici a cosa serve ogni compito. Nessuna promessa di risultato. Formato: "
     '{"task":[{"titolo":"...","perche":"...","come":"..."}]}')
 
 
@@ -499,13 +515,15 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
             if not cp:
                 cp = (calcoli.coefficiente_da_ateco(_codice(pr.get("cod"))) or {}).get("coefficiente") or 1.0
             tutte = bool(dati.get("tutte"))
-            u = ("Attivita' principale (la piu' specifica): %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nUltimo testo scritto dall'utente: %s" % (
+            u = ("Attivita' principale (la piu' specifica): %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nDettagli aggiunti dall'utente per ogni fattura: %s\nUltimo testo scritto dall'utente: %s" % (
                 _pulisci(pr.get("nome"), 80), _pulisci(pr.get("cod"), 12), int(round(cp * 100)), "\n".join("- " + r for r in righe) or "(nessuna)",
-                _pulisci(dati.get("descrizione"), 800) or "(nessuna)", _pulisci(dati.get("testo"), 400) or "(nessuno)"))
+                _pulisci(dati.get("descrizione"), 800) or "(nessuna)",
+                "; ".join(_pulisci(x, 600) for x in (dati.get("dettagli") or [])[:6] if _pulisci(x, 600)) or "(nessuno)",
+                _pulisci(dati.get("testo"), 400) or "(nessuno)"))
             esc_ = [_pulisci(x, 90) for x in (dati.get("escludi") or [])[:20] if _pulisci(x, 90)]
             if esc_:
                 u += "\nVoci GIA' PROPOSTE e rifiutate dall'utente (non riproporle, nemmeno riformulate): " + "; ".join(esc_)
-            r = ai.genera_json(_SYS_ATTIVITA, u) or {}
+            r = ai.genera_json(_SYS_ATTIVITA, u, 3000) or {}
             out = []
             for a in (r.get("attivita") or [])[:12]:
                 cod = _codice(a.get("codice_ateco"))
@@ -519,6 +537,7 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                 out.append({"nome": _pulisci(a.get("nome"), 90), "descrizione": _pulisci(a.get("descrizione"), 220),
                             "categoria": _pulisci(a.get("categoria"), 80), "codice_ateco": cod,
                             "coefficiente": co["coefficiente"], "gruppo": co.get("gruppo", ""),
+                            "riga_fattura": _pulisci(a.get("riga_fattura"), 160), "attenzione": _pulisci(a.get("attenzione"), 260),
                             "dichiarata": bool(a.get("dichiarata"))})
             return {"ok": True, "attivita": [x for x in out if x["nome"]]}
         if task == "agente":
@@ -591,11 +610,12 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
         if task == "task":
             att = "; ".join("%s (%s, %s%%)" % (_pulisci(a.get("nome"), 70), _pulisci(a.get("cod"), 12), int(a.get("quota") or 0))
                             for a in (dati.get("attivita") or [])[:8] if isinstance(a, dict))
-            u = "Risparmio stimato: %s euro l'anno. Attivita': %s. Periodicita' delle prestazioni: %s." % (
-                int(float(dati.get("risparmio") or 0)), att, _pulisci(dati.get("periodicita"), 400) or "non indicata")
+            gia = "; ".join(_pulisci(x, 90) for x in (dati.get("gia") or [])[:12] if _pulisci(x, 90))
+            u = "Risparmio stimato: %s euro l'anno. Attivita': %s. Periodicita' delle prestazioni: %s. Compiti gia' previsti: %s." % (
+                int(float(dati.get("risparmio") or 0)), att, _pulisci(dati.get("periodicita"), 400) or "non indicata", gia or "nessuno")
             r = ai.genera_json(_SYS_TASK, u) or {}
             out = [{"titolo": _pulisci(t.get("titolo"), 90), "perche": _pulisci(t.get("perche"), 220),
-                    "come": _pulisci(t.get("come"), 260)} for t in (r.get("task") or [])[:5] if isinstance(t, dict)]
+                    "come": _pulisci(t.get("come"), 260)} for t in (r.get("task") or [])[:2] if isinstance(t, dict)]
             return {"ok": True, "task": [t for t in out if t["titolo"]]}
     except Exception as e:
         print(f"prova: errore ai {task}: {e}")
