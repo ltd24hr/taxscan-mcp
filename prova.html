@@ -256,6 +256,22 @@ html.settled #stage{gap:18px}
 @media (max-width:760px){.o2g{grid-template-columns:1fr}.o2det{position:static}}
 .o2g .oit{grid-template-columns:auto 1fr auto;align-items:center}.o2g .oit input{grid-row:auto;margin-top:0}
 .o2g .ogr{grid-template-columns:1fr}
+
+/* v52: blocchi come widget: tre misure (intero, metà, terzo), si spostano selezionandoli e quelli della stessa misura si scambiano */
+.wgz.wgz{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;align-items:start}
+.wgz .wgt{grid-column:span 6;min-width:0}
+.wgz .wgt.wh{grid-column:span 3}
+.wgz .wgt.wt{grid-column:span 2}
+html:not(.settled) #stage.wgz{display:flex!important}
+html:not(.settled) #stage .wz{display:none}
+html.settled #stage.wgz>.slot:not(.on):not(#slC):not(#slT){display:none}
+html.settled #stage>#slC,html.settled #stage>#slT,html.settled #stage>#slC>.in-s,html.settled #stage>#slT>.in-s,html.settled #stage>#slC>.in-s>div,html.settled #stage>#slT>.in-s>div,html.settled #stage #slC .cards,html.settled #stage #slT .tabs{display:contents!important}
+html.settled #stage #slC .xb,html.settled #stage #slT .xb{grid-column:1/-1}
+.wc .wz{width:30px;height:30px}
+.wgt.wno{animation:oshake .35s}
+.wh,.wt{overflow-wrap:anywhere}
+@media (max-width:899px){.wgz .wgt.wh,.wgz .wgt.wt{grid-column:span 6}.wc .wz{display:none}}
+.wgz .wgt{transition:transform .22s ease}.wgz .wgt.wlift{transition:none}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -848,7 +864,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 51</div>
+<div class="ver">Prototipo versione 52</div>
 </div>
 
 <script>
@@ -2052,7 +2068,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ================= Blocchi spostabili, spiegazioni con domande suggerite, Scadenze ragionata =================
   function wgLoad(k){try{return JSON.parse(localStorage.getItem('ts_w_'+k)||'[]')}catch(e){return[]}}
   function wgSave(k,a){try{localStorage.setItem('ts_w_'+k,JSON.stringify(a))}catch(e){}}
-  function wgKey(el,i){return el.getAttribute('data-wk')||el.getAttribute('data-k')||el.id||('i'+i)}
+  function wgKey(el,i){var sl=el.closest&&el.closest('.slot');return el.getAttribute('data-wk')||el.getAttribute('data-k')||el.id||(sl&&sl!==el?sl.id+'_'+i:'i'+i)}
+  var WGZ={p:1,b:1,s:1},WGS={};
+  function wgZLoad(k){try{return JSON.parse(localStorage.getItem('ts_wz_'+k)||'{}')}catch(e){return{}}}
+  function wgZSave(k,o){try{localStorage.setItem('ts_wz_'+k,JSON.stringify(o))}catch(e){}}
+  function wgHost(el){return el.classList.contains('slot')?(el.querySelector('.in-s')||el):el}
+  function wgFits(el){var h=wgHost(el);return h.scrollWidth<=h.clientWidth+2&&el.scrollWidth<=el.clientWidth+2}
+  function wgSize(el){return el.classList.contains('wt')?'t':el.classList.contains('wh')?'h':'f'}
+  function wgSetSize(el,z){el.classList.toggle('wh',z==='h');el.classList.toggle('wt',z==='t')}
+  var WGO=['f','h','t'];
+  function wgResize(cont,key,el){var zs=wgZLoad(key),k=wgKey(el,0),cur=wgSize(el),i=WGO.indexOf(cur),done=false;
+    for(var n=1;n<=3&&!done;n++){var to=WGO[(i+n)%3],shrink=WGO.indexOf(to)>WGO.indexOf(cur);wgSetSize(el,to);
+      if(shrink&&!wgFits(el)){continue}done=true;zs[k]=to;wgZSave(key,zs);tap('widget_misura_'+to)}
+    if(!done){wgSetSize(el,cur);el.classList.add('wno');setTimeout(function(){el.classList.remove('wno')},700);say('Questo blocco non si può rimpicciolire di più: non si leggerebbe tutto.')}}
   function wgSorted(cont,sel){return [].slice.call(cont.querySelectorAll(sel)).sort(function(a,b){return (+a.style.order)-(+b.style.order)})}
   function wgApply(cont,key,sel,list){list.forEach(function(el,i){el.style.order=i});wgSave(key,list.map(wgKey))}
   function wgMove(cont,key,sel,el,d){var all=wgSorted(cont,sel),vis=all.filter(function(x){return x===el||(x.offsetParent!==null&&(!x.classList.contains('slot')||x.classList.contains('on')))});
@@ -2062,22 +2090,30 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- trascinamento diretto: si tiene premuto su un blocco e lo si muove, come le app su uno schermo
   function wgPress(cont,key,sel,el){if(el.__wgd)return;el.__wgd=1;
     el.addEventListener('click',function(e){if(el.__wgj){e.preventDefault();e.stopPropagation();el.__wgj=0}},true);
-    el.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;if(e.target.closest('input,textarea,select,a,button,label,.wc,[contenteditable]'))return;
+    el.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;if(e.target.closest('input,textarea,select,a,button,label,.wc,[contenteditable]'))return;var inn=e.target.closest('.wgt');if(inn&&inn!==el)return;
       var touch=e.pointerType==='touch',sx=e.clientX,sy=e.clientY,on=false,tm=null,tg=null,aft=false,iv=null,px=sx,py=sy,r0=null,s0=scrollY;
+      var lastSw=0;
+      function lr(e){var tr=e.style.transform;e.style.transform='';var r=e.getBoundingClientRect();e.style.transform=tr;return r}
+      function liveSwap(t){var sibs=[].slice.call(cont.querySelectorAll(sel)).filter(function(x){return x!==el&&x.offsetParent!==null}),F=sibs.map(function(x){return x.getBoundingClientRect()}),L0=lr(el);
+        var all=wgSorted(cont,sel),a=all.indexOf(el),b=all.indexOf(t);if(a<0||b<0)return;all[a]=t;all[b]=el;all.forEach(function(x,i){x.style.order=i});lastSw=Date.now();
+        var L1=lr(el);sx+=L1.left-L0.left;sy+=L1.top-L0.top;el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
+        if(!reduce)sibs.forEach(function(x,i){var N=x.getBoundingClientRect(),dx=F[i].left-N.left,dy=F[i].top-N.top;if(!dx&&!dy)return;x.style.transition='none';x.style.transform='translate('+dx+'px,'+dy+'px)';void x.offsetWidth;x.style.transition='transform .22s ease';x.style.transform='';setTimeout(function(){x.style.transition=''},260)})}
       function clear(){[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')})}
       function begin(){on=true;r0=el.getBoundingClientRect();el.classList.add('wlift');document.body.classList.add('wgdragging');try{getSelection().removeAllRanges()}catch(x){}
         iv=setInterval(function(){if(py<90)scrollBy(0,-14);else if(py>innerHeight-90)scrollBy(0,14);place()},30)}
       function place(){if(!on)return;var r=el.getBoundingClientRect();
         el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
         var pe=el.style.pointerEvents;el.style.pointerEvents='none';var u=document.elementFromPoint(px,py);el.style.pointerEvents=pe;
-        var t=u&&u.closest&&u.closest(sel);clear();tg=null;if(t&&t!==el&&cont.contains(t)){tg=t;var q=t.getBoundingClientRect(),dx=px-(q.left+q.width/2),dy=py-(q.top+q.height/2);
+        var t=u&&u.closest&&u.closest(sel);clear();tg=null;
+        if((WGZ[key]||WGS[key])&&t&&t!==el&&cont.contains(t)){if(wgSize(t)===wgSize(el)&&Date.now()-lastSw>260){liveSwap(t)}return}
+        if(t&&t!==el&&cont.contains(t)){tg=t;var q=t.getBoundingClientRect(),dx=px-(q.left+q.width/2),dy=py-(q.top+q.height/2);
           aft=Math.abs(dy)*q.width>Math.abs(dx)*q.height?dy>0:dx>0;t.classList.add('wover')}}
       function mv(ev){if(ev.pointerId!==e.pointerId)return;px=ev.clientX;py=ev.clientY;
         if(!on){var d=Math.hypot(px-sx,py-sy);if(touch){if(d>10){end(true)}return}if(d>6)begin();else return}
         ev.preventDefault();place()}
       function end(cancel){clearTimeout(tm);clearInterval(iv);removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',cn);removeEventListener('touchmove',tmv);
         document.body.classList.remove('wgdragging');var was=on;on=false;clear();
-        if(was){el.classList.remove('wlift');el.style.transform='';el.__wgj=1;setTimeout(function(){el.__wgj=0},50);if(!cancel&&tg)wgDrop(cont,key,sel,el,tg,aft)}}
+        if(was){el.classList.remove('wlift');el.style.transform='';el.__wgj=1;setTimeout(function(){el.__wgj=0},50);if(!cancel&&tg)wgDrop(cont,key,sel,el,tg,aft);else if(WGZ[key]||WGS[key]){wgApply(cont,key,sel,wgSorted(cont,sel));tap('widget_trascina')}}}
       function up(ev){if(ev.pointerId===e.pointerId)end(false)}function cn(ev){if(ev.pointerId===e.pointerId)end(true)}
       function tmv(ev){if(on)ev.preventDefault()}
       addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',cn);addEventListener('touchmove',tmv,{passive:false});
@@ -2085,18 +2121,16 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function wgInit(cont,key,sel){if(!cont)return;var els=[].slice.call(cont.querySelectorAll(sel));if(!els.length)return;var ord=wgLoad(key);
     els.forEach(function(el,i){var k=wgKey(el,i);el.setAttribute('data-wk',k);el.classList.add('wgt');wgPress(cont,key,sel,el);
       var p=ord.indexOf(k);el.style.order=p<0?ord.length+i:p;
-      var host=el.classList.contains('slot')?el.querySelector('.in-s'):el;if(!host||host.querySelector(':scope>.wc'))return;
-      var c=document.createElement('span');c.className='wc';c.setAttribute('role','group');c.setAttribute('aria-label','Sposta questo blocco');
-      c.innerHTML='<button type="button" data-d="-1" aria-label="Sposta su" title="Sposta su">↑</button><button type="button" data-d="1" aria-label="Sposta giù" title="Sposta giù">↓</button><button type="button" class="wd" aria-label="Trascina per spostare" title="Tieni premuto il blocco e trascinalo dove vuoi">⠿</button>';
-      [].slice.call(c.querySelectorAll('[data-d]')).forEach(function(b){b.onclick=function(e){e.stopPropagation();wgMove(cont,key,sel,el,+b.getAttribute('data-d'))}});
-      var h=c.querySelector('.wd');h.onclick=function(e){e.stopPropagation()};h.onmousedown=function(){el.draggable=true};
-      el.addEventListener('dragstart',function(e){if(!el.draggable)return;e.stopPropagation();try{e.dataTransfer.setData('text/plain',wgKey(el,0));e.dataTransfer.effectAllowed='move'}catch(x){}el.classList.add('wdrag')});
-      el.addEventListener('dragend',function(){el.draggable=false;el.classList.remove('wdrag');[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')})});
+      if(!WGZ[key])return;
+      var zs=wgZLoad(key),def=el.classList.contains('scw')&&!el.classList.contains('wide')?'h':(el.classList.contains('card')||el.classList.contains('tb'))?'t':'f',sz=zs[k]||def;wgSetSize(el,sz);
+      var host=wgHost(el);if(!host||host.querySelector(':scope>.wc'))return;
+      var c=document.createElement('span');c.className='wc';c.setAttribute('role','group');
+      c.innerHTML='<button type="button" class="wz" aria-label="Cambia la misura del blocco" title="Cambia la misura del blocco">⤢</button>';
+      c.querySelector('.wz').onclick=function(e){e.stopPropagation();wgResize(cont,key,el)};
       host.appendChild(c)});
-    if(!cont.__wg){cont.__wg=1;cont.addEventListener('dragover',function(e){var t=e.target.closest&&e.target.closest(sel),d=cont.querySelector('.wdrag');if(!t||!d||t===d)return;e.preventDefault();[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')});t.classList.add('wover')});
-      cont.addEventListener('drop',function(e){var t=e.target.closest&&e.target.closest(sel),d=cont.querySelector('.wdrag');if(!t||!d||t===d)return;e.preventDefault();var r=t.getBoundingClientRect();wgDrop(cont,key,sel,d,t,e.clientY>r.top+r.height/2)})}}
+    cont.classList.toggle('wgz',!!WGZ[key])}
   window.__wgInit=wgInit;
-  wgInit($('stage'),'p','#slN,#slC,#slD,#slT,#slSo,#slP,#slS,#slR');
+  wgInit($('stage'),'p','#slN,#slD,#slSo,#slP,#slS,#slR,#slC .card,#slT .tb');
   // ---- piccola scuola: glossario e domande che l'utente potrebbe farsi
   function ans(h){(mpView()==='p'?showBub:say)(h)}
   var QC='Come hai calcolato il '+D.perc+'%?';
