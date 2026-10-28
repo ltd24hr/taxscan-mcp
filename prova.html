@@ -1580,7 +1580,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     OTN.forEach(function(s){var n=s[0],r=$('ost'+n);if(!r)return;var st=OT.done[n]?'done':oAvail(n)?'cur':'lock';
       r.className=r.className.replace(/\b(done|cur|lock|open|avail)\b/g,'').trim()+' '+(st==='cur'&&n!==cur?'avail':st)+(OT.open===n?' open':'');
       r.querySelector('.ock').textContent=OT.done[n]?'✓':'';r.querySelector('.onode').setAttribute('aria-disabled',st==='lock'?'true':'false');
-      $('osm'+n).textContent=OT.done[n]?oSummary(n):s[2]})}
+      $('osm'+n).textContent=OT.done[n]?oSummary(n):s[2]});oSaveSoon()}
   function oSummary(n){if(n===1)return OT.read?(oInvOk().length?oInvOk().length+(oInvOk().length===1?' fattura capita':' fatture capite'):'Fatture lette e confermate'):'Descrizione ricevuta';if(n===2)return OT.solo?'Solo il tuo lavoro principale':oNMic()+(oNMic()===1?' prestazione in più':' prestazioni in più');if(n===3)return 'Tempo indicato';return ''}
   function oClick(n){if(!oAvail(n)){say('Prima completiamo la scheda <b>'+OTN[n-2][1]+'</b>: si va in ordine, una alla volta.');var r=$('ost'+n);r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake');return}
     if(OT.busy)return;oOpen(n)}
@@ -1647,7 +1647,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       'Il percorso: 1 fatture (lette una per una), 2 prestazioni in più, 3 tempo per attività, 4 risultato in euro con report PDF. Se non capisci cosa fa l\'utente, chiedi: non indovinare. '}
   function oSpecFatto(t,msg){OT.spec=OT.spec||(OT.desc||t).slice(0,90);if(OT.read)OT.read.poco=false;oDone(1,msg||'Grazie, ora ho capito meglio cosa fai. Passiamo alle prestazioni in più.')}
   // il codice cambia ma NON si ricomincia: le fatture gia' lette restano, si riparte dal passo 2 con l'attivita' piu' specifica
-  function oUsaCodice(c){OTMAIN={nome:c.etichetta||OTMAIN.nome,cod:c.codice_ateco};CCOEF=c.coefficiente;OT.spec=c.etichetta||OT.spec;tap('ott_cambia_codice');
+  function oUsaCodice(c){OTMAIN={nome:c.etichetta||OTMAIN.nome,cod:c.codice_ateco};CCOEF=c.coefficiente;OT.cod={nome:OTMAIN.nome,cod:OTMAIN.cod,coef:CCOEF};OT.spec=c.etichetta||OT.spec;tap('ott_cambia_codice');
     OT.sel={};OT.mic={};OT.micAi=[];OT.aiTag={};OT.solo=false;OT.aiOn=0;OT.aiBusy=0;OT.aiN=0;OT.aiQ='';OT.chatPend='';OT.pct={};OT.lv={};OT.per={};OT.seed=null;OT.fin=null;OT.tk=null;
     if(OT.read){OT.read.poco=false;(OT.read.items||[]).forEach(function(i){if(i.id==='principale'){i.nome=OTMAIN.nome;i.coef=CCOEF}})}
     for(var k=2;k<=4;k++){delete OT.done[k];delete OT.vis[k]}
@@ -1737,7 +1737,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call(box.querySelectorAll('[data-u]')).forEach(function(c){c.onchange=function(){var v=OT.inv[+c.getAttribute('data-u')];v.usa=c.checked;tap('ott_usa_fattura');OT.sintesi=false;if(OT.done[1])oUndone(1);oInvDraw();oInvNext()}});
     [].slice.call(box.querySelectorAll('[data-o]')).forEach(function(c){c.onclick=function(){oInvModal(+c.getAttribute('data-o'))}});
     [].slice.call(box.querySelectorAll('.oitx')).forEach(function(c){c.onclick=function(){oInvModal(+c.parentNode.getAttribute('data-i'))}});
-    if(OT.sintesi)oSinDraw()}
+    if(OT.sintesi)oSinDraw();oSaveSoon()}
   // risposta a una fattura: da qui in poi Marcello la considera capita
   function oInvSet(i,att,msg){var v=OT.inv[i];v.capito=true;v.risp=att;v.attivita=att;v.chiesto=true;OT.askIdx=-1;OT.sintesi=false;tap('ott_risposta_fattura');oInvDraw();if(msg)say(msg);timers.push(setTimeout(function(){oInvNext()},reduce?0:600))}
   function oInvNext(quiet){var pend=OT.inv.map(function(v,i){return [v,i]}).filter(function(x){return x[0].usa&&x[0].ok&&!x[0].capito})[0];
@@ -1754,15 +1754,16 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var l=ord.map(function(k){return g[k]}).sort(function(a,b){return b.imp-a.imp});if(!l.length)return;
     var tot=l.reduce(function(a,x){return a+x.imp},0)||1,pc0={};l.forEach(function(x){pc0[x.nome]=x.imp/tot});var ids=l.map(function(x){return x.nome}),tn=oTens(pc0,ids);
     OT.sin=l.map(function(x){return {nome:x.nome,imp:x.imp,n:x.n,pct:tn[x.nome]}});OT.sinp={};l.forEach(function(x){OT.sinp[x.nome]=tn[x.nome]});OT.sintesi=true;
-    var rg=[];oInvOk().forEach(function(v){v.righe.forEach(function(r){rg.push({testo:r.testo})})});
-    var main=OT.sin[0];OT.desc=OT.sin.map(function(x){return x.nome}).join('; ');
-    OT.read={ok:true,items:[{id:'principale',nome:main.nome,coef:oCoef(),pct:100}],righe:rg,riepilogo:[{voce:'principale',titolo:main.nome,pct:100}],generiche:[],poco:false};
-    OT.sel={};OT.seed={principale:100};OT.pct={principale:100};OT.lv={};OT.touched=false;
+    oReadBuild();
     oSinDraw();
     var tx=OT.sin.map(function(x){return '<b>'+oEsc(x.nome.toLowerCase())+'</b> ('+oEur0(x.imp)+')'}).join(', ');
     say('Ecco cosa ho capito dalle tue fatture: '+tx+'. È questo il lavoro che fai per i clienti?');
     var pool={'Sì, è questo':{a:function(){tap('ott_conferma1');oAtecoCheck(OT.desc)},e:1},'Non proprio':{a:'Nessun problema: tocca una fattura per vedere le righe e correggerla, oppure togli la spunta a quelle che non c\'entrano. Puoi anche scrivermi qui sotto cosa fai.',n:[]},'Come hai capito?':{a:'Ho letto le descrizioni e gli importi delle righe, fattura per fattura, e le ho raggruppate per tipo di lavoro. Dove la descrizione non bastava, ti ho chiesto io.',n:[]}};
     if(window.__chips)window.__chips(pool,['Sì, è questo','Non proprio','Come hai capito?'])}
+  function oReadBuild(){var main=OT.sin[0],rg=[];oInvOk().forEach(function(v){v.righe.forEach(function(r){rg.push({testo:r.testo})})});
+    OT.desc=OT.sin.map(function(x){return x.nome}).join('; ');
+    OT.read={ok:true,items:[{id:'principale',nome:main.nome,coef:oCoef(),pct:100}],righe:rg,riepilogo:[{voce:'principale',titolo:main.nome,pct:100}],generiche:[],poco:false};
+    OT.sel={};OT.seed={principale:100};OT.pct={principale:100};OT.lv={};OT.touched=false}
   function oSinDraw(){var s=$('o1syn');if(!s||!OT.sin)return;
     s.innerHTML='<div class="kbox"><div class="lbl">Cosa fai, secondo le tue fatture</div><div class="obw">'+oBar(OT.sin.map(function(x){return {id:x.nome,nome:x.nome}}),'sinp')+'</div><div class="osp orows">'+OT.sin.map(function(x,k){return '<div class="osr"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><span class="osn">'+oEsc(x.nome)+'<small>'+oEur0(x.imp)+' · '+x.n+(x.n===1?' fattura':' fatture')+'</small></span><b class="opp">'+x.pct+'%</b></div>'}).join('')+'</div></div>'}
   // ingrandimento: anteprima a sinistra, righe cliccabili a destra
@@ -1905,12 +1906,28 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(j&&j.task&&j.task.length){OT.tk=j.task;oTkDraw(j.task,d)}})}
   function oTkDraw(tk,d){var u=$('otasks');if(!u)return;u.innerHTML=tk.map(function(t,i){var k='task_ai'+i;return '<li><label><input type="checkbox" data-t="'+k+'"'+(OT.task[k]?' checked':'')+'><span><b>'+oEsc(t.titolo)+'</b><small>'+oEsc(t.perche)+'</small>'+(t.come?'<small><b>Come:</b> '+oEsc(t.come)+'</small>':'')+'</span></label></li>'}).join('');
     [].slice.call(u.querySelectorAll('[data-t]')).forEach(function(c){c.onchange=function(){OT.task[c.getAttribute('data-t')]=c.checked;if(c.checked){srv('task_cod',d);tap('ott_task_ai')}}})}
-  function oReset(){OT=otNew();SX.fil=[];oBuild();oNodes();oPh();say(oIntro())}
+  function oReset(){try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:oPid(),op:'set',data:{v:0}})}).catch(function(){})}catch(e){}OT=otNew();SX.fil=[];oBuild();oNodes();oPh();say(oIntro())}
   function oIntro(){return 'Qui scopriamo insieme se puoi <b>pagare meno tasse</b>. Nel forfettario le tasse si calcolano su una percentuale dei tuoi incassi, il <b>coefficiente di redditività</b>, che dipende dal codice della tua attività. Cominciamo: tocca la scheda <b>FATTURE</b> qui sopra.'}
+  // ---- profilo attivita': salvato sul server (solo descrizioni e importi delle righe, mai i file), cosi' Marcello lo ritrova
+  var OTSV=null,OTLOADED=false;
+  function oPid(){var id='';try{id=window.TS_C||localStorage.getItem('ts_uid')||localStorage.getItem('ts_pid')||'';if(!id){id='p'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('ts_pid',id)}}catch(e){}return id}
+  function oSaveSoon(){if(!OTLOADED)return;clearTimeout(OTSV);OTSV=setTimeout(oSave,900)}
+  function oSave(){if(!OT.inv||!OT.inv.length)return;var id=oPid();if(!id)return;
+    var d={v:1,ts:new Date().toISOString(),done1:!!OT.done[1],desc:OT.desc||'',spec:OT.spec||'',cod:OT.cod||null,sin:OT.sin||null,
+      inv:OT.inv.map(function(v){return {nome:v.nome,ok:v.ok,usa:v.usa,capito:v.capito,attivita:v.attivita,risp:v.risp||'',chiesto:!!v.chiesto,importo:v.importo,fonte:v.risp?'utente':(v.capito?'fattura':'da chiedere'),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}})};
+    try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:d})}).catch(function(){})}catch(e){}}
+  function oLoad(){var id=oPid();if(!id){OTLOADED=true;return}
+    fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'get'})}).then(function(r){return r.json()}).then(function(j){
+      OTLOADED=true;var d=j&&j.ok&&j.exists&&j.data;if(!d||d.v!==1||!d.inv||!d.inv.length)return;if(OT.inv.length||OT.busy)return;
+      if(d.cod&&d.cod.cod){OTMAIN={nome:d.cod.nome,cod:d.cod.cod};CCOEF=d.cod.coef;OT.cod=d.cod}
+      OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:!!v.ok,motivo_non_letta:'',righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',domanda:'',opzioni:[],usa:v.usa!==false,chiesto:!!v.chiesto,risp:v.risp||''}});
+      OT.spec=d.spec||'';
+      if(d.done1&&d.sin&&d.sin.length&&oInvOk().length){OT.sin=d.sin;OT.sinp={};d.sin.forEach(function(x){OT.sinp[x.nome]=x.pct});OT.sintesi=true;OT.done[1]=true;oReadBuild();OT.desc=d.desc||OT.desc}
+      oNodes();if(OT.open===1)oFill(1)}).catch(function(){OTLOADED=true})}
   // costruzione, barra per scrivere, ingresso
   (function(){var bar=document.createElement('form');bar.id='obar';bar.innerHTML='<input type="text" id="o_in" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello"><button type="submit" class="kb">Invia</button>';
     $('gview').appendChild(bar);bar.onsubmit=function(e){e.preventDefault();var i=$('o_in'),v=i.value;i.value='';oWrite(v)}})();
-  oBuild();oNodes();oPh();
+  oBuild();oNodes();oPh();oLoad();
   var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){oShow();oNodes();oPh();if(OT.open)oFill(OT.open);else{say(OT.done[1]?'Da dove vuoi riprendere? Tocca la scheda che preferisci.':oIntro());oChips(0)}}};
   // ================= Bandi e agevolazioni + Profilo
   var BD=[

@@ -306,6 +306,31 @@ def documento(uid: str, op: str, path: str, dati) -> dict:
     return {"ok": True}
 
 
+_ID_PROFILO = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
+
+
+def profilo(pid: str, op: str, dati=None) -> dict:
+    """Profilo attivita' dell'utente (cosa fa davvero, letto dalle fatture e dalle sue risposte).
+    Si salvano solo descrizioni e importi delle righe: mai i file ne' i dati dei clienti."""
+    if not _ID_PROFILO.match(pid or "") or op not in ("get", "set"):
+        return {"ok": False}
+    _tabella()
+    from psycopg2.extras import Json
+    path = "profili/" + pid
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            if op == "get":
+                cur.execute("SELECT dati FROM prova_doc WHERE path = %s", (path,))
+                r = cur.fetchone()
+                return {"ok": True, "exists": r is not None, "data": r[0] if r else None}
+            if not isinstance(dati, dict) or len(json.dumps(dati)) > MAX_BYTE_DOC:
+                return {"ok": False}
+            cur.execute("INSERT INTO prova_doc (path, dati) VALUES (%s, %s) "
+                        "ON CONFLICT (path) DO UPDATE SET dati = EXCLUDED.dati, aggiornato = now()", (path, Json(dati)))
+        conn.commit()
+    return {"ok": True}
+
+
 _SISTEMA = ("Sei Marcello, l'assistente virtuale (intelligenza artificiale, non una persona) di TaxScan, che aiuta chi ha "
             "la partita IVA in regime forfettario in Italia. Il tuo nome omaggia Marcello Mastroianni, grande attore "
             "italiano. Rispondi in italiano semplice, in 2-4 frasi, tono caldo e un po' ironico, senza gergo. Sul fisco dai "
@@ -767,6 +792,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(documento, c.get("uid", ""), c.get("op", ""), c.get("path", ""), c.get("data"))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/profilo", methods=["POST"])
+    async def prova_profilo(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(profilo, c.get("id", ""), c.get("op", ""), c.get("data"))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
