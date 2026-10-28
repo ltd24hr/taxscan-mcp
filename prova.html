@@ -834,7 +834,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 49</div>
+<div class="ver">Prototipo versione 50</div>
 </div>
 
 <script>
@@ -1939,10 +1939,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var PF={nome:'',email:'',av:'',ok:false};
   function renderProfilo(){var nome=PF.nome||D.nome;
     var r=function(k,l,v,ed){return '<div class="pfr" data-k="'+k+'"><span class="pfl">'+l+'</span><span class="pfv">'+(v||'<i>da aggiungere</i>')+'</span>'+(ed?'<button class="pfe" data-e="'+k+'">Modifica</button>':'')+'</div>'};
-    $('pflist').innerHTML=r('nome','Come ti chiamo',oEsc(nome),1)+r('att','Il tuo lavoro principale',oEsc(OTMAIN.nome)+' · ATECO '+oEsc(OTMAIN.cod),0)+r('reg','Regime','Forfettario',0)+r('email','Email per gli avvisi',oEsc(PF.email),1)+
+    $('pflist').innerHTML=r('nome','Come ti chiamo',oEsc(nome),1)+r('att','Il tuo lavoro principale',oEsc(OTMAIN.nome)+' · ATECO '+oEsc(OTMAIN.cod),0)+(OT.sin&&OT.sin.length?r('fatt','Cosa fai davvero, dalle tue fatture',OT.sin.filter(function(x){return x.pct>0}).map(function(x){return oEsc(x.nome)+' '+x.pct+'%'}).join(' · '),0):'')+r('reg','Regime','Forfettario',0)+r('email','Email per gli avvisi',oEsc(PF.email),1)+
       '<div class="pfr"><span class="pfl">Come ti avviso</span><span class="pfv"><label><input type="radio" name="pfav" value="email"'+(PF.av==='email'?' checked':'')+'> Email</label> <label><input type="radio" name="pfav" value="wa"'+(PF.av==='wa'?' checked':'')+'> WhatsApp</label> <label><input type="radio" name="pfav" value="tutti"'+(PF.av==='tutti'?' checked':'')+'> Tutti e due</label></span></div>';
     wgInit($('pflist'),'f','.pfr');
-    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),m={nome:'È il nome con cui ti saluto: puoi cambiarlo quando vuoi.',att:'È il lavoro da cui parto per scegliere il codice ATECO e il coefficiente. Lo verifichiamo in Ottimizzazione fiscale.',reg:'Il forfettario è il regime in cui calcolo imposta e contributi per te.',email:'Serve per mandarti gli avvisi sulle scadenze e il report, solo se vuoi.'};tap('profilo_riga_'+k);say(m[k]||'Questo dato mi serve per i calcoli.');window.__chips(XA,XL.pf)}});
+    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),m={nome:'È il nome con cui ti saluto: puoi cambiarlo quando vuoi.',att:'È il lavoro da cui parto per scegliere il codice ATECO e il coefficiente. Lo verifichiamo in Ottimizzazione fiscale.',fatt:'L\'ho letto dalle fatture che mi hai dato, una per una. Se qualcosa non è giusto, correggilo in Ottimizzazione fiscale, scheda Fatture.',reg:'Il forfettario è il regime in cui calcolo imposta e contributi per te.',email:'Serve per mandarti gli avvisi sulle scadenze e il report, solo se vuoi.'};tap('profilo_riga_'+k);say(m[k]||'Questo dato mi serve per i calcoli.');window.__chips(XA,XL.pf)}});
     [].slice.call($('pflist').querySelectorAll('[data-e]')).forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-e'),row=b.parentNode,cur=k==='nome'?nome:PF.email;
       row.querySelector('.pfv').innerHTML='<input type="'+(k==='email'?'email':'text')+'" class="pfi" value="'+oEsc(cur)+'" aria-label="'+(k==='nome'?'Nome':'Email')+'"><button class="pfs">Salva</button>';b.hidden=true;
       var i=row.querySelector('.pfi');i.focus();row.querySelector('.pfs').onclick=function(){PF[k]=i.value.trim();tap('profilo_salva_'+k);if(k==='nome'&&PF.nome){D.nome=PF.nome;var h1=$('nome');if(h1)h1.textContent='Ciao '+PF.nome+', benvenuto su TaxScan'}
