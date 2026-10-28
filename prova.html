@@ -142,19 +142,17 @@ html.settled #stage{gap:18px}
 #gview #gnarr .fc,#gview #gnarr .fc .face{width:88px}
 #gview #gnarr .bub{max-width:1000px;font-size:18px;line-height:1.5;padding:12px 18px;min-height:0;max-height:26vh;overflow-y:auto;scrollbar-width:none}
 @media (max-width:760px){#gview #gnarr .fc,#gview #gnarr .fc .face{width:60px}#gview #gnarr .bub{font-size:16px}}
-.oshell{display:grid;grid-template-columns:310px minmax(0,1fr);gap:30px;align-items:start}
-.opath{position:sticky;top:calc(var(--navh,52px) + 118px);display:flex;flex-direction:column;width:300px}
-.ost{display:flex;align-items:center;gap:12px;width:300px}
-.ost.R{flex-direction:row-reverse;text-align:right}
-.onode{flex:none;width:62px;height:62px;border-radius:50%;border:0;font:inherit;font-weight:700;font-size:25px;cursor:pointer;display:grid;place-items:center;background:var(--accent);color:#fff;box-shadow:0 6px 0 rgba(18,36,82,.28);transition:transform .15s}
+.oshell{display:flex;gap:34px;align-items:flex-start}
+.opath{position:sticky;top:calc(var(--navh,52px) + 118px);display:flex;flex-direction:column;flex:none}
+.ost{display:flex;align-items:center;gap:18px;transition:gap .35s}
+.onode{flex:none;width:68px;height:68px;border-radius:50%;border:0;font:inherit;font-weight:700;font-size:25px;cursor:pointer;display:grid;place-items:center;background:var(--accent);color:#fff;box-shadow:0 6px 0 rgba(18,36,82,.28);transition:transform .15s}
 .onode:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(18,36,82,.28)}
 .onode:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-.olab{display:flex;flex-direction:column;gap:2px;font-size:15.5px;min-width:0}.olab small{color:var(--mute);font-size:12.5px;line-height:1.3}
+.olab{display:flex;flex-direction:column;gap:3px;font-size:21px;min-width:0;max-width:340px;overflow:hidden;white-space:nowrap;transition:max-width .35s,opacity .25s}.olab small{color:var(--mute);font-size:15.5px;line-height:1.3}
+.oshell.sm .olab{max-width:0;opacity:0}.oshell.sm .ost{gap:0}
 .ost.lock{filter:grayscale(1) blur(1.2px);opacity:.55}
-.ocon{display:block;width:300px;height:44px;color:var(--line)}
-.odos{min-width:0;min-height:60vh}
-.odos0{display:flex;align-items:center;gap:18px;min-height:50vh;color:var(--ink2);font-size:18px;line-height:1.5}
-.oback{font-size:56px;color:var(--accent);animation:oarr 1.4s ease-in-out infinite}
+.oarr{width:68px;display:flex;justify-content:center;color:var(--mute);margin:8px 0;opacity:.8}
+.odos{min-width:0;flex:1;min-height:60vh}
 @keyframes oarr{50%{transform:translateX(-12px)}}
 .opanel{padding:20px 22px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-sizing:border-box}
 .opanel .kbox{background:var(--bg)}
@@ -175,10 +173,8 @@ html.settled #stage{gap:18px}
 .oq3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.oq3 .kbox{margin-top:0}
 .ocol{display:flex;flex-direction:column;gap:8px}
 .odue{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px}.odue .kbox{margin-top:10px}
-@media (max-width:900px){.oshell{grid-template-columns:1fr}.opath{position:static;margin:0 auto}.odos0{min-height:0}.oback{display:none}}
-@media (prefers-reduced-motion:reduce){.oback,.oarrow,.odots i{animation:none}}
-.ohelp{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:0 0 16px;padding:14px 16px;background:var(--accent-soft);border-radius:12px}
-.ohelp b{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}.ohelp p{margin:4px 0 0;font-size:15px;line-height:1.5;color:var(--ink)}
+@media (max-width:900px){.oshell{flex-direction:column;gap:16px}.opath{position:static}.oshell.sm .opath{flex-direction:row;align-items:center;gap:0}.oshell.sm .oarr{width:34px;margin:0}.oshell.sm .oarr svg{transform:rotate(-90deg)}.odos{width:100%}}
+@media (prefers-reduced-motion:reduce){.oarrow,.odots i{animation:none}.olab,.ost{transition:none}}
 .ogh.ai{color:#fff;background:var(--accent)}
 .olv{min-width:120px;text-align:right;font-weight:700;color:var(--accent);font-size:15px}
 .olh{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:8px}
@@ -188,14 +184,14 @@ html.settled #stage{gap:18px}
 </style><style id="mpcss">.narr,#gnarr,#snarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
-body{padding-bottom:96px}
+body{padding-bottom:124px}
 html.flow:not(.settled) #scroller{height:auto!important}
 html.flow:not(.settled) #stage{position:static!important;top:auto!important;gap:18px}
 html.flow:not(.settled) #again{display:none}
 #schint{bottom:92px}
 @media (min-width:641px){button.astab.astab{width:84px;height:84px}#gview{padding-left:112px}
 .dbub.mp{width:min(440px,calc(100vw - 130px))}}
-@media (max-width:640px){.dbub.mp{bottom:84px!important}}
+@media (max-width:640px){.dbub.mp{bottom:104px!important}}
 .dbub.mp{padding:14px 40px 12px 18px;overflow:visible}
 .dbub.mp .mpt{font-size:17px;line-height:1.5;max-height:42vh;overflow:auto;scrollbar-width:thin}
 .mpq{font-size:13px;color:var(--mute);font-style:italic;margin:0 0 8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
@@ -203,10 +199,10 @@ html.flow:not(.settled) #again{display:none}
 .mpc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.mpc:empty{display:none}
 .mpc button{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}.mpc button:hover{border-color:var(--accent)}
 .mpf{display:block;margin:8px 0 0;font:inherit;font-size:12px;color:var(--mute);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
-#mpbar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(900px,calc(100vw - 32px));z-index:57;display:flex;gap:8px;background:var(--surface);border:2px solid var(--accent);border-radius:16px;padding:7px;box-shadow:0 8px 24px rgba(18,36,82,.2)}
-#mpbar input{flex:1;min-width:0;font:inherit;font-size:16px;border:0;background:transparent;color:var(--ink);padding:9px 12px}
+#mpbar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(1180px,calc(100vw - 32px));z-index:57;display:flex;gap:10px;background:var(--surface);border:2px solid var(--accent);border-radius:18px;padding:9px;box-shadow:0 8px 24px rgba(18,36,82,.2)}
+#mpbar input{flex:1;min-width:0;font:inherit;font-size:19px;border:0;background:transparent;color:var(--ink);padding:13px 16px}
 #mpbar input:focus{outline:none}
-#mpbar button{font:inherit;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:11px;padding:8px 22px;cursor:pointer}
+#mpbar button{font:inherit;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:12px;padding:12px 32px;font-size:17px;cursor:pointer}
 .astab .dotvid{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;object-fit:cover;pointer-events:none;opacity:0;z-index:2;background:#1b2841}
 .astab .dv-i{opacity:1}.astab.talk .dv-i{opacity:0}
 .astab.talk.vr .dv-tr{opacity:1}.astab.talk.vl .dv-tl{opacity:1}
@@ -220,6 +216,8 @@ html.flow:not(.settled) #again{display:none}
 .cta:hover,.cta.s:hover{filter:none;background:linear-gradient(135deg,#2a39b0,#06b9ae);border-color:#06b9ae;box-shadow:0 8px 22px rgba(6,185,174,.42);transform:translateY(-1px)}
 .cta:disabled{background:#9aa3d6;border-color:#9aa3d6;box-shadow:none;cursor:not-allowed;transform:none}
 .cta.s.o2{font-size:17px;padding:12px 28px}
+
+.mpc button{font-size:14.5px;padding:7px 13px}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -705,7 +703,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 33</div>
+<div class="ver">Prototipo versione 34</div>
 </div>
 
 <script>
@@ -1254,7 +1252,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
   function giorniA(m,d){var t=new Date(),y=t.getFullYear(),x=new Date(y,m,d);if(x<new Date(y,t.getMonth(),t.getDate()))x=new Date(y+1,m,d);return Math.round((x-new Date(y,t.getMonth(),t.getDate()))/864e5)}
   function renderScad(){var t=new Date(),n=giorniA(10,30),ans=GT.acc,msg;
-    msg='Oggi è il <b>'+t.getDate()+' '+MESI[t.getMonth()]+'</b>: mancano <b>'+n+' giorni</b> al 30 novembre. Hai messo da parte <b>3.951 €</b>?';
+    msg='Oggi è il <b>'+t.getDate()+' '+MESI[t.getMonth()]+'</b>: '+(n===1?'manca <b>1 giorno</b>':'mancano <b>'+n+' giorni</b>')+' al 30 novembre. Hai messo da parte <b>3.951 €</b>?';
     EX.s_f24='Qui preparerò l\'F24 con codici e importi, e lo pagherai direttamente da TaxScan. Nel prototipo non si paga davvero: la funzione arriva dopo.';
     EX.s_r1='Il <b>30 novembre 2026</b>: 2° acconto 2026. Imposta <b>764 €</b> + contributi <b>3.187 €</b> = <b>3.951 €</b>.<div class="sm">Cifre di esempio.</div>';
     EX.s_r2='Il <b>30 giugno 2027</b> si sommano il saldo del 2026 e il primo acconto 2027: è il momento più pesante.<div class="sm">Cifre di esempio.</div>';
@@ -1264,7 +1262,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call($('sask').querySelectorAll('[data-g]')).forEach(function(b){b.onclick=function(){GT.acc=b.dataset.g;tap('scadenza_'+b.dataset.g);say(GT.acc==='si'?'Bene, <b>bravo</b>! Così arrivi tranquillo alla scadenza.':'Va bene, nessun problema. Te lo ripropongo <b>tra 10 giorni</b>: intanto metti da parte circa il <b>22%</b> di ogni incasso.');if(GT.acc==='si')setTimeout(wink,1500);renderScad()}});
     $('scal').innerHTML='<tr><th>Data</th><th>Cosa</th><th>Imposta</th><th>Contributi</th><th>Totale</th><th></th></tr>'+
       (window.TS_SC&&window.TS_SC.length?window.TS_SC.map(function(s,i){return ['s_r'+(i+1),s.d,s.e,s.i,s.c,s.t]}):[['s_r1','30 nov 2026','2° acconto 2026','764 €','3.187 €','3.951 €'],['s_r2','30 giu 2027','Saldo 2026 + 1° acconto 2027','—','—','8.417 €'],['s_r3','30 nov 2027','2° acconto 2027','—','—','—']]).map(function(r){return '<tr data-ex="'+r[0]+'" tabindex="0" role="button"><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td><button class="pf24" data-ex="s_f24">Paga F24</button></td></tr>'}).join('');
-    return msg}
+    $('sask').hidden=true;return msg}
+  function scadChips(){if(GT.acc||!window.__xchips)return;var go=function(a){return function(){GT.acc=a;tap('scadenza_'+a);say(a==='si'?'Bene, <b>bravo</b>! Così arrivi tranquillo alla scadenza.':'Va bene, nessun problema. Te lo ripropongo <b>tra 10 giorni</b>: intanto metti da parte circa il <b>22%</b> di ogni incasso.');if(a==='si')setTimeout(wink,1500)}};
+    window.__xchips([['Sì, li ho messi da parte',go('si')],['Non ancora',go('no')],['Cosa sono gli acconti?',function(){say(EX.s_ask);scadChips()}]])}
   var VW={p:'scroller',g:'gview',s:'sview'};
   function showView(v){hideBub();Object.keys(VW).forEach(function(k){$(VW[k]).hidden=(k!==v)});$('again').hidden=(v!=='p');
     navb.forEach(function(x,i){if(i===({p:0,s:1,g:2})[v])x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
@@ -1272,7 +1272,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(v!=='p'&&window.__sy==null)window.__sy=scrollY;
     SID=v==='g'?'tg':v==='s'?'tsc':'t5';
     if(v==='g'){window.__sy=scrollY;$('gperc').hidden=kOn;$('gscene').hidden=!kOn;renderTodo();renderRisk(false);scrollTo(0,0);tap('gestione_apri');say(gMsg())}
-    else if(v==='s'){window.__sy=scrollY;var m=renderScad();scrollTo(0,0);tap('scadenze_apri');say(m)}
+    else if(v==='s'){window.__sy=scrollY;var m=renderScad();scrollTo(0,0);tap('scadenze_apri');say(m);scadChips()}
     else{scrollTo(0,window.__sy||0);setStep(target())}}
   // sposta il percorso in Ottimizzazione fiscale
   $('gperc').appendChild($('slP').querySelector('.in-s'));$('gscene').appendChild($('slK').querySelector('.in-s'));
@@ -1430,11 +1430,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     rem.sort(function(a,b){return b[1]-a[1]});for(var k=0;sum<10&&k<rem.length;k++,sum++)base[rem[k][0]]++;
     var o={};ids.forEach(function(i){o[i]=base[i]*10});return o}
   // ---- percorso (a sinistra) e dossier (a destra)
-  function oBuild(){var h='<div class="oshell"><div class="opath" id="opath" role="group" aria-label="Il tuo percorso">';
-    OTN.forEach(function(s,k){var n=s[0],R=k%2===1;
-      h+='<div class="ost '+(R?'R':'L')+'" id="ost'+n+'"><button class="onode" data-n="'+n+'" aria-label="Passo '+n+': '+s[1]+'"><span>'+n+'</span></button><div class="olab"><b>'+s[1]+'</b><small id="osm'+n+'">'+s[2]+'</small></div></div>';
-      if(n<5)h+='<svg class="ocon" viewBox="0 0 300 44" preserveAspectRatio="none" aria-hidden="true"><path d="'+(R?'M262 0 C262 38, 38 6, 38 44':'M38 0 C38 38, 262 6, 262 44')+'" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>'});
-    h+='</div><section class="odos" id="odos" aria-live="polite"><div class="odos0" id="odos0"><span class="oback" aria-hidden="true">←</span><p>Il tuo dossier si apre qui.<br>Tocca il <b>passo 1</b> per cominciare.</p></div>';
+  function oBuild(){var h='<div class="oshell" id="oshell"><div class="opath" id="opath" role="group" aria-label="Il tuo percorso">';
+    OTN.forEach(function(s){var n=s[0];
+      h+='<div class="ost" id="ost'+n+'"><button class="onode" data-n="'+n+'" title="'+s[1]+'" aria-label="Passo '+n+': '+s[1]+'"><span>'+n+'</span></button><div class="olab"><b>'+s[1]+'</b><small id="osm'+n+'">'+s[2]+'</small></div></div>';
+      if(n<5)h+='<div class="oarr" aria-hidden="true"><svg viewBox="0 0 24 30" width="24" height="30"><path d="M12 2v22M4 17l8 9 8-9" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'});
+    h+='</div><section class="odos" id="odos" aria-live="polite" hidden>';
     OTN.forEach(function(s){h+='<div class="opanel" id="opn'+s[0]+'" hidden></div>'});
     op.innerHTML=h+'</section></div>';
     [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){oClick(+b.getAttribute('data-n'))}})}
@@ -1446,16 +1446,23 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oSummary(n){if(n===1)return OT.read?'Fatture lette e confermate':'Descrizione ricevuta';if(n===2)return OT.solo?'Solo il tuo lavoro principale':oNMic()+(oNMic()===1?' prestazione in più':' prestazioni in più');if(n===3)return 'Tempo indicato';if(n===4)return 'Periodicità indicata';return ''}
   function oClick(n){if(!oAvail(n)){say('Prima completiamo il passo <b>'+(n-1)+'</b>: si va in ordine, un passo alla volta.');var r=$('ost'+n);r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake');return}
     if(OT.busy)return;oOpen(n)}
-  function oShow(){OTN.forEach(function(s){$('opn'+s[0]).hidden=(OT.open!==s[0])});$('odos0').hidden=!!OT.open}
-  function oOpen(n){OT.open=n;tap('ott_passo_'+n);oShow();oNodes();oFill(n);oPh();oScroll()}
+  function oShow(){OTN.forEach(function(s){$('opn'+s[0]).hidden=(OT.open!==s[0])});$('odos').hidden=!OT.open;$('oshell').classList.toggle('sm',!!OT.open)}
+  function oOpen(n){if(window.__qa0)window.__qa0();OT.open=n;tap('ott_passo_'+n);oShow();oNodes();oFill(n);oPh();oScroll()}
   function oScroll(){if(reduce)return;var s=$('opath');try{var t=s.getBoundingClientRect().top;if(t<document.querySelector('nav').offsetHeight+60||t>innerHeight*.6)scrollTo({top:Math.max(0,t+scrollY-(document.querySelector('nav').offsetHeight+120)),behavior:'smooth'})}catch(e){}}
   var OTHELP={1:['Le tue fatture mi dicono cosa fai davvero per i clienti, meglio di qualsiasi domanda. Le leggo io: prendo solo la descrizione e l\'importo delle righe, mai i dati dei clienti, e non conservo i file.','Scegli come darmi le fatture: caricale, collegale al tuo programma o prova con un esempio.'],
  2:['Insieme al tuo lavoro fai spesso piccole prestazioni in più: configurare uno strumento, montare un video, fare una grafica. Per il fisco alcune rientrano in una categoria con un <b>coefficiente di redditività</b> più basso del tuo, e su quella parte paghi meno tasse.','Spunta le prestazioni che fai davvero per i clienti, anche poche. Non spuntare quelle che non fai: il calcolo deve essere onesto.'],
  3:['Il calcolo applica a ogni attività il suo coefficiente, quindi mi serve capire come si divide il tuo tempo. Se fatturi tutto il tuo tempo, la quota di tempo è anche la quota dei tuoi incassi.','Per ogni attività sposta il cursore da poco a tanto tempo. Non servono numeri: alla fine le percentuali le calcolo io.'],
  4:['Quanto spesso fai una prestazione conta: una cosa che fai ogni settimana pesa diversamente da una che fai una volta l\'anno, e mi serve per scrivere i compiti giusti.','Per ogni prestazione scegli ogni quanto la fai. Basta una scelta per riga.'],
  5:['Ti mostro quanto paghi oggi e quanto pagheresti con le attività che hai indicato, con una stima in euro, e i compiti da fare per ottenere la differenza.','Guarda il risultato e spunta i compiti man mano che li fai.']};
-  function oFill(n){var b=$('opn'+n);if(!b.querySelector('.obody')){var h=OTHELP[n];b.insertAdjacentHTML('afterbegin','<div class="ohelp"><div><b>A cosa serve questo passo</b><p>'+h[0]+'</p></div><div><b>Cosa fai tu</b><p>'+h[1]+'</p></div></div><div class="obody"></div>')}
-    ({1:oP1,2:oP2,3:oP3,4:oP4,5:oP5})[n](b.querySelector('.obody'));if(OT.done[n]&&n<5)oArrow(n)}
+  function oFill(n){var b=$('opn'+n);if(!b.querySelector('.obody'))b.insertAdjacentHTML('afterbegin','<div class="obody"></div>');
+    ({1:oP1,2:oP2,3:oP3,4:oP4,5:oP5})[n](b.querySelector('.obody'));if(OT.done[n]&&n<5)oArrow(n);oChips(n)}
+  // domande che l'utente potrebbe farsi: le propone Marcello nel fumetto, cliccabili
+  var OTQ={1:[['Cos\'è il coefficiente di redditività?','Ogni attività ha una percentuale stabilita dalla legge: le tasse si calcolano solo su quella parte dei tuoi incassi. Per esempio <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Più è bassa, meno tasse paghi.'],['Cosa leggi dalle mie fatture?','Prendo solo la descrizione e l\'importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.']],
+    2:[['Perché alcune prestazioni valgono meno?','Per il fisco alcune piccole prestazioni rientrano in una categoria con un coefficiente più basso del tuo: su quella parte di incassi il reddito tassato è più basso.'],['E se non faccio nulla di questo?','Nessun problema: scegli «Faccio solo il mio lavoro principale». Il risultato sarà sincero, anche se è zero.']],
+    3:[['Come funzionano i cursori?','Per ogni attività sposti il cursore da poco a tanto tempo. Non servono numeri: alla fine le percentuali le calcolo io. Se preferisci, scrivimele qui sotto.'],['Perché il tempo conta?','Se fatturi tutto il tuo tempo, la quota di tempo è anche la quota dei tuoi incassi, e ogni quota usa il suo coefficiente.']],
+    4:[['Perché mi chiedi la periodicità?','Una cosa che fai ogni settimana pesa diversamente da una che fai una volta l\'anno: mi serve per scrivere i compiti giusti per te.']],
+    5:[['Come hai calcolato il risparmio?','Ho applicato a ogni attività il suo coefficiente sulla sua quota di incassi, poi ho calcolato imposta e contributi e confrontato con quello che paghi oggi. Nel report PDF trovi tutti i passaggi.'],['Il risultato è garantito?','No, è una stima: dipende da come fatturi e dai codici attivi sulla tua partita IVA. Se vuoi, un commercialista può controllarla.']]};
+  function oChips(n){var q=OTQ[n];if(!q||!window.__xchips)return;window.__xchips(q.map(function(x){return [x[0],function(){say(x[1]);window.__xchips(q.filter(function(y){return y!==x}).map(function(y){return [y[0],function(){say(y[1])}]}))}]}))}
   function oArrow(n){var b=$('opn'+n);if(!b||b.querySelector('.oarw'))return;var s=OTN[n];
     b.insertAdjacentHTML('beforeend','<div class="oarw"><button class="oarrow" aria-label="Vai al passo '+(n+1)+': '+s[1]+'"><span aria-hidden="true">→</span></button><div><b>Passo '+(n+1)+'</b><small>'+s[1]+'</small></div></div>');
     b.querySelector('.oarrow').onclick=function(){oOpen(n+1)}}
@@ -1510,8 +1517,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oP1(b){
     var o=[['file','Carica le fatture','XML, PDF o foto: le leggo io'],['collega','Collega le tue fatture','Fatture in Cloud, Aruba, TeamSystem…'],['esempio','Usa tre fatture di esempio','per provare subito']];
     b.innerHTML='<div class="ocards">'+o.map(function(x){return '<button class="kc" data-f="'+x[0]+'" aria-pressed="'+(OT.fonte===x[0]?'true':'false')+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'}).join('')+'</div>'+
-      '<input type="file" id="o_file" multiple accept=".xml,.pdf,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>'+
-      '<button class="lnk" id="o_more">Vuoi capire meglio i coefficienti?</button>';
+      '<input type="file" id="o_file" multiple accept=".xml,.pdf,.jpg,.jpeg,.png" hidden><div id="o1n"></div><div id="o1res"></div>';
     [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(x){x.onclick=function(){if(OT.busy)return;OT.fonte=x.getAttribute('data-f');tap('ott_fonte_'+OT.fonte);
       [].slice.call(b.querySelectorAll('[data-f]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});
       if(OT.fonte==='file'){$('o1n').innerHTML='';$('o_file').click()}
@@ -1523,13 +1529,12 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
           say('Il collegamento con <b>'+oEsc(nm)+'</b> lo stiamo ancora attivando. Esporta le tue fatture e <b>caricale qui</b>: le leggo allo stesso modo.');
           $('o_tofile').onclick=function(){OT.fonte='file';$('o_file').click()}}})}}});
     $('o_file').onchange=function(){SX.fil=[].slice.call(this.files||[]);if(!SX.fil.length)return;OT.ex=false;tap('strategia_file');srv('fattura_caricata',0);$('o1n').innerHTML='<p class="onote">'+SX.fil.map(function(f){return '✓ '+oEsc(f.name)}).join(' · ')+'</p>';oLeggi()};
-    $('o_more').onclick=function(){say('Per esempio: <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Se oltre al lavoro principale fai altre attività con un coefficiente più basso e le fatturi con il loro codice, la parte di incassi che viene tassata <b>scende</b>.')};
-    if(OT.read)oAnRes(OT.read,true);else say('Partiamo dalle tue <b>fatture</b>: mi raccontano cosa fai davvero. Come preferisci darmele?')}
+    if(OT.read)oAnRes(OT.read,true);else say('Partiamo dalle tue <b>fatture</b>: mi raccontano cosa fai davvero. Puoi scegliere l\'opzione che fa più al caso tuo.')}
   function oLeggi(){var box=$('o1res');OT.busy=true;
-    box.innerHTML='<div class="kbox owork"><span class="odots" aria-hidden="true"><i></i><i></i><i></i></span><span id="owt">Marcello sta lavorando…</span></div>';
+    box.innerHTML='';
     var msgs=['Sto aprendo le fatture…','Sto leggendo le righe di lavoro…','Sto confrontando con il tuo codice <b>'+oEsc(OTMAIN.cod)+'</b>…','Calcolo le percentuali…'];
     var fin=false,res=null,ok=false;function show(){if(fin&&ok){OT.busy=false;oAnRes(res)}}
-    msgs.forEach(function(m,i){timers.push(setTimeout(function(){say(m);var w=$('owt');if(w)w.innerHTML=m;if(i===msgs.length-1)timers.push(setTimeout(function(){ok=true;show()},reduce?0:1300))},reduce?0:1500*i))});
+    msgs.forEach(function(m,i){timers.push(setTimeout(function(){say(m);if(i===msgs.length-1)timers.push(setTimeout(function(){ok=true;show()},reduce?0:1300))},reduce?0:1500*i))});
     if(OT.ex||!window.TS_C||!SX.fil.length){res=OTEX(!OT.ex&&SX.fil.length>0);fin=true;show()}else sxServer(function(r){res=r;fin=true;show()})}
   function OTEX(dem){return {ok:true,esempio:true,demo:!!dem,riepilogo:[{voce:'principale',titolo:OTMAIN.nome,pct:82},{voce:'sito',titolo:'Creazione di siti web',pct:13},{voce:'assistenza',titolo:'Assistenza tecnica e configurazioni',pct:5}],generiche:[],non_letti:[]}}
   function oAnRes(res,quiet){var box=$('o1res');if(!box)return;
@@ -1541,9 +1546,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       OT.sel={};items.forEach(function(i){if(i.id!=='principale'&&SVm[i.id])OT.sel[i.id]=true});OT.seed={};OT.pct={};OT.lv={};items.forEach(function(i){OT.seed[i.id]=i.pct;OT.pct[i.id]=i.pct});OT.touched=false}
     OT.read=res;oDraw1(quiet)}
   function oDraw1(quiet){var box=$('o1res'),res=OT.read,items=res.items.filter(function(i){return i.pct>0||i.id==='principale'}),alt=items.filter(function(i){return i.id!=='principale'});
-    var h='<div class="kbox"><div class="lbl">Il tuo lavoro è il 100%: dalle fatture lo divido così'+(res.esempio?' (esempio)':'')+'</div><div class="obw">'+oBar(items.map(function(i){return {id:i.id,nome:i.nome}}),'seed')+'</div><div class="osp orows">';
+    var h='<div class="kbox"><div class="lbl">Le tue attività</div><div class="obw">'+oBar(items.map(function(i){return {id:i.id,nome:i.nome}}),'seed')+'</div><div class="osp orows">';
     items.forEach(function(i,k){h+='<div><button class="orow" data-id="'+oEsc(i.id)+'" aria-expanded="false"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><span class="osn">'+oEsc(i.nome)+'<small>coefficiente '+pc(i.coef)+' · tocca per i dettagli</small></span><b class="opp">'+i.pct+'%</b><i aria-hidden="true">⌄</i></button><div class="odet" id="od_'+oEsc(i.id)+'" hidden></div></div>'});
-    h+='</div><p class="onote">Sono le percentuali sugli <b>importi fatturati</b> nelle righe che ho letto'+(res.demo?'. In questa prova uso le fatture di esempio':'')+'.</p></div>';
+    h+='</div></div>';
     if(!OT.done[1])h+='<div class="oask"><button class="cta s o2" id="o_yes">Sì, confermo</button><button class="lnk" id="o_no">Non proprio</button></div>';
     box.innerHTML=h;
     [].slice.call(box.querySelectorAll('.orow')).forEach(function(r){r.onclick=function(){var id=r.getAttribute('data-id'),d=$('od_'+id),open=d.hidden;
@@ -1552,7 +1557,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var y=$('o_yes');if(y){y.onclick=function(){tap('ott_conferma1');oDone(1,'Perfetto, grazie!')};
       $('o_no').onclick=function(){say('Nessun problema. Tocca un\'attività per vedere i dettagli: se non fa parte del tuo lavoro puoi toglierla. Oppure <b>scrivimi qui sotto</b> come stanno le cose.')}}
     if(!quiet){var tx=items.map(function(i){return '<b>'+oEsc(i.nome.toLowerCase())+'</b> '+i.pct+'%'});
-      say('Ho letto le tue fatture. Il tuo lavoro è il 100% e lo divido così: '+tx.join(', ')+'. '+(alt.length?'Possiamo confermare che svolgi queste attività?':'Possiamo confermare che fai solo questo?'))}}
+      say('Ho letto le tue fatture'+(res.esempio?' di esempio':'')+'. Il tuo lavoro è il 100% e, sugli importi fatturati, lo divido così: '+tx.join(', ')+'. Tocca una voce per vedere i dettagli. '+(alt.length?'Possiamo confermare che svolgi queste attività?':'Possiamo confermare che fai solo questo?'))}}
   function oDet(id,d){
     if(id==='principale'){var on=OTSUB.filter(function(c){return OT.subOn[c]});
       d.innerHTML='<p class="onote">È il tuo lavoro principale, con il codice <b>'+oEsc(OTMAIN.cod)+'</b> e coefficiente <b>'+pc(oCoef())+'</b>. Dentro questo lavoro, cosa fai di preciso? Scegli le voci che ti rappresentano.</p><div class="ochips">'+OTSUB.map(function(c){return '<button class="och" data-c="'+oEsc(c)+'" aria-pressed="'+(OT.subOn[c]?'true':'false')+'">'+oEsc(c)+'</button>'}).join('')+'</div><div class="kbox" id="o_ssp"'+(on.length?'':' hidden')+'></div>';
@@ -1603,13 +1608,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     st.sort(function(a,c){return (OT.mic[c[0]]?1:0)-(OT.mic[a[0]]?1:0)||(vis(c)?1:0)-(vis(a)?1:0)});
     var row=function(x){var sv=SVm[x[1]],lw=sv.coef<m;return '<label class="oit'+(OT.mic[x[0]]?' on':'')+'"><input type="checkbox" data-id="'+x[0]+'"'+(OT.mic[x[0]]?' checked':'')+'><span class="oin"><b>'+oEsc(x[2])+'</b><small>Per il fisco rientra in: '+oEsc(sv.nome)+'</small></span><span class="otg'+(lw?' low':'')+'">'+(OT.aiTag[x[0]]?'suggerita da Marcello · ':'')+(vis(x)?'vista nelle tue fatture · ':'')+(lw?'coefficiente '+pc(sv.coef)+' (−'+Math.round((m-sv.coef)*100)+' punti)':'nessun vantaggio')+'</span></label>'};
     var sc=b.querySelector('#o_list'),top=sc?sc.scrollTop:0;
-    b.innerHTML=(OT.aiBusy?'<div class="kbox owork"><span class="odots" aria-hidden="true"><i></i><i></i><i></i></span><span>Marcello sta cercando le prestazioni collegate al tuo lavoro…</span></div>':'')+'<div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle prestazioni">'+(ai.length?'<div class="ogh ai">Marcello ti suggerisce</div><div class="ogr">'+ai.map(row).join('')+'</div>':'')+'<div class="ogh">Prestazioni che spesso si fanno insieme al tuo lavoro</div><div class="ogr">'+st.map(row).join('')+'</div></div>'+
+    b.innerHTML='<div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle prestazioni">'+(ai.length?'<div class="ogh ai">Marcello ti suggerisce</div><div class="ogr">'+ai.map(row).join('')+'</div>':'')+'<div class="ogh">Prestazioni che spesso si fanno insieme al tuo lavoro</div><div class="ogr">'+st.map(row).join('')+'</div></div>'+
       '<div class="oask"><button class="cta s o2" id="o_ok2"'+(oNMic()?'':' disabled')+'>Confermo</button><button class="och" id="o_solo" aria-pressed="'+(OT.solo?'true':'false')+'">Faccio solo il mio lavoro principale</button><span class="osum" id="o_sum"></span></div>';
     $('o_list').scrollTop=top;oSum();
     [].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){var id=c.getAttribute('data-id');OT.mic[id]=c.checked;if(c.checked)OT.solo=false;var sv=oMicSv(id);OT.sel[sv]=oMics().some(function(x){return x[1]===sv&&OT.mic[x[0]]});if(!OT.sel[sv])delete OT.sel[sv];$('o_solo').setAttribute('aria-pressed',OT.solo?'true':'false');c.closest('.oit').classList.toggle('on',c.checked);tap('ott_attivita_'+id);oSum();$('o_ok2').disabled=!oNMic();if(OT.done[2]){oUndone(2)}}});
     $('o_ok2').onclick=function(){tap('ott_conferma2');oDone(2,'Bene, grazie!')};
     $('o_solo').onclick=function(){OT.solo=!OT.solo;if(OT.solo){OT.sel={};OT.mic={}}tap('ott_solo');oP2(b);if(OT.solo)oDone(2,'Va bene: fai solo il tuo lavoro principale.');else oUndone(2)};
-    var n=oNMic();say(OT.aiBusy?'Sto cercando le prestazioni collegate al tuo lavoro: ci metto qualche secondo.':OT.aiN?'Ho pensato a queste piccole prestazioni che si fanno spesso insieme al tuo lavoro. Spunta solo quelle che fai davvero, oppure <b>raccontamene altre qui sotto</b>.':OT.done[2]?'Qui hai già confermato le tue prestazioni. Se vuoi cambiare qualcosa, modifica pure.':n?'Dalle tue fatture ho già spuntato queste prestazioni. Controlla l\'elenco: se manca qualcosa <b>raccontamelo qui sotto</b> con parole tue.':'Oltre al lavoro principale, fai anche <b>piccole prestazioni in più</b> per i clienti? Alcune, per il fisco, valgono meno del '+pc(m)+'. Spunta quelle che fai, oppure <b>raccontamele qui sotto</b>.')}
+    var n=oNMic();say(OT.aiBusy?'Un po\' di pazienza: sto cercando le prestazioni collegate al tuo lavoro.':OT.aiN?'Ho pensato a queste piccole prestazioni che si fanno spesso insieme al tuo lavoro. Spunta solo quelle che fai davvero, oppure <b>raccontamene altre qui sotto</b>.':OT.done[2]?'Qui hai già confermato le tue prestazioni. Se vuoi cambiare qualcosa, modifica pure.':n?'Dalle tue fatture ho già spuntato queste prestazioni. Controlla l\'elenco: se manca qualcosa <b>raccontamelo qui sotto</b> con parole tue.':'Oltre al lavoro principale, fai anche <b>piccole prestazioni in più</b> per i clienti? Alcune, per il fisco, valgono meno del '+pc(m)+'. Spunta quelle che fai, oppure <b>raccontamele qui sotto</b>.')}
   function oSum(){var n=oNMic(),e=$('o_sum');if(e)e.innerHTML=n?'Hai indicato <b>'+n+'</b> '+(n===1?'prestazione':'prestazioni')+' oltre al lavoro principale.':'Per ora solo il tuo lavoro principale.'}
 
   // ---- 3 · il tempo (a decine)
@@ -1649,10 +1654,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     it.forEach(function(a){var q=(OT.pct[a.id]||0)/t;rows.push({a:a,q:q});red+=CINC*q*a.coef});
     var oggi=ccalc(CINC*CCOEF),dopo=ccalc(red);return {rows:rows,red:red,mix:red/CINC,oggi:oggi,dopo:dopo,diff:oggi.tot-dopo.tot,riv:!!OT.sel.rivendita}}
   function oP5(b){OT.busy=true;oSyncPct();
-    b.innerHTML='<div class="kbox owork"><span class="odots" aria-hidden="true"><i></i><i></i><i></i></span><span id="owt">Marcello sta lavorando…</span></div><div id="oeres"></div>';
+    b.innerHTML='<div id="oeres"></div>';
     var msgs=['Sto rimettendo insieme le tue attività…','Applico a ognuna il suo coefficiente…','Calcolo imposta e contributi…','Confronto il prima e il dopo…'];
-    msgs.forEach(function(m,i){timers.push(setTimeout(function(){say(m);var w=$('owt');if(w)w.innerHTML=m;if(i===msgs.length-1)timers.push(setTimeout(function(){OT.busy=false;oRis()},reduce?0:1100))},reduce?0:1200*i))})}
-  function oRis(){var r=oCalc(),d=Math.round(r.diff),box=$('oeres');if(!box)return;var w=document.querySelector('#opn5 .owork');if(w)w.hidden=true;var h='';
+    msgs.forEach(function(m,i){timers.push(setTimeout(function(){say(m);if(i===msgs.length-1)timers.push(setTimeout(function(){OT.busy=false;oRis()},reduce?0:1100))},reduce?0:1200*i))})}
+  function oRis(){var r=oCalc(),d=Math.round(r.diff),box=$('oeres');if(!box)return;var h='';
     if(d<=0||oNSel()===0){srv('risparmio_calcolato',0);tap('ott_zero');
       say('Il risultato è sincero: con quello che mi hai detto <b>non c\'è un risparmio</b>. Il tuo codice è già quello giusto, ed è un buon segno. Da qui ti aiuto a tenere sotto controllo la tua partita IVA: <b>scadenze, soglia degli 85.000 € e quanto mettere da parte</b>.');
       box.innerHTML='<div class="kbox"><div class="lbl">Risparmio individuato</div><div class="kbig">0 €</div><div class="sub">Nessuna attività con un coefficiente più basso del tuo.</div></div><div class="kbox"><div class="lbl">Cosa fa TaxScan per te</div><ul class="olis"><li>Ti ricorda ogni scadenza e quanto mettere da parte.</li><li>Controlla la soglia degli 85.000 € mentre fatturi.</li><li>Ti avvisa se cambiano regole o agevolazioni che ti riguardano.</li></ul></div><div class="onav"><button class="lnk" id="o_rif">Rifai il percorso</button><button class="kb" id="o_sc">Vai alle Scadenze</button></div>';
@@ -1692,7 +1697,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oTkDraw(tk,d){var u=$('otasks');if(!u)return;u.innerHTML=tk.map(function(t,i){var k='task_ai'+i;return '<li><label><input type="checkbox" data-t="'+k+'"'+(OT.task[k]?' checked':'')+'><span><b>'+oEsc(t.titolo)+'</b><small>'+oEsc(t.perche)+'</small>'+(t.come?'<small><b>Come:</b> '+oEsc(t.come)+'</small>':'')+'</span></label></li>'}).join('');
     [].slice.call(u.querySelectorAll('[data-t]')).forEach(function(c){c.onchange=function(){OT.task[c.getAttribute('data-t')]=c.checked;if(c.checked){srv('task_cod',d);tap('ott_task_ai')}}})}
   function oReset(){OT=otNew();SX.fil=[];oBuild();oNodes();oPh();say(oIntro())}
-  function oIntro(){return 'Qui scopriamo insieme se puoi <b>pagare meno tasse</b>. Nel forfettario le tasse si calcolano su una percentuale dei tuoi incassi, il <b>coefficiente di redditività</b>, che dipende dal codice della tua attività. Cominciamo dal primo passo: toccalo qui a sinistra.'}
+  function oIntro(){return 'Qui scopriamo insieme se puoi <b>pagare meno tasse</b>. Nel forfettario le tasse si calcolano su una percentuale dei tuoi incassi, il <b>coefficiente di redditività</b>, che dipende dal codice della tua attività. Cominciamo: tocca il <b>passo 1</b> qui a sinistra.'}
   // costruzione, barra per scrivere, ingresso
   (function(){var bar=document.createElement('form');bar.id='obar';bar.innerHTML='<input type="text" id="o_in" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello"><button type="submit" class="kb">Invia</button>';
     $('gview').appendChild(bar);bar.onsubmit=function(e){e.preventDefault();var i=$('o_in'),v=i.value;i.value='';oWrite(v)}})();
@@ -1726,20 +1731,25 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     b.querySelector('.bx').onclick=function(){hideBub()};
     b.querySelector('.mpf').onclick=function(){hideBub(true);openPanel(false);tap('feedback_da_fumetto')};
     return b}
+  // scelte cliccabili nel fumetto (domande che l'utente potrebbe farsi)
+  function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||!MP.xc||MP.typing)return;c.innerHTML='';
+    MP.xc.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;q[1]()};c.appendChild(x)});if(!b.hidden)placeBub()}
+  window.__xchips=function(l){MP.xc=l&&l.length?l:null;mpXChips()};window.__qa0=function(){MP.qa=false};
+  var _mpsay=say;say=function(){MP.xc=null;return _mpsay.apply(this,arguments)};
   function mpChips(on){var c=$('dbub').querySelector('.mpc');c.innerHTML='';if(!on)return;
     MPCHIPS.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
   showBub=function(html,chips){var b=mpFrame();b.querySelector('.mpt').innerHTML=html;MP.last=html;MP.typing=false;mpTalk(false);
     if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);mpPh();b.hidden=false;placeBub()};
   function mpNarr(el){var c=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
     var h=c.innerHTML,fin=!el.querySelector('.gh'),b=mpFrame();MP.last=h;MP.typing=!fin;
-    b.querySelector('.mpt').innerHTML=h;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpPh();b.hidden=false;
+    b.querySelector('.mpt').innerHTML=h;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpXChips();mpPh();b.hidden=false;
     mpTalk(!fin);placeBub();if(fin)vsArm()}
   var _mpdraw=draw;draw=function(el,segs,n){_mpdraw(el,segs,n);if(el.id!=='dbub'&&el.classList.contains('bub')&&!el.closest('[hidden]'))mpNarr(el)};
   placeBub=function(){var b=$('dbub'),d=$('astab');if(b.hidden)return;var r=d.getBoundingClientRect(),fl=r.left+r.width/2>innerWidth/2;
     d.classList.toggle('vl',fl);d.classList.toggle('vr',!fl);if(d.classList.contains('talk'))mpTalk(true);
     if(innerWidth<=640)return;
     var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
-    x=Math.max(10,Math.min(innerWidth-w-10,x));var h=b.offsetHeight,y=Math.max(16,Math.min(r.top-16,innerHeight-h-86));
+    x=Math.max(10,Math.min(innerWidth-w-10,x));var h=b.offsetHeight,y=Math.max(16,Math.min(r.top-16,innerHeight-h-112));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
   window.__pb=placeBub;
   // ---- Panoramica a scorrimento "virtuale": si svela scorrendo (o da sola dopo 7 secondi), le tabelle restano
@@ -1781,14 +1791,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- l'avatar e il fumetto non coprono mai i pulsanti da cliccare ("Confermo" e simili)
   var _pbCore=placeBub,MPA={t:null};
   function mpHit(a,b,p){return a.left<b.right+p&&a.right>b.left-p&&a.top<b.bottom+p&&a.bottom>b.top-p}
-  function mpBtns(){return [].slice.call(document.querySelectorAll('.cta,.kb,.oarrow,.go2,#o_solo')).filter(function(x){
+  function mpBtns(){return [].slice.call(document.querySelectorAll('.cta,.kb,.oarrow,.go2,.onode,#o_solo')).filter(function(x){
     if(x.closest('#mpbar,#obar,#dbub,[hidden]')||x.disabled||!x.offsetParent)return false;var r=x.getBoundingClientRect();return r.width>0&&r.bottom>0&&r.top<innerHeight})
     .map(function(x){return x.getBoundingClientRect()})}
+  function mpBar(){var e=$('mpbar');return e&&e.offsetParent?[e.getBoundingClientRect()]:[]}
   function mpClash(btns){var d=$('astab'),b=$('dbub'),ra=d.getBoundingClientRect(),rb=b.hidden?null:b.getBoundingClientRect();
     return btns.some(function(r){return mpHit(ra,r,10)||(rb&&mpHit(rb,r,10))})}
-  function mpAvoid(){var d=$('astab'),b=$('dbub');if(!d||d.classList.contains('drag'))return;var btns=mpBtns();if(!btns.length||!mpClash(btns))return;
+  function mpAvoid(){var d=$('astab'),b=$('dbub');if(!d||d.classList.contains('drag'))return;var btns=mpBtns().concat(mpBar());if(!btns.length||!mpClash(btns))return;
     if(innerWidth<=640){if(!b.hidden)hideBub();return}
-    var hs=[innerHeight-84-120,110,Math.round(innerHeight/2)],xs=[14,innerWidth-98],c=[];hs.forEach(function(y){xs.forEach(function(x){c.push([x,y])})});
+    var hs=[innerHeight-84-140,110,Math.round(innerHeight/2)],xs=[14,innerWidth-98],c=[];hs.forEach(function(y){xs.forEach(function(x){c.push([x,y])})});
     for(var i=0;i<c.length;i++){d.style.left=c[i][0]+'px';d.style.top=c[i][1]+'px';_pbCore();if(!mpClash(btns))return}
     if(!b.hidden)hideBub()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
