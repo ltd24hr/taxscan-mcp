@@ -282,14 +282,14 @@ nav.spotlit{z-index:30}nav.spotlit button:not(.spot){opacity:1}
 @media (prefers-reduced-motion:reduce){.mpc button{animation:none;opacity:1}}
 #mp_in.prev::placeholder{color:var(--ink);opacity:.9}
 .dbub.mp{transition:none}
-/* intestazione: logo in alto a sinistra con lo slogan sotto, menu grande sulla riga sotto */
-#hdr{flex-wrap:wrap;align-items:flex-start;gap:0;padding-top:12px}
-#hdr .brand{flex:0 0 100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:6px}
+/* intestazione: logo e slogan a sinistra, menu a destra sulla stessa riga */
+#hdr{flex-wrap:nowrap;align-items:flex-end;justify-content:space-between;gap:20px;padding-top:12px}
+#hdr .brand{flex:0 1 360px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:8px}
 #hdr .logo{padding-bottom:0;font-size:28px}
-#hdr .sxtag{margin:0;font-size:15px}
-#hdr nav{flex:0 0 100%;width:100%;display:flex;justify-content:space-between;overflow-x:auto}
-#hdr nav button{font-size:clamp(19px,2.5vw,34px);padding:8px 12px;white-space:nowrap}
-@media (max-width:760px){#hdr .logo{font-size:24px}#hdr .sxtag{font-size:13px}#hdr nav button{font-size:19px;padding:8px 12px}}
+#hdr .sxtag{margin:0;font-size:13px;line-height:1.35}
+#hdr nav{flex:1 1 auto;width:auto;display:flex;justify-content:flex-end;gap:2px;overflow-x:auto}
+#hdr nav button{font-size:clamp(15px,1.7vw,25px);padding:10px 11px;white-space:nowrap}
+@media (max-width:900px){#hdr{flex-wrap:wrap;gap:0}#hdr .brand{flex:0 0 100%}#hdr nav{flex:0 0 100%;width:100%;justify-content:space-between}#hdr nav button{font-size:18px;padding:8px 10px}#hdr .logo{font-size:24px}}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -782,7 +782,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 45</div>
+<div class="ver">Prototipo versione 46</div>
 </div>
 
 <script>
