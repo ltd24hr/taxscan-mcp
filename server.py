@@ -1626,8 +1626,6 @@ prova.registra(mcp, avvisi)
 @mcp.custom_route("/", methods=["GET", "HEAD"])
 async def home(request):
     from starlette.responses import HTMLResponse
-    if os.environ.get("HOME_PROVA") == "1":      # su Render: HOME_PROVA=1 mostra il prototipo nella home
-        return HTMLResponse(prova.pagina(), headers={"Cache-Control": "no-cache"})
     return HTMLResponse(cookie_banner.inietta(landing.PAGINA_HTML))
 
 
