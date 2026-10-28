@@ -236,10 +236,10 @@ html.flow:not(.settled) #stage{position:static!important;top:auto!important;gap:
 html.flow:not(.settled) #again{display:none}
 #schint{bottom:92px}
 @media (min-width:641px){button.astab.astab{width:84px;height:84px}#gview{padding-left:112px}
-.dbub.mp{width:min(1000px,calc(100vw - 140px));min-height:360px}}
+}
 @media (max-width:640px){#mpbar input{padding:12px 10px;font-size:16px}#mpbar button{padding:12px 18px;font-size:15px}body{padding-bottom:96px}}
 .dbub.mp{padding:16px 44px 14px 22px;overflow:visible;display:flex;flex-direction:column;max-height:calc(100vh - 120px)}
-.dbub.mp .mpt{font-size:17px;line-height:1.5;flex:1 1 auto;min-height:120px;max-height:62vh;overflow:auto;scrollbar-width:thin}.mpfbn{margin:12px 0 0;padding-top:10px;border-top:1px dashed var(--line);font-size:15px;color:var(--ink2)}
+.dbub.mp .mpt{font-size:17px;line-height:1.5;flex:0 1 auto;max-height:62vh;overflow:auto;scrollbar-width:thin}.mpfbn{margin:12px 0 0;padding-top:10px;border-top:1px dashed var(--line);font-size:15px;color:var(--ink2)}
 .mpq{font-size:13px;color:var(--mute);font-style:italic;margin:0 0 8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
 .mpq[hidden]{display:none}
 .mpc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.mpc:empty{display:none}
@@ -275,6 +275,21 @@ nav.spotlit{z-index:30}nav.spotlit button:not(.spot){opacity:1}
 #nome{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sxtag{margin:0 0 14px}
 @media (max-width:760px){#hdr{flex-wrap:wrap;gap:0}#hdr .logo{padding-bottom:2px;font-size:22px}#hdr nav{width:100%}#hdr nav button{font-size:15px;padding:10px 13px}}
+
+/* suggerimenti: compaiono uno alla volta con una breve dissolvenza */
+.mpc button{opacity:0;animation:mpin .5s ease forwards;animation-delay:calc(var(--i,0)*.45s)}
+@keyframes mpin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.mpc button{animation:none;opacity:1}}
+#mp_in.prev::placeholder{color:var(--ink);opacity:.9}
+.dbub.mp{transition:none}
+/* intestazione: logo in alto a sinistra con lo slogan sotto, menu grande sulla riga sotto */
+#hdr{flex-wrap:wrap;align-items:flex-start;gap:0;padding-top:12px}
+#hdr .brand{flex:0 0 100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:6px}
+#hdr .logo{padding-bottom:0;font-size:28px}
+#hdr .sxtag{margin:0;font-size:15px}
+#hdr nav{flex:0 0 100%;width:100%;display:flex;justify-content:space-between;overflow-x:auto}
+#hdr nav button{font-size:clamp(19px,2.5vw,34px);padding:8px 12px;white-space:nowrap}
+@media (max-width:760px){#hdr .logo{font-size:24px}#hdr .sxtag{font-size:13px}#hdr nav button{font-size:19px;padding:8px 12px}}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -611,12 +626,12 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div></div>
 </section>
 <div class="wrap">
-  <header id="hdr"><div class="logo">Tax<span>Scan</span></div>
+  <header id="hdr"><div class="brand"><div class="logo">Tax<span>Scan</span></div><p class="sxtag"><b>Il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse.</b> Per partite IVA in regime forfettario.</p></div>
   <nav aria-label="Sezioni">
     <button aria-current="page">Panoramica</button><button>Scadenze</button>
     <button>Ottimizzazione fiscale</button><button>Bandi e agevolazioni</button><button>Profilo</button>
   </nav></header>
-  <h1 id="nome">TaxScan</h1><p class="sxtag"><b>Il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse.</b> Per partite IVA in regime forfettario.</p>
+  <h1 id="nome">TaxScan</h1>
   <div class="nota" id="nota" role="status"></div>
 
   <div id="scroller">
@@ -767,7 +782,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 44</div>
+<div class="ver">Prototipo versione 45</div>
 </div>
 
 <script>
@@ -2040,8 +2055,26 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(MP.form)b.appendChild(MP.form);
     return b}
   // scelte cliccabili nel fumetto (domande che l'utente potrebbe farsi)
-  function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||!MP.xc||MP.typing)return;c.innerHTML='';
-    MP.xc.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;if(typeof vsTm!=='undefined')clearTimeout(vsTm);var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;q[1]()};c.appendChild(x)});if(!b.hidden)placeBub()}
+  // anteprima: passando il mouse su un suggerimento, la scritta compare nella barra
+  function mpPrev(x,t){x.onmouseenter=x.onfocus=function(){var m=$('mp_in');if(m&&!m.value){m.placeholder=t;m.classList.add('prev')}};
+    x.onmouseleave=x.onblur=function(){var m=$('mp_in');if(m){m.classList.remove('prev');mpPh()}}}
+  function mpMk(q,i){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.style.setProperty('--i',i);mpPrev(x,q[0]);
+    x.onclick=function(){tap('chip_fumetto');MP.qa=true;if(typeof vsTm!=='undefined')clearTimeout(vsTm);var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;var m=$('mp_in');if(m){m.classList.remove('prev');mpPh()}q[1]()};return x}
+  function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||MP.typing)return;
+    if(MP.xc){c.innerHTML='';MP.xc.forEach(function(q,i){c.appendChild(mpMk(q,i))});if(!b.hidden)placeBub()}
+    mpTopLater()}
+  // almeno tre suggerimenti: se ne mancano, l'IA li scrive in base a quello che Marcello ha appena detto
+  var MPFB=['Puoi spiegarmelo più semplice?','Cosa mi consigli di fare adesso?','Cosa succede se non faccio nulla?','Dove vedo questi numeri?'];
+  function mpTopLater(){clearTimeout(MP.topT);MP.topT=setTimeout(mpTop,1700)}
+  function mpTop(){var b=$('dbub');if(!b||b.hidden||MP.typing)return;var c=b.querySelector('.mpc');if(!c||c.children.length>=3)return;
+    var txt=plain(MP.last||'');if(txt.length<40||/^(Ci penso|Un po' di pazienza|Sto |Calcolo|Applico|Confronto)/.test(txt))return;
+    var tok=MP.ftok,snap=MP.last,have=[].map.call(c.children,function(x){return x.textContent}),need=3-have.length;
+    function add(ls){var nn=0;if(tok!==MP.ftok||MP.last!==snap||b.hidden)return;var cc=b.querySelector('.mpc');if(!cc)return;
+      ls.forEach(function(l){if(cc.children.length>=3||have.indexOf(l)>-1||MP.asked[l])return;have.push(l);var q=[l,function(){mpSend(l)}];MP.xc=MP.xc||[];MP.xc.push(q);cc.appendChild(mpMk(q,nn++))});
+      var k=0;while(cc.children.length<3&&k<MPFB.length){var l2=MPFB[k++];if(have.indexOf(l2)<0){have.push(l2);var q2=[l2,function(){mpSend(this.t)}.bind({t:l2})];MP.xc=MP.xc||[];MP.xc.push(q2);cc.appendChild(mpMk(q2,nn++))}}
+      placeBub()}
+    ask('Marcello ha appena detto a una persona che sa poco di tasse: «'+txt.slice(0,600)+'». Scrivi '+(need+1)+' domande brevissime (massimo 8 parole ciascuna, con il punto interrogativo) che questa persona potrebbe farsi subito dopo, diverse da queste: '+have.join(' / ')+'. Una per riga, senza numeri né virgolette.').then(function(t){
+      var ls=(t||'').split('\n').map(function(x){return x.replace(/^[-\d\.\)\s«"]+|[»"\s]+$/g,'').trim()}).filter(function(x){return x.length>6&&x.length<80&&/\?$/.test(x)}).slice(0,need+1);add(ls)},function(){add([])})}
   // motore dei suggerimenti: pool {domanda:{a:risposta|funzione, n:[domande successive], e:1=fine}}; la domanda scelta sparisce e puo' portarne di nuove
   MP.asked={};
   window.__chips=function(pool,labels){function draw(ls){ls=ls.filter(function(l){return pool[l]&&!MP.asked[l]}).slice(0,4);
@@ -2052,7 +2085,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   window.__xchips=function(l){MP.xc=l&&l.length?l:null;mpXChips()};window.__qa0=function(){MP.qa=false;MP.asked={}};
   var _mpsay=say;say=function(){MP.xc=null;return _mpsay.apply(this,arguments)};
   function mpChips(on){var c=$('dbub').querySelector('.mpc');c.innerHTML='';if(!on)return;
-    MPCHIPS.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
+    MPCHIPS.forEach(function(q,qi){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.style.setProperty('--i',qi);mpPrev(x,q[0]);x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
   showBub=function(html,chips){var b=mpFrame();b.querySelector('.mpt').innerHTML=html;MP.last=html;MP.typing=false;mpTalk(false);
     if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);if(!chips)mpXChips();mpPh();b.hidden=false;placeBub()};
   function mpNarr(el){var c=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
@@ -2063,7 +2096,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   placeBub=function(){var b=$('dbub'),d=$('astab');if(b.hidden)return;var r=d.getBoundingClientRect(),fl=r.left+r.width/2>innerWidth/2;
     d.classList.toggle('vl',fl);d.classList.toggle('vr',!fl);if(d.classList.contains('talk'))mpTalk(true);
     if(innerWidth<=640){b.style.setProperty('bottom',Math.max(80,innerHeight-r.top+8)+'px','important');return}
-    var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
+    var av=fl?r.left-14-12:innerWidth-r.right-14-12;b.style.width=Math.max(320,Math.min(av,1500))+'px';var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
     x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+10,bt=innerHeight-10,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
   window.__pb=placeBub;
@@ -2140,7 +2173,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(innerWidth<=640){if(!b.hidden)hideBub();return}
     var hbm=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+14,hs=[innerHeight-84-176,hbm,Math.round(innerHeight/2)],xs=[14,innerWidth-98],c=[];hs.forEach(function(y){xs.forEach(function(x){c.push([x,y])})});
     for(var i=0;i<c.length;i++){d.style.left=c[i][0]+'px';d.style.top=c[i][1]+'px';_pbCore();if(!mpClash(btns))return}
-    if(!b.hidden)hideBub()}
+    d.style.left=c[0][0]+'px';d.style.top=c[0][1]+'px';_pbCore()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
   setInterval(mpAvoid,800);addEventListener('resize',function(){setTimeout(mpAvoid,120)});
   window.__showView=showView;
