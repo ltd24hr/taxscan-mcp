@@ -500,7 +500,7 @@ function mostraIntro() {
     <div id="esito"></div>`;
   nav([]);
   $("pdf").onchange = caricaCertificato;
-  $("senza").onclick = () => { fase = "domanda"; invia(); };
+  $("senza").onclick = () => { dopoCertificato(); };
 }
 
 async function caricaCertificato(ev) {
@@ -514,7 +514,7 @@ async function caricaCertificato(ev) {
     if (!Object.keys(t).length) {
       if (ill) ill.classList.remove("legge");
       $("esito").innerHTML = `<div class="errore">${esc(r.errore || "Non sono riuscito a leggere i dati dal certificato.")} Nessun problema: ti faccio due domande.</div>`;
-      setTimeout(() => { fase = "domanda"; invia(); }, 1800); return;
+      setTimeout(dopoCertificato, 1800); return;
     }
     const righe = [];
     if (t.codice_ateco) righe.push("Codice ATECO: <b>" + esc(t.codice_ateco) + "</b>" + (t.descrizione_attivita_certificato ? " - " + esc(t.descrizione_attivita_certificato) : ""));
@@ -525,12 +525,83 @@ async function caricaCertificato(ev) {
     $("esito").innerHTML = `<div class="trovato">Ho letto dal certificato:<br>${righe.join("<br>")}</div>`;
     if (ill) { ill.classList.remove("legge"); ill.classList.add("letto"); }
     Object.assign(scheda, t);
-    setTimeout(() => { fase = "domanda"; invia(); }, 1400);
+    setTimeout(dopoCertificato, 1400);
   } catch (e) {
     if (ill) ill.classList.remove("legge");
     $("esito").innerHTML = `<div class="errore">Non sono riuscito a leggere il file. Ti faccio due domande.</div>`;
-    setTimeout(() => { fase = "domanda"; invia(); }, 1800);
+    setTimeout(dopoCertificato, 1800);
   }
+}
+
+
+// ---------------------------------------------------------------- fatture (facoltative): capisco cosa fai e chiedo solo quello che non capisco
+let fattFatto = false, PREFILL = "";
+function dopoCertificato() { if (fattFatto) { fase = "domanda"; invia(); } else { fattFatto = true; mostraFatture(); } }
+const eur0 = v => String(Math.round(v || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+function mostraFatture() {
+  fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.1);
+  $("scheda").innerHTML = '<h1>Hai qualche fattura a portata di mano?</h1>' +
+    '<p>Se me ne dai due o tre, capisco da sola cosa fai davvero e ti faccio meno domande. Leggo solo la descrizione e l\'importo delle righe: i dati dei tuoi clienti no, e i file non li conservo.</p>' +
+    '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
+    '<input type="file" id="fatt" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png" class="nascosto">' +
+    '<button class="opz" id="fsalta"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.tocco + '</svg></span><span>Salto: rispondo io a qualche domanda</span></button></div><div id="fesito"></div>';
+  nav([]);
+  $("fsalta").onclick = () => { fase = "domanda"; invia(); };
+  $("fatt").onchange = leggiFatture;
+}
+async function leggiFatture(ev) {
+  const fs = [...ev.target.files].slice(0, 6); if (!fs.length) return;
+  $("fesito").innerHTML = '<p class="hint">Leggo le fatture, una alla volta…</p>';
+  const out = [];
+  for (const f of fs) {
+    if (f.size > 8 * 1024 * 1024) continue;
+    const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = () => res(""); fr.readAsDataURL(f); });
+    if (b64) out.push({nome: f.name, tipo: f.type, dati: b64});
+  }
+  let r = null;
+  try { const x = await fetch("/api/prova/lettura", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({c: ID, files: out})}); r = await x.json(); } catch (e) {}
+  if (!r || r.ok === false || !r.fatture || !r.fatture.some(v => v.ok)) {
+    $("fesito").innerHTML = '<div class="errore">' + esc((r && (r.errore || r.vuoto)) || "Non sono riuscito a leggere queste fatture.") + ' Nessun problema: ti faccio qualche domanda.</div>';
+    setTimeout(() => { fase = "domanda"; invia(); }, 2200); return;
+  }
+  FATT = r.fatture.filter(v => v.ok).map(v => Object.assign({usa: true, risp: ""}, v));
+  chiediFattura(0);
+}
+let FATT = [];
+function chiediFattura(i) {
+  while (i < FATT.length && (FATT[i].capito || !FATT[i].usa)) i++;
+  if (i >= FATT.length) return fineFatture();
+  const v = FATT[i];
+  $("passo").textContent = "Una domanda sulle fatture"; barra(0.12);
+  $("scheda").innerHTML = '<h1>Non voglio indovinare</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> (' + eur0(v.importo) + ') ' + esc(v.domanda || "non capisco di che lavoro si tratti.") + '</p><div class="opzioni">' +
+    (v.opzioni || []).slice(0, 3).map((o, k) => '<button class="opz" data-o="' + k + '"><span class="n">' + (k + 1) + '</span><span>' + esc(o) + '</span></button>').join("") +
+    '<button class="opz" id="fsc"><span class="n">✎</span><span>Scrivo io cosa è</span></button><button class="opz" id="fno"><span class="n">–</span><span>Non usare questa fattura</span></button></div>' +
+    '<div id="faltro" class="nascosto"><input class="testo" id="ftxt" maxlength="80" placeholder="Per esempio: consulenza sulla gestione delle royalties"><div class="riga"><button class="primario" id="fok">Avanti</button></div></div>';
+  nav([]);
+  const imposta = t => { t = (t || "").trim(); if (!t) return; v.capito = true; v.attivita = t; v.risp = t; chiediFattura(i + 1); };
+  document.querySelectorAll("button[data-o]").forEach(b => b.onclick = () => imposta(v.opzioni[+b.dataset.o]));
+  $("fsc").onclick = () => { $("faltro").classList.remove("nascosto"); $("ftxt").focus(); };
+  $("fok").onclick = () => imposta($("ftxt").value);
+  $("ftxt").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); imposta($("ftxt").value); } };
+  $("fno").onclick = () => { v.usa = false; chiediFattura(i + 1); };
+}
+function fineFatture() {
+  const ok = FATT.filter(v => v.usa && v.capito && v.attivita);
+  if (ok.length) {
+    const g = {}, ord = [];
+    ok.forEach(v => { const k = v.attivita.toLowerCase(); if (!g[k]) { g[k] = {nome: v.attivita, imp: 0, n: 0}; ord.push(k); } g[k].imp += v.importo || 0; g[k].n++; });
+    const l = ord.map(k => g[k]).sort((a, b) => b.imp - a.imp), tot = l.reduce((a, x) => a + x.imp, 0) || 1;
+    let somma = 0; l.forEach(x => { x.pct = Math.round(x.imp * 10 / tot) * 10; somma += x.pct; });
+    if (somma !== 100 && l.length) l[0].pct += 100 - somma;
+    PREFILL = l[0].nome;
+    const d = {v: 1, ts: new Date().toISOString(), done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
+      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"),
+        righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
+    fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
+    $("scheda").innerHTML = '<h1>Ecco cosa ho capito</h1><div class="trovato">' + l.map(x => "<b>" + esc(x.nome) + "</b> · " + eur0(x.imp) + " (" + x.pct + "%)").join("<br>") + '</div><p class="hint">Lo riguardiamo insieme dentro l\'app: se qualcosa non torna, lo correggi lì.</p>';
+    nav([]);
+    setTimeout(() => { fase = "domanda"; invia(); }, 2400);
+  } else { fase = "domanda"; invia(); }
 }
 
 // ---------------------------------------------------------------- ciclo domanda → risposta
@@ -616,7 +687,7 @@ function mostraDomanda(v) {
     html += '<button class="link" id="nonso">Preferisco scegliere il mio settore</button>';
     html += '<div id="settori" class="nascosto"><p class="hint">Scegli quello che ti somiglia di più: il codice esatto lo potrai controllare dopo.</p><div class="opzioni">' +
       ((ultima && ultima.settori) || []).map((s, i) => `<button class="opz" data-i="${i}"><span class="n set">${icoSettore(s.codice)}</span><span>${esc(s.etichetta)}</span></button>`).join("") + '</div></div>';
-    box.innerHTML = html; $("descr").focus();
+    box.innerHTML = html; if (PREFILL) { $("descr").value = PREFILL; html = ""; } $("descr").focus();
     const T = $("trovati");
     const pc = c => (c.coefficiente ? " · coefficiente " + Math.round(c.coefficiente * 100) + "%" : "");
     const mostra = (lista, testoIntro, d) => {

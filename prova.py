@@ -622,6 +622,11 @@ def fatture_lettura(c: str, files) -> dict:
     e propone una domanda: non indovina. Restano solo descrizione e importo delle righe; nulla viene salvato."""
     c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
     dati = _dashboard(c) if c else None
+    if not dati and c:
+        try:
+            dati = db.carica_colloquio_web(c)
+        except Exception:
+            dati = None
     demo = not c
     if not dati and not demo:
         return {"ok": False, "errore": "Apri la pagina dal link del tuo questionario."}
