@@ -225,25 +225,25 @@ html.settled #stage{gap:18px}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
-body{padding-bottom:156px}
+body{padding-bottom:96px}
 html.flow:not(.settled) #scroller{height:auto!important}
 html.flow:not(.settled) #stage{position:static!important;top:auto!important;gap:18px}
 html.flow:not(.settled) #again{display:none}
 #schint{bottom:92px}
 @media (min-width:641px){button.astab.astab{width:84px;height:84px}#gview{padding-left:112px}
-.dbub.mp{width:min(780px,calc(100vw - 140px))}}
-@media (max-width:640px){.dbub.mp{bottom:150px!important}#mpbar input{padding:14px 12px;font-size:17px}#mpbar button{padding:14px 22px;font-size:16px}body{padding-bottom:128px}}
-.dbub.mp{padding:14px 40px 12px 18px;overflow:visible}
-.dbub.mp .mpt{font-size:17px;line-height:1.5;max-height:50vh;overflow:auto;scrollbar-width:thin}
+.dbub.mp{width:min(1000px,calc(100vw - 140px));min-height:360px}}
+@media (max-width:640px){#mpbar input{padding:12px 10px;font-size:16px}#mpbar button{padding:12px 18px;font-size:15px}body{padding-bottom:96px}}
+.dbub.mp{padding:16px 44px 14px 22px;overflow:visible;display:flex;flex-direction:column;max-height:calc(100vh - 120px)}
+.dbub.mp .mpt{font-size:17px;line-height:1.5;flex:1 1 auto;min-height:120px;max-height:62vh;overflow:auto;scrollbar-width:thin}.mpfbn{margin:12px 0 0;padding-top:10px;border-top:1px dashed var(--line);font-size:15px;color:var(--ink2)}
 .mpq{font-size:13px;color:var(--mute);font-style:italic;margin:0 0 8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
 .mpq[hidden]{display:none}
 .mpc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.mpc:empty{display:none}
 .mpc button{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}.mpc button:hover{border-color:var(--accent)}
 .mpf{display:block;margin:8px 0 0;font:inherit;font-size:12px;color:var(--mute);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
-#mpbar{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;width:min(1180px,calc(100vw - 32px));z-index:57;display:flex;gap:10px;background:var(--surface);border:2px solid var(--accent);border-radius:18px;padding:9px;box-shadow:0 8px 24px rgba(18,36,82,.2)}
-#mpbar input{flex:1;min-width:0;font:inherit;font-size:19px;border:0;background:transparent;color:var(--ink);padding:22px 18px}
+#mpbar{position:static;flex:none;margin:14px -26px -4px 0;display:flex;gap:8px;background:var(--bg);border:2px solid var(--accent);border-radius:16px;padding:6px}
+#mpbar input{flex:1;min-width:0;font:inherit;font-size:18px;border:0;background:transparent;color:var(--ink);padding:16px 14px}
 #mpbar input:focus{outline:none}
-#mpbar button{font:inherit;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:12px;padding:18px 36px;font-size:18px;cursor:pointer}
+#mpbar button{font:inherit;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:12px;padding:14px 28px;font-size:17px;cursor:pointer}
 .astab .dotvid{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:50%;object-fit:cover;pointer-events:none;opacity:0;z-index:2;background:#1b2841}
 .astab .dv-i{opacity:1}.astab.talk .dv-i{opacity:0}
 .astab.talk.vr .dv-tr{opacity:1}.astab.talk.vl .dv-tl{opacity:1}
@@ -762,7 +762,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 42</div>
+<div class="ver">Prototipo versione 43</div>
 </div>
 
 <script>
@@ -991,7 +991,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 
   // ---- pallino trascinabile
   (function(){var d=$('astab'),sx,sy,ox,oy,mv=false,down=false,just=false;
-    function lim(){var hd=document.getElementById('hdr'),bb=document.getElementById('mpbar');return [hd?hd.getBoundingClientRect().bottom+8:6,bb&&bb.offsetParent?bb.getBoundingClientRect().top-8:innerHeight-6]}
+    function lim(){var hd=document.getElementById('hdr'),bb=document.getElementById('mpbar');return [hd?hd.getBoundingClientRect().bottom+8:6,innerHeight-6]}
     function clamp(x,y){var l=lim();return [Math.max(6,Math.min(innerWidth-d.offsetWidth-6,x)),Math.max(l[0],Math.min(l[1]-d.offsetHeight,y))]}
     function put(x,y,save){var c=clamp(x,y);if(window.__pb)setTimeout(window.__pb,0);d.style.left=c[0]+'px';d.style.top=c[1]+'px';d.classList.toggle('flip',c[0]+d.offsetWidth/2>innerWidth/2);
       if(save){try{sessionStorage.setItem('astpos',c[0]+','+c[1])}catch(e){}}}
@@ -1569,16 +1569,24 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oCtx(){var m=oMics().filter(function(x){return OT.mic[x[0]]}).map(function(x){return x[2]}),st=OTN[(OT.open||1)-1];
     return 'Contesto: l\'utente è nel percorso «Ottimizzazione fiscale» di TaxScan (regime forfettario), '+(OT.open?'passo '+OT.open+' di 5 «'+st[1]+'»':'prima di iniziare')+'. Attività principale: '+OTMAIN.nome+' (coefficiente '+pc(oCoef())+'). Prestazioni in più scelte: '+(m.length?m.join('; '):'nessuna')+'. '+(OT.done[5]||OT.fin?'Il calcolo del risparmio è stato fatto. ':'')+
       'Il percorso: 1 fatture, 2 prestazioni in più, 3 livello di tempo per attività, 4 periodicità, 5 risultato in euro con report PDF. '}
-  // il lavoro descritto non somiglia al codice ATECO che abbiamo: Marcello lo dice e propone di verificarlo
+  function oSpecFatto(t,msg){OT.spec=OT.spec||(OT.desc||t).slice(0,90);if(OT.read)OT.read.poco=false;oDone(1,msg||'Grazie, ora ho capito meglio cosa fai. Passiamo alle prestazioni in più.')}
+  // il codice cambia ma NON si ricomincia: le fatture gia' lette restano, si riparte dal passo 2 con l'attivita' piu' specifica
+  function oUsaCodice(c){OTMAIN={nome:c.etichetta||OTMAIN.nome,cod:c.codice_ateco};CCOEF=c.coefficiente;OT.spec=c.etichetta||OT.spec;tap('ott_cambia_codice');
+    OT.sel={};OT.mic={};OT.micAi=[];OT.aiTag={};OT.solo=false;OT.aiOn=0;OT.aiBusy=0;OT.aiN=0;OT.aiQ='';OT.chatPend='';OT.pct={};OT.lv={};OT.per={};OT.seed=null;OT.fin=null;OT.tk=null;
+    if(OT.read){OT.read.poco=false;(OT.read.items||[]).forEach(function(i){if(i.id==='principale'){i.nome=OTMAIN.nome;i.coef=CCOEF}})}
+    for(var k=2;k<=5;k++)delete OT.done[k];
+    OT.done[1]=true;oNodes();
+    oDone(1,'Perfetto, uso il codice <b>'+oEsc(c.codice_ateco)+'</b> (coefficiente '+pc(c.coefficiente)+') e <b>non ricomincio</b>: le tue fatture restano quelle che ho già letto. È solo una simulazione: il codice attivo sulla tua partita IVA non cambia finché non lo comunichi. Ora cerco le piccole prestazioni che fai dentro questo lavoro.')}
   function oAtecoCheck(t){say('Ci penso un attimo…');
     aiCall('ateco',{descrizione:(OT.desc||t)}).then(function(j){var c=j&&j.codici&&j.codici[0];
-      if(!c||String(c.codice_ateco).slice(0,5)===String(OTMAIN.cod).slice(0,5)){oChat(t);return}
+      if(!c){oChat(t);return}
+      if(String(c.codice_ateco).slice(0,5)===String(OTMAIN.cod).slice(0,5)){OT.spec=c.etichetta||OT.spec;oSpecFatto(t,'Ho capito: il tuo lavoro è «'+oEsc((c.etichetta||OT.desc||t).toLowerCase())+'», e il codice che hai va bene. Passiamo alle prestazioni in più.');return}
       var pool={'Come lo verifico?':{a:'Guarda il certificato di attribuzione della partita IVA o la visura: c\'è scritto il codice attivo. Se non corrisponde a ciò che fai davvero, si può aggiungere o cambiare con la comunicazione di variazione dati (modello AA9/12). Meglio sentire un commercialista prima.',n:['Perché il codice è importante?']},
         'Perché il codice è importante?':{a:'Il coefficiente, e quindi le tasse, dipende dal codice attivo sulla tua partita IVA. Un codice sbagliato può farti pagare di più o di meno del dovuto.',n:[]},
-        'Rifai il calcolo con questo codice':{a:function(){OTMAIN={nome:c.etichetta||OTMAIN.nome,cod:c.codice_ateco};CCOEF=c.coefficiente;tap('ott_cambia_codice');oReset();say('Ho rifatto ripartendo dal codice <b>'+oEsc(c.codice_ateco)+'</b> (coefficiente '+pc(c.coefficiente)+'). È solo una simulazione: il codice attivo sulla tua partita IVA non cambia finché non lo comunichi. Tocca il <b>passo 1</b> per ripartire.')},e:1},
-        'No, il mio codice è giusto':{a:'Perfetto, restiamo sul tuo codice. Raccontami le prestazioni in più che fai insieme al lavoro principale.',n:[]}};
-      say('Da come descrivi il tuo lavoro, il codice più adatto potrebbe essere <b>'+oEsc(c.codice_ateco)+'</b>'+(c.etichetta?' ('+oEsc(c.etichetta.toLowerCase())+')':'')+', coefficiente <b>'+pc(c.coefficiente)+'</b>. Quello che ho per te è <b>'+oEsc(OTMAIN.cod)+'</b> ('+pc(oCoef())+'). Il codice è quello attivo sulla tua partita IVA: se non corrisponde a ciò che fai, conviene verificarlo.');
-      window.__chips(pool,['Come lo verifico?','Rifai il calcolo con questo codice','No, il mio codice è giusto'])})}
+        'Usa questo codice e vai avanti':{a:function(){oUsaCodice(c)},e:1},
+        'No, il mio codice è giusto':{a:function(){OT.spec=c.etichetta||OT.desc||t;oSpecFatto(t,'Perfetto, restiamo sul tuo codice <b>'+oEsc(OTMAIN.cod)+'</b>, ma ragiono sul lavoro che mi hai descritto. Passiamo alle prestazioni in più.')},e:1}};
+      say('Da come descrivi il tuo lavoro, il codice più adatto potrebbe essere <b>'+oEsc(c.codice_ateco)+'</b>'+(c.etichetta?' ('+oEsc(c.etichetta.toLowerCase())+')':'')+', coefficiente <b>'+pc(c.coefficiente)+'</b>. Quello che ho per te è <b>'+oEsc(OTMAIN.cod)+'</b> ('+pc(oCoef())+'). Il codice è quello attivo sulla tua partita IVA: se non corrisponde a ciò che fai, conviene verificarlo. Se lo usi, <b>non ricomincio</b>: proseguo da qui.');
+      window.__chips(pool,['Usa questo codice e vai avanti','No, il mio codice è giusto','Come lo verifico?'])})}
   function oChat(t){var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');say('Ci penso un attimo…');
     ask(PERS+oCtx()+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Rispondi in massimo 3 frasi semplici e calde, dando del tu, senza certezze (solo stime). Se l\'utente saluta o fa una domanda generica, rispondi con naturalezza e poi, se serve, ricordagli cosa può fare in questo passo. Se sta descrivendo cosa fa, aiutalo a capirlo e dì quale prestazione spuntare. Messaggio dell\'utente: '+t).then(function(r){
       if(r){HIST.push(['Utente',t]);HIST.push(['Marcello',r]);say(esc(r))}else say('Non riesco a rispondere bene in questo momento, ma ho segnato quello che hai scritto. Intanto puoi continuare con il passo in corso.');oChips(OT.open||1)})}
@@ -1687,7 +1695,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function aiCall(task,dati){var uid='';try{uid=localStorage.getItem('ts_uid')||''}catch(e){}
     return fetch('/api/prova/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({uid:uid,c:window.TS_C||'',task:task,dati:dati})}).then(function(r){return r.json()}).then(function(j){return j&&j.ok?j:null}).catch(function(){return null})}
   function oAiAtt(testo){if(testo){if(OT.aiBusy){OT.aiQ=testo;return}}else if(OT.aiOn||OT.aiBusy)return;OT.aiBusy=1;var righe=((OT.read&&OT.read.righe)||[]).map(function(r){return r.testo});
-    aiCall('attivita',{principale:{nome:OTMAIN.nome,cod:OTMAIN.cod},coef_principale:oCoef(),righe:righe,descrizione:OT.desc,testo:testo||'',tutte:!!testo}).then(function(j){OT.aiBusy=0;OT.aiOn=1;var n=0,pre=[];
+    aiCall('attivita',{principale:{nome:(OT.spec||OTMAIN.nome),cod:OTMAIN.cod},coef_principale:oCoef(),righe:righe,descrizione:OT.desc,testo:testo||'',tutte:!!testo}).then(function(j){OT.aiBusy=0;OT.aiOn=1;var n=0,pre=[];
       if(j&&j.attivita){j.attivita.forEach(function(a){var st=SV.filter(function(s){return s[4]===a.codice_ateco})[0];
         if(!st){var id='ai'+(SV.length+1),cat=a.categoria||a.nome;SV.push([id,'Suggerite da Marcello',cat,a.descrizione||'',a.codice_ateco,a.coefficiente]);SVm[id]={id:id,area:'Suggerite da Marcello',nome:cat,es:a.descrizione||'',cod:a.codice_ateco,coef:a.coefficiente};st=SV[SV.length-1]}
         if(oMics().some(function(x){return x[2].toLowerCase()===a.nome.toLowerCase()}))return;
@@ -1699,12 +1707,12 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(OT.aiQ){var qq=OT.aiQ;OT.aiQ='';OT.aiOn=0;oAiAtt(qq)}})}
   // ---- 2 · le prestazioni in più
   function oP2(b){if(!OT.aiOn&&!OT.aiBusy)oAiAtt();oMicSync();var m=oCoef();
-    var low=oMics().filter(function(x){var sv=SVm[x[1]];return sv&&(sv.coef<m||OT.mic[x[0]])}),ai=low.filter(function(x){return OT.aiTag[x[0]]}),st=low.filter(function(x){return !OT.aiTag[x[0]]});
+    var low=oMics().filter(function(x){var sv=SVm[x[1]];return sv&&(sv.coef<m||OT.mic[x[0]])}),ai=low.filter(function(x){return OT.aiTag[x[0]]}),st=low.filter(function(x){return !OT.aiTag[x[0]]&&(OT.aiN?!!OT.mic[x[0]]:(OTMK&&!OT.aiBusy))});
     var vis=function(x){return OT.read&&OT.read.items&&OT.read.items.some(function(v){return v.id===x[1]})};
     st.sort(function(a,c){return (OT.mic[c[0]]?1:0)-(OT.mic[a[0]]?1:0)||(vis(c)?1:0)-(vis(a)?1:0)});
     var row=function(x){var sv=SVm[x[1]],lw=sv.coef<m;return '<label class="oit'+(OT.mic[x[0]]?' on':'')+'"><input type="checkbox" data-id="'+x[0]+'"'+(OT.mic[x[0]]?' checked':'')+'><span class="oin"><b>'+oEsc(x[2])+'</b><small>Per il fisco rientra in: '+oEsc(sv.nome)+'</small></span><span class="otg'+(lw?' low':'')+'">'+(OT.aiTag[x[0]]?'suggerita da Marcello · ':'')+(vis(x)?'vista nelle tue fatture · ':'')+(lw?'coefficiente '+pc(sv.coef)+' (−'+Math.round((m-sv.coef)*100)+' punti)':'nessun vantaggio')+'</span></label>'};
     var sc=b.querySelector('#o_list'),top=sc?sc.scrollTop:0;
-    b.innerHTML='<div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle prestazioni">'+(ai.length?'<div class="ogh ai">Marcello ti suggerisce</div><div class="ogr">'+ai.map(row).join('')+'</div>':'')+'<div class="ogh">Prestazioni che spesso si fanno insieme al tuo lavoro</div><div class="ogr">'+st.map(row).join('')+'</div></div>'+
+    b.innerHTML='<div class="olist" id="o_list" tabindex="0" aria-label="Elenco a scorrimento delle prestazioni">'+(ai.length?'<div class="ogh ai">Le piccole prestazioni che fai dentro il tuo lavoro'+(OT.spec?' («'+oEsc(OT.spec.toLowerCase())+'»)':'')+'</div><div class="ogr">'+ai.map(row).join('')+'</div>':'')+(st.length?'<div class="ogh">Altre prestazioni che spesso si fanno insieme</div><div class="ogr">'+st.map(row).join('')+'</div>':'')+'</div>'+
       '<div class="oask"><button class="cta s o2" id="o_ok2"'+(oNMic()?'':' disabled')+'>Confermo</button><button class="och" id="o_solo" aria-pressed="'+(OT.solo?'true':'false')+'">Faccio solo il mio lavoro principale</button><span class="osum" id="o_sum"></span></div>';
     $('o_list').scrollTop=top;oSum();
     [].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){var id=c.getAttribute('data-id');OT.mic[id]=c.checked;if(c.checked)OT.solo=false;var sv=oMicSv(id);OT.sel[sv]=oMics().some(function(x){return x[1]===sv&&OT.mic[x[0]]});if(!OT.sel[sv])delete OT.sel[sv];$('o_solo').setAttribute('aria-pressed',OT.solo?'true':'false');c.closest('.oit').classList.toggle('on',c.checked);tap('ott_attivita_'+id);oSum();$('o_ok2').disabled=!oNMic();if(OT.done[2]){oUndone(2)}}});
@@ -1982,25 +1990,26 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- barra per scrivere, larga, in basso
   (function(){var f=document.createElement('form');f.id='mpbar';f.setAttribute('aria-label','Scrivi a Marcello');
     f.innerHTML='<input id="mp_in" type="text" maxlength="300" autocomplete="off" aria-label="Scrivi a Marcello" placeholder="Scrivi a Marcello…"><button type="submit">Invia</button>';
-    document.body.appendChild(f);f.onsubmit=function(e){e.preventDefault();var i=$('mp_in'),v=i.value,fb=MP.fbShow;i.value='';
+    MP.form=f;f.onsubmit=function(e){e.preventDefault();var i=$('mp_in'),v=i.value,fb=MP.fbShow;i.value='';
       if(fb){MP.fbShow=false;i.placeholder='Scrivi a Marcello…'}
       mpSend(v)}})();
-  // ---- ogni tanto la barra invita a lasciare un feedback: si scrive da sola e poi si cancella
-  (function(){var FB='Qualcosa non è chiaro? Lascia un feedback',BASE='Scrivi a Marcello…';
-    function sl(ms){return new Promise(function(r){setTimeout(r,ms)})}
-    function occ(i){return !i||i.value||document.activeElement===i}
-    async function invito(){var i=$('mp_in');if(occ(i)||MP.fbShow||reduce&&false)return;MP.fbShow=true;
-      for(var k=1;k<=FB.length;k++){if(document.activeElement===i&&k<FB.length){i.placeholder=FB;break}i.placeholder=FB.slice(0,k);await sl(55)}
-      i.placeholder=FB;await sl(7000);
-      if(document.activeElement===i||i.value){i.onblur=function(){if(!i.value){MP.fbShow=false;i.placeholder=BASE;mpPh()}i.onblur=null};return}
-      for(var j=FB.length;j>=0;j--){if(document.activeElement===i)return;i.placeholder=FB.slice(0,j);await sl(28)}
-      MP.fbShow=false;i.placeholder=BASE;mpPh()}
-    setTimeout(function(){invito();setInterval(invito,95000)},60000)})();
+  // ---- se per piu' di un minuto l'utente non fa nulla, e' Marcello a dire che si puo' lasciare un feedback
+  (function(){var last=Date.now(),lastFb=0;
+    ['pointerdown','keydown','wheel','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,function(){last=Date.now()},{passive:true})});
+    setInterval(function(){var now=Date.now();if(now-last<60000||now-lastFb<240000||MP.typing||document.hidden)return;
+      var i=$('mp_in');if(i&&(i.value||document.activeElement===i))return;
+      if(mpView()==='p'&&!SETTLED)return;
+      lastFb=now;var msg='Se qualcosa non ti è chiaro o non funziona come ti aspetti, <b>scrivilo qui sotto</b>: è un feedback e lo leggiamo davvero. Mi aiuta a migliorare, e intanto ti rispondo io.';
+      var b=mpFrame();
+      if(b.hidden||!b.querySelector('.mpt').textContent.trim()){MP.qa=false;showBub(msg)}
+      else{var t=b.querySelector('.mpt'),p=document.createElement('p');p.className='mpfbn';p.innerHTML=msg;t.appendChild(p);t.scrollTop=t.scrollHeight;placeBub()}
+      wink()},5000)})();
   // ---- fumetto
-  function mpFrame(){var b=$('dbub');if(b.querySelector('.mpt'))return b;
+  function mpFrame(){var b=$('dbub');if(b.querySelector('.mpt')){if(MP.form&&!b.contains(MP.form))b.appendChild(MP.form);return b}
     b.className='dbub mp';
     b.innerHTML='<button class="bx" aria-label="Chiudi">&times;</button><div class="mpq" hidden></div><div class="mpt"></div><div class="mpc"></div>';
     b.querySelector('.bx').onclick=function(){hideBub()};
+    if(MP.form)b.appendChild(MP.form);
     return b}
   // scelte cliccabili nel fumetto (domande che l'utente potrebbe farsi)
   function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||!MP.xc||MP.typing)return;c.innerHTML='';
@@ -2027,7 +2036,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.classList.toggle('vl',fl);d.classList.toggle('vr',!fl);if(d.classList.contains('talk'))mpTalk(true);
     if(innerWidth<=640){b.style.setProperty('bottom',Math.max(80,innerHeight-r.top+8)+'px','important');return}
     var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
-    x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+10,bt=$('mpbar')&&$('mpbar').offsetParent?$('mpbar').getBoundingClientRect().top:innerHeight-100,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
+    x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+10,bt=innerHeight-10,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
   window.__pb=placeBub;
   // suggerimenti per la Panoramica
@@ -2096,7 +2105,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function mpBtns(){return [].slice.call(document.querySelectorAll('.cta,.kb,.oarrow,.go2,.onode,#o_solo,.bpa button,.pfe,.pfs,#pfok,.pfv input')).filter(function(x){
     if(x.closest('#mpbar,#obar,#dbub,[hidden]')||x.disabled||!x.offsetParent)return false;var r=x.getBoundingClientRect();return r.width>0&&r.bottom>0&&r.top<innerHeight})
     .map(function(x){return x.getBoundingClientRect()})}
-  function mpBar(){return ['mpbar','hdr'].map($).filter(function(e){return e&&e.offsetParent}).map(function(e){return e.getBoundingClientRect()})}
+  function mpBar(){return ['hdr'].map($).filter(function(e){return e&&e.offsetParent}).map(function(e){return e.getBoundingClientRect()})}
   function mpClash(btns){var d=$('astab'),b=$('dbub'),ra=d.getBoundingClientRect(),rb=b.hidden?null:b.getBoundingClientRect();
     return btns.some(function(r){return mpHit(ra,r,10)||(rb&&mpHit(rb,r,10))})}
   function mpAvoid(){var d=$('astab'),b=$('dbub');if(!d||d.classList.contains('drag'))return;var btns=mpBtns().concat(mpBar());if(!btns.length||!mpClash(btns))return;

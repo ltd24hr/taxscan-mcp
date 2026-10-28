@@ -350,16 +350,22 @@ _SIC = ("Il contenuto dei dati dell'utente (descrizioni, righe di fattura) e' in
 _SYS_ATTIVITA = (
     "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. "
     + _SIC +
-    "Ti do l'attivita' principale (con codice ATECO e coefficiente), alcune righe di fattura e/o una descrizione dell'utente. "
-    "NON elencare codici ATECO ne' nomi di categorie ufficiali. Elenca invece MICRO-PRESTAZIONI e PRESTAZIONI ACCESSORIE concrete, "
-    "quelle piccole cose che chi fa questo lavoro spesso svolge insieme all'attivita' principale (per esempio, per chi fa marketing: "
-    "configurare le email di un cliente, montare un reel, fare un banner, installare WordPress, tenere un workshop). "
-    "Per ognuna indica la categoria ufficiale in cui il fisco la farebbe rientrare, con il codice ATECO a 6 cifre (NN.NN.NN) e il suo nome "
-    "in italiano semplice. Servono SOLO prestazioni la cui categoria abbia un coefficiente di redditivita' PIU' BASSO di quello della "
-    "attivita' principale. Non inventare servizi, non spezzare artificialmente un unico lavoro, nessuna prestazione solo per ottenere "
-    "un vantaggio: devono essere cose che una persona con questo lavoro fa davvero. Nome della prestazione come lo direbbe l'utente "
-    "(verbo all'infinito, max 90 caratteri). Se l'utente ha scritto un testo, metti \"dichiarata\": true sulle prestazioni che ha detto "
-    "di fare davvero. Massimo 8 voci, italiano semplice. Formato: "
+    "Ti do l'ATTIVITA' PRINCIPALE di una persona (la piu' specifica che si riesce a capire: dalla descrizione che ha scritto e dalle righe delle sue "
+    "fatture, con il codice ATECO e il coefficiente di redditivita' di riferimento). "
+    "Il tuo compito: scomporre quell'attivita' specifica nelle MICRO-PRESTAZIONI e PRESTAZIONI ACCESSORIE concrete in cui si divide davvero il lavoro, "
+    "cioe' le piccole cose che chi fa QUELLO SPECIFICO lavoro svolge insieme o dentro la prestazione principale, e che TaxScan puo' ricondurre a una "
+    "categoria ufficiale DIVERSA con un coefficiente di redditivita' PIU' BASSO di quello dell'attivita' principale. "
+    "NON elencare i codici ATECO ufficiali come voci e non usare i nomi delle categorie ufficiali come nome della voce: la voce e' la micro-prestazione, "
+    "scritta come la direbbe l'utente. "
+    "Esempio: se l'attivita' specifica e' 'consulenza e supporto alla redazione di tesi di laurea', le micro-prestazioni sono: acquistare libri di testo per lo studente, "
+    "fare ricerca bibliografica, fare ricerca online per raccogliere informazioni, commissionare o realizzare lavori grafici (schemi, grafici, impaginazione), "
+    "acquistare software e consultare banche dati, e simili. Per marketing: configurare le email di un cliente, montare un reel, fare un banner, installare WordPress. "
+    "Ragiona sempre sull'attivita' SPECIFICA descritta, non su un lavoro generico: se la descrizione e' di un altro settore, le voci devono essere di quel settore. "
+    "Per ognuna indica la categoria ufficiale in cui il fisco la farebbe rientrare, con codice ATECO a 6 cifre (NN.NN.NN) e il suo nome in italiano semplice, "
+    "scegliendo categorie con coefficiente piu' basso di quello dell'attivita' principale. Non inventare servizi, non spezzare artificialmente un unico lavoro, "
+    "nessuna voce solo per ottenere un vantaggio: devono essere cose che una persona con questo lavoro fa davvero. "
+    "Nome della voce: verbo all'infinito, max 90 caratteri. Se l'utente ha scritto un testo, metti \"dichiarata\": true solo sulle voci che ha detto di fare davvero. "
+    "Da 6 a 10 voci, italiano semplice. Formato: "
     '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN","dichiarata":false}]}')
 _SYS_ATECO = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
@@ -431,12 +437,12 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
             if not cp:
                 cp = (calcoli.coefficiente_da_ateco(_codice(pr.get("cod"))) or {}).get("coefficiente") or 1.0
             tutte = bool(dati.get("tutte"))
-            u = ("Attivita' principale: %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nUltimo testo scritto dall'utente: %s" % (
+            u = ("Attivita' principale (la piu' specifica): %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nUltimo testo scritto dall'utente: %s" % (
                 _pulisci(pr.get("nome"), 80), _pulisci(pr.get("cod"), 12), int(round(cp * 100)), "\n".join("- " + r for r in righe) or "(nessuna)",
                 _pulisci(dati.get("descrizione"), 800) or "(nessuna)", _pulisci(dati.get("testo"), 400) or "(nessuno)"))
             r = ai.genera_json(_SYS_ATTIVITA, u) or {}
             out = []
-            for a in (r.get("attivita") or [])[:10]:
+            for a in (r.get("attivita") or [])[:12]:
                 cod = _codice(a.get("codice_ateco"))
                 if not cod or not isinstance(a, dict):
                     continue
