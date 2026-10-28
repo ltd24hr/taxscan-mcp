@@ -258,8 +258,9 @@ html.settled #stage{gap:18px}
 .o2g .ogr{grid-template-columns:1fr}
 
 /* v52: blocchi come widget: tre misure (intero, metà, terzo), si spostano selezionandoli e quelli della stessa misura si scambiano */
-.wgz.wgz{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;align-items:start}
+.wgz.wgz{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;align-items:start;grid-auto-flow:row dense}
 .wgz .wgt{grid-column:span 6;min-width:0}
+.wgz .wgt.wm{grid-column:span 4}
 .wgz .wgt.wh{grid-column:span 3}
 .wgz .wgt.wt{grid-column:span 2}
 html:not(.settled) #stage.wgz{display:flex!important}
@@ -270,7 +271,7 @@ html.settled #stage #slC .xb,html.settled #stage #slT .xb{grid-column:1/-1}
 .wc .wz{width:30px;height:30px}
 .wgt.wno{animation:oshake .35s}
 .wh,.wt{overflow-wrap:anywhere}
-@media (max-width:899px){.wgz .wgt.wh,.wgz .wgt.wt{grid-column:span 6}.wc .wz{display:none}}
+@media (max-width:899px){.wgz .wgt.wm,.wgz .wgt.wh,.wgz .wgt.wt{grid-column:span 6}.wc .wz,.wr{display:none}}
 .wgz .wgt{transition:transform .22s ease}.wgz .wgt.wlift{transition:none}
 
 /* blocchi che si aprono e si chiudono: da chiuso restano titolo e dato principale */
@@ -281,6 +282,15 @@ html.settled #stage #slC .xb,html.settled #stage #slT .xb{grid-column:1/-1}
 .wc .wo{width:30px;height:30px;transition:transform .2s}
 .wgt.wcl .wo{transform:rotate(180deg)}
 .wgt.wcl>.wc,.wgt.wcl .wc{z-index:5}
+
+/* v54: maniglia di ridimensionamento in basso a destra (come i widget del telefono) */
+.wr{position:absolute;right:2px;bottom:2px;width:26px;height:26px;cursor:nwse-resize;touch-action:none;z-index:4;opacity:0;transition:opacity .15s;display:flex;align-items:flex-end;justify-content:flex-end}
+.wr i{width:12px;height:12px;border-right:3px solid var(--blue,#2b5bd7);border-bottom:3px solid var(--blue,#2b5bd7);border-radius:0 0 6px 0;margin:0 6px 6px 0}
+.wgt:hover .wr,.in-s:hover>.wr,.wgt:focus-within .wr,.wgt.wsz .wr{opacity:.85}
+@media (hover:none){.wr{opacity:.7}}
+.wgt.wcl .wr{display:none}
+.wgt.wsz{outline:2px dashed rgba(43,91,215,.45);outline-offset:3px;user-select:none}
+html:not(.settled) #stage .wr{display:none}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -873,7 +883,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 53</div>
+<div class="ver">Prototipo versione 54</div>
 </div>
 
 <script>
@@ -2083,17 +2093,30 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function wgZSave(k,o){try{localStorage.setItem('ts_wz_'+k,JSON.stringify(o))}catch(e){}}
   function wgHost(el){return el.classList.contains('slot')?(el.querySelector('.in-s')||el):el}
   function wgFits(el){var h=wgHost(el);return h.scrollWidth<=h.clientWidth+2&&el.scrollWidth<=el.clientWidth+2}
-  function wgSize(el){return el.classList.contains('wt')?'t':el.classList.contains('wh')?'h':'f'}
-  function wgSetSize(el,z){el.classList.toggle('wh',z==='h');el.classList.toggle('wt',z==='t')}
+  function wgSize(el){return el.classList.contains('wt')?'t':el.classList.contains('wh')?'h':el.classList.contains('wm')?'m':'f'}
+  function wgSetSize(el,z){el.classList.toggle('wh',z==='h');el.classList.toggle('wt',z==='t');el.classList.toggle('wm',z==='m')}
+  var WGC={f:6,m:4,h:3,t:2};
+  function wgShake(el){el.classList.add('wno');setTimeout(function(){el.classList.remove('wno')},700)}
+  // maniglia in basso a destra: si trascina e il blocco prende più colonne o ne lascia, a gradini (2, 3, 4, 6 su 6); gli altri blocchi si riordinano da soli
+  function wgGrip(cont,key,el,g){g.addEventListener('pointerdown',function(e){if(e.button>0)return;e.preventDefault();e.stopPropagation();
+      var cr=cont.getBoundingClientRect(),gap=14,cw=(cr.width-5*gap)/6,zs=wgZLoad(key),k=wgKey(el,0),start=wgSize(el),warned=false;
+      try{g.setPointerCapture(e.pointerId)}catch(x){}el.classList.add('wsz');
+      function mv(ev){var L=el.getBoundingClientRect().left,span=(ev.clientX-L+gap)/(cw+gap),best='f',bd=99;
+        Object.keys(WGC).forEach(function(z){var d=Math.abs(WGC[z]-span);if(d<bd){bd=d;best=z}});
+        var cur=wgSize(el);if(best===cur)return;
+        wgSetSize(el,best);if(WGC[best]<WGC[cur]&&!wgFits(el)){wgSetSize(el,cur);if(!warned){warned=true;wgShake(el);say('Più piccolo di così non si leggerebbe tutto.')}}}
+      function up(ev){g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);el.classList.remove('wsz');
+        var now=wgSize(el);if(now!==start){zs[k]=now;wgZSave(key,zs);tap('widget_misura_'+now)}}
+      g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up)})}
   function wgOLoad(k){try{return JSON.parse(localStorage.getItem('ts_wo_'+k)||'{}')}catch(e){return{}}}
   function wgFold(key,el,btn){var o=wgOLoad(key),k=wgKey(el,0),closed=el.classList.contains('wcl');
     if(closed){el.style.maxHeight='84px';el.classList.remove('wcl');void el.offsetWidth;el.style.maxHeight=el.scrollHeight+'px';setTimeout(function(){el.style.maxHeight=''},300);delete o[k]}
     else{el.style.maxHeight=el.offsetHeight+'px';void el.offsetWidth;el.classList.add('wcl');el.style.maxHeight='';o[k]=1}
     try{localStorage.setItem('ts_wo_'+key,JSON.stringify(o))}catch(e){}
     if(btn){btn.setAttribute('aria-expanded',closed?'true':'false');btn.title=closed?'Chiudi il blocco':'Apri il blocco'}tap('widget_'+(closed?'apri':'chiudi'))}
-  var WGO=['f','h','t'];
+  var WGO=['f','m','h','t'];
   function wgResize(cont,key,el){var zs=wgZLoad(key),k=wgKey(el,0),cur=wgSize(el),i=WGO.indexOf(cur),done=false;
-    for(var n=1;n<=3&&!done;n++){var to=WGO[(i+n)%3],shrink=WGO.indexOf(to)>WGO.indexOf(cur);wgSetSize(el,to);
+    for(var n=1;n<=4&&!done;n++){var to=WGO[(i+n)%4],shrink=WGO.indexOf(to)>WGO.indexOf(cur);wgSetSize(el,to);
       if(shrink&&!wgFits(el)){continue}done=true;zs[k]=to;wgZSave(key,zs);tap('widget_misura_'+to)}
     if(!done){wgSetSize(el,cur);el.classList.add('wno');setTimeout(function(){el.classList.remove('wno')},700);say('Questo blocco non si può rimpicciolire di più: non si leggerebbe tutto.')}}
   function wgSorted(cont,sel){return [].slice.call(cont.querySelectorAll(sel)).sort(function(a,b){return (+a.style.order)-(+b.style.order)})}
@@ -2105,7 +2128,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- trascinamento diretto: si tiene premuto su un blocco e lo si muove, come le app su uno schermo
   function wgPress(cont,key,sel,el){if(el.__wgd)return;el.__wgd=1;
     el.addEventListener('click',function(e){if(el.__wgj){e.preventDefault();e.stopPropagation();el.__wgj=0}},true);
-    el.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;if(e.target.closest('input,textarea,select,a,button,label,.wc,[contenteditable]'))return;var inn=e.target.closest('.wgt');if(inn&&inn!==el)return;
+    el.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;if(e.target.closest('input,textarea,select,a,button,label,.wc,.wr,[contenteditable]'))return;var inn=e.target.closest('.wgt');if(inn&&inn!==el)return;
       var touch=e.pointerType==='touch',sx=e.clientX,sy=e.clientY,on=false,tm=null,tg=null,aft=false,iv=null,px=sx,py=sy,r0=null,s0=scrollY;
       var lastSw=0;
       function lr(e){var tr=e.style.transform;e.style.transform='';var r=e.getBoundingClientRect();e.style.transform=tr;return r}
@@ -2141,6 +2164,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       var host=wgHost(el);if(!host||host.querySelector(':scope>.wc'))return;
       var c=document.createElement('span');c.className='wc';c.setAttribute('role','group');
       c.innerHTML='<button type="button" class="wo" aria-expanded="true" aria-label="Apri o chiudi il blocco" title="Chiudi il blocco">▾</button><button type="button" class="wz" aria-label="Cambia la misura del blocco" title="Cambia la misura del blocco">⤢</button>';
+      var gr=document.createElement('span');gr.className='wr';gr.title='Trascina per allargare o rimpicciolire il blocco';gr.setAttribute('aria-hidden','true');gr.innerHTML='<i></i>';wgGrip(cont,key,el,gr);host.appendChild(gr);
       c.querySelector('.wz').onclick=function(e){e.stopPropagation();wgResize(cont,key,el)};
       var wo=c.querySelector('.wo');wo.onclick=function(e){e.stopPropagation();wgFold(key,el,wo)};
       if(wgOLoad(key)[k]){el.classList.add('wcl');wo.setAttribute('aria-expanded','false');wo.title='Apri il blocco'}
