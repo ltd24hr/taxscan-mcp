@@ -335,7 +335,7 @@ def chat(uid: str, prompt: str) -> dict:
     except Exception:
         pass
     try:
-        testo = ai.genera(_SISTEMA, prompt, 700)
+        testo = ai.genera(_SISTEMA, prompt, 800, veloce=("domanda?|risposta" in prompt))
     except Exception as e:
         print(f"prova: errore chat: {e}")
         return {"ok": False, "errore": str(e)[:200]}
@@ -417,7 +417,23 @@ def _codice(c) -> str:
     return ".".join(x for x in m.groups() if x) if m else ""
 
 
+_CACHE_ATECO: dict = {}
+
+
 def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
+    """Le ricerche ATECO uguali non rifanno la chiamata all'IA: la risposta e' immediata."""
+    if task in ("ateco", "ateco_verifica") and isinstance(dati, dict):
+        k = (task, re.sub(r"\s+", " ", str(dati.get("descrizione") or dati.get("codice") or "")).strip().lower()[:300])
+        if k in _CACHE_ATECO:
+            return _CACHE_ATECO[k]
+        r = _ai_task(uid, c, task, dati)
+        if isinstance(r, dict) and r.get("ok") and len(_CACHE_ATECO) < 500:
+            _CACHE_ATECO[k] = r
+        return r
+    return _ai_task(uid, c, task, dati)
+
+
+def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
     chiave = re.sub(r"[^A-Za-z0-9_-]", "", str(c or uid or ""))[:64]
     if len(chiave) < 4:
         return {"ok": False}
@@ -457,7 +473,7 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                             "dichiarata": bool(a.get("dichiarata"))})
             return {"ok": True, "attivita": [x for x in out if x["nome"]]}
         if task == "ateco":
-            r = ai.genera_json(_SYS_ATECO, "Descrizione: " + _pulisci(dati.get("descrizione"), 800)) or {}
+            r = ai.genera_json(_SYS_ATECO, "Descrizione: " + _pulisci(dati.get("descrizione"), 800), 500, veloce=True) or {}
             out = []
             for a in (r.get("codici") or [])[:3]:
                 cod = _codice(a.get("codice_ateco"))
@@ -473,7 +489,7 @@ def ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
             cod = _codice(raw)
             div_ok = bool(cod) and cod[:2] in _DIVISIONI_ATECO
             r = ai.genera_json(_SYS_ATECO_VERIFICA, "Codice scritto dall'utente: «%s». Controllo di formato: %s." % (
-                raw, "ben formato" if div_ok else "non ben formato o con una divisione inesistente")) or {}
+                raw, "ben formato" if div_ok else "non ben formato o con una divisione inesistente"), 500, veloce=True) or {}
             esiste = bool(r.get("esiste")) and div_ok
             out = []
             for a in (r.get("codici") or [])[:3]:

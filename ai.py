@@ -30,10 +30,10 @@ def fornitore() -> str:
     return "anthropic" if _anthropic() else "openrouter" if _openrouter() else ""
 
 
-def _via_anthropic(sistema: str, utente: str, max_token: int) -> str:
+def _via_anthropic(sistema: str, utente: str, max_token: int, modello: str = "") -> str:
     import assistente
     r = requests.post(assistente.API_URL, headers=assistente.intestazioni(), timeout=75,
-                      json={"model": assistente.MODELLO, "max_tokens": max_token, "system": sistema,
+                      json={"model": modello or assistente.MODELLO, "max_tokens": max_token, "system": sistema,
                             "messages": [{"role": "user", "content": utente}]})
     if r.status_code >= 400:
         raise RuntimeError(f"anthropic {r.status_code}: {r.text[:200]}")
@@ -52,10 +52,20 @@ def _via_openrouter(sistema: str, utente: str, max_token: int) -> str:
     return (r.json()["choices"][0]["message"]["content"] or "").strip()
 
 
-def genera(sistema: str, utente: str, max_token: int = 1200) -> str:
-    """Una domanda, una risposta di testo. Se Anthropic fallisce e c'e' anche OpenRouter, prova con quella."""
+# modello veloce per i compiti brevi (codici ATECO, suggerimenti): se non risponde si ripiega sul modello normale
+MODELLO_VELOCE = (os.environ.get("AI_MODELLO_VELOCE") or "claude-haiku-4-5-20251001").strip()
+
+
+def genera(sistema: str, utente: str, max_token: int = 1200, veloce: bool = False) -> str:
+    """Una domanda, una risposta di testo. Se Anthropic fallisce e c'e' anche OpenRouter, prova con quella.
+    veloce=True: usa il modello piu' rapido (compiti brevi); se fallisce, riprova con quello normale."""
     errore = None
     if _anthropic():
+        if veloce and MODELLO_VELOCE:
+            try:
+                return _via_anthropic(sistema, utente, max_token, MODELLO_VELOCE)
+            except Exception as e:
+                print(f"ai: modello veloce non risponde, uso quello normale: {e}")
         try:
             return _via_anthropic(sistema, utente, max_token)
         except Exception as e:
@@ -84,10 +94,10 @@ def diagnosi() -> dict:
     return out
 
 
-def genera_json(sistema: str, utente: str, max_token: int = 1500):
+def genera_json(sistema: str, utente: str, max_token: int = 1500, veloce: bool = False):
     """Come genera(), ma si aspetta un oggetto JSON nella risposta. None se non lo trova."""
     testo = genera(sistema + "\nRispondi SOLO con un oggetto JSON valido, senza testo prima o dopo e senza markdown.",
-                   utente, max_token)
+                   utente, max_token, veloce)
     m = re.search(r"\{.*\}", testo, re.S)
     if not m:
         return None
