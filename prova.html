@@ -181,6 +181,15 @@ html.settled #stage{gap:18px}
 .oper{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid #e3e7f1}.oper:first-of-type{border-top:0}
 .oper .opn{font-weight:600;font-size:15px}.oper .opb{display:flex;flex-wrap:wrap;gap:8px}.oper .kc{width:auto;padding:8px 14px}
 .orepf{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}.orepf .oq{flex:1;min-width:220px;margin:0}
+
+/* schede impilate: quelle già fatte restano sotto, un po' oscurate, e si riaprono con un tocco */
+.opeek{display:none}
+.opanel.coll{opacity:.62;filter:saturate(.55);cursor:pointer;padding:14px 22px;margin-bottom:-10px;position:relative;z-index:1;transition:opacity .2s}
+.opanel.coll:hover,.opanel.coll:focus-visible{opacity:.92}
+.opanel.coll .opeek{display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:17px}
+.opanel.coll .opeek span{color:var(--mute);font-size:15px}
+.opanel.coll .obody{display:none}
+.opanel.act{position:relative;z-index:2;box-shadow:0 -6px 22px rgba(18,36,82,.14)}
 </style><style id="mpcss">.narr,#gnarr,#snarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -703,7 +712,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
 
   <button class="again" id="again">Rivedi la sequenza dall'inizio</button>
-<div class="ver">Prototipo versione 34</div>
+<div class="ver">Prototipo versione 35</div>
 </div>
 
 <script>
@@ -1263,8 +1272,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     $('scal').innerHTML='<tr><th>Data</th><th>Cosa</th><th>Imposta</th><th>Contributi</th><th>Totale</th><th></th></tr>'+
       (window.TS_SC&&window.TS_SC.length?window.TS_SC.map(function(s,i){return ['s_r'+(i+1),s.d,s.e,s.i,s.c,s.t]}):[['s_r1','30 nov 2026','2° acconto 2026','764 €','3.187 €','3.951 €'],['s_r2','30 giu 2027','Saldo 2026 + 1° acconto 2027','—','—','8.417 €'],['s_r3','30 nov 2027','2° acconto 2027','—','—','—']]).map(function(r){return '<tr data-ex="'+r[0]+'" tabindex="0" role="button"><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td><button class="pf24" data-ex="s_f24">Paga F24</button></td></tr>'}).join('');
     $('sask').hidden=true;return msg}
-  function scadChips(){if(GT.acc||!window.__xchips)return;var go=function(a){return function(){GT.acc=a;tap('scadenza_'+a);say(a==='si'?'Bene, <b>bravo</b>! Così arrivi tranquillo alla scadenza.':'Va bene, nessun problema. Te lo ripropongo <b>tra 10 giorni</b>: intanto metti da parte circa il <b>22%</b> di ogni incasso.');if(a==='si')setTimeout(wink,1500)}};
-    window.__xchips([['Sì, li ho messi da parte',go('si')],['Non ancora',go('no')],['Cosa sono gli acconti?',function(){say(EX.s_ask);scadChips()}]])}
+  var SCP={'Sì, li ho messi da parte':{a:function(){GT.acc='si';tap('scadenza_si');say('Bene, <b>bravo</b>! Così arrivi tranquillo alla scadenza.');setTimeout(wink,1500)},x:['Non ancora'],n:['Quanto devo mettere da parte ogni volta?','Cosa succede dopo il 30 novembre?']},
+    'Non ancora':{a:function(){GT.acc='no';tap('scadenza_no');say('Va bene, nessun problema. Te lo ripropongo <b>tra 10 giorni</b>: intanto metti da parte circa il <b>22%</b> di ogni incasso.')},x:['Sì, li ho messi da parte'],n:['Come pago con l\'F24?','Cosa succede se salto la scadenza?']},
+    'Cosa sono gli acconti?':{a:function(){say(EX.s_ask)},n:['Quanto devo mettere da parte ogni volta?','Cosa succede se salto la scadenza?']},
+    'Quanto devo mettere da parte ogni volta?':{a:'Circa il <b>22%</b> di ogni incasso (è una stima): così, quando arriva la scadenza, i soldi ci sono già.',n:['Come pago con l\'F24?']},
+    'Cosa succede se salto la scadenza?':{a:'Non è la fine: ci sono sanzioni e interessi, ma puoi <b>regolarizzare</b> con il ravvedimento. Meglio farlo presto.',n:['Come pago con l\'F24?']},
+    'Come pago con l\'F24?':{a:function(){say(EX.s_f24)},n:['Cosa succede dopo il 30 novembre?']},
+    'Cosa succede dopo il 30 novembre?':{a:function(){say(EX.s_r2)},n:[]}};
+  function scadChips(){if(window.__chips)window.__chips(SCP,GT.acc?['Cosa sono gli acconti?','Come pago con l\'F24?']:['Sì, li ho messi da parte','Non ancora','Cosa sono gli acconti?'])}
   var VW={p:'scroller',g:'gview',s:'sview'};
   function showView(v){hideBub();Object.keys(VW).forEach(function(k){$(VW[k]).hidden=(k!==v)});$('again').hidden=(v!=='p');
     navb.forEach(function(x,i){if(i===({p:0,s:1,g:2})[v])x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
@@ -1311,10 +1326,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function sxB64(f,cb){var isImg=/^image\/(jpeg|png|webp)$/.test(f.type);
     if(!isImg||f.size<1.5*1024*1024){var r=new FileReader();r.onload=function(){cb(String(r.result).split(',')[1]||'',f.type)};r.onerror=function(){cb('',f.type)};r.readAsDataURL(f);return}
     var img=new Image(),u=URL.createObjectURL(f);img.onload=function(){var m=2000,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);cb(c.toDataURL('image/jpeg',.82).split(',')[1],'image/jpeg')};img.onerror=function(){cb('',f.type)};img.src=u}
-  function sxServer(cb){var fs=SX.fil.filter(function(f){return f&&f.name}).slice(0,6);if(!window.TS_C||!fs.length){cb(null);return}
+  function sxServer(cb){var fs=SX.fil.filter(function(f){return f&&f.name}).slice(0,6);if(!fs.length){cb(null);return}
     var out=[],n=fs.length;
     function send(){if(!out.length){cb({ok:false,errore:'Non riesco a leggere questi file. Prova con PDF, JPG, PNG o XML.'});return}
-      fetch('/api/prova/fatture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,files:out})}).then(function(r){return r.json()}).then(cb).catch(function(){cb(null)})}
+      fetch('/api/prova/fatture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C||'',files:out})}).then(function(r){return r.json()}).then(cb).catch(function(){cb(null)})}
     fs.forEach(function(f){sxB64(f,function(b,t){if(b)out.push({nome:f.name,tipo:t||f.type,dati:b});if(--n===0)send()})})}
   $('sxan').onclick=function(){var d=$('sxd').value.trim();if(!SX.fil.length&&!d){say('Mi serve almeno <b>una fattura</b> o due righe su cosa fai davvero. Oppure usa le fatture di esempio.');return}
     tap('strategia_analizza');srv('analisi_avviata',0);SX.read=null;var b=$('sxan');b.disabled=true;b.textContent='Leggo le fatture…';
@@ -1446,7 +1461,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oSummary(n){if(n===1)return OT.read?'Fatture lette e confermate':'Descrizione ricevuta';if(n===2)return OT.solo?'Solo il tuo lavoro principale':oNMic()+(oNMic()===1?' prestazione in più':' prestazioni in più');if(n===3)return 'Tempo indicato';if(n===4)return 'Periodicità indicata';return ''}
   function oClick(n){if(!oAvail(n)){say('Prima completiamo il passo <b>'+(n-1)+'</b>: si va in ordine, un passo alla volta.');var r=$('ost'+n);r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake');return}
     if(OT.busy)return;oOpen(n)}
-  function oShow(){OTN.forEach(function(s){$('opn'+s[0]).hidden=(OT.open!==s[0])});$('odos').hidden=!OT.open;$('oshell').classList.toggle('sm',!!OT.open)}
+  function oShow(){OTN.forEach(function(x){var n=x[0],p=$('opn'+n),act=OT.open===n,coll=!!(OT.open&&n<OT.open&&OT.done[n]);p.hidden=!(act||coll);p.classList.toggle('coll',coll);p.classList.toggle('act',act);
+      var k=p.querySelector('.opeek');if(k)k.querySelector('span').textContent=oSummary(n)});$('odos').hidden=!OT.open;$('oshell').classList.toggle('sm',!!OT.open)}
   function oOpen(n){if(window.__qa0)window.__qa0();OT.open=n;tap('ott_passo_'+n);oShow();oNodes();oFill(n);oPh();oScroll()}
   function oScroll(){if(reduce)return;var s=$('opath');try{var t=s.getBoundingClientRect().top;if(t<document.querySelector('nav').offsetHeight+60||t>innerHeight*.6)scrollTo({top:Math.max(0,t+scrollY-(document.querySelector('nav').offsetHeight+120)),behavior:'smooth'})}catch(e){}}
   var OTHELP={1:['Le tue fatture mi dicono cosa fai davvero per i clienti, meglio di qualsiasi domanda. Le leggo io: prendo solo la descrizione e l\'importo delle righe, mai i dati dei clienti, e non conservo i file.','Scegli come darmi le fatture: caricale, collegale al tuo programma o prova con un esempio.'],
@@ -1454,18 +1470,34 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
  3:['Il calcolo applica a ogni attività il suo coefficiente, quindi mi serve capire come si divide il tuo tempo. Se fatturi tutto il tuo tempo, la quota di tempo è anche la quota dei tuoi incassi.','Per ogni attività sposta il cursore da poco a tanto tempo. Non servono numeri: alla fine le percentuali le calcolo io.'],
  4:['Quanto spesso fai una prestazione conta: una cosa che fai ogni settimana pesa diversamente da una che fai una volta l\'anno, e mi serve per scrivere i compiti giusti.','Per ogni prestazione scegli ogni quanto la fai. Basta una scelta per riga.'],
  5:['Ti mostro quanto paghi oggi e quanto pagheresti con le attività che hai indicato, con una stima in euro, e i compiti da fare per ottenere la differenza.','Guarda il risultato e spunta i compiti man mano che li fai.']};
-  function oFill(n){var b=$('opn'+n);if(!b.querySelector('.obody'))b.insertAdjacentHTML('afterbegin','<div class="obody"></div>');
+  function oFill(n){var b=$('opn'+n);if(!b.querySelector('.obody')){b.insertAdjacentHTML('afterbegin','<div class="opeek" role="button" tabindex="0" aria-label="Rivedi il passo '+n+'"><b>'+n+' · '+OTN[n-1][1]+'</b><span></span></div><div class="obody"></div>');b.onclick=function(){if(b.classList.contains('coll'))oOpen(n)};b.onkeydown=function(e){if((e.key==='Enter'||e.key===' ')&&b.classList.contains('coll')){e.preventDefault();oOpen(n)}}}
     ({1:oP1,2:oP2,3:oP3,4:oP4,5:oP5})[n](b.querySelector('.obody'));if(OT.done[n]&&n<5)oArrow(n);oChips(n)}
   // domande che l'utente potrebbe farsi: le propone Marcello nel fumetto, cliccabili
-  var OTQ={1:[['Cos\'è il coefficiente di redditività?','Ogni attività ha una percentuale stabilita dalla legge: le tasse si calcolano solo su quella parte dei tuoi incassi. Per esempio <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Più è bassa, meno tasse paghi.'],['Cosa leggi dalle mie fatture?','Prendo solo la descrizione e l\'importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.']],
-    2:[['Perché alcune prestazioni valgono meno?','Per il fisco alcune piccole prestazioni rientrano in una categoria con un coefficiente più basso del tuo: su quella parte di incassi il reddito tassato è più basso.'],['E se non faccio nulla di questo?','Nessun problema: scegli «Faccio solo il mio lavoro principale». Il risultato sarà sincero, anche se è zero.']],
-    3:[['Come funzionano i cursori?','Per ogni attività sposti il cursore da poco a tanto tempo. Non servono numeri: alla fine le percentuali le calcolo io. Se preferisci, scrivimele qui sotto.'],['Perché il tempo conta?','Se fatturi tutto il tuo tempo, la quota di tempo è anche la quota dei tuoi incassi, e ogni quota usa il suo coefficiente.']],
-    4:[['Perché mi chiedi la periodicità?','Una cosa che fai ogni settimana pesa diversamente da una che fai una volta l\'anno: mi serve per scrivere i compiti giusti per te.']],
-    5:[['Come hai calcolato il risparmio?','Ho applicato a ogni attività il suo coefficiente sulla sua quota di incassi, poi ho calcolato imposta e contributi e confrontato con quello che paghi oggi. Nel report PDF trovi tutti i passaggi.'],['Il risultato è garantito?','No, è una stima: dipende da come fatturi e dai codici attivi sulla tua partita IVA. Se vuoi, un commercialista può controllarla.']]};
-  function oChips(n){var q=OTQ[n];if(!q||!window.__xchips)return;window.__xchips(q.map(function(x){return [x[0],function(){say(x[1]);window.__xchips(q.filter(function(y){return y!==x}).map(function(y){return [y[0],function(){say(y[1])}]}))}]}))}
-  function oArrow(n){var b=$('opn'+n);if(!b||b.querySelector('.oarw'))return;var s=OTN[n];
-    b.insertAdjacentHTML('beforeend','<div class="oarw"><button class="oarrow" aria-label="Vai al passo '+(n+1)+': '+s[1]+'"><span aria-hidden="true">→</span></button><div><b>Passo '+(n+1)+'</b><small>'+s[1]+'</small></div></div>');
-    b.querySelector('.oarrow').onclick=function(){oOpen(n+1)}}
+  var OTP={
+    'Cos\'è il coefficiente di redditività?':{a:'Ogni attività ha una percentuale stabilita dalla legge: le tasse si calcolano solo su quella parte dei tuoi incassi. Per esempio <b>78%</b> per il marketing, <b>67%</b> per siti e tecnologia, <b>40%</b> per la rivendita. Più è bassa, meno tasse paghi.',n:['Come faccio a pagarne meno?']},
+    'Come faccio a pagarne meno?':{a:'Se oltre al lavoro principale fai prestazioni che per il fisco rientrano in categorie con un coefficiente più basso, e le fatturi con quel codice, la parte di incassi tassata scende. Lo scopriamo insieme ai passi 2 e 3.',n:['Devo cambiare codice ATECO?']},
+    'Cosa leggi dalle mie fatture?':{a:'Prendo solo la descrizione e l\'importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.',n:['Posso provare prima con un esempio?']},
+    'Posso provare prima con un esempio?':{a:'Sì: scegli «Usa tre fatture di esempio» e vedi come funziona senza caricare nulla.',n:[]},
+    'Devo cambiare codice ATECO?':{a:'Per usare un coefficiente diverso serve che il codice di quella categoria sia attivo sulla tua partita IVA. Te lo spiego alla fine, tra i compiti da fare: non devi fare nulla adesso.',n:[]},
+    'Perché alcune prestazioni valgono meno?':{a:'Per il fisco alcune piccole prestazioni rientrano in una categoria con un coefficiente più basso del tuo: su quella parte di incassi il reddito tassato è più basso.',n:['Devo cambiare codice ATECO?']},
+    'E se non faccio nulla di questo?':{a:'Nessun problema: scegli «Faccio solo il mio lavoro principale». Il risultato sarà sincero, anche se è zero.',n:[]},
+    'Come funzionano i cursori?':{a:'Per ogni attività sposti il cursore da poco a tanto tempo. Non servono numeri: alla fine le percentuali le calcolo io.',n:['Posso scriverlo a parole?']},
+    'Posso scriverlo a parole?':{a:'Sì: scrivimi qui sotto, per esempio «principale 50, siti 30, video 20», e imposto io i cursori.',n:[]},
+    'Perché il tempo conta?':{a:'Se fatturi tutto il tuo tempo, la quota di tempo è anche la quota dei tuoi incassi, e ogni quota usa il suo coefficiente.',n:[]},
+    'Perché mi chiedi la periodicità?':{a:'Una cosa che fai ogni settimana pesa diversamente da una che fai una volta l\'anno: mi serve per scrivere i compiti giusti per te.',n:['Cambia il calcolo?']},
+    'Cambia il calcolo?':{a:'No: la periodicità non cambia la stima in euro, serve a scrivere compiti e promemoria su misura.',n:[]},
+    'Come hai calcolato il risparmio?':{a:'Ho applicato a ogni attività il suo coefficiente sulla sua quota di incassi, poi ho calcolato imposta e contributi e confrontato con quello che paghi oggi. Nel report PDF trovi tutti i passaggi.',n:['Cosa devo fare adesso?']},
+    'Il risultato è garantito?':{a:'No, è una stima: dipende da come fatturi e dai codici attivi sulla tua partita IVA.',n:['Posso farlo controllare?']},
+    'Posso farlo controllare?':{a:'Certo: un commercialista può verificare i numeri prima che tu agisca. È una tua scelta, non è obbligatorio.',n:[]},
+    'Cosa devo fare adesso?':{a:'Guarda «Cosa fare ora» qui sotto e spunta i compiti man mano. Puoi anche scaricare il report PDF con tutta la metodologia.',n:['Posso farlo controllare?']},
+    'Come hai calcolato queste percentuali?':{a:'Ho sommato gli importi delle righe delle fatture per tipo di lavoro e li ho divisi sul totale fatturato.',n:[]}};
+  var OT1P={'Sì, confermo':{a:function(){tap('ott_conferma1');oDone(1,'Perfetto, grazie!')},e:1},
+    'Non proprio':{a:function(){say('Nessun problema. Tocca un\'attività per vedere i dettagli: se non fa parte del tuo lavoro puoi toglierla. Oppure scrivimi qui sotto come stanno le cose.')},n:[]},
+    'Continuo con il solo lavoro principale':{a:function(){tap('ott_conferma1');oDone(1,'Va bene, andiamo avanti con il tuo lavoro principale.')},e:1},
+    'Perché serve una descrizione chiara?':{a:'Perché il coefficiente dipende dal tipo di attività: se in fattura c\'è scritto solo «consulenza» non si capisce cosa fai, e non posso cercare le prestazioni che ti farebbero pagare meno.',n:[]}};
+  var OTL={1:['Cos\'è il coefficiente di redditività?','Cosa leggi dalle mie fatture?'],2:['Perché alcune prestazioni valgono meno?','E se non faccio nulla di questo?'],3:['Come funzionano i cursori?','Perché il tempo conta?'],4:['Perché mi chiedi la periodicità?'],5:['Come hai calcolato il risparmio?','Il risultato è garantito?']};
+  function oChips(n){if(window.__chips)window.__chips(OTP,OTL[n]||[])}
+  function oArrow(){}
   function oDone(n,msg){var was=OT.done[n];OT.done[n]=true;oNodes();if(msg)say(msg);if(!was||OT.open===n)oArrow(n);
     if(n<5&&OT.open===n)timers.push(setTimeout(function(){if(OT.open===n&&OT.done[n])oOpen(n+1)},reduce?300:1300))}
   function oUndone(n){var ch=false;for(var k=n;k<=5;k++)if(OT.done[k]){delete OT.done[k];ch=true}if(ch){oNodes();var a=$('opn'+n).querySelector('.oarw');if(a)a.remove()}}
@@ -1488,8 +1520,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       'Il percorso: 1 fatture, 2 prestazioni in più, 3 livello di tempo per attività, 4 periodicità, 5 risultato in euro con report PDF. '}
   function oChat(t){var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');say('Ci penso un attimo…');
     ask(PERS+oCtx()+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Rispondi in massimo 3 frasi semplici e calde, dando del tu, senza certezze (solo stime). Se l\'utente saluta o fa una domanda generica, rispondi con naturalezza e poi, se serve, ricordagli cosa può fare in questo passo. Se sta descrivendo cosa fa, aiutalo a capirlo e dì quale prestazione spuntare. Messaggio dell\'utente: '+t).then(function(r){
-      if(r){HIST.push(['Utente',t]);HIST.push(['Marcello',r]);say(esc(r))}else say('Non riesco a rispondere bene in questo momento, ma ho segnato quello che hai scritto. Intanto puoi continuare con il passo in corso.')})}
-  function oArrowTo(from,to){var b=$('opn'+from);if(!b||b.hidden||b.querySelector('.oarw'))return;var s=OTN[to-1];b.insertAdjacentHTML('beforeend','<div class="oarw"><button class="oarrow" aria-label="Vai al passo '+to+'"><span aria-hidden="true">→</span></button><div><b>Passo '+to+'</b><small>'+s[1]+'</small></div></div>');b.querySelector('.oarrow').onclick=function(){oOpen(to)}}
+      if(r){HIST.push(['Utente',t]);HIST.push(['Marcello',r]);say(esc(r))}else say('Non riesco a rispondere bene in questo momento, ma ho segnato quello che hai scritto. Intanto puoi continuare con il passo in corso.');oChips(OT.open||1)})}
+  function oArrowTo(){}
   function oParsePct(t){t=t.toLowerCase();var got=0;
     oAct().forEach(function(a){var keys=(SXK[a.id]||[]).concat(a.nome.toLowerCase().split(/[^a-zàèéìòù]+/).filter(function(w){return w.length>=4}));if(a.id==='principale')keys=keys.concat(['principale','lavoro principale']);
       for(var k=0;k<keys.length;k++){var i=t.indexOf(keys[k]);if(i<0)continue;var aft=t.slice(i+keys[k].length,i+keys[k].length+16).match(/(\d{1,3})/),bef=t.slice(Math.max(0,i-12),i).match(/(\d{1,3})\s*%?\s*(?:di|per|a)?\s*$/),m=aft||bef;if(m){OT.pct[a.id]=Math.min(100,+m[1]);got++;return}}});return got}
@@ -1535,7 +1567,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var msgs=['Sto aprendo le fatture…','Sto leggendo le righe di lavoro…','Sto confrontando con il tuo codice <b>'+oEsc(OTMAIN.cod)+'</b>…','Calcolo le percentuali…'];
     var fin=false,res=null,ok=false;function show(){if(fin&&ok){OT.busy=false;oAnRes(res)}}
     msgs.forEach(function(m,i){timers.push(setTimeout(function(){say(m);if(i===msgs.length-1)timers.push(setTimeout(function(){ok=true;show()},reduce?0:1300))},reduce?0:1500*i))});
-    if(OT.ex||!window.TS_C||!SX.fil.length){res=OTEX(!OT.ex&&SX.fil.length>0);fin=true;show()}else sxServer(function(r){res=r;fin=true;show()})}
+    if(OT.ex||!SX.fil.length){res=OTEX(!OT.ex&&SX.fil.length>0);fin=true;show()}else sxServer(function(r){res=r;fin=true;show()})}
   function OTEX(dem){return {ok:true,esempio:true,demo:!!dem,riepilogo:[{voce:'principale',titolo:OTMAIN.nome,pct:82},{voce:'sito',titolo:'Creazione di siti web',pct:13},{voce:'assistenza',titolo:'Assistenza tecnica e configurazioni',pct:5}],generiche:[],non_letti:[]}}
   function oAnRes(res,quiet){var box=$('o1res');if(!box)return;
     if(!res||res.ok===false||res.vuoto||!res.riepilogo){var m=(res&&(res.errore||res.vuoto))||'Non sono riuscito a leggere le fatture.';
@@ -1544,20 +1576,23 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(!m0.principale){items.unshift({id:'principale',nome:OTMAIN.nome,coef:oCoef()});m0.principale=Math.max(50,100-items.length*10)}
       var tn=oTens(m0,items.map(function(i){return i.id}));items.forEach(function(i){i.pct=tn[i.id]});res.items=items;
       OT.sel={};items.forEach(function(i){if(i.id!=='principale'&&SVm[i.id])OT.sel[i.id]=true});OT.seed={};OT.pct={};OT.lv={};items.forEach(function(i){OT.seed[i.id]=i.pct;OT.pct[i.id]=i.pct});OT.touched=false}
+    res.poco=!!(res.generiche&&res.generiche.length&&res.riepilogo.every(function(v){return v.voce==='principale'}));
+    if(res.poco&&res.items)res.items.forEach(function(i){if(i.id==='principale')i.nome='Il tuo lavoro principale'});
     OT.read=res;oDraw1(quiet)}
   function oDraw1(quiet){var box=$('o1res'),res=OT.read,items=res.items.filter(function(i){return i.pct>0||i.id==='principale'}),alt=items.filter(function(i){return i.id!=='principale'});
     var h='<div class="kbox"><div class="lbl">Le tue attività</div><div class="obw">'+oBar(items.map(function(i){return {id:i.id,nome:i.nome}}),'seed')+'</div><div class="osp orows">';
     items.forEach(function(i,k){h+='<div><button class="orow" data-id="'+oEsc(i.id)+'" aria-expanded="false"><span class="osd" style="background:'+OTCOL[k%OTCOL.length]+'"></span><span class="osn">'+oEsc(i.nome)+'<small>coefficiente '+pc(i.coef)+' · tocca per i dettagli</small></span><b class="opp">'+i.pct+'%</b><i aria-hidden="true">⌄</i></button><div class="odet" id="od_'+oEsc(i.id)+'" hidden></div></div>'});
     h+='</div></div>';
-    if(!OT.done[1])h+='<div class="oask"><button class="cta s o2" id="o_yes">Sì, confermo</button><button class="lnk" id="o_no">Non proprio</button></div>';
     box.innerHTML=h;
     [].slice.call(box.querySelectorAll('.orow')).forEach(function(r){r.onclick=function(){var id=r.getAttribute('data-id'),d=$('od_'+id),open=d.hidden;
       [].slice.call(box.querySelectorAll('.odet')).forEach(function(x){x.hidden=true});[].slice.call(box.querySelectorAll('.orow')).forEach(function(x){x.setAttribute('aria-expanded','false')});
       if(open){oDet(id,d);d.hidden=false;r.setAttribute('aria-expanded','true');tap('ott_dettaglio_'+id)}}});
-    var y=$('o_yes');if(y){y.onclick=function(){tap('ott_conferma1');oDone(1,'Perfetto, grazie!')};
-      $('o_no').onclick=function(){say('Nessun problema. Tocca un\'attività per vedere i dettagli: se non fa parte del tuo lavoro puoi toglierla. Oppure <b>scrivimi qui sotto</b> come stanno le cose.')}}
+    var gen=(res.generiche||[]).map(function(g){return '«'+oEsc(g.testo.toLowerCase())+'»'}).filter(function(v,k,a){return a.indexOf(v)===k}).slice(0,2).join(' e ');
+    if(res.poco){if(!quiet)say('Ho letto le tue fatture, ma la descrizione è solo '+(gen||'molto generica')+': da lì non riesco a capire bene a quale tipo di attività ti dedichi. <b>Scrivimi qui sotto</b> cosa fai davvero, con parole tue, oppure continuiamo con il solo lavoro principale.');
+      if(!OT.done[1])window.__chips(Object.assign({},OTP,OT1P),['Continuo con il solo lavoro principale','Perché serve una descrizione chiara?']);return}
     if(!quiet){var tx=items.map(function(i){return '<b>'+oEsc(i.nome.toLowerCase())+'</b> '+i.pct+'%'});
-      say('Ho letto le tue fatture'+(res.esempio?' di esempio':'')+'. Il tuo lavoro è il 100% e, sugli importi fatturati, lo divido così: '+tx.join(', ')+'. Tocca una voce per vedere i dettagli. '+(alt.length?'Possiamo confermare che svolgi queste attività?':'Possiamo confermare che fai solo questo?'))}}
+      say('Ho letto le tue fatture'+(res.esempio?' di esempio':'')+'. Il tuo lavoro è il 100% e, sugli importi fatturati, lo divido così: '+tx.join(', ')+'. Tocca una voce per vedere i dettagli. '+(alt.length?'Possiamo confermare che svolgi queste attività?':'Possiamo confermare che fai solo questo?'))}
+    if(!OT.done[1])window.__chips(Object.assign({},OTP,OT1P),['Sì, confermo','Non proprio','Come hai calcolato queste percentuali?'])}
   function oDet(id,d){
     if(id==='principale'){var on=OTSUB.filter(function(c){return OT.subOn[c]});
       d.innerHTML='<p class="onote">È il tuo lavoro principale, con il codice <b>'+oEsc(OTMAIN.cod)+'</b> e coefficiente <b>'+pc(oCoef())+'</b>. Dentro questo lavoro, cosa fai di preciso? Scegli le voci che ti rappresentano.</p><div class="ochips">'+OTSUB.map(function(c){return '<button class="och" data-c="'+oEsc(c)+'" aria-pressed="'+(OT.subOn[c]?'true':'false')+'">'+oEsc(c)+'</button>'}).join('')+'</div><div class="kbox" id="o_ssp"'+(on.length?'':' hidden')+'></div>';
@@ -1596,7 +1631,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         if(!st){var id='ai'+(SV.length+1),cat=a.categoria||a.nome;SV.push([id,'Suggerite da Marcello',cat,a.descrizione||'',a.codice_ateco,a.coefficiente]);SVm[id]={id:id,area:'Suggerite da Marcello',nome:cat,es:a.descrizione||'',cod:a.codice_ateco,coef:a.coefficiente};st=SV[SV.length-1]}
         if(oMics().some(function(x){return x[2].toLowerCase()===a.nome.toLowerCase()}))return;
         var mid='m_ai'+(OT.micAi.length+1);OT.micAi.push([mid,st[0],a.nome,a.descrizione||'']);OT.aiTag[mid]=1;if(a.dichiarata)pre.push(mid);n++})}
-      pre.forEach(function(m){OT.mic[m]=true});if(pre.length){OT.solo=false;oMicSync()}
+      pre.forEach(function(m){OT.mic[m]=true});if(pre.length){OT.solo=false;oMicSync();if(OT.open===1&&!OT.done[1]){OT.chatPend='';OT.aiN=n;OT.done[1]=true;oNodes();oOpen(2);return}}
       OT.aiN=n;if(OT.open===2){oFill(2);if(pre.length)say('Ho capito: ho spuntato <b>'+pre.map(function(m){return oEsc(oMics().filter(function(x){return x[0]===m})[0][2])}).join('</b>, <b>')+'</b>. Controlla e, se ti torna, confermalo.')}
       else if(pre.length){oNodes()}
       if(testo&&OT.chatPend===testo){OT.chatPend='';if(!pre.length)oChat(testo)}
@@ -1734,12 +1769,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // scelte cliccabili nel fumetto (domande che l'utente potrebbe farsi)
   function mpXChips(){var b=$('dbub'),c=b&&b.querySelector('.mpc');if(!c||!MP.xc||MP.typing)return;c.innerHTML='';
     MP.xc.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;q[1]()};c.appendChild(x)});if(!b.hidden)placeBub()}
-  window.__xchips=function(l){MP.xc=l&&l.length?l:null;mpXChips()};window.__qa0=function(){MP.qa=false};
+  // motore dei suggerimenti: pool {domanda:{a:risposta|funzione, n:[domande successive], e:1=fine}}; la domanda scelta sparisce e puo' portarne di nuove
+  MP.asked={};
+  window.__chips=function(pool,labels){function draw(ls){ls=ls.filter(function(l){return pool[l]&&!MP.asked[l]}).slice(0,4);
+      window.__xchips(ls.map(function(l){return [l,function(){MP.asked[l]=1;var p=pool[l],rest=ls.filter(function(x){return x!==l&&(p.x||[]).indexOf(x)<0});
+        (p.n||[]).forEach(function(k){if(pool[k]&&!MP.asked[k]&&rest.indexOf(k)<0)rest.push(k)});
+        if(typeof p.a==='function')p.a();else say(p.a);if(!p.e)draw(rest)}]}))}
+    draw(labels||[])};
+  window.__xchips=function(l){MP.xc=l&&l.length?l:null;mpXChips()};window.__qa0=function(){MP.qa=false;MP.asked={}};
   var _mpsay=say;say=function(){MP.xc=null;return _mpsay.apply(this,arguments)};
   function mpChips(on){var c=$('dbub').querySelector('.mpc');c.innerHTML='';if(!on)return;
     MPCHIPS.forEach(function(q){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
   showBub=function(html,chips){var b=mpFrame();b.querySelector('.mpt').innerHTML=html;MP.last=html;MP.typing=false;mpTalk(false);
-    if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);mpPh();b.hidden=false;placeBub()};
+    if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);if(!chips)mpXChips();mpPh();b.hidden=false;placeBub()};
   function mpNarr(el){var c=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
     var h=c.innerHTML,fin=!el.querySelector('.gh'),b=mpFrame();MP.last=h;MP.typing=!fin;
     b.querySelector('.mpt').innerHTML=h;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpXChips();mpPh();b.hidden=false;
@@ -1786,7 +1828,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     else hideBub()};
   window.__oWrite=oWrite;
   document.documentElement.classList.add('flow');
-  var _mpsv=showView;showView=function(v){MP.qa=false;clearTimeout(vsTm);_mpsv(v)};
+  var _mpsv=showView;showView=function(v){MP.qa=false;MP.asked={};clearTimeout(vsTm);_mpsv(v)};
   if(!(function(){try{return sessionStorage.getItem('astpos')}catch(e){return null}})()&&window.__putDot)window.__putDot(14,innerWidth>640?innerHeight-210:innerHeight-170,false);
   // ---- l'avatar e il fumetto non coprono mai i pulsanti da cliccare ("Confermo" e simili)
   var _pbCore=placeBub,MPA={t:null};

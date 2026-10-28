@@ -469,22 +469,25 @@ def fatture(c: str, files) -> dict:
     restano solo descrizione e importo delle righe, mai i dati dei clienti. Nulla viene salvato."""
     c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
     dati = _dashboard(c) if c else None
-    if not dati:
+    demo = not c
+    if not dati and not demo:
         return {"ok": False, "errore": "Apri la pagina dal link del tuo questionario."}
+    if demo:
+        c = "demo"
     try:
         with db._connetti() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT count(*) FROM eventi WHERE tipo = 'prova_fatture' AND riferimento = %s "
                             "AND creato_il >= date_trunc('day', now())", (c,))
                 n = cur.fetchone()[0]
-        if n >= LIMITE_FATTURE_ID:
+        if n >= (LIMITE_FATTURE_ID * 6 if demo else LIMITE_FATTURE_ID):
             return {"ok": False, "errore": "Per oggi hai caricato abbastanza fatture: riprova domani."}
         db.registra_evento("prova_fatture", c)
     except Exception:
         pass
     try:
         import attivita
-        full = db.carica_dashboard(c) or {}
+        full = (db.carica_dashboard(c) or {}) if not demo else {}
         esito = attivita.analizza_file(files, full.get("_scheda") or {})
     except ValueError as e:
         return {"ok": False, "errore": str(e)}
