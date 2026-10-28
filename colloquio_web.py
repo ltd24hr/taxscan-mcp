@@ -585,6 +585,14 @@ function chiediFattura(i) {
   $("ftxt").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); imposta($("ftxt").value); } };
   $("fno").onclick = () => { v.usa = false; chiediFattura(i + 1); };
 }
+function chiediNome(em) {
+  $("passo").textContent = "Una conferma"; barra(0.14);
+  $("scheda").innerHTML = '<h1>Ti chiami ' + esc(em.nome + " " + em.cognome) + '?</h1><p class="hint">Le fatture sono intestate a questo nome: così posso salutarti per nome.</p><div class="opzioni">' +
+    '<button class="opz" id="nsi"><span class="n">1</span><span>Sì, sono io</span></button><button class="opz" id="nno"><span class="n">2</span><span>No, scrivo io il mio nome</span></button></div>';
+  nav([]);
+  $("nsi").onclick = () => { scheda.nome = em.nome; scheda.cognome = em.cognome; fase = "domanda"; invia(); };
+  $("nno").onclick = () => { fase = "domanda"; invia(); };
+}
 function fineFatture() {
   const ok = FATT.filter(v => v.usa && v.capito && v.attivita);
   if (ok.length) {
@@ -594,13 +602,15 @@ function fineFatture() {
     let somma = 0; l.forEach(x => { x.pct = Math.round(x.imp * 10 / tot) * 10; somma += x.pct; });
     if (somma !== 100 && l.length) l[0].pct += 100 - somma;
     PREFILL = l[0].nome;
-    const d = {v: 1, ts: new Date().toISOString(), done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
+    const em = (FATT.find(v => v.emittente && v.emittente.nome) || {}).emittente || null;
+    const d = {v: 1, ts: new Date().toISOString(), emit: em, extra: [], done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
       inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"),
         righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
     fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
     $("scheda").innerHTML = '<h1>Ecco cosa ho capito</h1><div class="trovato">' + l.map(x => "<b>" + esc(x.nome) + "</b> · " + eur0(x.imp) + " (" + x.pct + "%)").join("<br>") + '</div><p class="hint">Lo riguardiamo insieme dentro l\'app: se qualcosa non torna, lo correggi lì.</p>';
     nav([]);
-    setTimeout(() => { fase = "domanda"; invia(); }, 2400);
+    if (em && !scheda.nome) setTimeout(() => chiediNome(em), 2200);
+    else setTimeout(() => { fase = "domanda"; invia(); }, 2400);
   } else { fase = "domanda"; invia(); }
 }
 

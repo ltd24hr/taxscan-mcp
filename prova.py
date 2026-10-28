@@ -392,6 +392,27 @@ _SYS_ATTIVITA = (
     "Nome della voce: verbo all'infinito, max 90 caratteri. Se l'utente ha scritto un testo, metti \"dichiarata\": true solo sulle voci che ha detto di fare davvero. "
     "Da 6 a 10 voci, italiano semplice. Formato: "
     '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN","dichiarata":false}]}')
+_SYS_AGENTE = (
+    "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. " + _SIC +
+    "Stai guidando una persona nella pagina «Ottimizzazione fiscale», fatta di 4 schede in ordine: 1 Fatture (si leggono le fatture e si capisce cosa fa), "
+    "2 Prestazioni (si scelgono le piccole prestazioni in piu' che fa davvero), 3 Tempo (quanto tempo dedica a ogni attivita'), 4 Risultato (stima in euro). "
+    "Ti do lo STATO della pagina, la cronologia breve e l'ULTIMO messaggio della persona. Pensa liberamente, come un bravo consulente: capisci cosa vuole davvero "
+    "e AGISCI sulla pagina con le azioni disponibili, oltre a rispondere. Sii umile: se non hai capito, chiedi una cosa precisa invece di indovinare. "
+    "Se capisci che un passaggio si puo' saltare (per esempio la persona dice che fa solo il suo lavoro principale, o che nulla delle prestazioni proposte la riguarda "
+    "e non c'e' altro da ricavare), saltalo con le azioni giuste e falla avanzare. Se la persona sembra voler solo chiacchierare, rispondi con naturalezza ma proponi "
+    "con garbo come andare avanti. Non ripetere cio' che e' gia' sullo schermo. Risposta: massimo 3 frasi semplici, dai del tu, tono caldo, niente certezze (solo stime). "
+    "Azioni possibili (lista 'azioni', anche vuota): "
+    '{"tipo":"apri","scheda":1-4} (apre una scheda gia\' sbloccata); '
+    '{"tipo":"spunta","ids":["m_.."]} e {"tipo":"togli","ids":["m_.."]} (scelgono o tolgono prestazioni, usando SOLO gli id dello stato); '
+    '{"tipo":"solo_principale"} (la persona fa solo il lavoro principale: conferma la scheda 2); '
+    '{"tipo":"rigenera","escludi":["nomi delle voci da non riproporre"],"nota":"cosa fa la persona, con parole sue, se l\'ha detto"} (rifa\' l\'elenco delle prestazioni: usalo se la persona dice che nulla di quel che e\' proposto la riguarda ma ha un altro lavoro, oppure se descrive nuove prestazioni); '
+    '{"tipo":"conferma","scheda":1|2|3} (conferma la scheda se la persona ha gia\' dato cio\' che serve); '
+    '{"tipo":"tempo","id":"principale o id attivita\'","livello":0-10}. '
+    "Dai anche da 3 a 6 'chips': risposte brevi (max 6 parole) che la persona potrebbe cliccare come prossimo passo, scritte in prima persona, diverse tra loro e utili "
+    "(non solo sì/no; includi, se serve, una per andare avanti e una per fare un'altra domanda). "
+    'Formato: {"risposta":"...","azioni":[],"chips":["..."]}')
+
+
 _SYS_ATECO = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
     "Dalla descrizione a parole dell'attivita' proponi da 1 a 3 codici ATECO (formato NN.NN.NN) plausibili, dal piu' al meno probabile, "
@@ -481,6 +502,9 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
             u = ("Attivita' principale (la piu' specifica): %s (ATECO %s, coefficiente %s%%)\nRighe di fattura:\n%s\nDescrizione dell'utente: %s\nUltimo testo scritto dall'utente: %s" % (
                 _pulisci(pr.get("nome"), 80), _pulisci(pr.get("cod"), 12), int(round(cp * 100)), "\n".join("- " + r for r in righe) or "(nessuna)",
                 _pulisci(dati.get("descrizione"), 800) or "(nessuna)", _pulisci(dati.get("testo"), 400) or "(nessuno)"))
+            esc_ = [_pulisci(x, 90) for x in (dati.get("escludi") or [])[:20] if _pulisci(x, 90)]
+            if esc_:
+                u += "\nVoci GIA' PROPOSTE e rifiutate dall'utente (non riproporle, nemmeno riformulate): " + "; ".join(esc_)
             r = ai.genera_json(_SYS_ATTIVITA, u) or {}
             out = []
             for a in (r.get("attivita") or [])[:12]:
@@ -497,6 +521,43 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                             "coefficiente": co["coefficiente"], "gruppo": co.get("gruppo", ""),
                             "dichiarata": bool(a.get("dichiarata"))})
             return {"ok": True, "attivita": [x for x in out if x["nome"]]}
+        if task == "agente":
+            st = dati.get("stato") if isinstance(dati.get("stato"), dict) else {}
+            stato_txt = json.dumps(st, ensure_ascii=False)[:5000]
+            conv = "\n".join(_pulisci(x, 300) for x in (dati.get("cronologia") or [])[-6:])
+            u = "STATO:\n%s\n\nCRONOLOGIA:\n%s\n\nULTIMO MESSAGGIO DELLA PERSONA: %s" % (stato_txt, conv or "(vuota)", _pulisci(dati.get("testo"), 500))
+            r = ai.genera_json(_SYS_AGENTE, u, 900, veloce=True) or {}
+            if not isinstance(r, dict) or not _pulisci(r.get("risposta"), 600):
+                return {"ok": False}
+            az = []
+            for a in (r.get("azioni") or [])[:6]:
+                if not isinstance(a, dict):
+                    continue
+                t = a.get("tipo")
+                if t == "apri" or t == "conferma":
+                    try:
+                        n = int(a.get("scheda"))
+                    except Exception:
+                        continue
+                    if 1 <= n <= 4:
+                        az.append({"tipo": t, "scheda": n})
+                elif t in ("spunta", "togli"):
+                    ids = [i for i in (a.get("ids") or [])[:20] if isinstance(i, str) and re.fullmatch(r"m_[A-Za-z0-9_]{1,30}", i)]
+                    if ids:
+                        az.append({"tipo": t, "ids": ids})
+                elif t == "solo_principale":
+                    az.append({"tipo": t})
+                elif t == "rigenera":
+                    az.append({"tipo": t, "escludi": [_pulisci(x, 90) for x in (a.get("escludi") or [])[:20] if _pulisci(x, 90)],
+                               "nota": _pulisci(a.get("nota"), 300)})
+                elif t == "tempo":
+                    try:
+                        lv = max(0, min(10, int(a.get("livello"))))
+                    except Exception:
+                        continue
+                    az.append({"tipo": t, "id": _pulisci(a.get("id"), 30), "livello": lv})
+            chips = [_pulisci(c_, 60) for c_ in (r.get("chips") or [])[:6] if _pulisci(c_, 60)]
+            return {"ok": True, "risposta": _pulisci(r.get("risposta"), 600), "azioni": az, "chips": chips}
         if task == "ateco":
             r = ai.genera_json(_SYS_ATECO, "Descrizione: " + _pulisci(dati.get("descrizione"), 800), 500, veloce=True) or {}
             out = []
@@ -593,7 +654,7 @@ _SYS_LETTURA = (
     "«montaggio video», «consulenza fiscale per dichiarazione»). Parole generiche da sole (consulenza, prestazione di servizio, servizi, "
     "lavori, onorari, compenso, collaborazione, supporto, joint customer consultancy e simili) NON bastano: in quel caso capito=false. "
     "Non dedurre il lavoro dall'importo, dal paese del cliente o da cio' che fanno di solito le altre fatture; non indovinare. "
-    "Per ogni fattura rispondi con: id (quello dato), capito (true/false), "
+    "Per lo stesso tipo di lavoro usa SEMPRE la stessa etichetta in tutte le fatture (per esempio «Tenuta della contabilita'» sia per «registrazioni contabili» sia per «registrazione fatture»): non creare etichette diverse per cose uguali. Per ogni fattura rispondi con: id (quello dato), capito (true/false), "
     "attivita (se capito: cosa e' stato fatto, in italiano semplice, massimo 8 parole, altrimenti stringa vuota), "
     "motivo (una frase: cosa dice il testo che ti fa capire, oppure perche' non basta), "
     "domanda (se capito=false: UNA domanda breve e precisa da fare alla persona su quella fattura, citando le parole generiche che hai letto; altrimenti vuota), "
@@ -655,6 +716,7 @@ def fatture_lettura(c: str, files) -> dict:
     for v in per:
         out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
                     "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
+                    "emittente": v.get("emittente") or {},
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:
