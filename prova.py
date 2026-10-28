@@ -560,6 +560,101 @@ def fatture(c: str, files) -> dict:
             "consigli": esito.get("consigli") or []}
 
 
+_SYS_LETTURA = (
+    "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
+    "Ti do le righe di diverse fatture emesse da un libero professionista italiano (descrizione e importo, senza dati dei clienti). "
+    "Per OGNI fattura devi dire se dal testo capisci DAVVERO che prestazione e' stata fatta. Sii umile: "
+    "capito=true SOLO se il testo stesso dice che tipo di lavoro e' (per esempio «supporto alla compilazione di adempimenti contabili», "
+    "«montaggio video», «consulenza fiscale per dichiarazione»). Parole generiche da sole (consulenza, prestazione di servizio, servizi, "
+    "lavori, onorari, compenso, collaborazione, supporto, joint customer consultancy e simili) NON bastano: in quel caso capito=false. "
+    "Non dedurre il lavoro dall'importo, dal paese del cliente o da cio' che fanno di solito le altre fatture; non indovinare. "
+    "Per ogni fattura rispondi con: id (quello dato), capito (true/false), "
+    "attivita (se capito: cosa e' stato fatto, in italiano semplice, massimo 8 parole, altrimenti stringa vuota), "
+    "motivo (una frase: cosa dice il testo che ti fa capire, oppure perche' non basta), "
+    "domanda (se capito=false: UNA domanda breve e precisa da fare alla persona su quella fattura, citando le parole generiche che hai letto; altrimenti vuota), "
+    "opzioni (se capito=false: da 2 a 4 letture possibili molto brevi tra cui la persona puo' scegliere, senza darne nessuna per certa; altrimenti lista vuota). "
+    "Formato: "
+    '{"fatture":[{"id":"f1","capito":true,"attivita":"...","motivo":"...","domanda":"","opzioni":[]}]}')
+
+_GENERICHE = set("""consulenza consulenze consultancy consulting consultation prestazione prestazioni servizio servizi service services
+ lavoro lavori onorario onorari compenso compensi collaborazione collaborazioni supporto support attivita professionale professionali
+ joint customer customers client clienti cliente comune comuni fattura invoice per del della dei delle di da in con a il lo la le un una
+ the and for of to mese mesi anno marzo aprile maggio giugno luglio agosto settembre ottobre novembre dicembre gennaio febbraio""".split())
+
+
+def _troppo_generico(righe) -> bool:
+    """Rete di sicurezza contro le supposizioni: se nelle righe non resta nessuna parola che dica davvero cosa e' stato fatto,
+    la fattura non e' 'capita', qualunque cosa dica l'IA."""
+    for r in righe or []:
+        for w in re.findall(r"[a-zA-Zàèéìòù]{4,}", str(r.get("testo") or "").lower()):
+            if w not in _GENERICHE:
+                return False
+    return True
+
+
+def fatture_lettura(c: str, files) -> dict:
+    """Legge ogni fattura da sola e dice, per ognuna, se si capisce cosa e' stato fatto. Se non si capisce, lo dice
+    e propone una domanda: non indovina. Restano solo descrizione e importo delle righe; nulla viene salvato."""
+    c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
+    dati = _dashboard(c) if c else None
+    demo = not c
+    if not dati and not demo:
+        return {"ok": False, "errore": "Apri la pagina dal link del tuo questionario."}
+    if demo:
+        c = "demo"
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT count(*) FROM eventi WHERE tipo = 'prova_fatture' AND riferimento = %s "
+                            "AND creato_il >= date_trunc('day', now())", (c,))
+                n = cur.fetchone()[0]
+        if n >= (LIMITE_FATTURE_ID * 6 if demo else LIMITE_FATTURE_ID):
+            return {"ok": False, "errore": "Per oggi hai caricato abbastanza fatture: riprova domani."}
+        db.registra_evento("prova_fatture", c)
+    except Exception:
+        pass
+    try:
+        import fatture_file
+        per = fatture_file.leggi_singole(files)
+    except ValueError as e:
+        return {"ok": False, "errore": str(e)}
+    except Exception as e:
+        print(f"prova: fatture non lette: {e}")
+        return {"ok": False, "errore": "Non sono riuscito a leggere le fatture. Riprova o scrivi cosa fai."}
+    out = []
+    for v in per:
+        out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
+                    "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
+                    "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
+    leggibili = [x for x in out if x["ok"]]
+    if not leggibili:
+        return {"ok": True, "fatture": out, "vuoto": "Non sono riuscito a leggere righe di prestazioni dai file caricati."}
+    ia = {}
+    if ai.attiva() and _conta_ai(c):
+        try:
+            u = "\n\n".join("[f%d] " % x["idx"] + " | ".join("%s (%s €)" % (_pulisci(r["testo"], 160), r["importo"]) for r in x["righe"][:8])
+                             for x in leggibili)
+            r = ai.genera_json(_SYS_LETTURA, u, 1500) or {}
+            for f in (r.get("fatture") or []):
+                if isinstance(f, dict):
+                    ia[str(f.get("id") or "")] = f
+        except Exception as e:
+            print(f"prova: errore lettura fatture: {e}")
+    for x in leggibili:
+        f = ia.get("f%d" % x["idx"]) or {}
+        att = _pulisci(f.get("attivita"), 80)
+        capito = bool(f.get("capito")) and bool(att) and not _troppo_generico(x["righe"])
+        x["capito"] = capito
+        x["attivita"] = att if capito else ""
+        x["motivo"] = _pulisci(f.get("motivo"), 200)
+        if not capito:
+            gen = [r["testo"] for r in x["righe"][:2]]
+            x["domanda"] = _pulisci(f.get("domanda"), 220) or (
+                "In questa fattura c'e' scritto «%s»: di che tipo di lavoro si tratta?" % _pulisci(gen[0] if gen else "", 80))
+            x["opzioni"] = [_pulisci(o, 70) for o in (f.get("opzioni") or []) if _pulisci(o, 70)][:4]
+    return {"ok": True, "fatture": out}
+
+
 def _e(x):
     return html.escape(str(x if x is not None else ""))
 
@@ -701,6 +796,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(fatture, c.get("c", ""), c.get("files"))
+        except Exception:
+            return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/lettura", methods=["POST"])
+    async def prova_lettura(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(fatture_lettura, c.get("c", ""), c.get("files"))
         except Exception:
             return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
         return JSONResponse(esito)

@@ -240,3 +240,44 @@ def leggi_file(files) -> dict:
             "totale_incassato": totale, "fatture_esaminate": letti, "senza_righe": 0.0,
             "righe": [{"testo": r["testo"], "importo": round(r["importo"], 2)} for r in righe],
             "non_letti": non_letti}
+
+
+def leggi_singole(files) -> list:
+    """Come leggi_file, ma una fattura alla volta: per ognuna restano solo descrizione e importo delle righe
+    (mai i dati dei clienti). Serve a far capire a Marcello cosa c'e' in ogni fattura, senza mescolarle."""
+    if not isinstance(files, list) or not files:
+        raise ValueError("Scegli almeno una fattura da caricare.")
+    if len(files) > MAX_FILE:
+        raise ValueError(f"Puoi caricare al massimo {MAX_FILE} fatture alla volta.")
+    out, tot_byte = [], 0
+    for k, f in enumerate(files):
+        nome = str((f or {}).get("nome") or "fattura")[:80]
+        voce = {"idx": k, "nome": nome, "ok": False, "righe": [], "anno": None, "motivo": ""}
+        out.append(voce)
+        try:
+            contenuto = base64.b64decode(str((f or {}).get("dati") or ""), validate=False)
+        except Exception:
+            voce["motivo"] = "file non valido"
+            continue
+        tot_byte += len(contenuto)
+        if len(contenuto) > MAX_BYTE_FILE or tot_byte > MAX_BYTE_TOTALE:
+            voce["motivo"] = "file troppo grande (massimo 5 MB per fattura)"
+            continue
+        tipo = _tipo(nome, str((f or {}).get("tipo") or "").lower(), contenuto)
+        if not tipo:
+            voce["motivo"] = "formato non supportato (usa PDF, Excel, foto JPG/PNG o XML)"
+            continue
+        try:
+            esito = (da_xml(contenuto) if tipo == "xml" else da_xlsx(contenuto) if tipo == "xlsx"
+                     else da_pdf_o_immagine(contenuto, tipo))
+        except Exception as e:
+            print(f"fattura caricata non letta ({tipo}): {e}")
+            voce["motivo"] = str(e) if isinstance(e, ValueError) else "non sono riuscito a leggerla"
+            continue
+        if not esito["righe"]:
+            voce["motivo"] = "non ho trovato righe di prestazioni"
+            continue
+        voce["ok"] = True
+        voce["anno"] = esito.get("anno")
+        voce["righe"] = [{"testo": t, "importo": round(i, 2)} for t, i in esito["righe"][:20]]
+    return out
