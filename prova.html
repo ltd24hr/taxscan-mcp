@@ -834,7 +834,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
 
-<div class="ver">Prototipo versione 50</div>
+<div class="ver">Prototipo versione 51</div>
 </div>
 
 <script>
@@ -1937,7 +1937,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     {id:'bdig',t:'Voucher per strumenti digitali',x:'Le Camere di commercio pubblicano spesso voucher per <b>software, sito e formazione</b>. Quando ne esce uno per la tua zona te lo segnalo.',tag:'Ti avviso io'}];
   var BP={ok:{},no:{}};
   function bpCount(){return Object.keys(BP.ok).length+Object.keys(BP.no).length}
-  function renderBandi(){var h='';
+  function bpFit(){var fit=$('bpfit');if(!fit){fit=document.createElement('p');fit.id='bpfit';fit.className='onote';$('bplist').parentNode.insertBefore(fit,$('bplist'))}
+    var l=(OT.sin||[]).filter(function(x){return x.pct>0}).map(function(x){return '<b>'+oEsc(x.nome.toLowerCase())+'</b>'});
+    fit.innerHTML=l.length?'Li cerco in base a quello che fai, letto dalle tue fatture: '+l.join(', ')+(OTMAIN.cod?', e al tuo codice ATECO <b>'+oEsc(OTMAIN.cod)+'</b>':'')+'.':(OTMAIN.cod?'Li cerco in base al tuo codice ATECO <b>'+oEsc(OTMAIN.cod)+'</b>. Se mi dai qualche fattura capisco meglio cosa fai davvero.':'')}
+  function renderBandi(){bpFit();var h='';
     BD.forEach(function(b){var s=BP.ok[b.id]?'ok':BP.no[b.id]?'no':'';
       h+='<div class="bpc'+(s?' '+s:'')+'" data-wk="'+b.id+'" data-b="'+b.id+'"><div class="bpt"><h3>'+b.t+'</h3><span class="bptag">'+(s==='ok'?'Ci penso io':s==='no'?'Lasciato stare':b.tag)+'</span></div><p>'+b.x+'</p>'+
         (s?'<div class="bpa"><button class="l" data-b="'+b.id+'" data-a="undo">Cambia idea</button></div>':'<div class="bpa"><button data-b="'+b.id+'" data-a="ok">Mi interessa</button><button class="l" data-b="'+b.id+'" data-a="no">Non fa per me</button></div>')+'</div>'});

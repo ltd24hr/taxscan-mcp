@@ -1124,6 +1124,12 @@ def cancella_dati(email: str | None, id_dashboard: str) -> None:
                                 "incentivi_mostrati", "promemoria_inviati", "email_opt_out", "feedback", "consenso_novita", "approfondimento", "utenti"):
                     cur.execute(f"DELETE FROM {tabella} WHERE email = %s", (email,))
                 cur.execute("DELETE FROM eventi WHERE riferimento = %s", (email,))
+            try:
+                cur.execute("SAVEPOINT pd")
+                cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s)", (["profili/" + id_dashboard, "sessioni/" + id_dashboard, "feedback/" + id_dashboard],))
+                cur.execute("RELEASE SAVEPOINT pd")
+            except Exception:
+                cur.execute("ROLLBACK TO SAVEPOINT pd")
             cur.execute("DELETE FROM chat_messaggi WHERE dashboard_id = %s", (id_dashboard,))
             cur.execute("DELETE FROM colloqui_web WHERE id = %s", (id_dashboard,))
             cur.execute("DELETE FROM eventi WHERE riferimento = %s", (id_dashboard,))
