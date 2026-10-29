@@ -1120,7 +1120,8 @@ async def colloquio_certificato(request):
         return JSONResponse({"trovati": {}, "errore": "file non valido"}, status_code=400)
     if len(pdf) > 5_000_000:
         return JSONResponse({"trovati": {}, "errore": "file troppo grande (max 5 MB)"}, status_code=400)
-    esito = colloquio_web.leggi_certificato(pdf)
+    import asyncio
+    esito = await asyncio.to_thread(colloquio_web.leggi_certificato, pdf)
     _evento("web_certificato", id_colloquio, {"letto": bool(esito.get("trovati")),
                                                 "campi": sorted(esito.get("trovati", {}).keys())})
     return JSONResponse(esito)

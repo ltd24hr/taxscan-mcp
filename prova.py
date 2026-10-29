@@ -884,7 +884,10 @@ def _coerenza(x: dict, cert: dict) -> list:
     ct = x.get("controlli") or {}
     em = x.get("emittente") or {}
     pv, cf = ct.get("emittente_piva") or "", ct.get("emittente_cf") or ""
-    if cert.get("piva") and pv and pv != cert["piva"]:
+    if cert.get("piva") and ct.get("cliente_piva") and ct["cliente_piva"] == cert["piva"] and pv != cert["piva"]:
+        out.append({"tipo": "ricevuta", "gravita": "alta",
+                    "testo": "Sembra una fattura che hai ricevuto: il cliente sei tu. È una spesa, non un incasso, e nel forfettario le spese non si deducono."})
+    elif cert.get("piva") and pv and pv != cert["piva"]:
         out.append({"tipo": "altra_persona", "gravita": "alta",
                     "testo": "È emessa con la partita IVA %s, diversa da quella %s (%s): sembra la fattura di un'altra persona." % (
                         _maschera(pv), "delle altre fatture che hai caricato" if cert.get("da_fatture") else "del tuo certificato", _maschera(cert["piva"]))})
@@ -944,7 +947,7 @@ def fatture_lettura(c: str, files, prof=None) -> dict:
     for v in per:
         out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
                     "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
-                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {}, "controlli": v.get("controlli") or {},
+                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {}, "controlli": v.get("controlli") or {}, "non_fattura": bool(v.get("non_fattura")),
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:

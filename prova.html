@@ -1019,7 +1019,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 63</div>
+<div class="ver">Prototipo versione 64</div>
 </div>
 
 <script>
@@ -1783,14 +1783,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(n===3&&OT.done[3]&&OT.ris>0)return 'Circa '+eur(OT.ris)+' l\'anno';
     if(n===2&&OT.micro){var c=Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]}).length;return OT.done[2]?c+(c===1?' micro-attività scelta':' micro-attività scelte'):'Da scegliere'}return ''}
   function oPh(){var i=$('oag_in');if(i)i.placeholder=OTPH[OT.open]||OTPH[0]}
-  function oMia(i,si){var v=OT.inv[i];if(!v)return;v.dubbio=false;v.mia=si;v.usa=si;tap(si?'ott_coerenza_mia':'ott_coerenza_altra');oSaveSoon();oRender();
+  function oMia(i,si){var v=OT.inv[i];if(!v)return;oChipsP(null);v.dubbio=false;v.mia=si;v.usa=si;tap(si?'ott_coerenza_mia':'ott_coerenza_altra');oSaveSoon();oRender();
     if(si)say('Va bene, la considero tua. Se hai più partite IVA, ricordati che ognuna ha il suo regime e i suoi limiti.');
-    else say('Capito: <b>non la uso</b>, perché è di un\'altra persona. Per analizzarla servirebbe il certificato o il profilo di chi l\'ha emessa.'+(oUsate().length?'':' Carica una <b>tua</b> fattura per continuare.'));
+    else{var tA=(oAlta(v)||{}).tipo;say('Capito: <b>non la uso</b>'+(tA==='ricevuta'?', perché è una spesa e non un incasso.':', perché è di un\'altra persona.')+(oUsate().length?'':' Carica una fattura che <b>hai emesso tu</b> per continuare.'))}
     if(OT.inv.some(function(x){return x.dubbio}))return oChiediCoerenza();if(oUsate().length)setTimeout(oParla,reduce?0:900)}
-  function oChiediCoerenza(){var i=OT.inv.findIndex(function(v){return v.dubbio});if(i<0)return;var v=OT.inv[i],a=(v.anomalie||[]).filter(function(x){return x.tipo==='altra_persona'})[0];
-    say('Prima di andare avanti, una cosa non torna nella fattura <b>'+oEsc(v.nome)+'</b>. '+oEsc(a?a.testo:'')+' <b>È tua</b> (per esempio hai più partite IVA) oppure è di un\'altra persona?');
-    var P={};P['Sì, è mia']={a:function(){oMia(i,true)},e:1};P['No, è di un\'altra persona']={a:function(){oMia(i,false)},e:1};P['Perché me lo chiedi?']={a:'Confronto ogni fattura con il tuo certificato di partita IVA: se chi la emette ha un\'altra partita IVA, i numeri non sarebbero i tuoi e l\'analisi sarebbe sbagliata.',n:[]};
-    oChipsP(P,['Sì, è mia','No, è di un\'altra persona','Perché me lo chiedi?'])}
+  function oChiediCoerenza(){var i=OT.inv.findIndex(function(v){return v.dubbio});if(i<0)return;var v=OT.inv[i],a=oAlta(v)||{},T=OALT[a.tipo]||OALT.altra_persona,ric=a.tipo==='ricevuta';
+    say('Prima di andare avanti, una cosa non torna nella fattura <b>'+oEsc(v.nome)+'</b>. '+oEsc(a.testo||'')+(ric?' L\'hai <b>ricevuta</b> tu, oppure l\'hai emessa tu?':' <b>È tua</b> (per esempio hai più partite IVA) oppure è di un\'altra persona?'));
+    var P={};P[T[1]]={a:function(){oMia(i,true)},e:1};P[T[2]]={a:function(){oMia(i,false)},e:1};P['Perché me lo chiedi?']={a:'Confronto ogni fattura con il tuo certificato di partita IVA: se non l\'hai emessa tu, i numeri non sarebbero i tuoi incassi e l\'analisi sarebbe sbagliata.',n:[]};
+    oChipsP(P,[T[1],T[2],'Perché me lo chiedi?'])}
   function oParla(){if(OT.open===3)return oP3Msg();if(OT.open===2)return oP2Msg();if(OT.open===1&&OT.inv.some(function(v){return v.dubbio}))return oChiediCoerenza();
     if(!OT.inv.length){say('Partiamo dalla tua <b>fattura</b>. Caricala qui sotto: la leggo e ricavo <b>per chi</b> hai lavorato e <b>quale prestazione</b> hai svolto. Poi effettuerò un\'<b>analisi della prestazione</b> per individuare opportunità di risparmio fiscale.');return}
     var a=oUsate()[0],cl=a?oCli(a.cliente):'';
@@ -1823,15 +1823,17 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call(b.querySelectorAll('[data-nomia]')).forEach(function(x){x.onclick=function(){oMia(+x.getAttribute('data-nomia'),false)}});
     [].slice.call(b.querySelectorAll('[data-dt]')).forEach(function(t){t.oninput=function(){var v=OT.inv[+t.getAttribute('data-dt')];if(v){v.det=t.value.slice(0,800);oSaveSoon()}}});
     var ok=$('o_dok'),sk=$('o_dsk');if(ok)ok.onclick=function(){oVai(true)};if(sk)sk.onclick=function(){oVai(false)}}
-  function oAltra(v){return (v.anomalie||[]).some(function(a){return a.tipo==='altra_persona'})}
-  function oAnoBox(v,i){var alta=(v.anomalie||[]).filter(function(a){return a.tipo==='altra_persona'})[0],alt=(v.anomalie||[]).filter(function(a){return a.tipo!=='altra_persona'});
-    return (alta&&v.dubbio?'<div class="oano alta"><b>Attenzione: questa fattura non sembra tua.</b><p>'+oEsc(alta.testo)+'</p><div class="onav"><button class="och" data-mia="'+i+'">Sì, è mia</button><button class="och" data-nomia="'+i+'">No, è di un\'altra persona</button></div></div>':'')+
-      (alta&&!v.dubbio&&!v.mia?'<div class="oano"><b>Non usata:</b> è di un\'altra persona. Per analizzarla serve il suo certificato o il suo profilo.</div>':'')+
+  function oAlta(v){return (v.anomalie||[]).filter(function(a){return a.gravita==='alta'})[0]}
+  function oAltra(v){return !!oAlta(v)}
+  var OALT={altra_persona:['Attenzione: questa fattura non sembra tua.','Sì, è mia','No, è di un\'altra persona','è di un\'altra persona. Per analizzarla serve il suo certificato o il suo profilo.'],ricevuta:['Attenzione: sembra una fattura che hai ricevuto.','No, l\'ho emessa io','Sì, è una spesa: non usarla','è una fattura ricevuta (una spesa): nel forfettario le spese non si deducono.']};
+  function oAnoBox(v,i){var alta=oAlta(v),T=alta?(OALT[alta.tipo]||OALT.altra_persona):null,alt=(v.anomalie||[]).filter(function(a){return a.gravita!=='alta'});
+    return (alta&&v.dubbio?'<div class="oano alta"><b>'+T[0]+'</b><p>'+oEsc(alta.testo)+'</p><div class="onav"><button class="och" data-mia="'+i+'">'+T[1]+'</button><button class="och" data-nomia="'+i+'">'+T[2]+'</button></div></div>':'')+
+      (alta&&!v.dubbio&&!v.mia?'<div class="oano"><b>Non usata:</b> '+T[3]+'</div>':'')+
       (alt.length?'<div class="oano"><b>Osservazioni</b><ul>'+alt.map(function(a){return '<li>'+oEsc(a.testo)+'</li>'}).join('')+'</ul></div>':'')}
   function oCard(v,i){var cl=v.cliente||{},rg=(v.righe||[]).slice(0,3);
     return '<div class="oft'+(v.ok?'':' no')+(v.usa===false?' off':'')+(v.dubbio?' dub':'')+'">'+
       '<div class="ofh"><b>'+oEsc(v.nome)+'</b>'+(v.ok?'<label class="oiu"><input type="checkbox" data-u="'+i+'"'+(v.usa!==false?' checked':'')+'> Usa</label>':'')+'</div>'+
-      (!v.ok?'<p class="onote">Non sono riuscito a leggerla'+(v.motivo?': '+oEsc(v.motivo):'')+'.</p>':
+      (!v.ok?'<p class="onote">'+(v.nonFatt?'Questo file '+oEsc(v.motivo||'non è una fattura')+': non lo uso.':'Non sono riuscito a leggerla'+(v.motivo?': '+oEsc(v.motivo):'')+'.')+'</p>':
       '<dl class="ofd"><dt>Cliente</dt><dd>'+(cl.tipo||cl.paese||cl.settore?oEsc([cl.tipo,cl.paese,cl.settore].filter(Boolean).join(' · ')):'<span class="omute">non indicato in fattura</span>')+'</dd>'+
       '<dt>Prestazione</dt><dd>'+rg.map(function(r){return oEsc(r.testo)}).join('<br>')+((v.righe||[]).length>3?'<br><span class="omute">e altre '+((v.righe.length-3))+' righe</span>':'')+'</dd>'+
       '<dt>Importo</dt><dd>'+oEur0(v.importo)+'</dd>'+
@@ -1850,13 +1852,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       fs.forEach(function(f){var v=res.fatture.filter(function(x){return x.nome===f.name})[0]||{nome:f.name,ok:false,motivo_non_letta:'Non sono riuscito ad aprirla.',righe:[]};
         var u='';try{u=URL.createObjectURL(f)}catch(e){}
         if(v.emittente&&v.emittente.nome&&PRO&&!PRO.emit)PRO.emit=v.emittente;
-        OT.inv.push({nome:f.name,tipo:f.type||'',url:u,ok:!!v.ok,motivo:v.motivo_non_letta||'',righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',usa:!!v.ok,cliente:v.cliente||{},anomalie:v.anomalie||[],det:'',fonte:v.capito?'fattura':'da chiedere'})});
+        OT.inv.push({nome:f.name,tipo:f.type||'',url:u,ok:!!v.ok,motivo:v.motivo_non_letta||'',righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',usa:!!v.ok,nonFatt:!!v.non_fattura,cliente:v.cliente||{},anomalie:v.anomalie||[],det:'',fonte:v.capito?'fattura':'da chiedere'})});
       // coerenza: una fattura che sembra di un'altra persona non si usa finche' l'utente non conferma che e' sua
       OT.inv.forEach(function(v){if(oAltra(v)&&!v.mia&&!v.dubbio){v.dubbio=true;v.usa=false}});
       if(OT.done[1]){delete OT.done[2]}
       oSaveSoon();oRender();
-      if(OT.inv.some(function(v){return v.dubbio})){oChiediCoerenza();return}
-      if(!oUsate().length){say('Non ho trovato righe di lavoro in '+(fs.length===1?'questo file':'questi file')+'. Prova con un altro file, oppure <b>raccontami qui sotto</b> cosa hai fatto.');return}
+      var nf=OT.inv.filter(function(v){return v.nonFatt}).slice(-1)[0];
+      if(OT.inv.some(function(v){return v.dubbio})){if(nf)say('Il file <b>'+oEsc(nf.nome)+'</b> non è una fattura ('+oEsc(String(nf.motivo||'').replace(/^non è una fattura: /,''))+'): non lo uso.');oChiediCoerenza();return}
+      if(!oUsate().length){say(nf?'Il file <b>'+oEsc(nf.nome)+'</b> non è una fattura: '+oEsc(String(nf.motivo||'').replace(/^non è una fattura: /,''))+'. Carica una fattura che <b>hai emesso tu</b> a un cliente.':'Non ho trovato righe di lavoro in '+(fs.length===1?'questo file':'questi file')+'. Prova con un altro file, oppure <b>raccontami qui sotto</b> cosa hai fatto.');return}
+      if(nf)say('Il file <b>'+oEsc(nf.nome)+'</b> non è una fattura ('+oEsc(String(nf.motivo||'').replace(/^non è una fattura: /,''))+'): non lo uso.');
       oParla()}
     fs.forEach(function(f){sxB64(f,function(b64,t){if(b64)out.push({nome:f.name,tipo:t||f.type,dati:b64});if(--n===0){if(!out.length){fine({ok:false,errore:'Non riesco a leggere questi file.'});return}
       fetch('/api/prova/lettura',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C||'',files:out})}).then(function(r){return r.json()}).then(fine).catch(function(){fine(null)})}})})}
@@ -1871,7 +1875,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var msgs=['Sto guardando cosa hai fatto e per chi…','Scompongo il lavoro nelle sue fasi concrete…','Per ogni fase cerco la categoria ufficiale e il suo coefficiente…','Controllo Ordine, cassa, INPS e Camera di Commercio…','Quasi fatto: scrivo le righe di fattura d\'esempio…'];
     var k=0;say(msgs[0]);var iv=setInterval(function(){k++;if(k<msgs.length&&OT.busy)say(msgs[k]);else clearInterval(iv)},reduce?2000:9000);
     aiCall('ottimizza',{principale:{nome:OTMAIN.nome,cod:OTMAIN.cod},coef_principale:typeof CCOEF==='number'?CCOEF:.78,testo:testo||'',escludi:OT.escluse,
-      fatture:oUsate().map(function(v){return {righe:(v.righe||[]).slice(0,10),importo:v.importo,cliente:v.cliente||{},attivita:v.attivita||'',dettagli:v.det||'',anomalie:(v.anomalie||[]).filter(function(a){return a.tipo!=='altra_persona'||v.mia}).map(function(a){return a.testo})}})}).then(function(j){clearInterval(iv);OT.busy=false;
+      fatture:oUsate().map(function(v){return {righe:(v.righe||[]).slice(0,10),importo:v.importo,cliente:v.cliente||{},attivita:v.attivita||'',dettagli:v.det||'',anomalie:(v.anomalie||[]).filter(function(a){return a.gravita!=='alta'||v.mia}).map(function(a){return a.testo})}})}).then(function(j){clearInterval(iv);OT.busy=false;
       if(!j||!j.ok){OT.errore=j&&j.limite?'Per oggi ho fatto abbastanza analisi: riprova domani.':'Non sono riuscito a completare l\'analisi.';oRender();say(OT.errore+' Puoi riprovare dal pulsante qui sotto.');return}
       var vecchie=OT.micro&&testo?OT.micro.items.filter(function(m){return OT.scelte[m.id]}):[],nomi={};vecchie.forEach(function(m){nomi[m.nome.toLowerCase()]=1});
       var it=vecchie.concat((j.micro||[]).filter(function(m){return !nomi[m.nome.toLowerCase()]}).map(function(m,i){m.id='m'+Date.now().toString(36)+i;return m}));
