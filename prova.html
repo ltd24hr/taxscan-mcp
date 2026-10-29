@@ -961,7 +961,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 59</div>
+<div class="ver">Prototipo versione 60</div>
 </div>
 
 <script>
@@ -1866,25 +1866,34 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         '<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div><div class="kbox-t"><table class="kt"><tr><th></th><th>Oggi</th><th>Con le fatture divise</th><th>Differenza</th></tr>'+L('Reddito su cui paghi',CINC*R.cp,CINC*R.mix)+L('Imposta sostitutiva',R.oggi.imp,R.dopo.imp)+L('Contributi',R.oggi.con,R.dopo.con)+L('Totale tasse e contributi',R.oggi.tot,R.dopo.tot)+'</table></div>'+
         '<p class="onote">Stima sui tuoi incassi dell\'anno ('+eur(CINC)+'), divisi nelle stesse proporzioni di '+(oUsate().length===1?'questa fattura':'queste fatture')+'. Non è una promessa di risultato: dipende da come fatturerai davvero.</p></div>'}
     if(sc.some(function(m){return m.coefficiente<=0.62}))h+='<div class="kbox owarn2"><b>Da sapere:</b> per commercio o intermediazione ('+sc.filter(function(m){return m.coefficiente<=0.62}).map(function(m){return oEsc(m.codice_ateco)}).join(', ')+') di solito servono la Camera di Commercio e l\'INPS Commercianti, con contributi minimi fissi (circa 4.600 € l\'anno, circa 3.000 € con la riduzione del 35% per i forfettari). Nel calcolo qui sopra <b>non li ho inclusi</b>: conviene solo se gli incassi di quella parte sono abbastanza alti.</div>';
-    var tk=oTd3(R,d);window.__tdSet('ott',d>0?tk:[],d>0?'Risparmio stimato '+eur(d)+' l\'anno':'');
+    var tk=oTd3(R,d);window.__tdSet('ott',d>0?tk:[],d>0?'Risparmio stimato '+eur(d)+' l\'anno':'');if(d>0)oTdAi(d);
     if(d>0)h+='<div class="kbox"><div class="lbl">Cosa fare ora · salvati in «Da fare»</div><ul class="otl">'+tk.map(function(t){return '<li><b>'+oEsc(t.titolo)+'</b><small>'+oEsc(t.perche)+'</small></li>'}).join('')+'</ul><button class="kb" id="o_gotd">Apri «Da fare»</button></div>';
     b.innerHTML=h;OT.done[3]=d>0;OT.ris=d;
     [].slice.call(b.querySelectorAll('[data-p]')).forEach(function(c){c.onclick=function(){OT.peso[c.getAttribute('data-p')]=c.getAttribute('data-l');tap('ott_peso');oSaveSoon();var y=scrollY;oRender();scrollTo(0,y);oP3Msg(true)}});
     var g=$('o_gotd');if(g)g.onclick=function(){tap('ott_apri_dafare');showView('t')};
     srv('risparmio_calcolato',Math.max(0,d));oSaveSoon()}
-  function oTd3(R,d){var L=[],sc=oScelte(),cod={};
+  function oTd3(R,d){var L=[],sc=oScelte(),cod={},us=oUsate(),est=us.some(function(v){return v.cliente&&v.cliente.paese&&!/^ital/i.test(v.cliente.paese)}),
+      rg=sc.filter(function(m){return m.riga_fattura}).slice(0,3).map(function(m){return '«'+m.riga_fattura+'»'});
     sc.forEach(function(m){(cod[m.codice_ateco]=cod[m.codice_ateco]||{c:m.coefficiente,n:[]}).n.push(m.nome.toLowerCase())});
+    L.push({titolo:'Rivedi il contratto con il cliente',perche:'Oggi probabilmente descrive solo il lavoro principale: deve elencare tutte le prestazioni che fai davvero, comprese '+sc.map(function(m){return '«'+m.nome.toLowerCase()+'»'}).slice(0,3).join(', ')+', ognuna con il suo compenso.',come:'Basta un allegato o un\'integrazione al contratto con l\'elenco delle prestazioni e i compensi separati. Se non c\'è un contratto scritto, preparane uno o un preventivo firmato.'});
+    L.push({titolo:est?'Invia il contratto aggiornato con firma elettronica':'Invia il contratto aggiornato via PEC',perche:'Così l\'accordo ha una data certa e una prova di invio: se un giorno ti chiedono perché la fattura è divisa, hai il documento.',come:est?'Il cliente è all\'estero e di solito non ha la PEC: mandalo via email con firma elettronica (o firmato da entrambi in PDF) e conservalo. Se ha una PEC o un indirizzo equivalente, usalo.':'Manda il contratto firmato dalla tua PEC alla PEC del cliente (la trovi su registroimprese.it o inipec.gov.it) e conserva la ricevuta di consegna.'});
+    L.push({titolo:'Rivedi come prepari la fattura',perche:'Dalla prossima fattura ogni prestazione va su una riga a parte, con il suo importo, come nella fattura divisa qui sopra: così ogni parte di incasso usa il suo coefficiente.',come:(rg.length?'Per esempio: '+rg.join('; ')+'. ':'')+'Se usi un programma di fatturazione, crea una voce di listino per ogni prestazione.'});
+    L.push({titolo:'Valuta una fattura separata per le micro-attività',perche:'Se una micro-attività la fai in momenti diversi o per importi a sé, può essere più chiaro emetterle una fattura separata invece di una riga in più.',come:'Usa la normale numerazione delle tue fatture; in descrizione scrivi con precisione la prestazione, come negli esempi di riga.'});
     Object.keys(cod).forEach(function(c){L.push({titolo:'Aggiungi il codice '+c+' alla partita IVA',perche:'Serve per applicare il coefficiente del '+pc(cod[c].c)+' a: '+cod[c].n.join(', ')+'. Senza il codice attivo il risparmio resta solo una stima.',come:'Comunica la variazione dati all\'Agenzia delle Entrate con il modello AA9/12, anche tramite un intermediario, entro 30 giorni da quando inizi la nuova attività.'})});
     var com=sc.filter(function(m){return m.coefficiente<=0.62});
     if(com.length)L.push({titolo:'Verifica Camera di Commercio e INPS',perche:'Commercio e intermediazione richiedono di solito l\'iscrizione al Registro delle imprese e all\'INPS Commercianti, con contributi minimi fissi (riducibili del 35% nel forfettario).',come:'Fai il conto prima di aprirla: conviene se gli incassi di quella parte sono abbastanza alti.'});
-    var rg=sc.filter(function(m){return m.riga_fattura}).slice(0,3).map(function(m){return '«'+m.riga_fattura+'»'});
-    L.push({titolo:'Dividi le prossime fatture in righe separate',perche:'Una riga per ogni prestazione, con il suo importo, come nell\'esempio della fattura divisa: così ogni parte di incasso usa il suo coefficiente.',come:rg.length?'Per esempio: '+rg.join('; ')+'.':''});
-    L.push({titolo:'Aggiorna il contratto con il cliente',perche:'Se il contratto o il preventivo parla solo del lavoro principale, conviene aggiornarlo perché descriva tutte le prestazioni che fai davvero.',come:'Basta un\'integrazione o un preventivo che elenchi le prestazioni separate.'});
+    L.push({titolo:'Avvisa il cliente del nuovo formato delle fatture',perche:'Vedrà più righe con lo stesso totale: meglio dirglielo prima, così non pensa a un errore.',come:'Due righe via email insieme al contratto aggiornato.'});
     L.push({titolo:'Tieni separati gli incassi per attività',perche:'Ogni attività si calcola sui suoi incassi; la soglia degli 85.000 € vale sulla somma di tutto.',come:'Un foglio o il tuo programma di fatturazione con una colonna per attività.'});
     var at=sc.filter(function(m){return m.attenzione}).map(function(m){return m.nome+': '+m.attenzione});
     if(at.length)L.push({titolo:'Controlla i punti di attenzione',perche:'Alcune prestazioni hanno vincoli (Ordine, cassa, INPS) da verificare prima di partire.',come:at.slice(0,4).join(' · ')});
+    (OT.tkAi||[]).forEach(function(t){L.push(t)});
     L.push({titolo:'Fai verificare i numeri (facoltativo)',perche:'Un commercialista può controllare il calcolo prima che tu agisca. È una tua scelta.',come:''});
     return L}
+  // compiti in piu' scritti dall'IA sul caso specifico (0-2), una volta per scelta di micro-attivita'
+  function oTdAi(d){var k=oScelte().map(function(m){return m.id}).join(',');if(OT.tkKey===k)return;OT.tkKey=k;OT.tkAi=[];
+    aiCall('task',{gia:oTd3(oCalc3(),d).map(function(t){return t.titolo}),risparmio:d,attivita:[{nome:OTMAIN.nome,cod:OTMAIN.cod,quota:0}].concat(oScelte().map(function(m){return {nome:m.nome,cod:m.codice_ateco,quota:0}})),
+      periodicita:oUsate().map(function(v){return (v.attivita||'prestazione')+' per '+[v.cliente&&v.cliente.tipo,v.cliente&&v.cliente.paese].filter(Boolean).join(' ')+(v.det?' ('+v.det.slice(0,200)+')':'')}).join('; ')}).then(function(j){
+      if(j&&j.ok&&j.task&&j.task.length&&OT.tkKey===k){OT.tkAi=j.task.slice(0,2);if(OT.open===3&&!$('gview').hidden){var y=scrollY;oRender();scrollTo(0,y)}else window.__tdSet('ott',oTd3(oCalc3(),d),'Risparmio stimato '+eur(d)+' l\'anno')}})}
   function oP3Msg(breve){var R=oCalc3(),d=Math.round(R.diff);
     if(breve){say(d>0?'Aggiornato: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (stima).':'Con questa divisione non c\'è risparmio.');return}
     say(d>0?'Ecco la tua fattura <b>divisa</b>: il lavoro principale e le micro-attività su righe separate, stesso totale. Così il coefficiente medio scende dal <b>'+pc(R.cp)+'</b> al <b>'+pc(R.mix)+'</b>: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (è una stima). Ho salvato i compiti in <b>Da fare</b>. Se vuoi, cambia quanto pesa ogni micro-attività.':'Con questa divisione non c\'è un risparmio: cambia quanto pesano le micro-attività, oppure torna al passo 2.');

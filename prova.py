@@ -498,8 +498,10 @@ _SYS_ATECO_VERIFICA = (
 _SYS_TASK = (
     "Sei Marcello, l'assistente IA di TaxScan. " + _SIC +
     "L'utente ha completato l'ottimizzazione fiscale. Ti do il risparmio stimato, le sue attivita' e i compiti GIA' PREVISTI (non ripeterli, "
-    "nemmeno con altre parole). Aggiungi da 0 a 2 compiti pratici IN PIU', specifici per le sue attivita' (per esempio: preparare un listino "
-    "con le prestazioni separate, aggiornare il contratto quadro con un cliente ricorrente, verificare la compatibilita' con il proprio Ordine). "
+    "nemmeno con altre parole). Aggiungi da 0 a 2 compiti pratici IN PIU', specifici per le sue attivita' e per il suo cliente (tipo e paese), "
+    "nello stile di questi: rivedere il contratto con il cliente, rivedere come si elabora la fattura o emettere una fattura separata, "
+    "inviare via PEC il contratto, preparare un listino con le prestazioni separate, verificare la compatibilita' con il proprio Ordine, "
+    "chiedere al cliente estero un indirizzo per le comunicazioni ufficiali. Concreti, con il passo da fare. "
     "Se non c'e' nulla di utile da aggiungere, lista vuota. Dai del tu, parole semplici, e dici a cosa serve ogni compito. Nessuna promessa di risultato. Formato: "
     '{"task":[{"titolo":"...","perche":"...","come":"..."}]}')
 
