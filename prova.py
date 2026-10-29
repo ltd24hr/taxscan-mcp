@@ -455,10 +455,14 @@ _SYS_OTTIMIZZA = (
     "categoria (nome semplice), codice_ateco (6 cifre NN.NN.NN), riga_fattura (esempio di riga di fattura separata che descrive con precisione "
     "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla). "
     "Indica anche l'attivita' principale come la capisci dalle fatture (descrizione semplice e codice ATECO). Da 5 a 10 micro-attivita'. "
+    "Guarda il fascicolo intero come farebbe un bravo consulente: ti do anche i dati del certificato di partita IVA (codice ATECO, data di apertura) "
+    "e le anomalie gia' trovate su ogni fattura. Nel campo osservazioni scrivi da 0 a 4 osservazioni brevi e concrete su cio' che non torna o va "
+    "sistemato: descrizione troppo generica, natura IVA da verificare, dicitura del forfettario mancante, codice ATECO del certificato diverso dal "
+    "lavoro che emerge dalle fatture, fatture che sembrano di persone diverse, date incoerenti. Niente osservazioni ovvie o ripetute. "
     "Italiano semplice, dai del tu. Formato: "
     '{"principale":{"descrizione":"...","codice_ateco":"NN.NN.NN"},"sintesi":"2 frasi su cosa hai capito e dove si puo\' risparmiare",'
     '"micro":[{"nome":"...","descrizione":"...","collegamento":"...","fattura":"f0","categoria":"...","codice_ateco":"NN.NN.NN",'
-    '"riga_fattura":"...","attenzione":"","dichiarata":false}],"domanda":{"testo":"","opzioni":[]}}')
+    '"riga_fattura":"...","attenzione":"","dichiarata":false}],"osservazioni":["..."],"domanda":{"testo":"","opzioni":[]}}')
 _SYS_CONTRATTO = (
     "Sei l'agente IA di TaxScan e aiuti chi ha la partita IVA forfettaria in Italia. " + _SIC +
     "Ti do il TESTO DI UN CONTRATTO (o preventivo, incarico, accordo) tra la persona e il suo cliente, e l'elenco delle attivita' che la persona svolge "
@@ -621,11 +625,15 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                 blocchi.append("[f%d] Cliente: %s, %s%s. Importo: %s euro. Righe: %s. Attivita' capita: %s. Dettagli aggiunti dalla persona: %s" % (
                     k, _pulisci(cl.get("tipo"), 20) or "tipo non indicato", _pulisci(cl.get("paese"), 40) or "paese non indicato",
                     (", settore " + _pulisci(cl.get("settore"), 60)) if cl.get("settore") else "", fz.get("importo") or 0,
-                    righe or "(nessuna)", _pulisci(fz.get("attivita"), 90) or "(non chiara)", _pulisci(fz.get("dettagli"), 800) or "(nessuno)"))
+                    righe or "(nessuna)", _pulisci(fz.get("attivita"), 90) or "(non chiara)", _pulisci(fz.get("dettagli"), 800) or "(nessuno)")
+                    + (". Anomalie gia' trovate: " + "; ".join(_pulisci(a, 220) for a in (fz.get("anomalie") or [])[:5] if _pulisci(a, 220)) if fz.get("anomalie") else ""))
             if not blocchi:
                 return {"ok": False}
             u = "Codice ATECO attuale: %s (%s), coefficiente %s%%.\n\nFATTURE:\n%s" % (
                 cod_p or "non indicato", _pulisci(pr.get("nome"), 80), int(round(cp * 100)), "\n".join(blocchi))
+            cert = _profilo_certificato(re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64], None)
+            if cert.get("ateco") or cert.get("apertura"):
+                u = ("CERTIFICATO DI PARTITA IVA: codice ATECO %s, apertura %s.\n" % (cert.get("ateco") or "non indicato", cert.get("apertura") or "non indicata")) + u
             if _pulisci(dati.get("testo"), 600):
                 u += "\n\nULTIMO MESSAGGIO DELLA PERSONA (risposta o richiesta): " + _pulisci(dati.get("testo"), 600)
             esc_ = [_pulisci(x, 90) for x in (dati.get("escludi") or [])[:20] if _pulisci(x, 90)]
@@ -658,6 +666,7 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                     "principale": {"descrizione": _pulisci(p2.get("descrizione"), 120), "codice_ateco": c2 if not co2.get("errore") else "",
                                    "coefficiente": None if co2.get("errore") else co2["coefficiente"]},
                     "sintesi": _pulisci(r.get("sintesi"), 400), "micro": [x for x in out if x["nome"]],
+                    "osservazioni": [_pulisci(o, 260) for o in (r.get("osservazioni") or [])[:4] if _pulisci(o, 260)],
                     "domanda": {"testo": _pulisci(dom.get("testo"), 300),
                                 "opzioni": [_pulisci(o, 80) for o in (dom.get("opzioni") or [])[:4] if _pulisci(o, 80)]}}
         if task == "contratto":
@@ -847,7 +856,57 @@ def _troppo_generico(righe) -> bool:
     return True
 
 
-def fatture_lettura(c: str, files) -> dict:
+def _maschera(x: str) -> str:
+    x = str(x or "")
+    return ("…" + x[-4:]) if len(x) > 4 else x
+
+
+def _profilo_certificato(c: str, prof) -> dict:
+    """Dati del certificato di partita IVA dell'utente (dall'onboarding): servono solo per i controlli di coerenza."""
+    p = {}
+    try:
+        r = db.carica_colloquio_web(c) if c else None
+        p = dict((r or {}).get("scheda") or {})
+    except Exception:
+        p = {}
+    if isinstance(prof, dict):
+        for k in ("partita_iva", "codice_fiscale", "nome", "cognome", "data_apertura", "codice_ateco"):
+            if prof.get(k) and not p.get(k):
+                p[k] = prof.get(k)
+    return {"piva": re.sub(r"\D", "", str(p.get("partita_iva") or ""))[-11:], "cf": re.sub(r"[^A-Z0-9]", "", str(p.get("codice_fiscale") or "").upper())[:16],
+            "nome": _pulisci(p.get("nome"), 40), "cognome": _pulisci(p.get("cognome"), 40), "apertura": str(p.get("data_apertura") or "")[:10],
+            "ateco": _pulisci(p.get("codice_ateco"), 12)}
+
+
+def _coerenza(x: dict, cert: dict) -> list:
+    """Confronta la fattura con il certificato e con le regole del forfettario. Ogni anomalia: tipo, gravita', testo per l'utente."""
+    out = []
+    ct = x.get("controlli") or {}
+    em = x.get("emittente") or {}
+    pv, cf = ct.get("emittente_piva") or "", ct.get("emittente_cf") or ""
+    if cert.get("piva") and pv and pv != cert["piva"]:
+        out.append({"tipo": "altra_persona", "gravita": "alta",
+                    "testo": "È emessa con la partita IVA %s, diversa da quella %s (%s): sembra la fattura di un'altra persona." % (
+                        _maschera(pv), "delle altre fatture che hai caricato" if cert.get("da_fatture") else "del tuo certificato", _maschera(cert["piva"]))})
+    elif cert.get("cf") and cf and cf != cert["cf"] and not (cert.get("piva") and pv == cert["piva"]):
+        out.append({"tipo": "altra_persona", "gravita": "alta", "testo": "Il codice fiscale di chi emette la fattura è diverso dal tuo: sembra la fattura di un'altra persona."})
+    elif cert.get("cognome") and em.get("cognome") and not pv and em["cognome"].lower() != cert["cognome"].lower():
+        out.append({"tipo": "altra_persona", "gravita": "alta",
+                    "testo": "È intestata a %s %s, ma il tuo certificato è a nome di %s %s." % (em.get("nome", ""), em["cognome"], cert.get("nome", ""), cert["cognome"])})
+    if cert.get("apertura") and ct.get("data") and ct["data"] < cert["apertura"]:
+        out.append({"tipo": "prima_apertura", "gravita": "media", "testo": "La data della fattura (%s) è precedente all'apertura della tua partita IVA (%s)." % (
+            "/".join(reversed(ct["data"].split("-"))), "/".join(reversed(cert["apertura"].split("-"))))})
+    if _troppo_generico(x.get("righe") or []):
+        out.append({"tipo": "generica", "gravita": "bassa", "testo": "La descrizione è molto generica: non dice che lavoro è stato fatto. Conviene descrivere la prestazione con precisione."})
+    paese = str((x.get("cliente") or {}).get("paese") or "")
+    if paese and not re.match(r"ital", paese, re.I) and "N2.2" in (ct.get("natura") or []) and (x.get("cliente") or {}).get("tipo") in ("azienda", "professionista", ""):
+        out.append({"tipo": "natura_iva", "gravita": "bassa", "testo": "Per un servizio a un'azienda estera di solito si indica la natura N2.1 (art. 7-ter), non N2.2: fallo verificare."})
+    if ct and ct.get("dicitura_forfettario") is False and (pv or cf):
+        out.append({"tipo": "dicitura", "gravita": "bassa", "testo": "Non trovo la dicitura del regime forfettario (Legge 190/2014): se sei forfettario, di solito va indicata."})
+    return out
+
+
+def fatture_lettura(c: str, files, prof=None) -> dict:
     """Legge ogni fattura da sola e dice, per ognuna, se si capisce cosa e' stato fatto. Se non si capisce, lo dice
     e propone una domanda: non indovina. Restano solo descrizione e importo delle righe; nulla viene salvato."""
     c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
@@ -885,7 +944,7 @@ def fatture_lettura(c: str, files) -> dict:
     for v in per:
         out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
                     "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
-                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {},
+                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {}, "controlli": v.get("controlli") or {},
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:
@@ -913,7 +972,19 @@ def fatture_lettura(c: str, files) -> dict:
             x["domanda"] = _pulisci(f.get("domanda"), 220) or (
                 "In questa fattura c'e' scritto «%s»: di che tipo di lavoro si tratta?" % _pulisci(gen[0] if gen else "", 80))
             x["opzioni"] = [_pulisci(o, 70) for o in (f.get("opzioni") or []) if _pulisci(o, 70)][:4]
-    return {"ok": True, "fatture": out}
+    # coerenza con il certificato dell'utente e con le regole del forfettario; i dati identificativi non escono dal server
+    cert = _profilo_certificato(c if c != "demo" else "", prof)
+    if not cert.get("piva"):
+        # senza certificato: le fatture caricate insieme devono almeno essere della stessa persona (vale la partita IVA piu' frequente)
+        pv = [((x.get("controlli") or {}).get("emittente_piva") or "") for x in out if x.get("ok")]
+        pv = [p for p in pv if p]
+        if len(set(pv)) > 1:
+            cert = dict(cert, piva=max(set(pv), key=pv.count), da_fatture=True)
+    for x in out:
+        x["anomalie"] = _coerenza(x, cert) if x.get("ok") else []
+        ct = x.pop("controlli", {}) or {}
+        x["controlli"] = {"data": ct.get("data", ""), "natura": ct.get("natura", []), "dicitura_forfettario": ct.get("dicitura_forfettario")}
+    return {"ok": True, "fatture": out, "certificato": bool(cert.get("piva") or cert.get("cf"))}
 
 
 def _e(x):
@@ -1165,7 +1236,7 @@ def registra(mcp, avvisi):
     async def prova_lettura(request):
         try:
             c = await request.json()
-            esito = await asyncio.to_thread(fatture_lettura, c.get("c", ""), c.get("files"))
+            esito = await asyncio.to_thread(fatture_lettura, c.get("c", ""), c.get("files"), c.get("profilo"))
         except Exception:
             return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
         return JSONResponse(esito)

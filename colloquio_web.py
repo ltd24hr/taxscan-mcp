@@ -559,13 +559,26 @@ async function leggiFatture(ev) {
     if (b64) out.push({nome: f.name, tipo: f.type, dati: b64});
   }
   let r = null;
-  try { const x = await fetch("/api/prova/lettura", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({c: ID, files: out})}); r = await x.json(); } catch (e) {}
+  try { const x = await fetch("/api/prova/lettura", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({c: ID, files: out, profilo: {partita_iva: scheda.partita_iva || "", codice_fiscale: scheda.codice_fiscale || "", nome: scheda.nome || "", cognome: scheda.cognome || "", data_apertura: scheda.data_apertura || ""}})}); r = await x.json(); } catch (e) {}
   if (!r || r.ok === false || !r.fatture || !r.fatture.some(v => v.ok)) {
     $("fesito").innerHTML = '<div class="errore">' + esc((r && (r.errore || r.vuoto)) || "Non sono riuscito a leggere queste fatture.") + ' Nessun problema: ti faccio qualche domanda.</div>';
     setTimeout(() => { fase = "domanda"; invia(); }, 2200); return;
   }
   FATT = r.fatture.filter(v => v.ok).map(v => Object.assign({usa: true, risp: ""}, v));
-  chiediFattura(0);
+  chiediCoerenza(0);
+}
+// coerenza: una fattura emessa da un'altra partita IVA non e' dell'utente. Lo si chiede, invece di dare per scontato che sia sua.
+function chiediCoerenza(i) {
+  while (i < FATT.length && !(FATT[i].anomalie || []).some(a => a.tipo === "altra_persona")) i++;
+  if (i >= FATT.length) return chiediFattura(0);
+  const v = FATT[i], a = v.anomalie.find(x => x.tipo === "altra_persona");
+  $("passo").textContent = "Un controllo sulle fatture"; barra(0.11);
+  $("scheda").innerHTML = '<h1>Questa fattura è tua?</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> qualcosa non torna. ' + esc(a.testo) + '</p><div class="opzioni">' +
+    '<button class="opz" id="csi"><span class="n">1</span><span>Sì, è mia (per esempio ho più partite IVA)</span></button>' +
+    '<button class="opz" id="cno"><span class="n">2</span><span>No, è di un\'altra persona: non usarla</span></button></div>';
+  nav([]);
+  $("csi").onclick = () => { v.mia = true; chiediCoerenza(i + 1); };
+  $("cno").onclick = () => { v.usa = false; v.altra = true; chiediCoerenza(i + 1); };
 }
 let FATT = [];
 function chiediFattura(i) {
@@ -602,9 +615,9 @@ function fineFatture() {
     let somma = 0; l.forEach(x => { x.pct = Math.round(x.imp * 10 / tot) * 10; somma += x.pct; });
     if (somma !== 100 && l.length) l[0].pct += 100 - somma;
     PREFILL = l[0].nome;
-    const em = (FATT.find(v => v.emittente && v.emittente.nome) || {}).emittente || null;
+    const em = (FATT.find(v => v.usa && !v.altra && v.emittente && v.emittente.nome) || {}).emittente || null;
     const d = {v: 1, ts: new Date().toISOString(), emit: em, extra: [], done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
-      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {},
+      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {}, anomalie: v.anomalie || [], mia: !!v.mia,
         righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
     fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
     $("scheda").innerHTML = '<h1>Ecco cosa ho capito</h1><div class="trovato">' + l.map(x => "<b>" + esc(x.nome) + "</b> · " + eur0(x.imp) + " (" + x.pct + "%)").join("<br>") + '</div><p class="hint">Lo riguardiamo insieme dentro l\'app: se qualcosa non torna, lo correggi lì.</p>';
