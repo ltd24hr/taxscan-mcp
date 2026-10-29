@@ -330,6 +330,14 @@ html body #hdr nav button{font-size:clamp(13px,1.3vw,21px);padding:6px 10px 9px}
 .osyn p{margin:6px 0}.oq2{border:1px solid #4355cc;background:#f5f7ff}.oq2 .ochips{margin-top:8px}
 .onext{margin-top:14px;border-left:4px solid #0f8f6a}
 .ofh .oiu{position:static;display:inline-flex;gap:4px;align-items:center;font-size:13px;margin:0}
+
+/* v58: passo 3, fattura divisa e risparmio */
+.opeso{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;padding:10px 0;border-top:1px solid var(--line,#e3e7f0)}
+.opn{display:flex;flex-direction:column}.opn small{color:var(--mute,#5b6475);font-size:12.5px}
+.opeso .ochips{display:flex;flex-wrap:wrap;gap:6px}.opeso .och[aria-pressed=true]{background:#4355cc;color:#fff;border-color:#4355cc}
+.ofat td:last-child,.ofat th:last-child{text-align:right;white-space:nowrap}.ofat tr.onew td{background:#f1fbf6}.ofat tr.otot td{font-weight:700;border-top:2px solid var(--line,#d6dbe8)}
+.owarn2{border-left:4px solid #efac35;background:#fff8ea;line-height:1.5}
+.otl{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:8px}.otl li{display:flex;flex-direction:column;gap:2px}.otl small{color:var(--mute,#5b6475)}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -927,7 +935,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 57</div>
+<div class="ver">Prototipo versione 58</div>
 </div>
 
 <script>
@@ -1643,9 +1651,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // Passo 1 Fattura: si carica (o si ritrova quella dell'onboarding), si capisce cliente e prestazione, dettagli facoltativi.
   // Passo 2 Micro-attivita': Claude Opus 5.5 (OpenRouter) ricava le micro-prestazioni con coefficiente piu' basso.
   var OTMAIN={nome:'Consulenza marketing',cod:'73.20.00'};
-  var OT={open:1,sin:null,inv:[],done:{},micro:null,scelte:{},escluse:[],busy:false,carica:false};
-  var OTPH={0:'Scrivi a Marcello…',1:'Raccontami cosa hai fatto per questo cliente…',2:'Rispondimi qui, o chiedimi altre micro-attività…'};
-  var OTN=[[1,'Fattura','Cliente e prestazione'],[2,'Micro-attività','Dove si risparmia']];
+  var OT={open:1,sin:null,inv:[],done:{},micro:null,scelte:{},escluse:[],peso:{},busy:false,carica:false};
+  var OTPH={0:'Scrivi a Marcello…',1:'Raccontami cosa hai fatto per questo cliente…',2:'Rispondimi qui, o chiedimi altre micro-attività…',3:'Chiedimi qualcosa sul risultato…'};
+  var OTN=[[1,'Fattura','Cliente e prestazione'],[2,'Micro-attività','Dove si risparmia'],[3,'Risparmio','Fattura divisa, in euro']];
   var PRO=null,PROTS='';
   function oEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
   function oEur0(v){return String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' €'}
@@ -1662,7 +1670,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.ts=new Date().toISOString();OT.sin=oSin();d.sin=OT.sin;d.done1=!!OT.done[1];
     d.inv=OT.inv.map(function(v){return {nome:v.nome,ok:v.ok,usa:v.usa!==false,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',chiesto:!!v.risp,importo:v.importo||0,fonte:v.fonte||(v.capito?'fattura':'da chiedere'),
       cliente:v.cliente||{},det:String(v.det||'').slice(0,800),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}});
-    d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30)};PRO=d;
+    d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30),peso:OT.peso,risparmio:OT.ris||0};PRO=d;
     try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:d})}).catch(function(){})}catch(e){}}
   function oLoad(){var id=oPid();if(!id){OTLOADED=true;oRender();return}
     fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'get'})}).then(function(r){return r.json()}).then(function(j){
@@ -1675,8 +1683,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       PRO=d;if(OT.inv.length){oRender();return}
       if(d.cod&&d.cod.cod){OTMAIN={nome:d.cod.nome,cod:d.cod.cod}}
       OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:v.ok!==false,righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',usa:v.usa!==false,cliente:v.cliente||{},det:v.det||'',fonte:v.fonte||'',dalOnb:!d.ott}});
-      var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.sin=oSin();
-      OT.open=OT.done[1]?2:1;oRender();if(!$('gview').hidden)oParla()}).catch(function(){OTLOADED=true;oRender()})}
+      var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.peso=o.peso||{};OT.ris=o.risparmio||0;OT.sin=oSin();
+      OT.open=OT.done[2]?3:OT.done[1]?2:1;oRender();if(!$('gview').hidden)oParla()}).catch(function(){OTLOADED=true;oRender()})}
   // ---- impalcatura: due schede in alto, il contenuto sotto
   function oRender(){var op=$('opane');if(!op)return;
     var h='<div class="oshell sm" id="oshell"><div class="opath" id="opath" role="group" aria-label="Il tuo percorso">';
@@ -1685,12 +1693,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(i<OTN.length-1)h+='<div class="oarr" aria-hidden="true">›</div>'});
     h+='</div><section class="odos" id="odos" aria-live="polite"><div class="opanel act" id="opn'+OT.open+'"><div class="obody" id="obody"></div></div></section></div>';
     op.innerHTML=h;
-    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){var n=+b.getAttribute('data-n');if(n===2&&!OT.done[1]){say('Prima finiamo la <b>fattura</b>: poi passo da solo alle micro-attività.');return}if(OT.busy)return;OT.open=n;tap('ott_scheda_'+n);oRender();oParla()}});
-    (OT.open===2?oP2:oP1)($('obody'));oPh()}
+    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){var n=+b.getAttribute('data-n');if(n===2&&!OT.done[1]){say('Prima finiamo la <b>fattura</b>: poi passo da solo alle micro-attività.');return}if(n===3&&!OT.done[2]){say('Prima scegli e conferma le <b>micro-attività</b> al passo 2.');return}if(OT.busy)return;OT.open=n;tap('ott_scheda_'+n);oRender();oParla()}});
+    ({1:oP1,2:oP2,3:oP3})[OT.open]($('obody'));oPh()}
   function oSub(n){if(n===1&&OT.done[1]){var k=oUsate().length;return k+(k===1?' fattura letta':' fatture lette')}
+    if(n===3&&OT.done[3]&&OT.ris>0)return 'Circa '+eur(OT.ris)+' l\'anno';
     if(n===2&&OT.micro){var c=Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]}).length;return OT.done[2]?c+(c===1?' micro-attività scelta':' micro-attività scelte'):'Da scegliere'}return ''}
   function oPh(){var i=$('mp_in');if(i&&!$('gview').hidden)i.placeholder=OTPH[OT.open]||OTPH[0]}
-  function oParla(){if(OT.open===2)return oP2Msg();
+  function oParla(){if(OT.open===3)return oP3Msg();if(OT.open===2)return oP2Msg();
     if(!OT.inv.length){say('Partiamo dalla tua <b>fattura</b>. Caricala qui sotto: la leggo io e capisco <b>per chi</b> hai lavorato e <b>cosa</b> hai fatto. Da lì cerco le piccole prestazioni che possono farti pagare meno tasse.');return}
     var a=oUsate()[0],cl=a?oCli(a.cliente):'';
     say((OT.inv.some(function(v){return v.dalOnb})?'Ho ritrovato la fattura che mi hai dato all\'inizio. ':'Ho letto la tua fattura. ')+(a&&a.attivita?'Hai lavorato '+(cl?'per <b>'+cl+'</b> ':'')+'facendo <b>'+oEsc(a.attivita.toLowerCase())+'</b>. ':'')+
@@ -1752,7 +1761,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // dettagli scritti o saltati: si passa da soli al passo 2, dove lavora l'IA
   function oVai(conTesto){if(OT.busy)return;var box=$('odet');if(box)[].slice.call(box.querySelectorAll('[data-dt]')).forEach(function(t){var v=OT.inv[+t.getAttribute('data-dt')];if(v)v.det=t.value.trim().slice(0,800)});
     var nd=oUsate().filter(function(v){return (v.det||'').trim()}).length;tap(nd?'ott_dettagli_si':'ott_dettagli_salta');
-    OT.done[1]=true;delete OT.done[2];OT.micro=null;OT.scelte={};OT.domanda=null;OT.open=2;oSaveSoon();
+    OT.done[1]=true;delete OT.done[2];delete OT.done[3];OT.micro=null;OT.scelte={};OT.domanda=null;OT.open=2;oSaveSoon();
     say(nd?'Grazie, me lo segno. <b>Passo alle micro-attività.</b>':'Va bene, nessun problema: <b>passo alle micro-attività</b>.');
     timers.push(setTimeout(function(){oRender();oAnalizza('')},reduce?0:900))}
   // ---- passo 2: l'analisi con l'IA (Claude Opus 5.5 su OpenRouter, lato server)
@@ -1782,15 +1791,16 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       h+='<div class="o2g"><div class="olist" id="o_list" tabindex="0" aria-label="Micro-attività suggerite"><div class="ogh ai">Le micro-attività che possono farti risparmiare</div><div class="ogr">'+it.map(function(m){var on=!!OT.scelte[m.id],pt=Math.round((cp-m.coefficiente)*100);
         return '<label class="oit'+(on?' on':'')+'" data-id="'+m.id+'"><input type="checkbox" data-id="'+m.id+'"'+(on?' checked':'')+'><span class="oin"><b>'+oEsc(m.nome)+'</b></span><span class="otg low">−'+pt+' punti</span></label>'}).join('')+'</div></div><aside class="o2det" id="o2det" aria-live="polite">'+det(OT.det2)+'</aside></div>'}
     h+='<div class="oask"><button class="cta s o2" id="o_ok2"'+(oNSc()?'':' disabled')+'>'+(OT.done[2]?'Confermato':'Confermo quelle che faccio')+'</button><button class="och" id="o_altre">Cercane altre</button><button class="och" id="o_nessuna">Non faccio nessuna di queste</button><span class="osum" id="o_sum">'+oSumTxt()+'</span></div>';
-    if(OT.done[2])h+='<div class="kbox onext"><b>Prossimo passo</b><p class="onote">Dividere la fattura tra il lavoro principale e le micro-attività che hai scelto, e calcolare quanto risparmi in euro. Lo stiamo costruendo: le tue scelte restano salvate.</p></div>';
+    if(OT.done[2])h+='<div class="oask"><button class="kb" id="o_to3">Vai al risparmio in euro ›</button></div>';
     b.innerHTML=h;
     var sd=function(id){OT.det2=id;var d=$('o2det');if(d&&det)d.innerHTML=det(id)};
     [].slice.call(b.querySelectorAll('.oit')).forEach(function(l){var id=l.getAttribute('data-id');l.onmouseenter=function(){sd(id)};l.addEventListener('focusin',function(){sd(id)});l.addEventListener('click',function(){sd(id)})});
     [].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){var id=c.getAttribute('data-id');OT.scelte[id]=c.checked;c.closest('.oit').classList.toggle('on',c.checked);tap('ott_micro_'+(c.checked?'si':'no'));
-      if(OT.done[2]){delete OT.done[2];oRender();return}$('o_ok2').disabled=!oNSc();$('o_sum').textContent=oSumTxt();oSaveSoon()}});
+      if(OT.done[2]){delete OT.done[2];delete OT.done[3];oRender();return}$('o_ok2').disabled=!oNSc();$('o_sum').textContent=oSumTxt();oSaveSoon()}});
     [].slice.call(b.querySelectorAll('[data-q]')).forEach(function(q){q.onclick=function(){var t=q.getAttribute('data-q');tap('ott_risposta_domanda');say('Grazie: rifaccio l\'analisi con questa informazione.');oAnalizza((OT.domanda?OT.domanda.testo+' ':'')+'Risposta: '+t)}});
-    $('o_ok2').onclick=function(){if(!oNSc())return;OT.done[2]=true;tap('ott_conferma_micro');srv('micro_confermate',0);oSaveSoon();oRender();
-      say('Perfetto: ho salvato <b>'+oNSc()+'</b> '+(oNSc()===1?'micro-attività':'micro-attività')+'. Il prossimo passo sarà dividere la fattura e calcolare il risparmio in euro: lo stiamo costruendo.')};
+    $('o_ok2').onclick=function(){if(!oNSc())return;OT.done[2]=true;tap('ott_conferma_micro');srv('micro_confermate',0);oSaveSoon();
+      say('Perfetto: ho salvato le tue micro-attività. Ora <b>divido la fattura</b> e calcolo il risparmio in euro.');timers.push(setTimeout(function(){OT.open=3;oRender();oP3Msg()},reduce?0:1000))};
+    var t3=$('o_to3');if(t3)t3.onclick=function(){OT.open=3;tap('ott_scheda_3');oRender();oP3Msg()};
     $('o_altre').onclick=function(){tap('ott_altre');it.forEach(function(m){if(!OT.scelte[m.id]&&OT.escluse.indexOf(m.nome)<0)OT.escluse.push(m.nome)});say('Va bene, ne cerco altre diverse da queste.');oAnalizza('Cerca altre micro-attivita\' diverse da quelle gia\' proposte.')};
     $('o_nessuna').onclick=function(){tap('ott_nessuna');it.forEach(function(m){if(OT.escluse.indexOf(m.nome)<0)OT.escluse.push(m.nome)});OT.scelte={};
       say('Capito. Forse mi mancano dei dettagli: <b>raccontami qui sotto</b> le fasi del tuo lavoro, anche le più piccole, e riprovo. Oppure tocca «Cercane altre».');oSaveSoon();oRender()}}
@@ -1803,6 +1813,59 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var OTP2={'Perché valgono meno?':{a:'Per il fisco ogni categoria ha il suo coefficiente: è la parte degli incassi su cui paghi tasse e contributi. Se una micro-attività rientra in una categoria con coefficiente più basso, su quella parte di incassi paghi meno.',n:['È legale?']},
     'È legale?':{a:'Sì, se fai davvero quelle prestazioni: le fatturi su righe separate, ognuna con il suo importo, e aggiungi il codice ATECO della categoria alla partita IVA. Non si cambiano le parole: ogni riga descrive quello che hai fatto. Se vuoi, un commercialista può controllare con te.',n:['Come le scrivo in fattura?']},
     'Come le scrivo in fattura?':{a:'Una riga per ogni prestazione, con il suo importo. Per ogni micro-attività ti ho scritto un esempio di riga: toccala nell\'elenco per vederlo.',n:[]}};
+  // ---- passo 3: la fattura divisa e il risparmio in euro (poi i compiti vanno in «Da fare»)
+  var OLIV=[['poco','Poco',5],['unpo','Un po\'',15],['parecchio','Parecchio',30],['meta','Circa metà',50]],OLIVm={};OLIV.forEach(function(x){OLIVm[x[0]]=x[2]});
+  function oScelte(){return OT.micro?OT.micro.items.filter(function(m){return OT.scelte[m.id]}):[]}
+  function oInvK(m){var k=/^f(\d)$/.exec(m.fattura||''),us=oUsate();return k&&us[+k[1]]?+k[1]:-1}
+  function oSplit(){var sc=oScelte();return oUsate().map(function(v,i){var ms=sc.filter(function(m){var k=oInvK(m);return k===i||k<0||oUsate().length===1});
+      var rows=ms.map(function(m){return {m:m,pct:OLIVm[OT.peso[m.id]||'unpo']}}),s=rows.reduce(function(a,r){return a+r.pct},0);
+      if(s>90)rows.forEach(function(r){r.pct=r.pct*90/s});rows.forEach(function(r){r.eur=Math.round((v.importo||0)*r.pct/100)});
+      return {v:v,i:i,rows:rows,main:Math.round(v.importo||0)-rows.reduce(function(a,r){return a+r.eur},0)}})}
+  function oCalc3(){var sp=oSplit(),T=sp.reduce(function(a,x){return a+(x.v.importo||0)},0)||1,cp=(OT.micro&&OT.micro.cp)||CCOEF,q={},mix=0,qm=0;
+    sp.forEach(function(x){x.rows.forEach(function(r){q[r.m.id]=(q[r.m.id]||0)+r.eur/T})});
+    oScelte().forEach(function(m){var s=q[m.id]||0;qm+=s;mix+=s*m.coefficiente});mix+=(1-qm)*cp;
+    var oggi=ccalc(CINC*cp),dopo=ccalc(CINC*mix);return {sp:sp,cp:cp,mix:mix,q:q,qm:qm,oggi:oggi,dopo:dopo,diff:oggi.tot-dopo.tot}}
+  function oP3(b){var sc=oScelte();if(!sc.length){b.innerHTML='<div class="kbox"><b>Non hai scelto micro-attività.</b><p class="onote">Torna al passo 2 e spunta quelle che fai.</p></div>';return}
+    var R=oCalc3(),d=Math.round(R.diff),h='';
+    h+='<div class="kbox"><div class="lbl">Quanto pesa ogni micro-attività nella fattura</div><p class="onote">Non servono cifre precise: scegli a occhio quanto del lavoro pagato è andato in ognuna. Il resto resta al lavoro principale.</p>'+
+      sc.map(function(m){var cur=OT.peso[m.id]||'unpo';return '<div class="opeso"><span class="opn"><b>'+oEsc(m.nome)+'</b><small>'+oEsc(m.codice_ateco)+' · '+pc(m.coefficiente)+'</small></span><span class="ochips">'+OLIV.map(function(x){return '<button class="och" data-p="'+m.id+'" data-l="'+x[0]+'" aria-pressed="'+(cur===x[0]?'true':'false')+'">'+x[1]+'</button>'}).join('')+'</span></div>'}).join('')+'</div>';
+    R.sp.forEach(function(x){var v=x.v,prim=(v.righe&&v.righe[0]&&v.righe[0].testo)||v.attivita||'Lavoro principale';
+      h+='<div class="kbox"><div class="lbl">Come diventa la fattura'+(oUsate().length>1?' «'+oEsc(v.nome)+'»':'')+'</div><div class="kbox-t"><table class="kt ofat"><tr><th>Riga</th><th>Codice</th><th>Coeff.</th><th>Importo</th></tr>'+
+        '<tr><td>'+oEsc(prim)+'</td><td>'+oEsc(OTMAIN.cod)+'</td><td>'+pc(R.cp)+'</td><td>'+eur(x.main)+'</td></tr>'+
+        x.rows.map(function(r){return '<tr class="onew"><td>'+oEsc(r.m.riga_fattura||r.m.nome)+'</td><td>'+oEsc(r.m.codice_ateco)+'</td><td>'+pc(r.m.coefficiente)+'</td><td>'+eur(r.eur)+'</td></tr>'}).join('')+
+        '<tr class="otot"><td>Totale</td><td></td><td></td><td>'+eur(v.importo||0)+'</td></tr></table></div><p class="onote">Stesso totale per il cliente: cambia solo come le prestazioni sono divise sulle righe.</p></div>'});
+    if(d<=0)h+='<div class="kbox"><div class="lbl">Risparmio</div><div class="kbig">0 €</div><p class="onote">Con questa divisione non c\'è un risparmio: prova a rivedere quanto pesano le micro-attività.</p></div>';
+    else{var L=function(a,x,y){var dd=y-x;return '<tr><td>'+a+'</td><td>'+eur(x)+'</td><td>'+eur(y)+'</td><td class="'+(dd<0?'okc':'')+'">'+(dd>=0?'+':'−')+' '+eur(Math.abs(dd))+'</td></tr>'};
+      h+='<div class="otre"><div class="kbox"><div class="lbl">Ogni anno</div><div class="kbig ok">'+eur(d)+'</div><div class="sub">tasse e contributi in meno</div></div><div class="kbox"><div class="lbl">Ogni mese</div><div class="kbig ok">'+eur(d/12)+'</div><div class="sub">in più nel tuo netto</div></div><div class="kbox"><div class="lbl">Coefficiente medio</div><div class="kbig">'+pc(R.mix)+'</div><div class="sub">invece del '+pc(R.cp)+'</div></div></div>'+
+        '<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div><div class="kbox-t"><table class="kt"><tr><th></th><th>Oggi</th><th>Con le fatture divise</th><th>Differenza</th></tr>'+L('Reddito su cui paghi',CINC*R.cp,CINC*R.mix)+L('Imposta sostitutiva',R.oggi.imp,R.dopo.imp)+L('Contributi',R.oggi.con,R.dopo.con)+L('Totale tasse e contributi',R.oggi.tot,R.dopo.tot)+'</table></div>'+
+        '<p class="onote">Stima sui tuoi incassi dell\'anno ('+eur(CINC)+'), divisi nelle stesse proporzioni di '+(oUsate().length===1?'questa fattura':'queste fatture')+'. Non è una promessa di risultato: dipende da come fatturerai davvero.</p></div>'}
+    if(sc.some(function(m){return m.coefficiente<=0.62}))h+='<div class="kbox owarn2"><b>Da sapere:</b> per commercio o intermediazione ('+sc.filter(function(m){return m.coefficiente<=0.62}).map(function(m){return oEsc(m.codice_ateco)}).join(', ')+') di solito servono la Camera di Commercio e l\'INPS Commercianti, con contributi minimi fissi (circa 4.600 € l\'anno, circa 3.000 € con la riduzione del 35% per i forfettari). Nel calcolo qui sopra <b>non li ho inclusi</b>: conviene solo se gli incassi di quella parte sono abbastanza alti.</div>';
+    var tk=oTd3(R,d);window.__tdSet('ott',d>0?tk:[],d>0?'Risparmio stimato '+eur(d)+' l\'anno':'');
+    if(d>0)h+='<div class="kbox"><div class="lbl">Cosa fare ora · salvati in «Da fare»</div><ul class="otl">'+tk.map(function(t){return '<li><b>'+oEsc(t.titolo)+'</b><small>'+oEsc(t.perche)+'</small></li>'}).join('')+'</ul><button class="kb" id="o_gotd">Apri «Da fare»</button></div>';
+    b.innerHTML=h;OT.done[3]=d>0;OT.ris=d;
+    [].slice.call(b.querySelectorAll('[data-p]')).forEach(function(c){c.onclick=function(){OT.peso[c.getAttribute('data-p')]=c.getAttribute('data-l');tap('ott_peso');oSaveSoon();var y=scrollY;oRender();scrollTo(0,y);oP3Msg(true)}});
+    var g=$('o_gotd');if(g)g.onclick=function(){tap('ott_apri_dafare');showView('t')};
+    srv('risparmio_calcolato',Math.max(0,d));oSaveSoon()}
+  function oTd3(R,d){var L=[],sc=oScelte(),cod={};
+    sc.forEach(function(m){(cod[m.codice_ateco]=cod[m.codice_ateco]||{c:m.coefficiente,n:[]}).n.push(m.nome.toLowerCase())});
+    Object.keys(cod).forEach(function(c){L.push({titolo:'Aggiungi il codice '+c+' alla partita IVA',perche:'Serve per applicare il coefficiente del '+pc(cod[c].c)+' a: '+cod[c].n.join(', ')+'. Senza il codice attivo il risparmio resta solo una stima.',come:'Comunica la variazione dati all\'Agenzia delle Entrate con il modello AA9/12, anche tramite un intermediario, entro 30 giorni da quando inizi la nuova attività.'})});
+    var com=sc.filter(function(m){return m.coefficiente<=0.62});
+    if(com.length)L.push({titolo:'Verifica Camera di Commercio e INPS',perche:'Commercio e intermediazione richiedono di solito l\'iscrizione al Registro delle imprese e all\'INPS Commercianti, con contributi minimi fissi (riducibili del 35% nel forfettario).',come:'Fai il conto prima di aprirla: conviene se gli incassi di quella parte sono abbastanza alti.'});
+    var rg=sc.filter(function(m){return m.riga_fattura}).slice(0,3).map(function(m){return '«'+m.riga_fattura+'»'});
+    L.push({titolo:'Dividi le prossime fatture in righe separate',perche:'Una riga per ogni prestazione, con il suo importo, come nell\'esempio della fattura divisa: così ogni parte di incasso usa il suo coefficiente.',come:rg.length?'Per esempio: '+rg.join('; ')+'.':''});
+    L.push({titolo:'Aggiorna il contratto con il cliente',perche:'Se il contratto o il preventivo parla solo del lavoro principale, conviene aggiornarlo perché descriva tutte le prestazioni che fai davvero.',come:'Basta un\'integrazione o un preventivo che elenchi le prestazioni separate.'});
+    L.push({titolo:'Tieni separati gli incassi per attività',perche:'Ogni attività si calcola sui suoi incassi; la soglia degli 85.000 € vale sulla somma di tutto.',come:'Un foglio o il tuo programma di fatturazione con una colonna per attività.'});
+    var at=sc.filter(function(m){return m.attenzione}).map(function(m){return m.nome+': '+m.attenzione});
+    if(at.length)L.push({titolo:'Controlla i punti di attenzione',perche:'Alcune prestazioni hanno vincoli (Ordine, cassa, INPS) da verificare prima di partire.',come:at.slice(0,4).join(' · ')});
+    L.push({titolo:'Fai verificare i numeri (facoltativo)',perche:'Un commercialista può controllare il calcolo prima che tu agisca. È una tua scelta.',come:''});
+    return L}
+  function oP3Msg(breve){var R=oCalc3(),d=Math.round(R.diff);
+    if(breve){say(d>0?'Aggiornato: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (stima).':'Con questa divisione non c\'è risparmio.');return}
+    say(d>0?'Ecco la tua fattura <b>divisa</b>: il lavoro principale e le micro-attività su righe separate, stesso totale. Così il coefficiente medio scende dal <b>'+pc(R.cp)+'</b> al <b>'+pc(R.mix)+'</b>: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (è una stima). Ho salvato i compiti in <b>Da fare</b>. Se vuoi, cambia quanto pesa ogni micro-attività.':'Con questa divisione non c\'è un risparmio: cambia quanto pesano le micro-attività, oppure torna al passo 2.');
+    if(window.__chips)window.__chips(OTP3,['Come hai calcolato?','Devo cambiare il totale della fattura?','Il risultato è garantito?'])}
+  var OTP3={'Come hai calcolato?':{a:'Ho diviso la fattura tra il lavoro principale e le micro-attività, ognuna con il suo coefficiente. Poi ho applicato le stesse proporzioni ai tuoi incassi dell\'anno e ho calcolato imposta e contributi, prima e dopo.',n:['Il risultato è garantito?']},
+    'Devo cambiare il totale della fattura?':{a:'No: il cliente paga lo stesso. Cambia solo come scrivi le prestazioni, una riga per ognuna con il suo importo.',n:[]},
+    'Il risultato è garantito?':{a:'No, è una stima: dipende da quanto pesano davvero le micro-attività e dai codici attivi sulla tua partita IVA. Se vuoi, un commercialista può verificarlo con te.',n:[]}};
   // ---- scrivere a Marcello in questa sezione
   function oWrite(t){t=(t||'').trim();if(!t)return;tap('ott_scrive');if(typeof saveVoce==='function')saveVoce('Ottimizzazione: '+OT.open,t);
     var dom=/\?\s*$/.test(t)||/^(come|cosa|perch|quando|quanto|posso|devo|che |chi |dove|ciao|salve|grazie|ok\b|non (ho )?capi|aiut|spiega)/i.test(t);
