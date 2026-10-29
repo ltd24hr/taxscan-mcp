@@ -1121,10 +1121,35 @@ async def colloquio_certificato(request):
     if len(pdf) > 5_000_000:
         return JSONResponse({"trovati": {}, "errore": "file troppo grande (max 5 MB)"}, status_code=400)
     import asyncio
-    esito = await asyncio.to_thread(colloquio_web.leggi_certificato, pdf)
+    d = await asyncio.to_thread(colloquio_web.leggi_documento, pdf, "certificato.pdf", "application/pdf")
+    # risposta nel formato della pagina vecchia (chi l'ha ancora aperta in cache)
+    esito = {"trovati": d.get("trovati") or {}}
+    if not esito["trovati"]:
+        esito.update(non_certificato=True, cosa_e=d.get("cosa_e") or "",
+                     errore=d.get("errore") or "Questo file non è il certificato di attribuzione della partita IVA: sembra %s." % (d.get("cosa_e") or "un altro documento"))
     _evento("web_certificato", id_colloquio, {"letto": bool(esito.get("trovati")),
                                                 "campi": sorted(esito.get("trovati", {}).keys())})
     return JSONResponse(esito)
+
+
+@mcp.custom_route("/api/colloquio/{id_colloquio}/documenti", methods=["POST"])
+async def colloquio_documenti(request):
+    """Riceve uno o piu' documenti (PDF, foto, XML, Excel) e capisce cosa sono e cosa se ne puo' usare."""
+    from starlette.responses import JSONResponse
+    id_colloquio = request.path_params.get("id_colloquio", "")
+    if db.carica_colloquio_web(id_colloquio) is None:
+        return JSONResponse({"errore": "colloquio non trovato"}, status_code=404)
+    try:
+        corpo = await request.json()
+        files = (corpo or {}).get("files") or []
+        assert isinstance(files, list)
+    except Exception:
+        return JSONResponse({"documenti": [], "errore": "file non valido"}, status_code=400)
+    import asyncio
+    esito = await asyncio.to_thread(colloquio_web.leggi_documenti, files)
+    _evento("web_certificato", id_colloquio, {"tipi": [d.get("tipo") for d in esito],
+                                                "campi": sorted({k for d in esito for k in (d.get("trovati") or {})})})
+    return JSONResponse({"documenti": esito})
 
 
 @mcp.custom_route("/d/{id_dashboard}", methods=["GET"])

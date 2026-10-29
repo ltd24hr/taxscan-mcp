@@ -72,8 +72,8 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <table>
 <tr><th>Dato</th><th>Quando</th></tr>
 <tr><td>Risposte all'intervista: attività, codice ATECO, data di apertura, gestione previdenziale, comune, incassi dell'anno</td><td>Quando compili l'intervista o carichi il certificato di attribuzione della partita IVA</td></tr>
-<tr><td>Certificato di attribuzione della partita IVA (PDF)</td><td>Solo se lo carichi: leggiamo i dati utili e non conserviamo il file</td></tr>
-<tr><td>Nome e cognome del titolare, se compaiono sul certificato</td><td>Li leggiamo per fartele confermare; in dashboard ed email ti salutiamo solo con il nome</td></tr>
+<tr><td>Certificato di attribuzione della partita IVA (PDF o foto) o altro documento che carichi al suo posto (per esempio una visura o una fattura)</td><td>Solo se lo carichi: un sistema di intelligenza artificiale capisce che documento è e ne legge i dati utili alla tua scheda; non conserviamo il file</td></tr>
+<tr><td>Nome e cognome del titolare, se compaiono sul documento che carichi</td><td>Li leggiamo per fartele confermare; in dashboard ed email ti salutiamo solo con il nome</td></tr>
 <tr><td>Email</td><td>Quando salvi la tua situazione o usi "Accedi"</td></tr>
 <tr><td>Domande all'assistente e relative risposte</td><td>Quando usi la chat</td></tr>
 <tr><td>Risposte al questionario di approfondimento (immobili, altri redditi, fondo pensione, progetti, interessi)</td><td>Solo se rispondi: sono collegate alla tua email e servono a mostrarti spunti più adatti; le cancelli con "Cancella i miei dati"</td></tr>
@@ -81,7 +81,7 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <tr><td>Dati di utilizzo (per esempio: pagina aperta, passo completato, email inviata)</td><td>Mentre usi il servizio, per capire dove migliorarlo</td></tr>
 <tr><td>Dati di Fatture in Cloud (fatture, incassi)</td><td>Solo se scegli di collegare il tuo account</td></tr>
 </table>
-<p>Dal certificato leggiamo nome e cognome del titolare, ma non conserviamo il codice fiscale, la partita IVA né il file. Non ti chiediamo dati particolari (salute, opinioni, ecc.). <b>Nella chat non scrivere questo tipo di informazioni.</b></p>
+<p>Dal certificato (o dal documento che carichi al suo posto) leggiamo nome e cognome del titolare, ma non conserviamo il codice fiscale, la partita IVA né il file. Non ti chiediamo dati particolari (salute, opinioni, ecc.). <b>Nella chat non scrivere questo tipo di informazioni.</b></p>
 
 <h2>A cosa servono e su quale base</h2>
 <ul>
