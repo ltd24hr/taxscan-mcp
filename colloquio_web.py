@@ -327,17 +327,16 @@ def _ai_documento(testo: str = "", contenuto: bytes = b"", media: str = ""):
                 return None
             r, _ = ai.genera_json_ottimizza(_SYS_DOCUMENTO, testo[:12000], 900)
             return r if isinstance(r, dict) else None
-        import json, assistente
+        import json, assistente, fatture_file
         if not assistente.attiva() or not contenuto:
             return None
         b64 = base64.b64encode(contenuto).decode("ascii")
         blocco = ({"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}
                   if media == "application/pdf" else
                   {"type": "image", "source": {"type": "base64", "media_type": media, "data": b64}})
-        risp = assistente._chiama_api({"model": assistente.MODELLO, "max_tokens": 900, "system": _SYS_DOCUMENTO
-                                       + "\nRispondi SOLO con un oggetto JSON valido, senza testo prima o dopo.",
-                                       "messages": [{"role": "user", "content": [blocco, {"type": "text", "text": "Che documento e'?"}]}]})
-        t = "".join(b.get("text", "") for b in risp.get("content", []) if b.get("type") == "text")
+        # stessa lettura delle fatture: Claude Opus, con ripiego sul modello normale
+        t = fatture_file.guarda(blocco, "Che documento e'?", 900,
+                                _SYS_DOCUMENTO + "\nRispondi SOLO con un oggetto JSON valido, senza testo prima o dopo.")
         m = re.search(r"\{.*\}", t, re.S)
         return json.loads(m.group(0)) if m else None
     except Exception as e:
@@ -374,9 +373,10 @@ def leggi_documento(contenuto: bytes, nome: str = "", dichiarato: str = "") -> d
     ipotesi (nome e cognome da far confermare), fattura (True se va letta come fattura emessa)."""
     import fatture_file
     out = {"nome_file": nome[:80], "tipo": "", "cosa_e": "", "nota": "", "trovati": {}, "ipotesi": {}, "fattura": False}
-    media = fatture_file._tipo(nome, (dichiarato or "").lower(), contenuto)
-    if (nome or "").lower().endswith((".heic", ".heif")):
-        out.update(tipo="illeggibile", errore="Questa foto è in formato HEIC: scattala di nuovo o salvala come JPG o PDF.")
+    try:
+        contenuto, media = fatture_file.prepara(nome, dichiarato or "", contenuto)   # le foto HEIC diventano JPEG
+    except ValueError as e:
+        out.update(tipo="illeggibile", errore=str(e)[:1].upper() + str(e)[1:] + ".")
         return out
     if media == "xml":
         # FatturaPA: e' una fattura, si legge con il programma nel passo delle fatture
@@ -771,7 +771,7 @@ function mostraIntro() {
     <p class="hint">Se hai il <b>certificato di attribuzione della partita IVA</b>, caricalo in PDF o anche come foto: leggo io codice ATECO, data di apertura e partita IVA.</p>
     <div class="opzioni">
       <label class="opz" for="pdf"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.carica}</svg></span><span>Carico il certificato (PDF o foto)</span></label>
-      <input type="file" id="pdf" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.xml,.p7m,.xlsx,application/pdf,image/*" class="nascosto">
+      <input type="file" id="pdf" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.xml,.p7m,.xlsx,application/pdf,image/*" class="nascosto">
       <button class="opz" id="senza"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.tocco}</svg></span><span>Non ce l'ho sotto mano: rispondo a un paio di domande</span></button>
     </div>
     <div id="esito"></div>`;
@@ -781,7 +781,16 @@ function mostraIntro() {
   $("senza").onclick = () => { dopoCertificato(); };
 }
 
-const b64di = f => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = () => res(""); fr.readAsDataURL(f); });
+const b64grezzo = f => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = () => res(""); fr.readAsDataURL(f); });
+// foto HEIC dell'iPhone: se il browser le sa aprire (Safari) diventano JPEG qui, altrimenti le converte il server
+const eHeic = f => /\.(heic|heif)$/i.test(f.name || "") || /^image\/hei[cf]$/.test(f.type || "");
+const b64di = f => !eHeic(f) ? b64grezzo(f) : new Promise(res => {
+  const u = URL.createObjectURL(f), img = new Image();
+  img.onload = () => { const k = Math.min(1, 2400 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL("image/jpeg", .85).split(",")[1] || ""); };
+  img.onerror = () => { URL.revokeObjectURL(u); b64grezzo(f).then(res); };
+  img.src = u;
+});
 function elencoDati(t) {
   const r = [];
   if (t.codice_ateco) r.push("Codice ATECO: <b>" + esc(t.codice_ateco) + "</b>" + (t.descrizione_attivita_certificato ? " - " + esc(t.descrizione_attivita_certificato) : ""));
@@ -850,7 +859,7 @@ function mostraFatture() {
   $("scheda").innerHTML = '<h1>Hai qualche fattura a portata di mano?</h1>' +
     '<p>Non è obbligatorio. Il certificato dice che codice hai, le fatture dicono che lavoro fai davvero: con due o tre capisco da solo la tua attività, ti faccio meno domande e dopo posso cercare dove risparmiare. Leggo le righe del lavoro e che tipo di cliente è: non conservo né il nome del cliente né il file.</p>' +
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
-    '<input type="file" id="fatt" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp,image/*" class="nascosto">' +
+    '<input type="file" id="fatt" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp,.heic,.heif,image/*" class="nascosto">' +
     '<button class="opz" id="fsalta"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.tocco + '</svg></span><span>Salto: rispondo io a qualche domanda</span></button></div><div id="fesito"></div>';
   NAV_INDIETRO();
   $("fsalta").onclick = () => { fase = "domanda"; invia(); };
