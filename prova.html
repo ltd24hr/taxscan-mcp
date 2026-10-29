@@ -961,7 +961,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 60</div>
+<div class="ver">Prototipo versione 61</div>
 </div>
 
 <script>
@@ -1679,7 +1679,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var OTMAIN={nome:'Consulenza marketing',cod:'73.20.00'};
   var OT={open:1,sin:null,inv:[],done:{},micro:null,scelte:{},escluse:[],peso:{},busy:false,carica:false};
   var OTPH={0:'Scrivi all\'agente…',1:'Racconta cosa hai fatto…',2:'Rispondi o chiedi altro…',3:'Chiedi sul risultato…'};
-  var OTN=[[1,'Fattura','Cliente e prestazione'],[2,'Micro-attività','Dove si risparmia'],[3,'Risparmio','Fattura divisa, in euro']];
+  var OTN=[[1,'Fattura','Cliente e prestazione'],[2,'Analisi','Opportunità di risparmio'],[3,'Risparmio','Fattura divisa, in euro']];
   var PRO=null,PROTS='';
   function oEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
   function oEur0(v){return String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' €'}
@@ -1719,17 +1719,17 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(i<OTN.length-1)h+='<div class="oarr" aria-hidden="true">›</div>'});
     h+='</div><section class="odos" id="odos" aria-live="polite"><div class="opanel act" id="opn'+OT.open+'"><div class="obody" id="obody"></div></div></section></div>';
     op.innerHTML=h;
-    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){var n=+b.getAttribute('data-n');if(n===2&&!OT.done[1]){say('Prima finiamo la <b>fattura</b>: poi passo da solo alle micro-attività.');return}if(n===3&&!OT.done[2]){say('Prima scegli e conferma le <b>micro-attività</b> al passo 2.');return}if(OT.busy)return;OT.open=n;tap('ott_scheda_'+n);oRender();oParla()}});
+    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){var n=+b.getAttribute('data-n');if(n===2&&!OT.done[1]){say('Prima completiamo la <b>fattura</b>: poi avvio l\'analisi.');return}if(n===3&&!OT.done[2]){say('Prima completa l\'<b>analisi</b> al passo 2, confermando le attività che svolgi.');return}if(OT.busy)return;OT.open=n;tap('ott_scheda_'+n);oRender();oParla()}});
     ({1:oP1,2:oP2,3:oP3})[OT.open]($('obody'));oPh()}
   function oSub(n){if(n===1&&OT.done[1]){var k=oUsate().length;return k+(k===1?' fattura letta':' fatture lette')}
     if(n===3&&OT.done[3]&&OT.ris>0)return 'Circa '+eur(OT.ris)+' l\'anno';
     if(n===2&&OT.micro){var c=Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]}).length;return OT.done[2]?c+(c===1?' micro-attività scelta':' micro-attività scelte'):'Da scegliere'}return ''}
   function oPh(){var i=$('oag_in');if(i)i.placeholder=OTPH[OT.open]||OTPH[0]}
   function oParla(){if(OT.open===3)return oP3Msg();if(OT.open===2)return oP2Msg();
-    if(!OT.inv.length){say('Partiamo dalla tua <b>fattura</b>. Caricala qui sotto: la leggo io e capisco <b>per chi</b> hai lavorato e <b>cosa</b> hai fatto. Da lì cerco le piccole prestazioni che possono farti pagare meno tasse.');return}
+    if(!OT.inv.length){say('Partiamo dalla tua <b>fattura</b>. Caricala qui sotto: la leggo e ricavo <b>per chi</b> hai lavorato e <b>quale prestazione</b> hai svolto. Poi effettuerò un\'<b>analisi della prestazione</b> per individuare opportunità di risparmio fiscale.');return}
     var a=oUsate()[0],cl=a?oCli(a.cliente):'';
     say((OT.inv.some(function(v){return v.dalOnb})?'Ho ritrovato la fattura che mi hai dato all\'inizio. ':'Ho letto la tua fattura. ')+(a&&a.attivita?'Hai lavorato '+(cl?'per <b>'+cl+'</b> ':'')+'facendo <b>'+oEsc(a.attivita.toLowerCase())+'</b>. ':'')+
-      'Se vuoi, <b>raccontami tutto quello che hai fatto</b> per questo cliente: è facoltativo, ma mi aiuta a trovare più risparmio. Con o senza, poi passo da solo alle <b>micro-attività</b>.');
+      'Se vuoi, <b>descrivi nel dettaglio tutto quello che hai svolto</b> per questo cliente: è facoltativo, ma rende l\'analisi più precisa. In ogni caso, effettuerò un\'<b>analisi della prestazione</b> per individuare opportunità di risparmio fiscale.');
     oChipsP(OTP1,['Continua senza dettagli','Che dettagli ti servono?','Perché me lo chiedi?'])}
   function oCli(c){c=c||{};var p=[];if(c.tipo)p.push(c.tipo==='azienda'?'un\'azienda':c.tipo==='privato'?'un privato':c.tipo==='professionista'?'un professionista':'un ente pubblico');
     if(c.paese)p.push(/^ital/i.test(c.paese)?'in Italia':(/^(regno|stati|paesi|emirati)/i.test(c.paese)?'nel ':'in ')+c.paese);if(c.settore)p.push('('+c.settore+')');return oEsc(p.join(' '))}
@@ -1788,7 +1788,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oVai(conTesto){if(OT.busy)return;var box=$('odet');if(box)[].slice.call(box.querySelectorAll('[data-dt]')).forEach(function(t){var v=OT.inv[+t.getAttribute('data-dt')];if(v)v.det=t.value.trim().slice(0,800)});
     var nd=oUsate().filter(function(v){return (v.det||'').trim()}).length;tap(nd?'ott_dettagli_si':'ott_dettagli_salta');
     OT.done[1]=true;delete OT.done[2];delete OT.done[3];OT.micro=null;OT.scelte={};OT.domanda=null;OT.open=2;oSaveSoon();
-    say(nd?'Grazie, me lo segno. <b>Passo alle micro-attività.</b>':'Va bene, nessun problema: <b>passo alle micro-attività</b>.');
+    say(nd?'Grazie, ne terrò conto. <b>Avvio l\'analisi della prestazione.</b>':'Va bene. <b>Avvio l\'analisi della prestazione</b> con i dati della fattura.');
     timers.push(setTimeout(function(){oRender();oAnalizza('')},reduce?0:900))}
   // ---- passo 2: l'analisi con l'IA (Claude Opus 5.5 su OpenRouter, lato server)
   function oAnalizza(testo){if(OT.busy)return;OT.busy=true;oChipsP(null);OT.errore='';oRender();
