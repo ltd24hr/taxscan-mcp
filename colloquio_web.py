@@ -312,7 +312,7 @@ PAGINA_HTML = r"""<!doctype html>
   button.opz:hover, label.opz:hover { border-color:var(--verde); background:var(--verde-chiaro); }
   button.opz .n, label.opz .n { flex:0 0 28px; height:28px; border-radius:50%; background:var(--verde-chiaro); color:var(--verde); font-weight:700;
     display:flex; align-items:center; justify-content:center; font-size:14px; }
-  label.opz input { width:20px; height:20px; accent-color:var(--verde); }
+  label.opz input { width:20px; height:20px; min-width:20px; flex:0 0 20px; margin:0; accent-color:var(--verde); }
   label.opz.sel { border-color:var(--verde); background:var(--verde-chiaro); }
   input.testo { width:100%; font:inherit; font-size:18px; padding:14px; border:1.5px solid var(--bordo); border-radius:12px; margin-top:14px; }
   input.testo:focus, textarea.testo:focus, select.testo:focus { outline:none; border-color:var(--verde); }
@@ -592,7 +592,7 @@ const eur0 = v => String(Math.round(v || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".
 function mostraFatture() {
   fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.1);
   $("scheda").innerHTML = '<h1>Hai qualche fattura a portata di mano?</h1>' +
-    '<p>Se me ne dai due o tre, capisco da sola cosa fai davvero e ti faccio meno domande. Leggo solo la descrizione e l\'importo delle righe: i dati dei tuoi clienti no, e i file non li conservo.</p>' +
+    '<p>Se me ne dai due o tre, capisco da solo cosa fai davvero e ti faccio meno domande. Leggo la descrizione e l\'importo delle righe e, del cliente, solo tipo, paese e settore (mai il nome). I file non li conservo.</p>' +
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
     '<input type="file" id="fatt" multiple accept=".xml,.pdf,.xlsx,.jpg,.jpeg,.png" class="nascosto">' +
     '<button class="opz" id="fsalta"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.tocco + '</svg></span><span>Salto: rispondo io a qualche domanda</span></button></div><div id="fesito"></div>';
@@ -706,9 +706,24 @@ function rispondi(aggiornamenti) {
   invia();
 }
 
+// testi della pagina web: niente rimandi a cose gia' rifiutate (il certificato), niente gergo da dichiarazione, niente promesse che qui non si mantengono
+const WEB = {
+  data_apertura: {d: "In che anno hai aperto la partita IVA?", h: "Basta l'anno. Se hai una fattura dei primi mesi, è lì."},
+  codice_ateco: {d: "Qual è il tuo codice ATECO?", h: ""},
+  origine_attivita: {h: "Serve a capire se puoi avere l'imposta al 5% (attività nuove, primi 5 anni) invece del 15%."},
+  situazioni_particolari: {d: "Qualcuna di queste ti riguarda? Puoi sceglierne più d'una."},
+  usa_fatture_in_cloud: {d: "Usi Fatture in Cloud per fatturare?", h: "Se lo usi, più avanti potrai collegarlo e leggerò gli incassi da lì. Per ora mi basta una cifra approssimativa."},
+  ricavi_anno_precedente: {h: "Conta quello che hai incassato davvero nell'anno, non quello che hai fatturato. Va bene una cifra tonda."},
+  ricavi_anno_corrente: {h: "Va bene una cifra tonda."}
+};
+const WEB_OPZ = {usa_fatture_in_cloud: {si: "Sì, lo uso"}};
+function errore(msg) { let e = $("err-domanda"); if (!e) { e = document.createElement("p"); e.id = "err-domanda"; e.className = "errore"; e.setAttribute("role", "alert"); $("scheda").appendChild(e); } e.textContent = msg; }
 function mostraDomanda(v) {
   fase = "domanda";
   const campo = v.campo_prossimo;
+  const W = WEB[campo] || {};
+  v = Object.assign({}, v, {prossima_domanda: W.d || v.prossima_domanda, dove_trovarlo: ("h" in W) ? W.h : v.dove_trovarlo,
+    opzioni: (v.opzioni || []).map(o => Object.assign({}, o, {etichetta: ((WEB_OPZ[campo] || {})[o.valore]) || o.etichetta}))});
   $("passo").textContent = "Domanda " + (passo + 1); barra(0.1 + 0.85 * (passo / PASSI_STIMATI));
   const box = $("scheda");
   const opz = v.opzioni || [];
@@ -719,7 +734,7 @@ function mostraDomanda(v) {
     if (campo === "conferma_deduzioni") {
       const d = v.proposta_deduzioni || {};
       const anni = d.anni_nel_regime === 0 ? "primo anno" : d.anni_nel_regime === 1 ? "da un anno" : d.anni_nel_regime != null ? `da ${d.anni_nel_regime} anni` : "";
-      const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Attività", d.descrizione_attivita], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
+      const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Attività", scheda.descrizione_attivita_certificato || scheda.descrizione_attivita || d.descrizione_attivita], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
                      ["Previdenza", d.gestione_previdenziale_etichetta], ["Partita IVA aperta nel", d.anno_apertura], ["Nel forfettario", anni]];
       html = icona(campo) + `<h1>Ho capito così. Giusto?</h1><div class="riepilogo">` +
         righe.filter(r => r[1]).map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join("") + "</div>";
@@ -743,7 +758,7 @@ function mostraDomanda(v) {
     });
     nav([{testo: "Indietro", azione: indietro},
          {testo: "Avanti", classe: "primario", azione: () => { const sc = caselle.filter(c => c.checked).map(c => c.value);
-            if (!sc.length) return alert("Scegli almeno una risposta (anche 'Nessuna di queste')."); rispondi({situazioni_particolari: sc}); }}]);
+            if (!sc.length) return errore("Scegli almeno una risposta (anche «Nessuna di queste»)."); rispondi({situazioni_particolari: sc}); }}]);
     return;
   } else if (opz.length) {
     html += '<div class="opzioni">' + opz.map(o => `<button class="opz" data-v="${esc(o.valore)}"><span class="n">${o.numero}</span><span>${esc(o.etichetta)}</span></button>`).join("") + "</div>";
@@ -756,7 +771,7 @@ function mostraDomanda(v) {
       const agg = {}; agg[campo] = val; rispondi(agg);
     });
   } else if (campo === "codice_ateco") {
-    html += '<p class="hint">Se conosci il <b>codice ATECO</b> scrivilo. Se no, <b>descrivimi cosa fai</b> con parole tue e ti propongo i codici compatibili.</p>';
+    html += '<p class="hint">Se lo conosci, scrivilo. Se no, <b>descrivimi cosa fai</b> con parole tue e ti propongo io i codici compatibili.</p>';
     html += '<textarea class="testo" id="descr" rows="4" maxlength="400" aria-label="Codice ATECO o descrizione dell\'attività" placeholder="Il codice (es. 62.01.00) oppure cosa fai (es. scrivo testi per le aziende)"></textarea>';
     html += '<div class="riga"><button class="primario" id="trova">Avanti</button></div><div id="trovati" role="status"></div>';
     html += '<button class="link" id="nonso">Preferisco scegliere il mio settore</button>';
@@ -785,9 +800,9 @@ function mostraDomanda(v) {
     const cerca = d => {
       T.innerHTML = '<p class="hint">Sto cercando i codici compatibili con quello che fai…</p>';
       chiama({task: "ateco", dati: {descrizione: d}}).then(j => {
-        if (!j || !j.ok || !j.codici || !j.codici.length) { settori("Non sono riuscito a trovarli: scegli il tuo settore qui sotto, il codice esatto lo potrai controllare dopo."); return; }
+        if (!j || !j.ok || !j.codici || !j.codici.length) { settori("Non sono riuscito a trovare il codice."); return; }
         mostra(j.codici, '<p class="hint">Per quello che mi racconti, questi codici sono compatibili. Scegli quello che ti somiglia di più:</p>', d);
-      }).catch(() => settori("Non riesco a cercare adesso: scegli il tuo settore qui sotto."));
+      }).catch(() => settori("Non riesco a cercare il codice in questo momento."));
     };
     $("trova").onclick = () => { const t = $("descr").value.trim();
       if (t.length < 2) { T.innerHTML = '<p class="hint">Scrivi il codice oppure una riga su cosa fai.</p>'; return; }
@@ -809,12 +824,9 @@ function mostraDomanda(v) {
   } else {
     // importo
     html += '<input class="testo" id="val" placeholder="es. 18000" inputmode="numeric">';
-    html += scheda.usa_fatture_in_cloud === "si"
-      ? '<p class="hint">Il collegamento a Fatture in Cloud lo fai dalla chat, dopo: intanto scrivi una cifra approssimativa.</p>'
-      : '<p class="hint">Va bene una cifra tonda.</p>';
     html += '<div class="riga"><button class="primario" id="ok">Avanti</button></div>';
     box.innerHTML = html; $("val").focus();
-    $("ok").onclick = () => { const t = $("val").value.replace(/[^\d]/g, ""); if (t === "") return alert("Scrivi un importo (anche 0).");
+    $("ok").onclick = () => { const t = $("val").value.replace(/[^\d]/g, ""); if (t === "") { errore("Scrivi l'importo in cifre, per esempio 18000 (anche 0 va bene)."); $("val").focus(); return; }
       const agg = {}; agg[campo] = parseInt(t, 10); rispondi(agg); };
     $("val").onkeydown = e => { if (e.key === "Enter") $("ok").click(); };
   }
