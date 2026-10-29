@@ -315,8 +315,21 @@ html:not(.settled) #stage .wr{display:none}
 html body #hdr nav button{font-size:clamp(13px,1.3vw,21px);padding:6px 10px 9px}
 @media (max-width:900px){html body #hdr nav{justify-content:flex-start}html body #hdr nav button{font-size:16px;padding:8px 10px}}
 
-/* v56: sezione Ottimizzazione fiscale azzerata */
-.ovuota{text-align:center;padding:40px 20px}.ovuota b{display:block;font-size:22px;margin:6px 0}
+/* v57: Ottimizzazione fiscale ricostruita: fattura e micro-attività */
+.oup{text-align:center;padding:34px 20px;border:2px dashed var(--line,#c9d1e6);background:var(--surface,#fff)}.oup.drag{border-color:#4355cc;background:#f3f5ff}
+.oup b{display:block;font-size:21px;margin:6px 0 4px}.oup .cta{margin-top:12px}
+.ofts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:8px 0}
+.oft{border:1px solid var(--line,#d6dbe8);border-radius:12px;padding:12px 14px;background:var(--surface,#fff)}.oft.off{opacity:.55}.oft.no{border-style:dashed}
+.ofh{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px}.ofh b{overflow-wrap:anywhere}
+.ofd{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:0;font-size:14px}.ofd dt{color:var(--mute,#5b6475);font-size:12px;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}.ofd dd{margin:0}
+.omute{color:var(--mute,#5b6475)}
+.lnk2{border:0;background:none;color:#4355cc;font:inherit;font-weight:600;cursor:pointer;padding:4px 0;margin-top:4px}
+.owork{text-align:center;padding:36px 20px}.owork b{display:block;font-size:19px;margin:10px 0 4px}
+.ospin{width:34px;height:34px;margin:0 auto;border:4px solid #e3e7f5;border-top-color:#4355cc;border-radius:50%;animation:ospin 1s linear infinite}
+@keyframes ospin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.ospin{animation:none}}
+.osyn p{margin:6px 0}.oq2{border:1px solid #4355cc;background:#f5f7ff}.oq2 .ochips{margin-top:8px}
+.onext{margin-top:14px;border-left:4px solid #0f8f6a}
+.ofh .oiu{position:static;display:inline-flex;gap:4px;align-items:center;font-size:13px;margin:0}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -914,7 +927,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 56</div>
+<div class="ver">Prototipo versione 57</div>
 </div>
 
 <script>
@@ -1626,23 +1639,186 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // l'altezza della barra delle sezioni, per tenere Marcello visibile sotto di essa
   function navH(){document.documentElement.style.setProperty('--navh',(document.getElementById('hdr').offsetHeight)+'px')}
   navH();addEventListener('resize',navH);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(navH);
-  // ================= Ottimizzazione fiscale: sezione azzerata (v56), da ricostruire da zero =================
-  // Il codice completo della v55 (fatture, prestazioni, tempo, risultato) e' conservato a parte: qui restano solo
-  // i pochi pezzi che usano le altre sezioni (Marcello, Bandi, Profilo, Da fare).
+  // ================= Ottimizzazione fiscale (v57, ricostruita da zero) =================
+  // Passo 1 Fattura: si carica (o si ritrova quella dell'onboarding), si capisce cliente e prestazione, dettagli facoltativi.
+  // Passo 2 Micro-attivita': Claude Opus 5.5 (OpenRouter) ricava le micro-prestazioni con coefficiente piu' basso.
   var OTMAIN={nome:'Consulenza marketing',cod:'73.20.00'};
-  var OT={open:0,sin:null};
-  var OTPH={0:'Scrivi a Marcello…'};
-  function oEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+  var OT={open:1,sin:null,inv:[],done:{},micro:null,scelte:{},escluse:[],busy:false,carica:false};
+  var OTPH={0:'Scrivi a Marcello…',1:'Raccontami cosa hai fatto per questo cliente…',2:'Rispondimi qui, o chiedimi altre micro-attività…'};
+  var OTN=[[1,'Fattura','Cliente e prestazione'],[2,'Micro-attività','Dove si risparmia']];
+  var PRO=null,PROTS='';
+  function oEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+  function oEur0(v){return String(Math.round(v||0)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' €'}
   function oPid(){var id='';try{id=window.TS_C||localStorage.getItem('ts_uid')||localStorage.getItem('ts_pid')||'';if(!id){id='p'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('ts_pid',id)}}catch(e){}return id}
-  function oSaveSoon(){}
-  // azzeramento, una volta sola: compiti salvati e profilo attivita' (fatture lette, risposte, dettagli) della vecchia sezione
-  (function(){var k='ts_ott_reset_v56';try{if(localStorage.getItem(k))return;localStorage.setItem(k,'1');
-      Object.keys(localStorage).forEach(function(x){if(/^ts_td_/.test(x))localStorage.removeItem(x)})}catch(e){}
-    try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:oPid(),op:'set',data:{v:0,azzerato:'v56'}})}).catch(function(){})}catch(e){}})();
-  var OTVUOTA='Questa sezione l\'abbiamo <b>azzerata</b>: la stiamo ricostruendo da capo. Per ora qui non c\'è niente da fare. Nel frattempo trovi le tue <b>Scadenze</b> e i <b>Bandi</b> nelle altre sezioni.';
-  $('opane').innerHTML='<div class="kbox ovuota"><div class="lbl">Ottimizzazione fiscale</div><b>Sezione in ricostruzione</b><p class="onote">L\'abbiamo azzerata per rifarla da zero. Torna presto.</p></div>';
-  function oWrite(t){t=(t||'').trim();if(!t)return;tap('ott_scrive_vuota');say(OTVUOTA)}
-  var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){tap('ott_vuota_apri');say(OTVUOTA);if(window.__chips)window.__chips({},[])}};
+  function aiCall(task,dati){var uid='';try{uid=localStorage.getItem('ts_uid')||''}catch(e){}
+    return fetch('/api/prova/ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({uid:uid,c:window.TS_C||'',task:task,dati:dati})}).then(function(r){return r.json()}).then(function(j){return j&&j.ok?j:j||null}).catch(function(){return null})}
+  function oUsate(){return OT.inv.filter(function(v){return v.ok&&v.usa!==false})}
+  // ---- salvataggio nel profilo (lo stesso documento che scrive l'onboarding: si aggiunge, non si cancella)
+  var OTSV=null,OTLOADED=false;
+  function oSaveSoon(){if(!OTLOADED)return;clearTimeout(OTSV);OTSV=setTimeout(oSave,800)}
+  function oSin(){var g={},ord=[];oUsate().forEach(function(v){var k=(v.attivita||'').toLowerCase();if(!k)return;if(!g[k]){g[k]={nome:v.attivita,imp:0,n:0};ord.push(k)}g[k].imp+=v.importo||0;g[k].n++});
+    var l=ord.map(function(k){return g[k]}).sort(function(a,b){return b.imp-a.imp}),tot=l.reduce(function(a,x){return a+x.imp},0)||1;l.forEach(function(x){x.pct=Math.round(x.imp*100/tot)});return l.length?l:null}
+  function oSave(){var id=oPid();if(!id||!OT.inv.length)return;var d=PRO&&PRO.v===1?PRO:{v:1,emit:null,extra:[],desc:'',spec:'',cod:null};
+    d.ts=new Date().toISOString();OT.sin=oSin();d.sin=OT.sin;d.done1=!!OT.done[1];
+    d.inv=OT.inv.map(function(v){return {nome:v.nome,ok:v.ok,usa:v.usa!==false,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',chiesto:!!v.risp,importo:v.importo||0,fonte:v.fonte||(v.capito?'fattura':'da chiedere'),
+      cliente:v.cliente||{},det:String(v.det||'').slice(0,800),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}});
+    d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30)};PRO=d;
+    try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:d})}).catch(function(){})}catch(e){}}
+  function oLoad(){var id=oPid();if(!id){OTLOADED=true;oRender();return}
+    fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'get'})}).then(function(r){return r.json()}).then(function(j){
+      OTLOADED=true;var d=j&&j.ok&&j.exists&&j.data;
+      // dati di prova della vecchia sezione (prima del 29/10/2026): si azzerano una volta sola
+      var rk='ts_ott_reset_v56',fatto=true;try{fatto=!!localStorage.getItem(rk);localStorage.setItem(rk,'1')}catch(e){}
+      if(d&&!fatto&&d.ts&&d.ts<'2026-10-29T11:30:00Z'){try{Object.keys(localStorage).forEach(function(x){if(/^ts_td_/.test(x))localStorage.removeItem(x)})}catch(e){}
+        fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:{v:0,azzerato:'v56'}})}).catch(function(){});d=null}
+      if(!d||d.v!==1||!d.inv||!d.inv.length){oRender();return}
+      PRO=d;if(OT.inv.length){oRender();return}
+      if(d.cod&&d.cod.cod){OTMAIN={nome:d.cod.nome,cod:d.cod.cod}}
+      OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:v.ok!==false,righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',usa:v.usa!==false,cliente:v.cliente||{},det:v.det||'',fonte:v.fonte||'',dalOnb:!d.ott}});
+      var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.sin=oSin();
+      OT.open=OT.done[1]?2:1;oRender();if(!$('gview').hidden)oParla()}).catch(function(){OTLOADED=true;oRender()})}
+  // ---- impalcatura: due schede in alto, il contenuto sotto
+  function oRender(){var op=$('opane');if(!op)return;
+    var h='<div class="oshell sm" id="oshell"><div class="opath" id="opath" role="group" aria-label="Il tuo percorso">';
+    OTN.forEach(function(s,i){var n=s[0],st=OT.done[n]?'done':(n===1||OT.done[n-1])?'cur':'lock';
+      h+='<div class="ost '+st+(OT.open===n?' open':'')+'" id="ost'+n+'"><button class="onode" data-n="'+n+'" aria-label="Scheda '+n+': '+s[1]+'"'+(st==='lock'?' aria-disabled="true"':'')+'><i class="ock" aria-hidden="true">'+(OT.done[n]?'✓':'')+'</i><span class="olab"><b>'+s[1].toUpperCase()+'</b><small>'+oEsc(oSub(n)||s[2])+'</small></span></button></div>';
+      if(i<OTN.length-1)h+='<div class="oarr" aria-hidden="true">›</div>'});
+    h+='</div><section class="odos" id="odos" aria-live="polite"><div class="opanel act" id="opn'+OT.open+'"><div class="obody" id="obody"></div></div></section></div>';
+    op.innerHTML=h;
+    [].slice.call(op.querySelectorAll('.onode')).forEach(function(b){b.onclick=function(){var n=+b.getAttribute('data-n');if(n===2&&!OT.done[1]){say('Prima finiamo la <b>fattura</b>: poi passo da solo alle micro-attività.');return}if(OT.busy)return;OT.open=n;tap('ott_scheda_'+n);oRender();oParla()}});
+    (OT.open===2?oP2:oP1)($('obody'));oPh()}
+  function oSub(n){if(n===1&&OT.done[1]){var k=oUsate().length;return k+(k===1?' fattura letta':' fatture lette')}
+    if(n===2&&OT.micro){var c=Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]}).length;return OT.done[2]?c+(c===1?' micro-attività scelta':' micro-attività scelte'):'Da scegliere'}return ''}
+  function oPh(){var i=$('mp_in');if(i&&!$('gview').hidden)i.placeholder=OTPH[OT.open]||OTPH[0]}
+  function oParla(){if(OT.open===2)return oP2Msg();
+    if(!OT.inv.length){say('Partiamo dalla tua <b>fattura</b>. Caricala qui sotto: la leggo io e capisco <b>per chi</b> hai lavorato e <b>cosa</b> hai fatto. Da lì cerco le piccole prestazioni che possono farti pagare meno tasse.');return}
+    var a=oUsate()[0],cl=a?oCli(a.cliente):'';
+    say((OT.inv.some(function(v){return v.dalOnb})?'Ho ritrovato la fattura che mi hai dato all\'inizio. ':'Ho letto la tua fattura. ')+(a&&a.attivita?'Hai lavorato '+(cl?'per <b>'+cl+'</b> ':'')+'facendo <b>'+oEsc(a.attivita.toLowerCase())+'</b>. ':'')+
+      'Se vuoi, <b>raccontami tutto quello che hai fatto</b> per questo cliente: è facoltativo, ma mi aiuta a trovare più risparmio. Con o senza, poi passo da solo alle <b>micro-attività</b>.');
+    if(window.__chips)window.__chips(OTP1,['Continua senza dettagli','Che dettagli ti servono?','Perché me lo chiedi?'])}
+  function oCli(c){c=c||{};var p=[];if(c.tipo)p.push(c.tipo==='azienda'?'un\'azienda':c.tipo==='privato'?'un privato':c.tipo==='professionista'?'un professionista':'un ente pubblico');
+    if(c.paese)p.push(/^ital/i.test(c.paese)?'in Italia':(/^(regno|stati|paesi|emirati)/i.test(c.paese)?'nel ':'in ')+c.paese);if(c.settore)p.push('('+c.settore+')');return oEsc(p.join(' '))}
+  var OTP1={'Continua senza dettagli':{a:function(){oVai(false)},e:1},
+    'Che dettagli ti servono?':{a:'Tutto quello che hai fatto per quel cliente e che in fattura non si legge: le singole fasi del lavoro, cose che hai preparato, comprato, organizzato, venduto o gestito per lui. Guarda gli esempi sotto il riquadro.',n:['Perché me lo chiedi?']},
+    'Perché me lo chiedi?':{a:'Nel forfettario ogni attività ha il suo coefficiente. Dentro il tuo lavoro ci sono spesso micro-prestazioni che per il fisco valgono meno: se le fatturi su righe separate, su quella parte paghi meno tasse. Più so cosa fai, meglio le trovo.',n:[]},
+    'Cosa leggi dalla fattura?':{a:'Le righe con descrizione e importo, e del cliente solo il tipo (azienda o privato), il paese e il settore. Il nome del cliente non lo conservo, e il file nemmeno.',n:[]}};
+  // ---- passo 1: la fattura
+  var ODEX=['«Per l\'azienda inglese inserisco i dati in contabilità, emetto le loro fatture e sollecito chi non paga: il bilancio lo fa il loro commercialista»',
+    '«Trovo clienti in Italia per un\'azienda estera e prendo una provvigione su ogni contratto firmato»',
+    '«Oltre alla consulenza di marketing ho preparato dei modelli di email che vendo anche online»',
+    '«Per lo studente ho corretto le bozze, impaginato la tesi e cercato le fonti nelle banche dati»',
+    '«Ho organizzato io l\'ufficio del cliente e gestisco le sue pratiche amministrative»'];
+  function oP1(b){var h='';
+    if(!OT.inv.length){h+='<div class="kbox oup" id="oup"><div class="lbl">La tua fattura</div><b>Carica la fattura di un cliente</b><p class="onote">PDF, foto, XML o Excel. Leggo le righe del lavoro e, del cliente, solo tipo, paese e settore: il nome non lo conservo, e il file nemmeno.</p><button class="cta s o2" id="o_up">Carica la fattura</button></div>'}
+    else{h+='<div class="kbox"><div class="lbl">'+(oUsate().length===1?'La tua fattura':'Le tue fatture')+'</div><div class="ofts">'+OT.inv.map(function(v,i){return oCard(v,i)}).join('')+'</div><button class="lnk2" id="o_up">+ Carica un\'altra fattura</button></div>';
+      if(oUsate().length)h+=oDettBox()}
+    h+='<input type="file" id="o_file" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp" hidden><div id="o1wait" class="onote" aria-live="polite"></div>';
+    b.innerHTML=h;
+    $('o_up').onclick=function(){if(OT.busy)return;tap('ott_carica');$('o_file').click()};
+    $('o_file').onchange=function(){var fs=[].slice.call(this.files||[]);this.value='';if(fs.length)oLeggi(fs)};
+    var up=$('oup');if(up){up.ondragover=function(e){e.preventDefault();up.classList.add('drag')};up.ondragleave=function(){up.classList.remove('drag')};up.ondrop=function(e){e.preventDefault();up.classList.remove('drag');var fs=[].slice.call(e.dataTransfer.files||[]);if(fs.length)oLeggi(fs)}}
+    [].slice.call(b.querySelectorAll('[data-u]')).forEach(function(c){c.onchange=function(){OT.inv[+c.getAttribute('data-u')].usa=c.checked;tap('ott_usa');oSaveSoon();oRender()}});
+    [].slice.call(b.querySelectorAll('[data-dt]')).forEach(function(t){t.oninput=function(){var v=OT.inv[+t.getAttribute('data-dt')];if(v){v.det=t.value.slice(0,800);oSaveSoon()}}});
+    var ok=$('o_dok'),sk=$('o_dsk');if(ok)ok.onclick=function(){oVai(true)};if(sk)sk.onclick=function(){oVai(false)}}
+  function oCard(v,i){var cl=v.cliente||{},rg=(v.righe||[]).slice(0,3);
+    return '<div class="oft'+(v.ok?'':' no')+(v.usa===false?' off':'')+'">'+
+      '<div class="ofh"><b>'+oEsc(v.nome)+'</b>'+(v.ok?'<label class="oiu"><input type="checkbox" data-u="'+i+'"'+(v.usa!==false?' checked':'')+'> Usa</label>':'')+'</div>'+
+      (!v.ok?'<p class="onote">Non sono riuscito a leggerla'+(v.motivo?': '+oEsc(v.motivo):'')+'.</p>':
+      '<dl class="ofd"><dt>Cliente</dt><dd>'+(cl.tipo||cl.paese||cl.settore?oEsc([cl.tipo,cl.paese,cl.settore].filter(Boolean).join(' · ')):'<span class="omute">non indicato in fattura</span>')+'</dd>'+
+      '<dt>Prestazione</dt><dd>'+rg.map(function(r){return oEsc(r.testo)}).join('<br>')+((v.righe||[]).length>3?'<br><span class="omute">e altre '+((v.righe.length-3))+' righe</span>':'')+'</dd>'+
+      '<dt>Importo</dt><dd>'+oEur0(v.importo)+'</dd>'+
+      '<dt>Ho capito</dt><dd>'+(v.attivita?'<b>'+oEsc(v.attivita)+'</b>':'<span class="omute">non è chiaro: raccontamelo nei dettagli qui sotto</span>')+'</dd></dl>')+'</div>'}
+  function oDettBox(){var us=OT.inv.map(function(v,i){return [v,i]}).filter(function(x){return x[0].ok&&x[0].usa!==false});
+    return '<div class="kbox odet" id="odet"><div class="lbl">Tutto quello che hai fatto · facoltativo</div>'+
+      '<p class="onote">Ci sono altri dettagli su <b>tutto quello che hai fatto</b> per svolgere questa prestazione? Le singole fasi, le cose che hai preparato, comprato, organizzato, venduto o gestito per il cliente, anche se in fattura non si leggono. Con parole tue: non serve il nome del cliente.</p>'+
+      '<div class="odex"><b>Per esempio</b><ul>'+ODEX.map(function(e){return '<li>'+oEsc(e)+'</li>'}).join('')+'</ul></div>'+
+      us.map(function(x){var v=x[0],i=x[1];return '<label class="odl"><span>'+(us.length>1?'Fattura <b>'+oEsc(v.nome)+'</b> · ':'')+(v.attivita?oEsc(v.attivita.toLowerCase()):'prestazione da spiegare')+'</span><textarea data-dt="'+i+'" rows="3" maxlength="800" placeholder="Per esempio: oltre a… ho anche… / ho preparato… / ho gestito…">'+oEsc(v.det||'')+'</textarea></label>'}).join('')+
+      '<div class="oask"><button class="cta s o2" id="o_dok">'+(OT.done[1]?'Aggiorna e rifai l\'analisi':'Aggiungi e continua')+'</button>'+(OT.done[1]?'':'<button class="och" id="o_dsk">Salta e continua</button>')+'</div></div>'}
+  function oLeggi(fs){if(OT.busy)return;OT.busy=true;fs=fs.slice(0,6);var w=$('o1wait');if(w)w.textContent='Sto leggendo '+(fs.length===1?'la fattura':'le fatture')+'…';
+    say('Sto leggendo '+(fs.length===1?'la tua fattura':'le tue fatture')+': righe del lavoro e tipo di cliente…');tap('ott_fattura_caricata');srv('fattura_caricata',0);
+    var out=[],n=fs.length;
+    function fine(res){OT.busy=false;var w2=$('o1wait');if(w2)w2.textContent='';
+      if(!res||res.ok===false||!res.fatture){say(oEsc((res&&res.errore)||'Non sono riuscito a leggere la fattura.')+' Riprova con un PDF, una foto o l\'XML, oppure <b>raccontami qui sotto</b> cosa hai fatto.');return}
+      fs.forEach(function(f){var v=res.fatture.filter(function(x){return x.nome===f.name})[0]||{nome:f.name,ok:false,motivo_non_letta:'Non sono riuscito ad aprirla.',righe:[]};
+        var u='';try{u=URL.createObjectURL(f)}catch(e){}
+        if(v.emittente&&v.emittente.nome&&PRO&&!PRO.emit)PRO.emit=v.emittente;
+        OT.inv.push({nome:f.name,tipo:f.type||'',url:u,ok:!!v.ok,motivo:v.motivo_non_letta||'',righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',usa:!!v.ok,cliente:v.cliente||{},det:'',fonte:v.capito?'fattura':'da chiedere'})});
+      if(OT.done[1]){delete OT.done[2]}
+      oSaveSoon();oRender();
+      if(!oUsate().length){say('Non ho trovato righe di lavoro in '+(fs.length===1?'questo file':'questi file')+'. Prova con un altro file, oppure <b>raccontami qui sotto</b> cosa hai fatto.');return}
+      oParla()}
+    fs.forEach(function(f){sxB64(f,function(b64,t){if(b64)out.push({nome:f.name,tipo:t||f.type,dati:b64});if(--n===0){if(!out.length){fine({ok:false,errore:'Non riesco a leggere questi file.'});return}
+      fetch('/api/prova/lettura',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C||'',files:out})}).then(function(r){return r.json()}).then(fine).catch(function(){fine(null)})}})})}
+  // dettagli scritti o saltati: si passa da soli al passo 2, dove lavora l'IA
+  function oVai(conTesto){if(OT.busy)return;var box=$('odet');if(box)[].slice.call(box.querySelectorAll('[data-dt]')).forEach(function(t){var v=OT.inv[+t.getAttribute('data-dt')];if(v)v.det=t.value.trim().slice(0,800)});
+    var nd=oUsate().filter(function(v){return (v.det||'').trim()}).length;tap(nd?'ott_dettagli_si':'ott_dettagli_salta');
+    OT.done[1]=true;delete OT.done[2];OT.micro=null;OT.scelte={};OT.domanda=null;OT.open=2;oSaveSoon();
+    say(nd?'Grazie, me lo segno. <b>Passo alle micro-attività.</b>':'Va bene, nessun problema: <b>passo alle micro-attività</b>.');
+    timers.push(setTimeout(function(){oRender();oAnalizza('')},reduce?0:900))}
+  // ---- passo 2: l'analisi con l'IA (Claude Opus 5.5 su OpenRouter, lato server)
+  function oAnalizza(testo){if(OT.busy)return;OT.busy=true;OT.errore='';oRender();
+    var msgs=['Sto guardando cosa hai fatto e per chi…','Scompongo il lavoro nelle sue fasi concrete…','Per ogni fase cerco la categoria ufficiale e il suo coefficiente…','Controllo Ordine, cassa, INPS e Camera di Commercio…','Quasi fatto: scrivo le righe di fattura d\'esempio…'];
+    var k=0;say(msgs[0]);var iv=setInterval(function(){k++;if(k<msgs.length&&OT.busy)say(msgs[k]);else clearInterval(iv)},reduce?2000:9000);
+    aiCall('ottimizza',{principale:{nome:OTMAIN.nome,cod:OTMAIN.cod},coef_principale:typeof CCOEF==='number'?CCOEF:.78,testo:testo||'',escludi:OT.escluse,
+      fatture:oUsate().map(function(v){return {righe:(v.righe||[]).slice(0,10),importo:v.importo,cliente:v.cliente||{},attivita:v.attivita||'',dettagli:v.det||''}})}).then(function(j){clearInterval(iv);OT.busy=false;
+      if(!j||!j.ok){OT.errore=j&&j.limite?'Per oggi ho fatto abbastanza analisi: riprova domani.':'Non sono riuscito a completare l\'analisi.';oRender();say(OT.errore+' Puoi riprovare dal pulsante qui sotto.');return}
+      var vecchie=OT.micro&&testo?OT.micro.items.filter(function(m){return OT.scelte[m.id]}):[],nomi={};vecchie.forEach(function(m){nomi[m.nome.toLowerCase()]=1});
+      var it=vecchie.concat((j.micro||[]).filter(function(m){return !nomi[m.nome.toLowerCase()]}).map(function(m,i){m.id='m'+Date.now().toString(36)+i;return m}));
+      OT.micro={items:it,principale:j.principale||{},sintesi:j.sintesi||'',cp:j.coef_principale||CCOEF,modello:j.modello||''};
+      it.forEach(function(m){if(m.dichiarata&&OT.scelte[m.id]==null)OT.scelte[m.id]=true});
+      OT.domanda=j.domanda&&j.domanda.testo?j.domanda:null;OT.det2=it[0]?it[0].id:'';tap('ott_analisi_ok');oSaveSoon();oRender();oP2Msg()})}
+  function oNSc(){return Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]&&OT.micro&&OT.micro.items.some(function(m){return m.id===k})}).length}
+  function oP2(b){if(OT.busy){b.innerHTML='<div class="kbox owork"><div class="ospin" aria-hidden="true"></div><b>Marcello sta analizzando il tuo lavoro</b><p class="onote">Può volerci fino a un minuto: è il passaggio più importante, lo faccio con calma.</p></div>';return}
+    if(!OT.micro){b.innerHTML='<div class="kbox"><b>'+(OT.errore?oEsc(OT.errore):'L\'analisi non è ancora partita.')+'</b><div class="oask"><button class="cta s o2" id="o_rif">'+(OT.errore?'Riprova':'Avvia l\'analisi')+'</button></div></div>';$('o_rif').onclick=function(){oAnalizza('')};return}
+    var M=OT.micro,cp=M.cp||CCOEF,it=M.items,h='';
+    h+='<div class="kbox osyn"><div class="lbl">Cosa ho capito</div>'+(M.sintesi?'<p>'+oEsc(M.sintesi)+'</p>':'')+'<p class="onote">Il tuo lavoro principale'+(M.principale&&M.principale.descrizione?': <b>'+oEsc(M.principale.descrizione)+'</b>':'')+'. Il tuo codice <b>'+oEsc(OTMAIN.cod)+'</b> ha coefficiente <b>'+pc(cp)+'</b>: le micro-attività qui sotto rientrano in categorie con un coefficiente più basso.</p></div>';
+    if(OT.domanda)h+='<div class="kbox oq2"><b>'+oEsc(OT.domanda.testo)+'</b><div class="ochips">'+(OT.domanda.opzioni||[]).map(function(o){return '<button class="och" data-q="'+oEsc(o)+'">'+oEsc(o)+'</button>'}).join('')+'</div><p class="onote">Oppure rispondimi con parole tue qui sotto.</p></div>';
+    if(!it.length)h+='<div class="kbox"><b>Non ho trovato micro-attività con un coefficiente più basso.</b><p class="onote">Può succedere: raccontami meglio cosa fai, oppure chiedimene altre.</p></div>';
+    else{var det=function(id){var m=it.filter(function(x){return x.id===id})[0];if(!m)return '<p class="onote">Tocca una micro-attività per vedere i dettagli.</p>';
+        return '<h4>'+oEsc(m.nome)+'</h4>'+(m.descrizione?'<p>'+oEsc(m.descrizione)+'</p>':'')+(m.collegamento?'<p class="onote"><b>Perché c\'entra con il tuo lavoro:</b> '+oEsc(m.collegamento)+'</p>':'')+
+          '<p class="onote">Per il fisco rientra in <b>'+oEsc(m.categoria||m.gruppo)+'</b>: codice <b>'+oEsc(m.codice_ateco)+'</b>, coefficiente <b>'+pc(m.coefficiente)+'</b> invece del '+pc(cp)+'.</p>'+
+          (m.riga_fattura?'<p class="onote"><b>In fattura</b>, su una riga a parte con il suo importo: «'+oEsc(m.riga_fattura)+'»</p>':'')+
+          (m.attenzione?'<p class="onote owarn"><b>Attenzione:</b> '+oEsc(m.attenzione)+'</p>':'')+(m.dichiarata?'<span class="oibd">me l\'hai detto tu</span>':'<span class="oibd">suggerita da Marcello</span>')};
+      h+='<div class="o2g"><div class="olist" id="o_list" tabindex="0" aria-label="Micro-attività suggerite"><div class="ogh ai">Le micro-attività che possono farti risparmiare</div><div class="ogr">'+it.map(function(m){var on=!!OT.scelte[m.id],pt=Math.round((cp-m.coefficiente)*100);
+        return '<label class="oit'+(on?' on':'')+'" data-id="'+m.id+'"><input type="checkbox" data-id="'+m.id+'"'+(on?' checked':'')+'><span class="oin"><b>'+oEsc(m.nome)+'</b></span><span class="otg low">−'+pt+' punti</span></label>'}).join('')+'</div></div><aside class="o2det" id="o2det" aria-live="polite">'+det(OT.det2)+'</aside></div>'}
+    h+='<div class="oask"><button class="cta s o2" id="o_ok2"'+(oNSc()?'':' disabled')+'>'+(OT.done[2]?'Confermato':'Confermo quelle che faccio')+'</button><button class="och" id="o_altre">Cercane altre</button><button class="och" id="o_nessuna">Non faccio nessuna di queste</button><span class="osum" id="o_sum">'+oSumTxt()+'</span></div>';
+    if(OT.done[2])h+='<div class="kbox onext"><b>Prossimo passo</b><p class="onote">Dividere la fattura tra il lavoro principale e le micro-attività che hai scelto, e calcolare quanto risparmi in euro. Lo stiamo costruendo: le tue scelte restano salvate.</p></div>';
+    b.innerHTML=h;
+    var sd=function(id){OT.det2=id;var d=$('o2det');if(d&&det)d.innerHTML=det(id)};
+    [].slice.call(b.querySelectorAll('.oit')).forEach(function(l){var id=l.getAttribute('data-id');l.onmouseenter=function(){sd(id)};l.addEventListener('focusin',function(){sd(id)});l.addEventListener('click',function(){sd(id)})});
+    [].slice.call(b.querySelectorAll('.oit input')).forEach(function(c){c.onchange=function(){var id=c.getAttribute('data-id');OT.scelte[id]=c.checked;c.closest('.oit').classList.toggle('on',c.checked);tap('ott_micro_'+(c.checked?'si':'no'));
+      if(OT.done[2]){delete OT.done[2];oRender();return}$('o_ok2').disabled=!oNSc();$('o_sum').textContent=oSumTxt();oSaveSoon()}});
+    [].slice.call(b.querySelectorAll('[data-q]')).forEach(function(q){q.onclick=function(){var t=q.getAttribute('data-q');tap('ott_risposta_domanda');say('Grazie: rifaccio l\'analisi con questa informazione.');oAnalizza((OT.domanda?OT.domanda.testo+' ':'')+'Risposta: '+t)}});
+    $('o_ok2').onclick=function(){if(!oNSc())return;OT.done[2]=true;tap('ott_conferma_micro');srv('micro_confermate',0);oSaveSoon();oRender();
+      say('Perfetto: ho salvato <b>'+oNSc()+'</b> '+(oNSc()===1?'micro-attività':'micro-attività')+'. Il prossimo passo sarà dividere la fattura e calcolare il risparmio in euro: lo stiamo costruendo.')};
+    $('o_altre').onclick=function(){tap('ott_altre');it.forEach(function(m){if(!OT.scelte[m.id]&&OT.escluse.indexOf(m.nome)<0)OT.escluse.push(m.nome)});say('Va bene, ne cerco altre diverse da queste.');oAnalizza('Cerca altre micro-attivita\' diverse da quelle gia\' proposte.')};
+    $('o_nessuna').onclick=function(){tap('ott_nessuna');it.forEach(function(m){if(OT.escluse.indexOf(m.nome)<0)OT.escluse.push(m.nome)});OT.scelte={};
+      say('Capito. Forse mi mancano dei dettagli: <b>raccontami qui sotto</b> le fasi del tuo lavoro, anche le più piccole, e riprovo. Oppure tocca «Cercane altre».');oSaveSoon();oRender()}}
+  function oSumTxt(){var n=oNSc();return n?'Ne hai scelte '+n+'.':'Spunta quelle che fai, o che potresti fare.'}
+  function oP2Msg(){if(OT.busy)return;if(!OT.micro){say(OT.errore||'Avvio l\'analisi del tuo lavoro.');return}
+    var n=OT.micro.items.length;
+    if(OT.domanda){say('Ho trovato <b>'+n+'</b> micro-attività. Una domanda per essere più preciso: <b>'+oEsc(OT.domanda.testo)+'</b>');return}
+    say(OT.done[2]?'Qui ci sono le micro-attività che hai scelto. Se vuoi cambiarle, spunta o togli pure.':n?'Ecco le <b>micro-attività</b> collegate al tuo lavoro che il fisco mette in una categoria con un coefficiente più basso. <b>Spunta quelle che fai</b>, o che potresti fare: tocca ognuna per vedere perché c\'entra, come scriverla in fattura e a cosa fare attenzione.':'Non ho trovato micro-attività: raccontami di più qui sotto.');
+    if(window.__chips)window.__chips(OTP2,['Perché valgono meno?','È legale?','Come le scrivo in fattura?'])}
+  var OTP2={'Perché valgono meno?':{a:'Per il fisco ogni categoria ha il suo coefficiente: è la parte degli incassi su cui paghi tasse e contributi. Se una micro-attività rientra in una categoria con coefficiente più basso, su quella parte di incassi paghi meno.',n:['È legale?']},
+    'È legale?':{a:'Sì, se fai davvero quelle prestazioni: le fatturi su righe separate, ognuna con il suo importo, e aggiungi il codice ATECO della categoria alla partita IVA. Non si cambiano le parole: ogni riga descrive quello che hai fatto. Se vuoi, un commercialista può controllare con te.',n:['Come le scrivo in fattura?']},
+    'Come le scrivo in fattura?':{a:'Una riga per ogni prestazione, con il suo importo. Per ogni micro-attività ti ho scritto un esempio di riga: toccala nell\'elenco per vederlo.',n:[]}};
+  // ---- scrivere a Marcello in questa sezione
+  function oWrite(t){t=(t||'').trim();if(!t)return;tap('ott_scrive');if(typeof saveVoce==='function')saveVoce('Ottimizzazione: '+OT.open,t);
+    var dom=/\?\s*$/.test(t)||/^(come|cosa|perch|quando|quanto|posso|devo|che |chi |dove|ciao|salve|grazie|ok\b|non (ho )?capi|aiut|spiega)/i.test(t);
+    if(OT.open===1&&oUsate().length&&!dom){var v=oUsate()[0];v.det=((v.det||'')+(v.det?'\n':'')+t).slice(0,800);oSaveSoon();oRender();say('Aggiunto ai dettagli. Quando vuoi, tocca <b>Aggiungi e continua</b>: oppure scrivimi altro.');return}
+    if(OT.open===2&&OT.done[1]&&!OT.busy&&!dom){say('Grazie: rifaccio l\'analisi tenendone conto.');oAnalizza(t);return}
+    if(dom){oChat(t);return}
+    say(OT.open===1&&!OT.inv.length?'Prima caricami la <b>fattura</b>: poi ti chiedo i dettagli.':'Dimmi pure: se mi racconti cosa fai, ne tengo conto.')}
+  function oChat(t){say('Ci penso un attimo…');var ctx='Sezione Ottimizzazione fiscale, passo '+OT.open+' ('+(OT.open===1?'fattura e dettagli':'micro-attivita\' con coefficiente piu\' basso')+'). '+
+      (oUsate().length?'Fattura: '+oUsate().map(function(v){return (v.attivita||'prestazione')+' per '+[v.cliente&&v.cliente.tipo,v.cliente&&v.cliente.paese].filter(Boolean).join(' ')}).join('; ')+'. ':'')+
+      (OT.micro?'Micro-attivita\' proposte: '+OT.micro.items.map(function(m){return m.nome+' ('+m.codice_ateco+', '+Math.round(m.coefficiente*100)+'%)'}).join('; ')+'. ':'');
+    var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');
+    ask(PERS+ctx+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Rispondi in massimo 3 frasi semplici e calde, dando del tu, senza certezze (solo stime). Messaggio dell\'utente: '+t).then(function(r){
+      if(r){HIST.push(['Utente',t]);HIST.push(['Marcello',r]);say(esc(r))}else say('Non riesco a rispondere bene in questo momento, ma ho segnato quello che hai scritto.')})}
+  // ---- ingresso nella sezione
+  $('opane').innerHTML='';oRender();oLoad();
+  var _sv2=showView;showView=function(v){_sv2(v);if(v==='g'){oRender();oParla()}};
   // ================= Bandi e agevolazioni + Profilo
   var BD=[
     {id:'b5',t:'Imposta al 5% per i primi 5 anni',x:'Se hai aperto da poco e negli ultimi 3 anni non facevi la stessa attività, l\'imposta sostitutiva è al <b>5%</b> invece del 15%.',tag:'Da verificare'},

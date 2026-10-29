@@ -40,9 +40,9 @@ def _via_anthropic(sistema: str, utente: str, max_token: int, modello: str = "")
     return "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text").strip()
 
 
-def _via_openrouter(sistema: str, utente: str, max_token: int) -> str:
-    modello = (os.environ.get("OPENROUTER_MODELLO") or "anthropic/claude-sonnet-4.5").strip()
-    r = requests.post(OPENROUTER_URL, timeout=75,
+def _via_openrouter(sistema: str, utente: str, max_token: int, modello: str = "", attesa: int = 75) -> str:
+    modello = (modello or os.environ.get("OPENROUTER_MODELLO") or "anthropic/claude-sonnet-4.5").strip()
+    r = requests.post(OPENROUTER_URL, timeout=attesa,
                       headers={"Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"].strip(),
                                "content-type": "application/json", "X-Title": "TaxScan"},
                       json={"model": modello, "max_tokens": max_token,
@@ -81,7 +81,8 @@ def genera(sistema: str, utente: str, max_token: int = 1200, veloce: bool = Fals
 def diagnosi() -> dict:
     """Prova reale, per capire perche' l'AI non risponde (pagina /admin/ai)."""
     out = {"anthropic_chiave": _anthropic(), "openrouter_chiave": _openrouter(),
-           "openrouter_modello": (os.environ.get("OPENROUTER_MODELLO") or "(non impostato: uso anthropic/claude-sonnet-4.5)")}
+           "openrouter_modello": (os.environ.get("OPENROUTER_MODELLO") or "(non impostato: uso anthropic/claude-sonnet-4.5)"),
+           "ottimizzazione_modello": MODELLO_OTTIMIZZA + (" (via OpenRouter)" if _openrouter() else " (OpenRouter non configurato: uso il modello normale)")}
     for nome, f, ok in (("anthropic", _via_anthropic, _anthropic()), ("openrouter", _via_openrouter, _openrouter())):
         if not ok:
             out[nome] = "chiave non impostata"
@@ -92,6 +93,31 @@ def diagnosi() -> dict:
         except Exception as e:
             out[nome] = "ERRORE: %s" % str(e)[:300]
     return out
+
+
+# modello per il lavoro piu' importante (le micro-attivita' dell'ottimizzazione fiscale): Claude Opus 5.5 su OpenRouter
+MODELLO_OTTIMIZZA = (os.environ.get("OTTIMIZZA_MODELLO") or "anthropic/claude-opus-5.5").strip()
+
+
+def genera_json_ottimizza(sistema: str, utente: str, max_token: int = 4000):
+    """Come genera_json, ma con Claude Opus 5.5 su OpenRouter (OTTIMIZZA_MODELLO per cambiarlo).
+    Se OpenRouter non c'e' o non risponde, ripiega sul modello normale. Ritorna (json, modello usato)."""
+    sis = sistema + "\nRispondi SOLO con un oggetto JSON valido, senza testo prima o dopo e senza markdown."
+    testo, usato = "", ""
+    if _openrouter():
+        try:
+            testo, usato = _via_openrouter(sis, utente, max_token, MODELLO_OTTIMIZZA, 170), MODELLO_OTTIMIZZA
+        except Exception as e:
+            print(f"ai: {MODELLO_OTTIMIZZA} su openrouter non risponde, uso il modello normale: {e}")
+    if not testo:
+        testo, usato = genera(sis, utente, max_token), "normale"
+    m = re.search(r"\{.*\}", testo, re.S)
+    if not m:
+        return None, usato
+    try:
+        return json.loads(m.group(0)), usato
+    except ValueError:
+        return None, usato
 
 
 def genera_json(sistema: str, utente: str, max_token: int = 1500, veloce: bool = False):

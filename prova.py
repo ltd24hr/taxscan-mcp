@@ -408,6 +408,57 @@ _SYS_ATTIVITA = (
     "Da 6 a 10 voci, italiano semplice. Formato: "
     '{"attivita":[{"nome":"...","descrizione":"una frase","categoria":"nome semplice della categoria","codice_ateco":"NN.NN.NN",'
     '"riga_fattura":"...","attenzione":"","dichiarata":false}]}')
+_SYS_OTTIMIZZA = (
+    "Sei Marcello, l'agente IA di TaxScan, il consulente che aiuta chi ha la partita IVA in regime forfettario in Italia a pagare meno tasse "
+    "in modo legale. " + _SIC +
+    "Ti do le FATTURE di una persona (righe di prestazione, importo, tipo e paese del cliente, a volte il settore), i DETTAGLI che la persona ha "
+    "aggiunto su tutto quello che ha fatto per quel cliente, e il suo codice ATECO attuale con il coefficiente di redditivita'. "
+    "Questo e' il lavoro piu' importante di TaxScan. Obiettivo: ricavare le MICRO-ATTIVITA' e le operazioni IMPLICITE, CONNESSE o ACCESSORIE "
+    "all'attivita' principale che emerge dalla fattura (o che la persona ha specificato): prestazioni concrete che chi fa QUEL lavoro svolge "
+    "insieme alla prestazione principale, anche quelle a cui la persona non ha mai pensato, e che TaxScan puo' ricondurre a una CATEGORIA "
+    "UFFICIALE DIVERSA con un coefficiente di redditivita' INFERIORE a quello dell'attivita' principale. Non devono essere voci dell'elenco ATECO: "
+    "sono micro-prestazioni scritte come le direbbe la persona. "
+    "Lo strumento e' legale: suddividere la fattura in piu' prestazioni diverse, una riga per ciascuna con il suo importo, ognuna con il suo "
+    "coefficiente e i ricavi tenuti separati (la soglia degli 85.000 euro vale sulla somma). Ogni riga deve descrivere una prestazione realmente "
+    "svolta o che la persona puo' realmente svolgere: non si cambiano le parole per far sembrare una prestazione diversa da quella che e'. "
+    "Se il contratto con il cliente parla solo del lavoro principale, fai notare che conviene aggiornarlo perche' rispecchi tutte le prestazioni. "
+    "COEFFICIENTI DEL FORFETTARIO PER GRUPPO (tabella di legge, usala sempre, non quelli scritti negli esempi): 78% attivita' professionali, "
+    "scientifiche, tecniche, sanitarie, istruzione, finanziarie e assicurative (divisioni 64-66, 69-75, 85-88: per esempio 69.20 contabilita', "
+    "73.11 pubblicita' e marketing, 74.99 altre attivita' professionali, 85.59 lezioni e corsi); 67% altre attivita' economiche (per esempio 58-63 "
+    "editoria, software, siti e dati, 77-82 servizi di supporto alle imprese come 82.11.00 gestione d'ufficio e 82.99.99 altri servizi di supporto, "
+    "90-96); 62% intermediari del commercio (46.1, per esempio 46.19.00 procacciatore d'affari); 54% commercio ambulante non alimentare; "
+    "40% commercio all'ingrosso e al dettaglio (compreso 47.91.10 commercio via internet), alloggio e ristorazione; 86% costruzioni e immobiliare. "
+    "ESEMPI DI RAGIONAMENTO (i casi di riferimento di TaxScan): "
+    "1) Adempimenti contabili per un'impresa estera (69.20.13, 78%): le parti esecutive e operative, distinte dalla consulenza fiscale e dalle "
+    "dichiarazioni, sono servizi di supporto alle imprese (82.99.99 o 82.11.00, 67%): data entry, emissione delle fatture per conto del cliente, "
+    "spunta dei pagamenti ricevuti, sollecito dei crediti, archiviazione digitale, preparazione dei dati grezzi per il commercialista dell'azienda. "
+    "Riga d'esempio: «Servizi di data entry, emissione documenti e gestione documentale ordinaria». Gestione Separata INPS. "
+    "2) Consulenza commerciale per trovare clienti a un'impresa estera: se e' pagata a provvigione sugli affari conclusi e' procacciamento d'affari "
+    "(46.19.00, 62%, ma serve Camera di Commercio e INPS Commercianti con minimale fisso di circa 4.600 euro l'anno, riducibile del 35%: conviene "
+    "con incassi stabilmente sopra 25-30.000 euro); se e' un servizio di supporto commerciale pagato a prestazione o a fisso e' 82.99.99 (67%, "
+    "Gestione Separata, niente minimali). Il coefficiente piu' basso non conviene sempre: dillo. "
+    "3) Consulenza e supporto per tesi ed esami universitari (istruzione, 78%): correzione bozze, impaginazione e formattazione bibliografica, "
+    "trascrizione di interviste, ricerca e catalogazione di fonti, traduzione di articoli sono servizi di supporto (82.99.99, 67%). Le lezioni "
+    "restano istruzione (78%). "
+    "4) Consulente marketing (73.11, 78%): vendere via internet template, modelli, corsi preregistrati o prodotti digitali gia' pronti e' "
+    "commercio via internet (47.91.10, 40%), con Camera di Commercio e INPS Commercianti; configurare strumenti, montare video, fare siti (67%). "
+    "5) Commercialista o avvocato: servizi non riservati come organizzazione di uffici, supporto operativo, coaching organizzativo (67%), ma "
+    "niente commercio in nome proprio (incompatibile con l'Ordine) e attenzione alla Cassa: se la prestazione usa le competenze tipiche della "
+    "professione, la Cassa la considera comunque reddito professionale; se e' estranea, va in Gestione Separata INPS. "
+    "COME RAGIONARE: guarda cosa e' stato fatto per QUEL cliente (tipo, paese, settore contano: un'impresa estera, uno studente, un negozio), "
+    "scomponi il lavoro nelle sue fasi concrete, trova quelle che appartengono a una categoria con coefficiente piu' basso, poi controlla i vincoli "
+    "(Ordine, Cassa, INPS, Camera di Commercio, convenienza rispetto agli incassi). Sii specifico per il settore descritto, niente voci generiche "
+    "o assurde. Se un dettaglio decisivo manca (per esempio se e' pagato a provvigione o a prestazione, se vende prodotti gia' pronti), fai UNA "
+    "domanda breve nel campo domanda, con 2-4 risposte possibili. "
+    "Per ogni micro-attivita': nome (verbo all'infinito, max 90 caratteri, come lo direbbe la persona), descrizione (una frase), collegamento "
+    "(perche' e' connessa al lavoro fatto per quel cliente, una frase), fattura (id della fattura da cui nasce, per esempio f0, oppure vuoto), "
+    "categoria (nome semplice), codice_ateco (6 cifre NN.NN.NN), riga_fattura (esempio di riga di fattura separata che descrive con precisione "
+    "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla). "
+    "Indica anche l'attivita' principale come la capisci dalle fatture (descrizione semplice e codice ATECO). Da 5 a 10 micro-attivita'. "
+    "Italiano semplice, dai del tu. Formato: "
+    '{"principale":{"descrizione":"...","codice_ateco":"NN.NN.NN"},"sintesi":"2 frasi su cosa hai capito e dove si puo\' risparmiare",'
+    '"micro":[{"nome":"...","descrizione":"...","collegamento":"...","fattura":"f0","categoria":"...","codice_ateco":"NN.NN.NN",'
+    '"riga_fattura":"...","attenzione":"","dichiarata":false}],"domanda":{"testo":"","opzioni":[]}}')
 _SYS_AGENTE = (
     "Sei Marcello, l'assistente IA di TaxScan, che aiuta chi ha la partita IVA forfettaria in Italia a pagare il giusto di tasse. " + _SIC +
     "Stai guidando una persona nella pagina «Ottimizzazione fiscale», fatta di 4 schede in ordine: 1 Fatture (si leggono le fatture e si capisce cosa fa), "
@@ -540,6 +591,62 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                             "riga_fattura": _pulisci(a.get("riga_fattura"), 160), "attenzione": _pulisci(a.get("attenzione"), 260),
                             "dichiarata": bool(a.get("dichiarata"))})
             return {"ok": True, "attivita": [x for x in out if x["nome"]]}
+        if task == "ottimizza":
+            pr = dati.get("principale") or {}
+            cod_p = _codice(pr.get("cod"))
+            cp = (calcoli.coefficiente_da_ateco(cod_p) or {}).get("coefficiente") if cod_p else None
+            try:
+                cp = float(dati.get("coef_principale") or cp or 0.78)
+            except Exception:
+                cp = 0.78
+            blocchi = []
+            for k, fz in enumerate((dati.get("fatture") or [])[:6]):
+                if not isinstance(fz, dict):
+                    continue
+                cl = fz.get("cliente") if isinstance(fz.get("cliente"), dict) else {}
+                righe = " | ".join("%s (%s euro)" % (_pulisci(r.get("testo"), 160), r.get("importo")) for r in (fz.get("righe") or [])[:10] if isinstance(r, dict))
+                blocchi.append("[f%d] Cliente: %s, %s%s. Importo: %s euro. Righe: %s. Attivita' capita: %s. Dettagli aggiunti dalla persona: %s" % (
+                    k, _pulisci(cl.get("tipo"), 20) or "tipo non indicato", _pulisci(cl.get("paese"), 40) or "paese non indicato",
+                    (", settore " + _pulisci(cl.get("settore"), 60)) if cl.get("settore") else "", fz.get("importo") or 0,
+                    righe or "(nessuna)", _pulisci(fz.get("attivita"), 90) or "(non chiara)", _pulisci(fz.get("dettagli"), 800) or "(nessuno)"))
+            if not blocchi:
+                return {"ok": False}
+            u = "Codice ATECO attuale: %s (%s), coefficiente %s%%.\n\nFATTURE:\n%s" % (
+                cod_p or "non indicato", _pulisci(pr.get("nome"), 80), int(round(cp * 100)), "\n".join(blocchi))
+            if _pulisci(dati.get("testo"), 600):
+                u += "\n\nULTIMO MESSAGGIO DELLA PERSONA (risposta o richiesta): " + _pulisci(dati.get("testo"), 600)
+            esc_ = [_pulisci(x, 90) for x in (dati.get("escludi") or [])[:20] if _pulisci(x, 90)]
+            if esc_:
+                u += "\nMicro-attivita' gia' proposte e scartate dalla persona (non riproporle, nemmeno riformulate): " + "; ".join(esc_)
+            r, usato = ai.genera_json_ottimizza(_SYS_OTTIMIZZA, u, 5000)
+            r = r if isinstance(r, dict) else {}
+            out = []
+            for a in (r.get("micro") or [])[:12]:
+                if not isinstance(a, dict):
+                    continue
+                cod = _codice(a.get("codice_ateco"))
+                ok_cod = bool(re.fullmatch(r"\d{2}\.\d{2}\.\d{1,2}", cod or "")) and cod[:2] in _DIVISIONI_ATECO
+                co = calcoli.coefficiente_da_ateco(cod) if ok_cod else {"errore": 1}
+                if co.get("errore"):
+                    continue
+                if co["coefficiente"] >= cp and not a.get("dichiarata"):
+                    continue
+                fid = str(a.get("fattura") or "")
+                out.append({"nome": _pulisci(a.get("nome"), 90), "descrizione": _pulisci(a.get("descrizione"), 240),
+                            "collegamento": _pulisci(a.get("collegamento"), 240), "fattura": fid if re.fullmatch(r"f\d", fid) else "",
+                            "categoria": _pulisci(a.get("categoria"), 80), "codice_ateco": cod, "coefficiente": co["coefficiente"],
+                            "gruppo": co.get("gruppo", ""), "riga_fattura": _pulisci(a.get("riga_fattura"), 180),
+                            "attenzione": _pulisci(a.get("attenzione"), 300), "dichiarata": bool(a.get("dichiarata"))})
+            p2 = r.get("principale") if isinstance(r.get("principale"), dict) else {}
+            c2 = _codice(p2.get("codice_ateco"))
+            co2 = calcoli.coefficiente_da_ateco(c2) if c2 else {"errore": 1}
+            dom = r.get("domanda") if isinstance(r.get("domanda"), dict) else {}
+            return {"ok": bool(out) or bool(_pulisci(dom.get("testo"), 300)), "modello": usato, "coef_principale": cp,
+                    "principale": {"descrizione": _pulisci(p2.get("descrizione"), 120), "codice_ateco": c2 if not co2.get("errore") else "",
+                                   "coefficiente": None if co2.get("errore") else co2["coefficiente"]},
+                    "sintesi": _pulisci(r.get("sintesi"), 400), "micro": [x for x in out if x["nome"]],
+                    "domanda": {"testo": _pulisci(dom.get("testo"), 300),
+                                "opzioni": [_pulisci(o, 80) for o in (dom.get("opzioni") or [])[:4] if _pulisci(o, 80)]}}
         if task == "agente":
             st = dati.get("stato") if isinstance(dati.get("stato"), dict) else {}
             stato_txt = json.dumps(st, ensure_ascii=False)[:5000]
@@ -736,7 +843,7 @@ def fatture_lettura(c: str, files) -> dict:
     for v in per:
         out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
                     "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
-                    "emittente": v.get("emittente") or {},
+                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {},
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:

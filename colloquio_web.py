@@ -604,7 +604,7 @@ function fineFatture() {
     PREFILL = l[0].nome;
     const em = (FATT.find(v => v.emittente && v.emittente.nome) || {}).emittente || null;
     const d = {v: 1, ts: new Date().toISOString(), emit: em, extra: [], done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
-      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"),
+      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {},
         righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
     fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
     $("scheda").innerHTML = '<h1>Ecco cosa ho capito</h1><div class="trovato">' + l.map(x => "<b>" + esc(x.nome) + "</b> · " + eur0(x.imp) + " (" + x.pct + "%)").join("<br>") + '</div><p class="hint">Lo riguardiamo insieme dentro l\'app: se qualcosa non torna, lo correggi lì.</p>';
