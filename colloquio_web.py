@@ -848,7 +848,7 @@ function mostraFatture() {
   segna(mostraFatture);
   fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.1);
   $("scheda").innerHTML = '<h1>Hai qualche fattura a portata di mano?</h1>' +
-    '<p>Non è obbligatorio. Il certificato dice che codice hai, le fatture dicono che lavoro fai davvero: con due o tre capisco da solo la tua attività, ti faccio meno domande e dopo posso cercare dove risparmiare. Leggo la descrizione e l\'importo delle righe e, del cliente, solo tipo, paese e settore (mai il nome). I file non li conservo.</p>' +
+    '<p>Non è obbligatorio. Il certificato dice che codice hai, le fatture dicono che lavoro fai davvero: con due o tre capisco da solo la tua attività, ti faccio meno domande e dopo posso cercare dove risparmiare. Leggo le righe del lavoro e che tipo di cliente è: non conservo né il nome del cliente né il file.</p>' +
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
     '<input type="file" id="fatt" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp,image/*" class="nascosto">' +
     '<button class="opz" id="fsalta"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.tocco + '</svg></span><span>Salto: rispondo io a qualche domanda</span></button></div><div id="fesito"></div>';

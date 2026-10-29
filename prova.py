@@ -449,16 +449,24 @@ _SYS_OTTIMIZZA = (
     "scomponi il lavoro nelle sue fasi concrete, trova quelle che appartengono a una categoria con coefficiente piu' basso, poi controlla i vincoli "
     "(Ordine, Cassa, INPS, Camera di Commercio, convenienza rispetto agli incassi). Sii specifico per il settore descritto, niente voci generiche "
     "o assurde. Se un dettaglio decisivo manca (per esempio se e' pagato a provvigione o a prestazione, se vende prodotti gia' pronti), fai UNA "
-    "domanda breve nel campo domanda, con 2-4 risposte possibili. "
+    "domanda breve nel campo domanda, con 2-4 risposte possibili, tutte sullo STESSO aspetto (non mescolare temi diversi nelle risposte) e mai su "
+    "cose che TaxScan sa gia' dal profilo (gestione previdenziale, Ordine o Cassa). Se ti dico che la persona ha GIA' RISPOSTO a una domanda, non "
+    "farne altre: domanda vuota. "
+    "Le micro-attivita' devono essere DISTINTE: mai due voci che descrivono la stessa cosa con parole diverse (per esempio due voci sull'archiviazione "
+    "o due sulla registrazione in contabilita'); se due fasi sono simili, uniscile in una voce sola. "
     "Per ogni micro-attivita': nome (verbo all'infinito, max 90 caratteri, come lo direbbe la persona), descrizione (una frase), collegamento "
     "(perche' e' connessa al lavoro fatto per quel cliente, una frase), fattura (id della fattura da cui nasce, per esempio f0, oppure vuoto), "
     "categoria (nome semplice), codice_ateco (6 cifre NN.NN.NN), riga_fattura (esempio di riga di fattura separata che descrive con precisione "
     "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla). "
-    "Indica anche l'attivita' principale come la capisci dalle fatture (descrizione semplice e codice ATECO). Da 5 a 10 micro-attivita'. "
-    "Guarda il fascicolo intero come farebbe un bravo consulente: ti do anche i dati del certificato di partita IVA (codice ATECO, data di apertura) "
-    "e le anomalie gia' trovate su ogni fattura. Nel campo osservazioni scrivi da 0 a 4 osservazioni brevi e concrete su cio' che non torna o va "
-    "sistemato: descrizione troppo generica, natura IVA da verificare, dicitura del forfettario mancante, codice ATECO del certificato diverso dal "
-    "lavoro che emerge dalle fatture, fatture che sembrano di persone diverse, date incoerenti. Niente osservazioni ovvie o ripetute. "
+    "Indica anche l'attivita' principale come la capisci dalle fatture: descrizione semplice (massimo 12 parole) e codice ATECO; se il lavoro "
+    "principale corrisponde a un codice DIVERSO da quello registrato, scrivi quello giusto in principale.codice_ateco (TaxScan lo segnala). "
+    "Da 4 a 8 micro-attivita'. "
+    "IMPORTANTE: TaxScan ha tolto dalle righe i nomi dei clienti e delle persone per privacy (dove vedi «[cliente]» o una frase senza nome): non e' "
+    "un errore della fattura, non parlarne mai e non scrivere mai «[cliente]» o segnaposti nelle righe di fattura che proponi. "
+    "I controlli formali della fattura (diciture, natura IVA, inversione contabile, VIES, bollo) li fa gia' TaxScan e li mostra accanto alla fattura: "
+    "non ripeterli. Nel campo osservazioni scrivi da 0 a 2 osservazioni brevi, solo su come e' descritto il lavoro e su cosa conta per il risparmio "
+    "(per esempio: la fattura descrive solo il lavoro principale; una parte delle prestazioni e' di consulenza e va tenuta separata). Non elencare "
+    "i codici ATECO da aggiungere (li indica gia' TaxScan nei passi da fare). Ogni osservazione e' una frase completa. "
     "Italiano semplice, dai del tu. Formato: "
     '{"principale":{"descrizione":"...","codice_ateco":"NN.NN.NN"},"sintesi":"2 frasi su cosa hai capito e dove si puo\' risparmiare",'
     '"micro":[{"nome":"...","descrizione":"...","collegamento":"...","fattura":"f0","categoria":"...","codice_ateco":"NN.NN.NN",'
@@ -522,7 +530,45 @@ _SYS_TASK = (
 
 
 def _pulisci(x, n=200) -> str:
-    return re.sub(r"\s+", " ", str(x or "")).strip()[:n]
+    t = re.sub(r"\s+", " ", str(x or "")).strip()
+    if len(t) <= n:
+        return t
+    # mai una parola a meta' («cons.», «delle En»): si taglia all'ultimo spazio e si mettono i puntini
+    t = t[:n - 1]
+    return (t[:t.rfind(" ")] if " " in t[n // 2:] else t).rstrip(" ,;:-—") + "…"
+
+
+_RE_SEGNAPOSTO = re.compile(r"\s*(?:\bdi\s+|\bdel\s+|\bper\s+)?[«\[]\s*cliente\s*[\]»]", re.I)
+
+
+def _senza_segnaposto(t: str) -> str:
+    """Toglie il «[cliente]» messo per privacy: nelle frasi per l'utente e nelle righe di fattura non deve comparire."""
+    t = re.sub(r"\s*[«\[]\s*cliente\s*[\]»]", "", str(t or ""))
+    return re.sub(r"\s{2,}", " ", t).strip()
+
+
+def _parole(t: str) -> set:
+    v = {"il", "lo", "la", "i", "gli", "le", "di", "del", "della", "dei", "delle", "e", "ed", "a", "al", "per", "in", "nel", "nella", "con", "un", "una", "da"}
+    v |= {"cliente", "clienti", "fare", "mandare", "gestire", "tutti", "tutte", "modo", "suoi", "loro", "conto", "sono", "che"}
+    # radice di 6 lettere: «sollecitare» e «solleciti», «digitale» e «digitalizzare» contano come la stessa parola
+    return {w[:6] for w in re.findall(r"[a-zà-ù]+", (t or "").lower()) if w not in v and len(w) > 2}
+
+
+def _simili(a: str, b: str) -> bool:
+    pa, pb = _parole(a), _parole(b)
+    if not pa or not pb:
+        return False
+    return len(pa & pb) / min(len(pa), len(pb)) >= 0.5
+
+
+def _senza_doppioni(lista: list, gia: list) -> list:
+    """Micro-attivita' che dicono la stessa cosa con altre parole: se ne tiene una sola (e nessuna gia' in elenco)."""
+    out = []
+    for x in lista:
+        if any(_simili(x["nome"], g) for g in gia if g) or any(_simili(x["nome"], y["nome"]) for y in out):
+            continue
+        out.append(x)
+    return out
 
 
 def _conta_ai(chiave: str):
@@ -625,8 +671,7 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                 blocchi.append("[f%d] Cliente: %s, %s%s. Importo: %s euro. Righe: %s. Attivita' capita: %s. Dettagli aggiunti dalla persona: %s" % (
                     k, _pulisci(cl.get("tipo"), 20) or "tipo non indicato", _pulisci(cl.get("paese"), 40) or "paese non indicato",
                     (", settore " + _pulisci(cl.get("settore"), 60)) if cl.get("settore") else "", fz.get("importo") or 0,
-                    righe or "(nessuna)", _pulisci(fz.get("attivita"), 90) or "(non chiara)", _pulisci(fz.get("dettagli"), 800) or "(nessuno)")
-                    + (". Anomalie gia' trovate: " + "; ".join(_pulisci(a, 220) for a in (fz.get("anomalie") or [])[:5] if _pulisci(a, 220)) if fz.get("anomalie") else ""))
+                    righe or "(nessuna)", _pulisci(fz.get("attivita"), 90) or "(non chiara)", _pulisci(fz.get("dettagli"), 800) or "(nessuno)"))
             if not blocchi:
                 return {"ok": False}
             u = "Codice ATECO attuale: %s (%s), coefficiente %s%%.\n\nFATTURE:\n%s" % (
@@ -636,9 +681,14 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                 u = ("CERTIFICATO DI PARTITA IVA: codice ATECO %s, apertura %s.\n" % (cert.get("ateco") or "non indicato", cert.get("apertura") or "non indicata")) + u
             if _pulisci(dati.get("testo"), 600):
                 u += "\n\nULTIMO MESSAGGIO DELLA PERSONA (risposta o richiesta): " + _pulisci(dati.get("testo"), 600)
+            if dati.get("gia_chiesto"):
+                u += "\nLa persona HA GIA' RISPOSTO alla tua domanda: non fare altre domande (domanda vuota)."
             esc_ = [_pulisci(x, 90) for x in (dati.get("escludi") or [])[:20] if _pulisci(x, 90)]
             if esc_:
                 u += "\nMicro-attivita' gia' proposte e scartate dalla persona (non riproporle, nemmeno riformulate): " + "; ".join(esc_)
+            gia_ = [_pulisci(x, 90) for x in (dati.get("gia") or [])[:20] if _pulisci(x, 90)]
+            if gia_:
+                u += "\nMicro-attivita' GIA' IN ELENCO (trovane solo di DIVERSE, nemmeno riformulate): " + "; ".join(gia_)
             r, usato = ai.genera_json_ottimizza(_SYS_OTTIMIZZA, u, 5000)
             r = r if isinstance(r, dict) else {}
             out = []
@@ -658,15 +708,18 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                             "categoria": _pulisci(a.get("categoria"), 80), "codice_ateco": cod, "coefficiente": co["coefficiente"],
                             "gruppo": co.get("gruppo", ""), "riga_fattura": _pulisci(a.get("riga_fattura"), 180),
                             "attenzione": _pulisci(a.get("attenzione"), 300), "dichiarata": bool(a.get("dichiarata"))})
+            out = _senza_doppioni(out, [_pulisci(x, 90) for x in (dati.get("gia") or [])[:20]])
+            for x in out:
+                x["riga_fattura"] = _senza_segnaposto(x["riga_fattura"])
             p2 = r.get("principale") if isinstance(r.get("principale"), dict) else {}
             c2 = _codice(p2.get("codice_ateco"))
             co2 = calcoli.coefficiente_da_ateco(c2) if c2 else {"errore": 1}
             dom = r.get("domanda") if isinstance(r.get("domanda"), dict) else {}
             return {"ok": bool(out) or bool(_pulisci(dom.get("testo"), 300)), "modello": usato, "coef_principale": cp,
-                    "principale": {"descrizione": _pulisci(p2.get("descrizione"), 120), "codice_ateco": c2 if not co2.get("errore") else "",
+                    "principale": {"descrizione": _pulisci(p2.get("descrizione"), 160), "codice_ateco": c2 if not co2.get("errore") else "",
                                    "coefficiente": None if co2.get("errore") else co2["coefficiente"]},
                     "sintesi": _pulisci(r.get("sintesi"), 400), "micro": [x for x in out if x["nome"]],
-                    "osservazioni": [_pulisci(o, 260) for o in (r.get("osservazioni") or [])[:4] if _pulisci(o, 260)],
+                    "osservazioni": [_senza_segnaposto(_pulisci(o, 400)) for o in (r.get("osservazioni") or [])[:2] if _pulisci(o, 400)],
                     "domanda": {"testo": _pulisci(dom.get("testo"), 300),
                                 "opzioni": [_pulisci(o, 80) for o in (dom.get("opzioni") or [])[:4] if _pulisci(o, 80)]}}
         if task == "contratto":
@@ -904,9 +957,25 @@ def _coerenza(x: dict, cert: dict) -> list:
     paese = str((x.get("cliente") or {}).get("paese") or "")
     if paese and not re.match(r"ital", paese, re.I) and "N2.2" in (ct.get("natura") or []) and (x.get("cliente") or {}).get("tipo") in ("azienda", "professionista", ""):
         out.append({"tipo": "natura_iva", "gravita": "bassa", "testo": "Per un servizio a un'azienda estera di solito si indica la natura N2.1 (art. 7-ter), non N2.2: fallo verificare."})
+    if len(x.get("righe") or []) == 1 and not any(a["tipo"] == "generica" for a in out):
+        out.append({"tipo": "una_riga", "gravita": "info",
+                    "testo": "Tutto il lavoro è su una riga sola: nell'Analisi controllo se una parte rientra in categorie con un coefficiente più basso, da fatturare a parte."})
+    cl = x.get("cliente") or {}
+    ue = paese.strip().lower() in _PAESI_UE
+    if ue and cl.get("tipo") in ("azienda", "professionista", "ente pubblico") and ct and not ct.get("inversione_contabile"):
+        out.append({"tipo": "inversione", "gravita": "media",
+                    "testo": "Il cliente è un'azienda di un altro Paese dell'Unione europea: in fattura va scritto «inversione contabile» "
+                             "(art. 21, comma 6-bis, DPR 633/72). Controlla anche che la sua partita IVA sia attiva nel VIES e che tu sia iscritto al VIES."})
     if ct and ct.get("dicitura_forfettario") is False and (pv or cf):
-        out.append({"tipo": "dicitura", "gravita": "bassa", "testo": "Non trovo la dicitura del regime forfettario (Legge 190/2014): se sei forfettario, di solito va indicata."})
+        out.append({"tipo": "dicitura", "gravita": "bassa",
+                    "testo": "Manca la dicitura del regime forfettario, per esempio «Operazione effettuata ai sensi dell'art. 1, commi 54-89, Legge 190/2014»: "
+                             "spiega al cliente perché non c'è IVA né ritenuta."})
     return out
+
+
+_PAESI_UE = {"austria", "belgio", "bulgaria", "cipro", "croazia", "danimarca", "estonia", "finlandia", "francia", "germania", "grecia", "irlanda",
+             "lettonia", "lituania", "lussemburgo", "malta", "paesi bassi", "olanda", "polonia", "portogallo", "repubblica ceca", "cechia",
+             "romania", "slovacchia", "slovenia", "spagna", "svezia", "ungheria"}
 
 
 def fatture_lettura(c: str, files, prof=None) -> dict:
@@ -945,9 +1014,13 @@ def fatture_lettura(c: str, files, prof=None) -> dict:
         return {"ok": False, "errore": "Non sono riuscito a leggere le fatture. Riprova o scrivi cosa fai."}
     out = []
     for v in per:
-        out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"],
+        cl = dict(v.get("cliente") or {})
+        cl_nome = cl.pop("nome", "")   # ragione sociale: solo da mostrare a schermo, mai salvata ne' data all'IA
+        for r in v["righe"]:
+            r["testo"] = _senza_segnaposto(r.get("testo"))
+        out.append({"idx": v["idx"], "nome": v["nome"], "ok": v["ok"], "motivo_non_letta": v["motivo"], "cliente_nome": cl_nome,
                     "righe": v["righe"], "importo": round(sum(r["importo"] for r in v["righe"]), 2),
-                    "emittente": v.get("emittente") or {}, "cliente": v.get("cliente") or {}, "controlli": v.get("controlli") or {}, "non_fattura": bool(v.get("non_fattura")),
+                    "emittente": v.get("emittente") or {}, "cliente": cl, "controlli": v.get("controlli") or {}, "non_fattura": bool(v.get("non_fattura")),
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:
@@ -986,7 +1059,8 @@ def fatture_lettura(c: str, files, prof=None) -> dict:
     for x in out:
         x["anomalie"] = _coerenza(x, cert) if x.get("ok") else []
         ct = x.pop("controlli", {}) or {}
-        x["controlli"] = {"data": ct.get("data", ""), "natura": ct.get("natura", []), "dicitura_forfettario": ct.get("dicitura_forfettario")}
+        x["controlli"] = {"data": ct.get("data", ""), "numero": ct.get("numero", ""), "natura": ct.get("natura", []),
+                          "dicitura_forfettario": ct.get("dicitura_forfettario"), "inversione_contabile": ct.get("inversione_contabile")}
     return {"ok": True, "fatture": out, "certificato": bool(cert.get("piva") or cert.get("cf"))}
 
 
