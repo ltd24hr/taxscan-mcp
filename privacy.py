@@ -104,8 +104,11 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <h2>Il tuo profilo attività</h2>
 <p>Per non farti ripetere le stesse cose, ricordiamo cosa fai davvero. Nel tuo profilo conserviamo: la <b>descrizione e l'importo delle righe</b> delle fatture che hai caricato, l'attività che ne ricaviamo, le risposte che ci dai quando non capiamo una fattura, i <b>dettagli facoltativi</b> che scrivi sul lavoro svolto per ogni cliente, del cliente solo <b>tipo, paese e settore</b> (mai nome o partita IVA), le <b>micro-attività</b> proposte e quelle che scegli, i <b>compiti della sezione «Da fare»</b> (con quelli che hai già spuntato), il tuo nome e cognome se li ricaviamo dall'intestazione delle fatture (solo se me lo confermi) e, per ogni dato, da dove arriva (letto dalla fattura, detto da te, da confermare). <b>Non conserviamo i file, né i nomi e i dati dei tuoi clienti.</b> Puoi correggere il profilo quando vuoi dalla sezione «Profilo» e cancellarlo con il pulsante "Cancella i miei dati". Se in una descrizione c'è il nome di un cliente, quel nome resterebbe nel testo salvato: per questo ti consigliamo descrizioni che indichino il servizio e non la persona.</p>
 
-<h2>Report con la metodologia (facoltativo)</h2>
-<p>Dopo il calcolo del risparmio puoi scaricare un report in PDF con le stime e il metodo usato. Per farlo ti chiediamo l'email: la salviamo come le altre email del servizio (vedi sopra). Il PDF viene preparato al momento con le cifre che hai già visto e <b>non lo conserviamo</b>.</p>
+<h2>Report di risparmio fiscale</h2>
+<p>Dopo il calcolo del risparmio nella sezione Ottimizzazione fiscale ti chiediamo l'email per inviarti il report dettagliato in PDF e mostrarti la dashboard completa. L'email la salviamo come le altre email del servizio (vedi sopra) e la usiamo per inviarti il report e gli avvisi sulla tua partita IVA. Il PDF viene preparato al momento con le cifre che hai già visto, ti viene inviato come allegato tramite il nostro fornitore di email (Resend) e <b>non lo conserviamo</b>.</p>
+
+<h2>Controllo del contratto (facoltativo)</h2>
+<p>Nella sezione «Da fare» puoi caricare il PDF o incollare il testo del contratto con un tuo cliente, per sapere quali prestazioni mancano. Il testo viene letto solo per questa analisi, inviato al fornitore di intelligenza artificiale (tramite OpenRouter, modello Claude di Anthropic) e <b>non viene conservato</b> da noi. Un contratto contiene dati del tuo cliente: se preferisci, oscura nomi e indirizzi prima di caricarlo.</p>
 
 <h2>Con chi condividiamo i dati</h2>
 <p>Solo con i fornitori tecnici che ci servono per far funzionare il servizio, nominati responsabili del trattamento:</p>

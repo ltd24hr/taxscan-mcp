@@ -284,3 +284,182 @@ def genera(d: dict) -> bytes:
     ]:
         p.par("• " + t, 10, False, dopo=5, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)
     return p.bytes()
+
+
+# ================= v2: report dettagliato dell'Ottimizzazione fiscale (fattura divisa) e modello di fattura =================
+NAVY = (0.07, 0.14, 0.32)
+CHIARO = (0.93, 0.95, 0.99)
+VERDE_CH = (0.90, 0.97, 0.93)
+ARANCIO = (0.85, 0.48, 0.17)
+
+
+def _logo(p, x, y, size=22, sfondo_scuro=False):
+    """Logo TaxScan disegnato come testo: «Tax» scuro (o bianco) e «Scan» blu."""
+    p.testo(x, y, "Tax", size, True, (1, 1, 1) if sfondo_scuro else NAVY)
+    p.testo(x + _lar("Tax", size, True), y, "Scan", size, True, (0.62, 0.7, 1) if sfondo_scuro else BLU)
+
+
+def _intestazione(p, titolo, sotto):
+    p.rett(0, PAGE_H - 132, PAGE_W, 132, NAVY)
+    p.rett(0, PAGE_H - 136, PAGE_W, 4, BLU)
+    _logo(p, MARG, PAGE_H - 50, 22, True)
+    p.testo(MARG, PAGE_H - 66, "Il primo agente IA specializzato nel risparmio fiscale", 8, False, (0.75, 0.8, 0.95))
+    p.testo(MARG, PAGE_H - 98, titolo, 21, True, (1, 1, 1))
+    p.testo(MARG, PAGE_H - 117, sotto, 9.5, False, (0.8, 0.85, 1))
+    p.y = PAGE_H - 156
+
+
+def _barre(p, voci, col_a=GRIGIO, col_b=VERDE):
+    """voci: [(etichetta, oggi, dopo)] -> barre orizzontali affiancate, scala comune."""
+    mx = max([max(abs(_n(a)), abs(_n(b))) for _, a, b in voci] + [1])
+    w = PAGE_W - 2 * MARG - 170
+    for et, a, b in voci:
+        p.serve(40)
+        p.testo(MARG, p.y - 11, et, 9, True, SCURO)
+        for i, (v, c, lab) in enumerate(((a, col_a, "Oggi"), (b, col_b, "Dopo"))):
+            yy = p.y - 24 - i * 12
+            p.testo(MARG, yy + 1, lab, 7.5, False, GRIGIO)
+            p.rett(MARG + 34, yy, max(2, w * abs(_n(v)) / mx), 8, c)
+            p.testo(MARG + 40 + w * abs(_n(v)) / mx, yy + 1, _eur(v), 8, True, SCURO)
+        p.y -= 50
+
+
+def genera_v2(d: dict) -> bytes:
+    p = _Pdf()
+    _intestazione(p, "Report di risparmio fiscale", "Preparato per %s · %s" % (_t(d.get("nome"), 60) or "te", datetime.date.today().strftime("%d/%m/%Y")))
+    ris = _n(d.get("risparmio"))
+    oggi, dopo = d.get("oggi") or {}, d.get("dopo") or {}
+    cp, cd = _n(d.get("coef_prima")), _n(d.get("coef_dopo"))
+    p.titolo("In sintesi")
+    p.kpi([("Risparmio annuo", _eur(ris), "tasse e contributi in meno"), ("Ogni mese", _eur(ris / 12), "in più nel tuo netto"),
+           ("Coefficiente medio", _pc(cd), "invece del %s" % _pc(cp))])
+    p.par("Abbiamo analizzato %s e individuato %d micro-attività che svolgi (o puoi svolgere) insieme al tuo lavoro principale e che, per il fisco, "
+          "rientrano in categorie con un coefficiente di redditività più basso. Dividendo la fattura in righe separate, ognuna con il suo importo e il suo "
+          "coefficiente, il reddito su cui paghi scende da %s a %s. Su incassi annui di %s il risparmio stimato è di circa %s l'anno. È una stima, non una promessa di risultato." % (
+              "la tua fattura" if len(d.get("fatture") or []) == 1 else "le tue fatture", len(d.get("micro") or []),
+              _eur(oggi.get("red")), _eur(dopo.get("red")), _eur(d.get("incassi")), _eur(ris)))
+    _barre(p, [("Reddito su cui paghi", oggi.get("red"), dopo.get("red")), ("Totale tasse e contributi", oggi.get("tot"), dopo.get("tot"))])
+
+    p.titolo("I dati di partenza")
+    pr = d.get("principale") or {}
+    p.tabella([("Dato", 3, "l"), ("Valore", 4, "l")], [
+        ["Attività principale", _t(pr.get("nome"), 90) or "—"],
+        ["Codice ATECO attuale", _t(pr.get("cod"), 12) or "—"],
+        ["Coefficiente di redditività attuale", _pc(pr.get("coef"))],
+        ["Incassi annui considerati", _eur(d.get("incassi"))],
+        ["Aliquota dell'imposta sostitutiva", _pc(d.get("aliquota"))],
+        ["Contributi previdenziali (quota sul reddito)", _pc(d.get("contributi"))]])
+
+    for k, f in enumerate(d.get("fatture") or [], 1):
+        p.titolo("La prestazione analizzata" + (" (fattura %d)" % k if len(d.get("fatture") or []) > 1 else ""))
+        cl = _t(f.get("cliente"), 120)
+        p.par("Cliente: %s. Importo della fattura: %s." % (cl or "non indicato", _eur(f.get("importo"))), 10, False, dopo=4)
+        p.tabella([("Righe della fattura originale", 6, "l"), ("Importo", 1.6, "r")],
+                  [[_t(r.get("testo"), 160), _eur(r.get("importo"))] for r in (f.get("righe_orig") or [])[:12]] or [["—", ""]])
+        if _t(f.get("dettagli"), 10):
+            p.par("Cosa ci hai raccontato del lavoro svolto: «%s»" % _t(f.get("dettagli"), 700), 9.5, False, GRIGIO, dopo=6)
+
+    p.titolo("Le micro-attività individuate")
+    p.par("Per ognuna: perché è collegata al tuo lavoro, in quale categoria la mette il fisco, quanto pesa nella fattura e quanto contribuisce al risparmio.", 9.5, False, GRIGIO, dopo=6)
+    for i, m in enumerate(d.get("micro") or [], 1):
+        p.serve(110)
+        p.y -= 4
+        p.rett(MARG, p.y - 22, PAGE_W - 2 * MARG, 22, CHIARO)
+        p.testo(MARG + 8, p.y - 15, "%d. %s" % (i, _t(m.get("nome"), 90)), 10.5, True, SCURO)
+        p.y -= 28
+        x8, w8 = MARG + 8, PAGE_W - 2 * MARG - 8
+        if m.get("descrizione"):
+            p.par(_t(m.get("descrizione"), 300), 9.5, False, SCURO, dopo=2, x=x8, w=w8)
+        if m.get("collegamento"):
+            p.par("Perché c'entra: " + _t(m.get("collegamento"), 300), 9.5, False, GRIGIO, dopo=2, x=x8, w=w8)
+        p.par("Categoria: %s · codice ATECO %s · coefficiente %s (invece del %s)." % (_t(m.get("categoria"), 80) or "—", _t(m.get("cod"), 12), _pc(m.get("coef")), _pc(cp)),
+              9.5, False, SCURO, dopo=2, x=x8, w=w8)
+        p.par("Peso nella fattura: %s · quota degli incassi: %s (circa %s l'anno) · contributo al risparmio: circa %s l'anno." % (
+            _t(m.get("peso"), 20), "%.0f%%" % (_n(m.get("quota")) * 100), _eur(m.get("ricavi_anno")), _eur(m.get("risparmio_attr"))), 9.5, True, VERDE, dopo=2, x=x8, w=w8)
+        if m.get("riga"):
+            p.par("Come scriverla in fattura: «%s»" % _t(m.get("riga"), 180), 9.5, False, SCURO, dopo=2, x=x8, w=w8)
+        if m.get("attenzione"):
+            p.par("Attenzione: " + _t(m.get("attenzione"), 300), 9.5, False, ARANCIO, dopo=2, x=x8, w=w8)
+        p.y -= 6
+
+    for k, f in enumerate(d.get("fatture") or [], 1):
+        p.titolo("Come rifare la fattura" + (" %d" % k if len(d.get("fatture") or []) > 1 else ""))
+        p.par("Stesso totale per il cliente: cambia solo il modo in cui le prestazioni sono descritte e divise. Ogni riga ha il suo importo; "
+              "i codici ATECO non vanno scritti in fattura, servono a te per calcolare il reddito di ciascuna attività.", 9.5, False, GRIGIO, dopo=6)
+        p.tabella([("Riga della nuova fattura", 5.2, "l"), ("Attività (codice)", 2.2, "l"), ("Coeff.", 1, "r"), ("Importo", 1.6, "r")],
+                  [[_t(r.get("testo"), 160), _t(r.get("cod"), 12), _pc(r.get("coef")), _eur(r.get("importo"))] for r in (f.get("righe_nuove") or [])[:14]] +
+                  [["Totale", "", "", _eur(f.get("importo"))]])
+
+    p.titolo("Il calcolo, passo per passo")
+    fat = _n(d.get("contributi")) + (1 - _n(d.get("contributi"))) * _n(d.get("aliquota"))
+    for t, x in [
+        ("1. Oggi.", "Tutti gli incassi (%s) usano il coefficiente del %s: reddito = %s." % (_eur(d.get("incassi")), _pc(cp), _eur(oggi.get("red")))),
+        ("2. Con la fattura divisa.", "Ogni parte di incasso usa il coefficiente della sua attività. Le quote sono quelle della fattura divisa, applicate agli incassi "
+         "dell'anno: coefficiente medio %s, reddito = %s." % (_pc(cd), _eur(dopo.get("red")))),
+        ("3. Contributi e imposta.", "Contributi stimati al %s del reddito; imposta sostitutiva al %s sul reddito al netto dei contributi. Ogni euro di reddito in meno "
+         "fa risparmiare circa %s centesimi tra tasse e contributi." % (_pc(d.get("contributi")), _pc(d.get("aliquota")), "%.0f" % (fat * 100))),
+        ("4. Il risparmio.", "Totale oggi %s, totale con la fattura divisa %s: differenza circa %s l'anno." % (_eur(oggi.get("tot")), _eur(dopo.get("tot")), _eur(ris)))]:
+        p.serve(36)
+        p.par(t, 10, True, dopo=1)
+        p.par(x, 9.5, False, dopo=6, x=MARG + 8, w=PAGE_W - 2 * MARG - 8)
+    L = lambda a, k: [a, _eur(oggi.get(k)), _eur(dopo.get(k)), _eur(_n(dopo.get(k)) - _n(oggi.get(k)))]
+    p.tabella([("Voce", 4, "l"), ("Oggi", 2.2, "r"), ("Con la fattura divisa", 2.8, "r"), ("Differenza", 2.2, "r")],
+              [L("Reddito su cui paghi", "red"), L("Imposta sostitutiva", "imp"), L("Contributi", "con"), L("Totale tasse e contributi", "tot")])
+
+    tk = d.get("task") or []
+    if tk:
+        p.titolo("Come ottenere il risparmio, in ordine di priorità")
+        for i, t in enumerate(tk, 1):
+            p.serve(44)
+            p.par("%d. %s" % (i, _t(t.get("titolo"), 120)), 10, True, dopo=1)
+            if t.get("perche"):
+                p.par(_t(t.get("perche"), 300), 9.5, False, GRIGIO, dopo=1, x=MARG + 8, w=PAGE_W - 2 * MARG - 8)
+            if t.get("come"):
+                p.par("Come: " + _t(t.get("come"), 400), 9.5, False, GRIGIO, dopo=6, x=MARG + 8, w=PAGE_W - 2 * MARG - 8)
+        p.par("Trovi tutti i compiti nella sezione «Da fare» di TaxScan, con il pulsante Inizia per farti guidare.", 9.5, False, BLU, dopo=4)
+
+    p.titolo("Limiti e avvertenze")
+    for t in [
+        "Le cifre sono stime basate sulla fattura analizzata, su quello che ci hai indicato e su regole di calcolo semplificate. Non sono una promessa di risultato.",
+        "Il risparmio esiste solo se le micro-attività sono svolte davvero, descritte con precisione in fattura su righe separate e se il relativo codice ATECO è attivo sulla tua partita IVA.",
+        "Commercio e intermediazione possono richiedere Camera di Commercio e INPS Commercianti, con contributi minimi fissi non inclusi in questo calcolo. Casse professionali e Ordini hanno regole proprie.",
+        "TaxScan prepara e spiega: puoi gestire tutto in autonomia, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare i numeri a un commercialista. Il controllo è facoltativo.",
+    ]:
+        p.par("• " + t, 9.5, False, dopo=4, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)
+    return p.bytes()
+
+
+def genera_fattura(d: dict) -> bytes:
+    """Modello di fattura con le righe separate (template da copiare nel proprio programma di fatturazione)."""
+    p = _Pdf()
+    p.rett(0, PAGE_H - 8, PAGE_W, 8, BLU)
+    _logo(p, MARG, PAGE_H - 44, 14)
+    p.testo(MARG, PAGE_H - 58, "Modello di fattura con le prestazioni separate", 8.5, False, GRIGIO)
+    p.testo(PAGE_W - MARG - _lar("FATTURA N. [numero]", 18, True), PAGE_H - 50, "FATTURA N. [numero]", 18, True, SCURO)
+    p.testo(PAGE_W - MARG - _lar("Data: [gg/mm/aaaa]", 9), PAGE_H - 66, "Data: [gg/mm/aaaa]", 9, False, GRIGIO)
+    y0 = PAGE_H - 100
+    for i, (tit, righe) in enumerate((("Da", ["[Il tuo nome e cognome]", "[Indirizzo]", "P.IVA [la tua partita IVA]", "C.F. [il tuo codice fiscale]"]),
+                                      ("A", ["[Ragione sociale del cliente]", "[Indirizzo, paese]", "P.IVA / VAT [del cliente]", "[PEC o codice destinatario, se italiano]"]))):
+        x = MARG + i * ((PAGE_W - 2 * MARG) / 2 + 10)
+        p.rett(x, y0 - 78, (PAGE_W - 2 * MARG) / 2 - 10, 78, CHIARO)
+        p.testo(x + 10, y0 - 16, tit.upper(), 8, True, GRIGIO)
+        for k, r in enumerate(righe):
+            p.testo(x + 10, y0 - 32 - k * 13, r, 9.5, k == 0, SCURO)
+    p.y = y0 - 96
+    righe = [[_t(r.get("testo"), 160), "1", _eur(r.get("importo")), _eur(r.get("importo"))] for r in (d.get("righe") or [])[:14]]
+    p.tabella([("Descrizione della prestazione", 6, "l"), ("Q.tà", 0.8, "r"), ("Prezzo", 1.6, "r"), ("Importo", 1.6, "r")], righe or [["[descrizione]", "1", "", ""]])
+    tot = sum(_n(r.get("importo")) for r in (d.get("righe") or []))
+    p.serve(30)
+    p.rett(PAGE_W - MARG - 200, p.y - 24, 200, 24, CHIARO)
+    p.testo(PAGE_W - MARG - 190, p.y - 16, "Totale documento", 10, True, SCURO)
+    p.testo(PAGE_W - MARG - 10 - _lar(_eur(tot), 11, True), p.y - 16, _eur(tot), 11, True, SCURO)
+    p.y -= 40
+    p.par("Diciture da riportare (regime forfettario):", 9.5, True, dopo=2)
+    for t in ["Operazione effettuata ai sensi dell'art. 1, commi da 54 a 89, della Legge n. 190/2014 (regime forfettario): non soggetta a IVA né a ritenuta d'acconto.",
+              "Imposta di bollo da 2,00 € assolta sull'originale, se l'importo supera 77,47 €.",
+              "Cliente estero: usa la natura dell'operazione e la dicitura che il tuo programma di fatturazione propone per le prestazioni verso l'estero (per esempio N2.1, art. 7-ter DPR 633/72)."]:
+        p.par("• " + t, 9, False, GRIGIO, dopo=3, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)
+    p.y -= 6
+    p.par("Come usarlo: copia le righe nel tuo programma di fatturazione, una riga per ogni prestazione, con il suo importo. Scrivi in ogni riga cosa hai fatto davvero. "
+          "I codici ATECO non vanno in fattura: tieni a parte, per ogni attività, il totale incassato.", 9, False, BLU, dopo=4)
+    return p.bytes()

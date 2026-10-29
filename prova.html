@@ -364,6 +364,57 @@ html.ottv #gview{padding-left:0!important}
 @media (max-width:1050px){.ogrid{grid-template-columns:1fr}.oag{position:relative;top:auto;height:auto;min-height:0;order:-1}.oagl{max-height:260px;min-height:120px}.oagm{display:none}}
 @media (prefers-reduced-motion:reduce){.oagd.on,.oas.run i{animation:none}}
 html.ottv .oshell{margin-left:0!important}
+
+/* v62: icone nel menu */
+nav button .nvi{display:inline-block;vertical-align:-4px;margin-right:7px;opacity:.85;flex:none}
+nav button[aria-current] .nvi{opacity:1}
+@media (max-width:1200px) and (min-width:901px){nav button .nvi{margin-right:5px;width:17px;height:17px}}
+
+/* v62: dashboard del risparmio, oscurata finché non si lascia l'email */
+.o3dash{transition:filter .4s}
+.o3dash.lock{filter:blur(7px) saturate(.7);pointer-events:none;user-select:none;max-height:1100px;overflow:hidden}
+.o3kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}.o3kpi .kbox{margin:0}
+.o3row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.o3row .kbox{margin:0}
+.o3stack{display:flex;height:22px;border-radius:8px;overflow:hidden;margin:10px 0 12px;background:#eef1f8}.o3stack span{display:block;height:100%}
+.o3leg{list-style:none;margin:0;padding:0;display:grid;gap:6px}.o3leg li{display:grid;grid-template-columns:12px 1fr auto auto;gap:8px;align-items:center;font-size:14px}
+.o3leg i{width:12px;height:12px;border-radius:3px}.o3leg b{font-variant-numeric:tabular-nums}.o3leg small{color:var(--mute,#5b6475);font-size:12px}
+.odb{margin:10px 0 14px}.odbl{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.odbr{display:grid;grid-template-columns:40px 1fr 90px;gap:8px;align-items:center;margin:4px 0}.odbr i{font-style:normal;font-size:12px;color:var(--mute,#5b6475)}
+.odbt{height:12px;background:#eef1f8;border-radius:6px;overflow:hidden}.odbt b{display:block;height:100%;background:#8a94ad;border-radius:6px}.odbr.ok .odbt b{background:#0f8f6a}
+.odbr em{font-style:normal;font-weight:700;font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.o3act{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;border-left:4px solid #4355cc}.o3act .onav{margin:0}
+.o3td{border-left:4px solid #0f8f6a}
+.o3ov{position:fixed;left:0;right:0;bottom:0;top:var(--navh,64px);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(238,241,248,.35)}
+.o3mod{width:min(480px,100%);background:var(--surface,#fff);border-radius:18px;box-shadow:0 24px 60px -20px rgba(18,36,82,.45);padding:26px 24px 20px;text-align:center}
+.o3ico{width:54px;height:54px;border-radius:50%;background:#e8ebfa;color:#4355cc;display:grid;place-items:center;margin:0 auto 10px}
+.o3mod h3{margin:0 0 8px;font-size:21px}.o3mod p{margin:0 0 14px;line-height:1.5}
+.o3mf{display:flex;gap:8px;flex-wrap:wrap}.o3mf input{flex:1 1 200px;min-width:0;font:inherit;font-size:16px;padding:11px 13px;border:1px solid var(--line,#c9d1e6);border-radius:12px}
+.o3priv{font-size:12px;color:var(--mute,#5b6475);margin:10px 0 0!important}
+html.ottv .o3ov ~ *{pointer-events:none}
+@media (max-width:760px){.o3kpi{grid-template-columns:1fr 1fr}.o3row{grid-template-columns:1fr}}
+
+/* v62: Da fare a riquadri */
+.tdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:12px 0}
+.tdt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;padding:14px 14px 12px;border:1px solid var(--line,#d6dbe8);border-radius:16px;background:var(--surface,#fff);cursor:pointer;text-align:left;font:inherit;color:inherit;box-shadow:0 6px 18px -14px rgba(18,36,82,.4);transition:transform .15s,box-shadow .15s}
+.tdt:hover{transform:translateY(-2px);box-shadow:0 12px 24px -14px rgba(18,36,82,.45)}.tdt:focus-visible{outline:3px solid #4355cc;outline-offset:2px}
+.tdt b{font-size:15px;line-height:1.35}.tdt.ok{opacity:.6}.tdt.ok b{text-decoration:line-through}.tdt.run{border-color:#d97a2b}
+.tdn2{position:absolute;top:10px;right:12px;font-size:12px;font-weight:700;color:var(--mute,#5b6475)}
+.tdic{width:36px;height:36px;border-radius:10px;background:#e8ebfa;color:#4355cc;display:grid;place-items:center}.tdic.big{width:46px;height:46px;flex:none}
+.tds{margin-top:auto;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef1f8;color:var(--mute,#5b6475)}.tds.ok{background:#e3f6ec;color:#0f8f6a}.tds.run{background:#fdf0e3;color:#b0611d}
+.tdov{position:fixed;inset:0;z-index:5000;background:rgba(18,28,58,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto}
+.tdbox{position:relative;width:min(560px,100%);background:var(--surface,#fff);border-radius:18px;padding:24px 22px 20px;box-shadow:0 30px 70px -25px rgba(0,0,0,.5)}.tdbox.wide{width:min(820px,100%)}
+.tdbox h3{margin:0 0 8px;font-size:21px;padding-right:30px}.tdbox p{line-height:1.55}
+.tdx2{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:0;background:#eef1f8;cursor:pointer;font-size:15px}
+.tdhd{display:flex;gap:12px;align-items:center;margin-bottom:6px}.tdhd h3{margin:0 0 4px}
+.tdsteps{margin:12px 0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
+.tdsteps li{counter-increment:s;position:relative;padding:2px 0 0 40px;display:flex;flex-direction:column;gap:2px;line-height:1.5}
+.tdsteps li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:#4355cc;color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+.tdsteps li span{color:var(--mute,#5b6475);font-size:14.5px}
+.tdtabs{display:flex;gap:8px;margin-bottom:10px}.tdtabs .och[aria-pressed=true]{background:#4355cc;color:#fff;border-color:#4355cc}
+#tdc_t,#tdmsg{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;padding:10px 12px;border:1px solid var(--line,#d6dbe8);border-radius:10px;resize:vertical}
+.tdcl{margin:10px 0;padding:10px 12px;background:#f6f8fd;border-radius:10px}.tdcl pre{white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:6px 0}
+.tdend{margin-top:16px;border-top:1px solid var(--line,#e3e7f0);padding-top:14px}
+.ospin.sm{display:inline-block;width:14px;height:14px;border-width:2px;vertical-align:-2px;margin:0 6px 0 0}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -802,8 +853,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 <div class="wrap">
   <header id="hdr"><div class="brand"><div class="logo">Tax<span>Scan</span></div><p class="sxtag"><b>Il primo agente IA specializzato nel risparmio fiscale</b></p></div>
   <nav aria-label="Sezioni">
-    <button aria-current="page">Panoramica</button><button>Scadenze</button>
-    <button>Ottimizzazione fiscale</button><button>Bandi e agevolazioni</button><button>Profilo</button><button id="navtd">Da fare <span class="tdn" id="tdn" hidden></span></button>
+    <button aria-current="page"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Panoramica</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Scadenze</button>
+    <button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Ottimizzazione fiscale</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>Bandi e agevolazioni</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profilo</button><button id="navtd"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/></svg>Da fare <span class="tdn" id="tdn" hidden></span></button>
   </nav></header>
   <h1 id="nome">TaxScan</h1>
   <div class="nota" id="nota" role="status"></div>
@@ -961,7 +1012,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 61</div>
+<div class="ver">Prototipo versione 62</div>
 </div>
 
 <script>
@@ -1696,7 +1747,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.ts=new Date().toISOString();OT.sin=oSin();d.sin=OT.sin;d.done1=!!OT.done[1];
     d.inv=OT.inv.map(function(v){return {nome:v.nome,ok:v.ok,usa:v.usa!==false,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',chiesto:!!v.risp,importo:v.importo||0,fonte:v.fonte||(v.capito?'fattura':'da chiedere'),
       cliente:v.cliente||{},det:String(v.det||'').slice(0,800),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}});
-    d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30),peso:OT.peso,risparmio:OT.ris||0};PRO=d;
+    d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30),peso:OT.peso,risparmio:OT.ris||0,sbloccato:!!OT.sbloccato,mailInv:!!OT.mailInv};PRO=d;
     try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:d})}).catch(function(){})}catch(e){}}
   function oLoad(){var id=oPid();if(!id){OTLOADED=true;oRender();return}
     fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'get'})}).then(function(r){return r.json()}).then(function(j){
@@ -1709,7 +1760,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       PRO=d;if(OT.inv.length){oRender();return}
       if(d.cod&&d.cod.cod){OTMAIN={nome:d.cod.nome,cod:d.cod.cod}}
       OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:v.ok!==false,righe:v.righe||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',usa:v.usa!==false,cliente:v.cliente||{},det:v.det||'',fonte:v.fonte||'',dalOnb:!d.ott}});
-      var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.peso=o.peso||{};OT.ris=o.risparmio||0;OT.sin=oSin();
+      var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.peso=o.peso||{};OT.ris=o.risparmio||0;OT.sbloccato=!!o.sbloccato;OT.mailInv=!!o.mailInv;OT.sin=oSin();
       OT.open=OT.done[2]?3:OT.done[1]?2:1;oRender();if(!$('gview').hidden)oParla()}).catch(function(){OTLOADED=true;oRender()})}
   // ---- impalcatura: due schede in alto, il contenuto sotto
   function oRender(){var op=$('opane');if(!op)return;oStato();
@@ -1851,27 +1902,74 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     sp.forEach(function(x){x.rows.forEach(function(r){q[r.m.id]=(q[r.m.id]||0)+r.eur/T})});
     oScelte().forEach(function(m){var s=q[m.id]||0;qm+=s;mix+=s*m.coefficiente});mix+=(1-qm)*cp;
     var oggi=ccalc(CINC*cp),dopo=ccalc(CINC*mix);return {sp:sp,cp:cp,mix:mix,q:q,qm:qm,oggi:oggi,dopo:dopo,diff:oggi.tot-dopo.tot}}
-  function oP3(b){var sc=oScelte();if(!sc.length){b.innerHTML='<div class="kbox"><b>Non hai scelto micro-attività.</b><p class="onote">Torna al passo 2 e spunta quelle che fai.</p></div>';return}
-    var R=oCalc3(),d=Math.round(R.diff),h='';
-    h+='<div class="kbox"><div class="lbl">Quanto pesa ogni micro-attività nella fattura</div><p class="onote">Non servono cifre precise: scegli a occhio quanto del lavoro pagato è andato in ognuna. Il resto resta al lavoro principale.</p>'+
+  // ---- passo 3: dashboard del risparmio. Resta oscurata finché non si lascia l'email: il report PDF dettagliato arriva via email e si scarica
+  var OCOLS=['#4355cc','#0f8f6a','#efac35','#d03b3b','#7a4fd0','#2f9bb8','#a35f2c'];
+  function oFat(){return CCON+(1-CCON)*CALIQ}
+  function oP3(b){var sc=oScelte();if(!sc.length){b.innerHTML='<div class="kbox"><b>Non hai scelto micro-attività.</b><p class="onote">Torna all\'Analisi e conferma quelle che svolgi.</p></div>';return}
+    var R=oCalc3(),d=Math.round(R.diff),lock=!OT.sbloccato,h='',fat=oFat();
+    var bar=function(lab,a,c){var mx=Math.max(a,c,1);return '<div class="odb"><span class="odbl">'+lab+'</span><div class="odbr"><i>Oggi</i><span class="odbt"><b style="width:'+(a/mx*100)+'%"></b></span><em>'+eur(a)+'</em></div><div class="odbr ok"><i>Dopo</i><span class="odbt"><b style="width:'+(c/mx*100)+'%"></b></span><em>'+eur(c)+'</em></div></div>'};
+    h+='<div class="o3dash'+(lock?' lock':'')+'" id="o3dash"'+(lock?' aria-hidden="true"':'')+'>';
+    h+='<div class="o3kpi"><div class="kbox"><div class="lbl">Risparmio annuo</div><div class="kbig ok">'+eur(Math.max(0,d))+'</div><div class="sub">tasse e contributi in meno</div></div><div class="kbox"><div class="lbl">Ogni mese</div><div class="kbig ok">'+eur(Math.max(0,d)/12)+'</div><div class="sub">in più nel tuo netto</div></div><div class="kbox"><div class="lbl">In 5 anni</div><div class="kbig ok">'+eur(Math.max(0,d)*5)+'</div><div class="sub">a parità di incassi</div></div><div class="kbox"><div class="lbl">Coefficiente medio</div><div class="kbig">'+pc(R.mix)+'</div><div class="sub">invece del '+pc(R.cp)+'</div></div></div>';
+    // composizione degli incassi
+    var parti=[{n:'Lavoro principale',q:1-R.qm,c:R.cp}].concat(sc.map(function(m){return {n:m.nome,q:R.q[m.id]||0,c:m.coefficiente,m:m}}));
+    h+='<div class="o3row"><div class="kbox"><div class="lbl">Come si dividono i tuoi incassi</div><div class="o3stack">'+parti.map(function(p,i){return '<span style="width:'+(p.q*100)+'%;background:'+OCOLS[i%OCOLS.length]+'" title="'+oEsc(p.n)+'"></span>'}).join('')+'</div>'+
+      '<ul class="o3leg">'+parti.map(function(p,i){return '<li><i style="background:'+OCOLS[i%OCOLS.length]+'"></i><span>'+oEsc(p.n)+'</span><b>'+Math.round(p.q*100)+'%</b><small>coeff. '+pc(p.c)+'</small></li>'}).join('')+'</ul></div>'+
+      '<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div>'+bar('Reddito su cui paghi',CINC*R.cp,CINC*R.mix)+bar('Tasse e contributi',R.oggi.tot,R.dopo.tot)+'<p class="onote">Stima sui tuoi incassi dell\'anno ('+eur(CINC)+').</p></div></div>';
+    // contributo di ogni micro-attivita'
+    h+='<div class="kbox"><div class="lbl">Quanto incide ogni micro-attività</div><div class="kbox-t"><table class="kt"><tr><th>Micro-attività</th><th>Coeff.</th><th>Quota incassi</th><th>Incassi annui</th><th>Risparmio</th></tr>'+
+      sc.map(function(m){var q=R.q[m.id]||0;return '<tr><td>'+oEsc(m.nome)+'</td><td>'+pc(m.coefficiente)+'</td><td>'+Math.round(q*100)+'%</td><td>'+eur(CINC*q)+'</td><td class="okc">'+eur(CINC*q*(R.cp-m.coefficiente)*fat)+'</td></tr>'}).join('')+'</table></div></div>';
+    // pesi
+    h+='<div class="kbox"><div class="lbl">Quanto pesa ogni micro-attività nella fattura</div><p class="onote">A occhio: quanto del lavoro pagato è andato in ognuna. Il resto resta al lavoro principale.</p>'+
       sc.map(function(m){var cur=OT.peso[m.id]||'unpo';return '<div class="opeso"><span class="opn"><b>'+oEsc(m.nome)+'</b><small>'+oEsc(m.codice_ateco)+' · '+pc(m.coefficiente)+'</small></span><span class="ochips">'+OLIV.map(function(x){return '<button class="och" data-p="'+m.id+'" data-l="'+x[0]+'" aria-pressed="'+(cur===x[0]?'true':'false')+'">'+x[1]+'</button>'}).join('')+'</span></div>'}).join('')+'</div>';
+    // fattura rifatta
     R.sp.forEach(function(x){var v=x.v,prim=(v.righe&&v.righe[0]&&v.righe[0].testo)||v.attivita||'Lavoro principale';
       h+='<div class="kbox"><div class="lbl">Come diventa la fattura'+(oUsate().length>1?' «'+oEsc(v.nome)+'»':'')+'</div><div class="kbox-t"><table class="kt ofat"><tr><th>Riga</th><th>Codice</th><th>Coeff.</th><th>Importo</th></tr>'+
         '<tr><td>'+oEsc(prim)+'</td><td>'+oEsc(OTMAIN.cod)+'</td><td>'+pc(R.cp)+'</td><td>'+eur(x.main)+'</td></tr>'+
         x.rows.map(function(r){return '<tr class="onew"><td>'+oEsc(r.m.riga_fattura||r.m.nome)+'</td><td>'+oEsc(r.m.codice_ateco)+'</td><td>'+pc(r.m.coefficiente)+'</td><td>'+eur(r.eur)+'</td></tr>'}).join('')+
         '<tr class="otot"><td>Totale</td><td></td><td></td><td>'+eur(v.importo||0)+'</td></tr></table></div><p class="onote">Stesso totale per il cliente: cambia solo come le prestazioni sono divise sulle righe.</p></div>'});
-    if(d<=0)h+='<div class="kbox"><div class="lbl">Risparmio</div><div class="kbig">0 €</div><p class="onote">Con questa divisione non c\'è un risparmio: prova a rivedere quanto pesano le micro-attività.</p></div>';
-    else{var L=function(a,x,y){var dd=y-x;return '<tr><td>'+a+'</td><td>'+eur(x)+'</td><td>'+eur(y)+'</td><td class="'+(dd<0?'okc':'')+'">'+(dd>=0?'+':'−')+' '+eur(Math.abs(dd))+'</td></tr>'};
-      h+='<div class="otre"><div class="kbox"><div class="lbl">Ogni anno</div><div class="kbig ok">'+eur(d)+'</div><div class="sub">tasse e contributi in meno</div></div><div class="kbox"><div class="lbl">Ogni mese</div><div class="kbig ok">'+eur(d/12)+'</div><div class="sub">in più nel tuo netto</div></div><div class="kbox"><div class="lbl">Coefficiente medio</div><div class="kbig">'+pc(R.mix)+'</div><div class="sub">invece del '+pc(R.cp)+'</div></div></div>'+
-        '<div class="kbox"><div class="lbl">Prima e dopo, in un anno</div><div class="kbox-t"><table class="kt"><tr><th></th><th>Oggi</th><th>Con le fatture divise</th><th>Differenza</th></tr>'+L('Reddito su cui paghi',CINC*R.cp,CINC*R.mix)+L('Imposta sostitutiva',R.oggi.imp,R.dopo.imp)+L('Contributi',R.oggi.con,R.dopo.con)+L('Totale tasse e contributi',R.oggi.tot,R.dopo.tot)+'</table></div>'+
-        '<p class="onote">Stima sui tuoi incassi dell\'anno ('+eur(CINC)+'), divisi nelle stesse proporzioni di '+(oUsate().length===1?'questa fattura':'queste fatture')+'. Non è una promessa di risultato: dipende da come fatturerai davvero.</p></div>'}
-    if(sc.some(function(m){return m.coefficiente<=0.62}))h+='<div class="kbox owarn2"><b>Da sapere:</b> per commercio o intermediazione ('+sc.filter(function(m){return m.coefficiente<=0.62}).map(function(m){return oEsc(m.codice_ateco)}).join(', ')+') di solito servono la Camera di Commercio e l\'INPS Commercianti, con contributi minimi fissi (circa 4.600 € l\'anno, circa 3.000 € con la riduzione del 35% per i forfettari). Nel calcolo qui sopra <b>non li ho inclusi</b>: conviene solo se gli incassi di quella parte sono abbastanza alti.</div>';
-    var tk=oTd3(R,d);window.__tdSet('ott',d>0?tk:[],d>0?'Risparmio stimato '+eur(d)+' l\'anno':'');if(d>0)oTdAi(d);
-    if(d>0)h+='<div class="kbox"><div class="lbl">Cosa fare ora · salvati in «Da fare»</div><ul class="otl">'+tk.map(function(t){return '<li><b>'+oEsc(t.titolo)+'</b><small>'+oEsc(t.perche)+'</small></li>'}).join('')+'</ul><button class="kb" id="o_gotd">Apri «Da fare»</button></div>';
+    if(sc.some(function(m){return m.coefficiente<=0.62}))h+='<div class="kbox owarn2"><b>Da sapere:</b> per commercio o intermediazione di solito servono la Camera di Commercio e l\'INPS Commercianti, con contributi minimi fissi (circa 4.600 € l\'anno, circa 3.000 € con la riduzione del 35%). Nel calcolo <b>non li ho inclusi</b>.</div>';
+    h+='<div class="kbox o3act"><div><b>Il report dettagliato</b><p class="onote">Come si arriva al risparmio, attività per attività, la fattura rifatta e i passi per ottenerlo.'+(OT.mailInv?' Te l\'ho inviato via email.':'')+'</p></div><div class="onav"><button class="cta s o2" id="o_pdf">Scarica il report PDF</button>'+(OT.sbloccato?'<button class="lnk2" id="o_rinv">Inviamelo di nuovo via email</button>':'')+'</div></div>';
+    h+='<div class="kbox o3td"><b>Cosa fare per ottenerlo</b><p class="onote">Ho preparato i passi, in ordine di priorità, nella sezione «Da fare»: ognuno ha il pulsante <b>Inizia</b>.</p><button class="kb" id="o_gotd">Apri «Da fare»</button></div>';
+    h+='</div>';
+    if(lock)h+=oMailBox(d);
     b.innerHTML=h;OT.done[3]=d>0;OT.ris=d;
-    [].slice.call(b.querySelectorAll('[data-p]')).forEach(function(c){c.onclick=function(){OT.peso[c.getAttribute('data-p')]=c.getAttribute('data-l');tap('ott_peso');oSaveSoon();var y=scrollY;oRender();scrollTo(0,y);oP3Msg(true)}});
+    var tk=oTd3(R,d);window.__tdSet('ott',d>0?tk:[],d>0?'Risparmio stimato '+eur(d)+' l\'anno':'');if(d>0)oTdAi(d);
+    [].slice.call(b.querySelectorAll('[data-p]')).forEach(function(c){c.onclick=function(){OT.peso[c.getAttribute('data-p')]=c.getAttribute('data-l');OT.repVecchio=true;tap('ott_peso');oSaveSoon();var y=scrollY;oRender();scrollTo(0,y);oP3Msg(true)}});
     var g=$('o_gotd');if(g)g.onclick=function(){tap('ott_apri_dafare');showView('t')};
+    $('o_pdf').onclick=function(){oReport2(null,true)};var rv=$('o_rinv');if(rv)rv.onclick=function(){oReport2(oMail(),false)};
+    if(lock){var f=$('o3mf');f.onsubmit=function(e){e.preventDefault();var em=$('o3m').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(em)){$('o3ms').textContent='Scrivi un indirizzo email valido, per esempio nome@email.it.';$('o3m').focus();return}oReport2(em,false)};
+      setTimeout(function(){var i=$('o3m');if(i)try{i.focus({preventScroll:true})}catch(e){}},300)}
     srv('risparmio_calcolato',Math.max(0,d));oSaveSoon()}
+  function oMail(){try{return localStorage.getItem('ts_ott_mail')||''}catch(e){return ''}}
+  function oMailBox(d){return '<div class="o3ov" role="dialog" aria-modal="true" aria-labelledby="o3mt"><div class="o3mod"><div class="o3ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity=".0"/><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></div>'+
+    '<h3 id="o3mt">Il tuo report di risparmio è pronto</h3><p>'+(d>0?'Ho calcolato il risparmio fiscale e preparato un <b>report dettagliato</b>: le micro-attività, quanto incide ognuna, la fattura rifatta e i passi per ottenerlo.':'Ho completato il calcolo e preparato il report dettagliato.')+' Scrivi la tua email: te lo invio in PDF e sblocco la dashboard.</p>'+
+    '<form id="o3mf" class="o3mf"><input type="email" id="o3m" autocomplete="email" placeholder="nome@email.it" aria-label="La tua email" value="'+oEsc(oMail())+'" required><button type="submit" class="cta s o2" id="o3mb">Ricevi il report</button></form><p class="onote" id="o3ms" aria-live="polite"></p>'+
+    '<p class="o3priv">Usiamo l\'email per inviarti il report e gli avvisi sulla tua partita IVA. <a href="/privacy" target="_blank" rel="noopener">Informativa privacy</a>.</p></div></div>'}
+  // dati per il report PDF (v2): tutto quello che serve a spiegare come si arriva al risparmio
+  function oDati3(em){var R=oCalc3(),d=Math.round(R.diff),fat=oFat(),sc=oScelte(),tk=TD.l.filter(function(t){return t.fonte==='ott'});
+    return {v:2,email:em,uid:(function(){try{return localStorage.getItem('ts_uid')||''}catch(e){return ''}})(),c:window.TS_C||'',nome:(typeof PF!=='undefined'&&PF.nome)||D.nome||'',
+      risparmio:d,incassi:CINC,aliquota:CALIQ,contributi:CCON,coef_prima:R.cp,coef_dopo:R.mix,
+      oggi:{red:CINC*R.cp,imp:R.oggi.imp,con:R.oggi.con,tot:R.oggi.tot},dopo:{red:CINC*R.mix,imp:R.dopo.imp,con:R.dopo.con,tot:R.dopo.tot},
+      principale:{nome:(OT.micro&&OT.micro.principale&&OT.micro.principale.descrizione)||OTMAIN.nome,cod:OTMAIN.cod,coef:R.cp},
+      fatture:R.sp.map(function(x){var v=x.v,c=v.cliente||{};return {cliente:[c.tipo,c.paese,c.settore].filter(Boolean).join(' · '),importo:v.importo,dettagli:v.det||'',
+        righe_orig:(v.righe||[]).map(function(r){return {testo:r.testo,importo:r.importo}}),
+        righe_nuove:[{testo:(v.righe&&v.righe[0]&&v.righe[0].testo)||v.attivita||'Lavoro principale',cod:OTMAIN.cod,coef:R.cp,importo:x.main}].concat(x.rows.map(function(r){return {testo:r.m.riga_fattura||r.m.nome,cod:r.m.codice_ateco,coef:r.m.coefficiente,importo:r.eur}}))}}),
+      micro:sc.map(function(m){var q=R.q[m.id]||0,lv=OLIV.filter(function(x){return x[0]===(OT.peso[m.id]||'unpo')})[0];return {nome:m.nome,descrizione:m.descrizione,collegamento:m.collegamento,categoria:m.categoria||m.gruppo,cod:m.codice_ateco,coef:m.coefficiente,
+        peso:lv?lv[1]:'',quota:q,ricavi_anno:CINC*q,risparmio_attr:CINC*q*(R.cp-m.coefficiente)*fat,riga:m.riga_fattura,attenzione:m.attenzione}}),
+      task:tk.map(function(t){return {titolo:t.titolo,perche:t.perche,come:t.come}})}}
+  function oReport2(em,soloScarica){em=em||oMail();var st=$('o3ms'),bt=$('o3mb'),pb=$('o_pdf');
+    if(!em){OT.sbloccato=false;oRender();return}
+    if(bt){bt.disabled=true;bt.textContent='Preparo il report…'}if(pb&&soloScarica){pb.disabled=true;pb.textContent='Preparo il PDF…'}
+    OT.sbloccato=true;try{localStorage.setItem('ts_ott_mail',em)}catch(e){}
+    fetch('/api/prova/report',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(oDati3(em))}).then(function(x){
+      if(!x.ok||!/pdf/.test(x.headers.get('content-type')||''))return x.json().then(function(j){throw new Error(j.errore||'')},function(){throw new Error('')});
+      var inv=x.headers.get('X-Inviato')==='1';return x.blob().then(function(bl){return [bl,inv]})}).then(function(a){var bl=a[0],inv=a[1];
+      OT.mailInv=OT.mailInv||inv;OT.repVecchio=false;tap('ott_report_v2');srv('report_pdf',Math.max(0,OT.ris||0));oSaveSoon();
+      var u=URL.createObjectURL(bl);OT.pdfUrl=u;
+      if(soloScarica){var l=document.createElement('a');l.href=u;l.download='report-risparmio-taxscan.pdf';document.body.appendChild(l);l.click();setTimeout(function(){l.remove()},2000)}
+      var y=scrollY;oRender();scrollTo(0,y);
+      say(soloScarica?'Ecco il report in PDF.':inv?'Fatto: ti ho inviato il <b>report dettagliato</b> a <b>'+oEsc(em)+'</b>. Lo puoi anche scaricare da qui. Qui sotto trovi la dashboard completa del risparmio.':'Ho preparato il report, ma <b>non sono riuscito a inviarlo via email</b> in questo momento: scaricalo con il pulsante «Scarica il report PDF». Qui sotto trovi la dashboard completa del risparmio.')})
+    .catch(function(e){var y=scrollY;oRender();scrollTo(0,y);say(((e&&e.message)||'Non sono riuscito a preparare il report.')+' Puoi riprovare con «Scarica il report PDF».')})}
   function oTd3(R,d){var L=[],sc=oScelte(),cod={},us=oUsate(),est=us.some(function(v){return v.cliente&&v.cliente.paese&&!/^ital/i.test(v.cliente.paese)}),
       rg=sc.filter(function(m){return m.riga_fattura}).slice(0,3).map(function(m){return '«'+m.riga_fattura+'»'});
     sc.forEach(function(m){(cod[m.codice_ateco]=cod[m.codice_ateco]||{c:m.coefficiente,n:[]}).n.push(m.nome.toLowerCase())});
@@ -1888,6 +1986,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(at.length)L.push({titolo:'Controlla i punti di attenzione',perche:'Alcune prestazioni hanno vincoli (Ordine, cassa, INPS) da verificare prima di partire.',come:at.slice(0,4).join(' · ')});
     (OT.tkAi||[]).forEach(function(t){L.push(t)});
     L.push({titolo:'Fai verificare i numeri (facoltativo)',perche:'Un commercialista può controllare il calcolo prima che tu agisca. È una tua scelta.',come:''});
+    // tipo di compito (decide cosa fa il pulsante Inizia) e ordine di priorità: il codice ATECO viene sempre per primo
+    var P=[['Aggiungi il codice','ateco'],['Rivedi il contratto','contratto'],['Invia il contratto','pec'],['Rivedi come prepari','fattura'],['Valuta una fattura separata','fattura_sep'],['Verifica Camera','cciaa'],['Avvisa il cliente','cliente'],['Tieni separati','incassi'],['Controlla i punti','attenzione'],['__ai','ai'],['Fai verificare','verifica']],ord={};
+    P.forEach(function(p,i){ord[p[1]]=i});
+    L.forEach(function(t,i){var p=P.filter(function(p){return t.titolo.indexOf(p[0])===0})[0];t.tipo=p?p[1]:'ai';t._i=i});
+    L.sort(function(a,b){return (ord[a.tipo]-ord[b.tipo])||(a._i-b._i)});L.forEach(function(t){delete t._i});
     return L}
   // compiti in piu' scritti dall'IA sul caso specifico (0-2), una volta per scelta di micro-attivita'
   function oTdAi(d){var k=oScelte().map(function(m){return m.id}).join(',');if(OT.tkKey===k)return;OT.tkKey=k;OT.tkAi=[];
@@ -1895,8 +1998,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       periodicita:oUsate().map(function(v){return (v.attivita||'prestazione')+' per '+[v.cliente&&v.cliente.tipo,v.cliente&&v.cliente.paese].filter(Boolean).join(' ')+(v.det?' ('+v.det.slice(0,200)+')':'')}).join('; ')}).then(function(j){
       if(j&&j.ok&&j.task&&j.task.length&&OT.tkKey===k){OT.tkAi=j.task.slice(0,2);if(OT.open===3&&!$('gview').hidden){var y=scrollY;oRender();scrollTo(0,y)}else window.__tdSet('ott',oTd3(oCalc3(),d),'Risparmio stimato '+eur(d)+' l\'anno')}})}
   function oP3Msg(breve){var R=oCalc3(),d=Math.round(R.diff);
-    if(breve){say(d>0?'Aggiornato: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (stima).':'Con questa divisione non c\'è risparmio.');return}
-    say(d>0?'Ecco la tua fattura <b>divisa</b>: il lavoro principale e le micro-attività su righe separate, stesso totale. Così il coefficiente medio scende dal <b>'+pc(R.cp)+'</b> al <b>'+pc(R.mix)+'</b>: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (è una stima). Ho salvato i compiti in <b>Da fare</b>. Se vuoi, cambia quanto pesa ogni micro-attività.':'Con questa divisione non c\'è un risparmio: cambia quanto pesano le micro-attività, oppure torna al passo 2.');
+    if(breve){say(d>0?'Aggiornato: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (stima).'+(OT.sbloccato?' Se vuoi il report aggiornato, scaricalo di nuovo.':''):'Con questa divisione non c\'è risparmio.');return}
+    if(!OT.sbloccato){say('Ho completato l\'analisi e calcolato il <b>risparmio fiscale</b>. Ho preparato anche un <b>report dettagliato</b>: inserisci la tua email per riceverlo e sbloccare la dashboard.');oChipsP(null);return}
+    say(d>0?'Ecco la <b>dashboard del risparmio</b>: la fattura divisa sulle righe, stesso totale. Il coefficiente medio scende dal <b>'+pc(R.cp)+'</b> al <b>'+pc(R.mix)+'</b>: circa <b>'+eur(d)+' l\'anno</b> in meno di tasse e contributi (stima). I passi per ottenerlo sono in <b>Da fare</b>.':'Con questa divisione non c\'è un risparmio: cambia quanto pesano le micro-attività, oppure torna all\'Analisi.');
     oChipsP(OTP3,['Come hai calcolato?','Devo cambiare il totale della fattura?','Il risultato è garantito?'])}
   var OTP3={'Come hai calcolato?':{a:'Ho diviso la fattura tra il lavoro principale e le micro-attività, ognuna con il suo coefficiente. Poi ho applicato le stesse proporzioni ai tuoi incassi dell\'anno e ho calcolato imposta e contributi, prima e dopo.',n:['Il risultato è garantito?']},
     'Devo cambiare il totale della fattura?':{a:'No: il cliente paga lo stesso. Cambia solo come scrivi le prestazioni, una riga per ognuna con il suo importo.',n:[]},
@@ -2181,44 +2285,126 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   Object.keys(SCQ).forEach(function(k){XA[k]=SCQ[k]});
   scadChips=function(){var a=accState(),l;if(a.s==='ask')l=['Sì, li ho messi da parte','Non ancora','Cos\'è un acconto?'];else if(a.s==='si')l=['Come pago con l\'F24?','Cosa sono i contributi INPS?','Perché a giugno si paga di più?'];else l=['Quanto devo mettere da parte ogni mese?','Cos\'è un acconto?','Come pago con l\'F24?'];
     if(window.__chips)window.__chips(XA,l)};
-  // ================= Da fare: i compiti che restano dopo il calcolo del risparmio (salvati, si spuntano man mano) =================
+  // ================= Da fare (v62): riquadri spostabili con solo il titolo; al clic il dettaglio e il pulsante Inizia =================
   var TD={l:[]};
   function tdKey(){return 'ts_td_'+oPid()}
   function tdStore(quiet){try{localStorage.setItem(tdKey(),JSON.stringify(TD.l))}catch(e){}tdBadge();if(!quiet)oSaveSoon()}
   function tdLoad(){try{TD.l=JSON.parse(localStorage.getItem(tdKey())||'[]')||[]}catch(e){TD.l=[]}tdBadge()}
   function tdBadge(){var n=TD.l.filter(function(t){return !t.fatto}).length,e=$('tdn');if(e){e.textContent=n;e.hidden=!n}}
   function tdId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-  // sostituisce i compiti di una fonte (es. 'ott') tenendo quelli gia' spuntati, riconosciuti dal titolo
+  // sostituisce i compiti di una fonte (es. 'ott') tenendo stato e posizione di quelli gia' presenti, riconosciuti dal titolo
   window.__tdSet=function(src,list,ctx){var old={};TD.l.forEach(function(t){if(t.fonte===src)old[String(t.titolo).toLowerCase()]=t});
     var oggi=new Date().toISOString().slice(0,10),nu=(list||[]).filter(function(t){return t&&t.titolo}).map(function(t){var o=old[String(t.titolo).toLowerCase()];
-      return {id:o?o.id:tdId(),fonte:src,titolo:String(t.titolo).slice(0,120),perche:String(t.perche||'').slice(0,400),come:String(t.come||'').slice(0,500),fatto:o?!!o.fatto:false,data:o?o.data:oggi,ctx:ctx||''}});
+      return {id:o?o.id:tdId(),fonte:src,tipo:t.tipo||'ai',titolo:String(t.titolo).slice(0,120),perche:String(t.perche||'').slice(0,400),come:String(t.come||'').slice(0,500),fatto:o?!!o.fatto:false,stato:o?o.stato||'':'',data:o?o.data:oggi,quando:o?o.quando||'':'',ctx:ctx||''}});
     TD.l=nu.concat(TD.l.filter(function(t){return t.fonte!==src}));tdStore();if(!$('tview').hidden)tdRender()};
-  window.__tdDone=function(id,v){TD.l.forEach(function(t){if(t.id===id){t.fatto=!!v;t.quando=v?new Date().toISOString().slice(0,10):''}});tdStore();if(!$('tview').hidden)tdRender()};
-  function tdAdd(txt){txt=String(txt||'').trim().slice(0,120);if(!txt)return false;TD.l.unshift({id:tdId(),fonte:'utente',titolo:txt.charAt(0).toUpperCase()+txt.slice(1),perche:'',come:'',fatto:false,data:new Date().toISOString().slice(0,10),ctx:''});tdStore();tdRender();tap('dafare_aggiungi');return true}
-  var TDF={ott:'Dall\'ottimizzazione fiscale',utente:'Aggiunti da te'};
-  function tdRender(){var box=$('tdlist');if(!box)return;var aperti=TD.l.filter(function(t){return !t.fatto}),fatti=TD.l.filter(function(t){return t.fatto});
-    var card=function(t){return '<li class="tdc'+(t.fatto?' ok':'')+'"><label><input type="checkbox" data-td="'+t.id+'"'+(t.fatto?' checked':'')+' aria-label="Fatto: '+oEsc(t.titolo)+'"><span><b>'+oEsc(t.titolo)+'</b>'+(t.perche?'<small>'+oEsc(t.perche)+'</small>':'')+(t.come?'<small><b>Come:</b> '+oEsc(t.come)+'</small>':'')+'<em>'+oEsc(TDF[t.fonte]||'')+(t.fatto&&t.quando?' · fatto il '+t.quando.split('-').reverse().join('/'):'')+'</em></span></label>'+(t.fonte==='utente'?'<button class="tdx" data-tx="'+t.id+'" aria-label="Togli il compito">✕</button>':'')+'</li>'};
-    var ctx=(TD.l.filter(function(t){return t.fonte==='ott'&&t.ctx})[0]||{}).ctx;
-    var h='';
-    if(!TD.l.length)h+='<div class="kbox tde"><b>Qui trovi le cose da fare.</b><p class="onote">Arrivano da sole quando completi l\'<b>Ottimizzazione fiscale</b>: dopo il calcolo del risparmio salvo qui i compiti per ottenerlo davvero. Puoi anche aggiungerne di tuoi.</p><button class="kb" id="td_go">Vai a Ottimizzazione fiscale</button></div>';
-    else h+='<div class="kbox tdh"><div class="lbl">Da fare'+(ctx?' · '+oEsc(ctx):'')+'</div><div class="tdp"><span style="width:'+Math.round(fatti.length/TD.l.length*100)+'%"></span></div><small>'+fatti.length+' su '+TD.l.length+' fatti</small></div>';
-    if(aperti.length)h+='<ul class="tdl">'+aperti.map(card).join('')+'</ul>';
-    else if(TD.l.length)h+='<p class="onote">Hai fatto tutto: ottimo lavoro.</p>';
+  window.__tdDone=function(id,v){TD.l.forEach(function(t){if(t.id===id){t.fatto=!!v;t.stato=v?'fatto':(t.stato==='fatto'?'':t.stato);t.quando=v?new Date().toISOString().slice(0,10):''}});tdStore();if(!$('tview').hidden)tdRender()};
+  function tdGet(id){return TD.l.filter(function(t){return t.id===id})[0]}
+  function tdAdd(txt){txt=String(txt||'').trim().slice(0,120);if(!txt)return false;TD.l.push({id:tdId(),fonte:'utente',tipo:'utente',titolo:txt.charAt(0).toUpperCase()+txt.slice(1),perche:'',come:'',fatto:false,stato:'',data:new Date().toISOString().slice(0,10),ctx:''});tdStore();tdRender();tap('dafare_aggiungi');return true}
+  var TDI={ateco:'<path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/><path d="M8 14h8M8 17h5"/>',contratto:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/><path d="M15 3v4h4"/>',
+    pec:'<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',fattura:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',fattura_sep:'<path d="M5 4h9v14H5zM10 8h9v12h-9"/>',
+    cciaa:'<path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/>',cliente:'<path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"/>',incassi:'<path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-6"/>',
+    attenzione:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',verifica:'<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>',ai:'<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',utente:'<path d="M12 5v14M5 12h14"/>'};
+  function tdIco(t){return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(TDI[t]||TDI.ai)+'</svg>'}
+  function tdStato(t){return t.fatto?'<span class="tds ok">Fatto</span>':t.stato==='corso'?'<span class="tds run">In corso</span>':'<span class="tds">Da fare</span>'}
+  function tdRender(){var box=$('tdlist');if(!box)return;
+    var ctx=(TD.l.filter(function(t){return t.fonte==='ott'&&t.ctx})[0]||{}).ctx,fatti=TD.l.filter(function(t){return t.fatto}).length,h='';
+    if(!TD.l.length)h+='<div class="kbox tde"><b>Qui trovi le cose da fare.</b><p class="onote">Arrivano da sole quando completi l\'<b>Ottimizzazione fiscale</b>: dopo il calcolo del risparmio salvo qui i passi per ottenerlo davvero, in ordine di priorità. Puoi anche aggiungerne di tuoi.</p><button class="kb" id="td_go">Vai a Ottimizzazione fiscale</button></div>';
+    else h+='<div class="kbox tdh"><div class="lbl">Da fare'+(ctx?' · '+oEsc(ctx):'')+'</div><div class="tdp"><span style="width:'+Math.round(fatti/TD.l.length*100)+'%"></span></div><small>'+fatti+' su '+TD.l.length+' fatti · tocca un riquadro per aprirlo, tienilo premuto per spostarlo</small></div>';
+    h+='<div class="tdg" id="tdgrid">'+TD.l.map(function(t,i){return '<div role="button" tabindex="0" class="tdt'+(t.fatto?' ok':'')+(t.stato==='corso'&&!t.fatto?' run':'')+'" data-wk="'+t.id+'" data-td="'+t.id+'" aria-label="'+oEsc(t.titolo)+'"><span class="tdn2">'+(i+1)+'</span><span class="tdic">'+tdIco(t.tipo)+'</span><b>'+oEsc(t.titolo)+'</b>'+tdStato(t)+'</div>'}).join('')+'</div>';
     h+='<form class="tdf" id="tdf"><input type="text" id="td_in" maxlength="120" placeholder="Aggiungi un compito tuo…" aria-label="Aggiungi un compito"><button type="submit" class="kb">Aggiungi</button></form>';
-    if(fatti.length)h+='<details class="tdd"><summary>Già fatti ('+fatti.length+')</summary><ul class="tdl">'+fatti.map(card).join('')+'</ul></details>';
     box.innerHTML=h;
-    [].slice.call(box.querySelectorAll('[data-td]')).forEach(function(c){c.onchange=function(){window.__tdDone(c.getAttribute('data-td'),c.checked);tap('dafare_'+(c.checked?'fatto':'riapri'));if(c.checked)say(TD.l.filter(function(t){return !t.fatto}).length?'Fatto, lo sposto tra i compiti completati.':'Hai completato <b>tutti i compiti</b>. Bravo!')}});
-    [].slice.call(box.querySelectorAll('[data-tx]')).forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-tx');TD.l=TD.l.filter(function(t){return t.id!==id});tdStore();tdRender()}});
+    if(window.__wgInit)window.__wgInit($('tdgrid'),'td','.tdt');
+    [].slice.call(box.querySelectorAll('.tdt')).forEach(function(b){b.onclick=function(){if(b.__wgj)return;tdApri(b.getAttribute('data-td'))};b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tdApri(b.getAttribute('data-td'))}}});
     $('tdf').onsubmit=function(e){e.preventDefault();var i=$('td_in');if(tdAdd(i.value))i.value=''};
     var g=$('td_go');if(g)g.onclick=function(){showView('g')}}
-  // scrivere a Marcello in «Da fare»: «aggiungi …», «ricordami di …» diventano compiti
+  // ---- finestra del compito
+  function tdModal(html,wide){var o=$('tdmod');if(o)o.remove();o=document.createElement('div');o.id='tdmod';o.className='tdov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+    o.innerHTML='<div class="tdbox'+(wide?' wide':'')+'"><button class="tdx2" id="tdx2" aria-label="Chiudi">✕</button><div id="tdbody">'+html+'</div></div>';document.body.appendChild(o);
+    var chiudi=function(){o.remove();document.removeEventListener('keydown',esc);if(!$('tview').hidden)tdRender()},esc=function(e){if(e.key==='Escape')chiudi()};
+    $('tdx2').onclick=chiudi;o.onclick=function(e){if(e.target===o)chiudi()};document.addEventListener('keydown',esc);return o}
+  function tdApri(id){var t=tdGet(id);if(!t)return;tap('dafare_apri_'+t.tipo);
+    tdModal('<div class="tdhd"><span class="tdic big">'+tdIco(t.tipo)+'</span><div><h3>'+oEsc(t.titolo)+'</h3>'+tdStato(t)+'</div></div>'+(t.perche?'<p>'+oEsc(t.perche)+'</p>':'')+(t.come?'<p class="onote"><b>Come:</b> '+oEsc(t.come)+'</p>':'')+
+      '<div class="onav"><button class="cta s o2" id="td_go2">'+(t.stato==='corso'?'Continua':'Inizia')+'</button>'+(t.fatto?'<button class="och" id="td_no">Segna come da fare</button>':'<button class="och" id="td_ok">Segna come fatto</button>')+(t.fonte==='utente'?'<button class="lnk2" id="td_del">Elimina</button>':'')+'</div>');
+    $('td_go2').onclick=function(){t.stato='corso';tdStore();tap('dafare_inizia_'+t.tipo);tdInizia(t)};
+    var ok=$('td_ok');if(ok)ok.onclick=function(){window.__tdDone(t.id,true);$('tdmod').remove();tdRender();say(TD.l.filter(function(x){return !x.fatto}).length?'Fatto, segnato come completato.':'Hai completato <b>tutti i passi</b>. Ottimo lavoro.')};
+    var no=$('td_no');if(no)no.onclick=function(){window.__tdDone(t.id,false);tdApri(t.id)};
+    var del=$('td_del');if(del)del.onclick=function(){TD.l=TD.l.filter(function(x){return x.id!==t.id});tdStore();$('tdmod').remove();tdRender()}}
+  function tdFine(t,lab){return '<div class="onav tdend"><button class="cta s o2" id="td_fine">'+(lab||'Fatto, segna come completato')+'</button><button class="och" id="td_back">Indietro</button></div>'}
+  function tdBindFine(t){$('td_fine').onclick=function(){window.__tdDone(t.id,true);var m=$('tdmod');if(m)m.remove();tdRender();say('Segnato come fatto.')};$('td_back').onclick=function(){tdApri(t.id)}}
+  function tdCodici(){var c={};(typeof oScelte==='function'?oScelte():[]).forEach(function(m){(c[m.codice_ateco]=c[m.codice_ateco]||{coef:m.coefficiente,n:[]}).n.push(m.nome)});return c}
+  function tdEst(){return oUsate().some(function(v){return v.cliente&&v.cliente.paese&&!/^ital/i.test(v.cliente.paese)})}
+  function tdInizia(t){var b={ateco:tdAteco,contratto:tdContratto,pec:tdPec,fattura:tdFattura,fattura_sep:tdFattura,cciaa:tdCciaa,cliente:tdCliente,incassi:tdIncassi}[t.tipo]||tdGenerico;b(t)}
+  function tdSteps(l){return '<ol class="tdsteps">'+l.map(function(x){return '<li><b>'+x[0]+'</b>'+(x[1]?'<span>'+x[1]+'</span>':'')+'</li>'}).join('')+'</ol>'}
+  // codice ATECO: la procedura completa per farlo da soli sul sito dell'Agenzia delle Entrate
+  function tdAteco(t){var c=tdCodici(),k=Object.keys(c),cod=(t.titolo.match(/\d{2}\.\d{2}\.\d{1,2}/)||[k[0]||''])[0],com=/^4[67]\./.test(cod);
+    tdModal('<h3>Aggiungere il codice '+oEsc(cod)+' alla partita IVA</h3><p>Puoi farlo da solo, online e gratis, con il modello <b>AA9/12</b> (variazione dati della partita IVA delle persone fisiche). Ci vogliono circa 15 minuti.</p>'+
+      '<div class="kbox"><div class="lbl">Cosa ti serve</div><ul class="olis"><li>SPID, CIE o CNS per entrare nell\'area riservata dell\'Agenzia delle Entrate.</li><li>Il codice da aggiungere: <b>'+oEsc(cod)+'</b>'+(c[cod]?' (coefficiente '+pc(c[cod].coef)+': '+oEsc(c[cod].n.join(', ').toLowerCase())+')':'')+'.</li><li>La data da cui inizi a svolgere questa attività.</li></ul></div>'+
+      tdSteps([['Entra nell\'area riservata','Vai su agenziaentrate.gov.it e accedi con SPID, CIE o CNS.'],
+        ['Apri la variazione dati della partita IVA','Cerca il servizio per presentare il modello AA9/12 (apertura, variazione e chiusura partita IVA delle persone fisiche). In alternativa scarica dal sito dell\'Agenzia il software gratuito di compilazione AA9/12, compila il modello e invialo dall\'area riservata.'],
+        ['Indica che è una variazione','Nel quadro A scegli «Variazione dati» e scrivi la data da cui parte la nuova attività.'],
+        ['Aggiungi il codice','Inserisci <b>'+oEsc(cod)+'</b> tra le altre attività esercitate (attività secondarie). L\'attività principale (quadro B) cambia solo se la nuova diventa quella prevalente.'],
+        ['Controlla e invia','Verifica i dati, invia e conserva la ricevuta. Non costa nulla.'],
+        ['Rispetta i tempi','Va fatto entro 30 giorni da quando inizi la nuova attività. In ritardo ci sono sanzioni, che si riducono con il ravvedimento operoso.']])+
+      (com?'<div class="kbox owarn2"><b>Attenzione:</b> '+oEsc(cod)+' è un\'attività di commercio o intermediazione: oltre all\'AA9/12 di solito serve la <b>Comunicazione Unica (ComUnica)</b> alla Camera di Commercio, che ti iscrive al Registro imprese e all\'INPS Commercianti. Costi indicativi: 50–200 €, più il diritto annuale e i contributi minimi INPS.</div>':'')+
+      '<p class="onote">In alternativa puoi farlo fare a un commercialista o a un CAF abilitato, oppure spedire il modello con raccomandata A/R all\'ufficio dell\'Agenzia. Le schermate del sito possono cambiare: se non trovi il servizio, cerca «AA9/12» nel sito dell\'Agenzia. <a href="https://www.agenziaentrate.gov.it/portale/schede/istanze/aa9_11-apertura-variazione-chiusura-pf/sw-compilazione-pi-pf" target="_blank" rel="noopener">Pagina dell\'Agenzia delle Entrate sul modello AA9/12</a></p>'+tdFine(t,'Ho inviato la variazione'),true);tdBindFine(t)}
+  // contratto: si carica il PDF o si incolla il testo, l'IA trova cosa manca per giustificare tutte le attivita'
+  function tdContratto(t){var att=[{nome:OTMAIN.nome+' (lavoro principale)',cod:OTMAIN.cod}].concat((typeof oScelte==='function'?oScelte():[]).map(function(m){return {nome:m.nome,cod:m.codice_ateco}}));
+    tdModal('<h3>Rivediamo il contratto con il cliente</h3><p>Caricalo in PDF oppure incolla il testo: lo confronto con tutte le attività che svolgi per il cliente e ti dico <b>cosa manca</b>, con le clausole pronte da aggiungere.</p>'+
+      '<div class="kbox"><div class="lbl">Le attività da giustificare</div><ul class="olis">'+att.map(function(a){return '<li>'+oEsc(a.nome)+' <span class="omute">· '+oEsc(a.cod)+'</span></li>'}).join('')+'</ul></div>'+
+      '<div class="kbox"><div class="tdtabs"><button class="och" aria-pressed="true" data-tb="pdf">Carica il PDF</button><button class="och" aria-pressed="false" data-tb="txt">Incolla il testo</button></div>'+
+      '<div id="tdc_pdf"><input type="file" id="tdc_f" accept=".pdf,application/pdf"><p class="onote">Il file viene letto solo per questa analisi e non viene conservato.</p></div>'+
+      '<div id="tdc_txt" hidden><textarea id="tdc_t" rows="8" placeholder="Incolla qui il testo del contratto, del preventivo o dell\'incarico…"></textarea></div>'+
+      '<div class="onav"><button class="cta s o2" id="tdc_go">Analizza il contratto</button><span class="onote" id="tdc_st" aria-live="polite"></span></div></div><div id="tdc_res"></div>'+tdFine(t,'Ho aggiornato il contratto'),true);
+    tdBindFine(t);var modo='pdf';
+    [].slice.call(document.querySelectorAll('[data-tb]')).forEach(function(x){x.onclick=function(){modo=x.getAttribute('data-tb');[].slice.call(document.querySelectorAll('[data-tb]')).forEach(function(y){y.setAttribute('aria-pressed',y===x?'true':'false')});$('tdc_pdf').hidden=modo!=='pdf';$('tdc_txt').hidden=modo!=='txt'}});
+    $('tdc_go').onclick=function(){var st=$('tdc_st'),go=$('tdc_go'),cl=(oUsate()[0]||{}).cliente||{};
+      var invia=function(dati){go.disabled=true;st.innerHTML='<span class="ospin sm"></span> Leggo il contratto e lo confronto con le tue attività… (fino a un minuto)';tap('dafare_contratto_analizza');
+        aiCall('contratto',Object.assign({attivita:att,cliente:cl},dati)).then(function(j){go.disabled=false;
+          if(!j||!j.ok){st.textContent=(j&&j.errore)||'Non sono riuscito ad analizzarlo. Riprova o incolla il testo.';return}st.textContent='';tdContrRes(j)})};
+      if(modo==='txt'){var tx=$('tdc_t').value.trim();if(tx.length<80){st.textContent='Incolla il testo completo del contratto.';return}invia({testo:tx.slice(0,30000)})}
+      else{var f=$('tdc_f').files[0];if(!f){st.textContent='Scegli il PDF del contratto.';return}if(f.size>6*1024*1024){st.textContent='Il file è troppo grande (massimo 6 MB).';return}
+        var r=new FileReader();r.onload=function(){invia({file:String(r.result).split(',')[1]})};r.readAsDataURL(f)}}}
+  function tdContrRes(j){var h='<div class="kbox"><div class="lbl">Cosa ho trovato</div>'+(j.valutazione?'<p>'+oEsc(j.valutazione)+'</p>':'')+
+      (j.presenti&&j.presenti.length?'<p class="onote"><b>Già coperte:</b> '+j.presenti.map(oEsc).join(' · ')+'</p>':'')+
+      (j.mancanti&&j.mancanti.length?'<div class="lbl">Mancano o sono troppo generiche</div><ul class="olis">'+j.mancanti.map(function(m){return '<li><b>'+oEsc(m.attivita)+'</b>'+(m.perche?' — '+oEsc(m.perche):'')+'</li>'}).join('')+'</ul>':'')+'</div>';
+    if(j.clausole&&j.clausole.length)h+='<div class="kbox"><div class="lbl">Clausole da aggiungere</div>'+j.clausole.map(function(c,i){return '<div class="tdcl"><b>'+oEsc(c.titolo||('Clausola '+(i+1)))+'</b><pre id="tdcl'+i+'">'+oEsc(c.testo)+'</pre><button class="och" data-cp="'+i+'">Copia</button></div>'}).join('')+
+      '<button class="kb" id="tdcl_all">Copia tutte le clausole</button>'+(j.note?'<p class="onote">'+oEsc(j.note)+'</p>':'')+'<p class="onote">Sono una proposta: se il contratto è importante, falle rivedere da un professionista prima di firmarlo.</p></div>';
+    $('tdc_res').innerHTML=h;var cp=function(t,b){try{navigator.clipboard.writeText(t);b.textContent='Copiata'}catch(e){}};
+    [].slice.call(document.querySelectorAll('[data-cp]')).forEach(function(b){b.onclick=function(){cp(j.clausole[+b.getAttribute('data-cp')].testo,b)}});
+    var all=$('tdcl_all');if(all)all.onclick=function(){cp(j.clausole.map(function(c){return (c.titolo?c.titolo+'\n':'')+c.testo}).join('\n\n'),all)};
+    $('tdc_res').scrollIntoView({block:'start',behavior:reduce?'auto':'smooth'})}
+  function tdPec(t){var est=tdEst();
+    tdModal('<h3>'+oEsc(t.titolo)+'</h3>'+(est?'<p>Il tuo cliente è all\'estero e di solito non ha la PEC: l\'importante è avere il contratto <b>firmato da entrambi</b> e una <b>prova di invio</b>.</p>'+
+      tdSteps([['Prepara il PDF','Il contratto aggiornato con l\'elenco delle prestazioni e i compensi separati.'],['Firmalo','Con firma elettronica (per esempio una piattaforma di firma online) oppure firma, scansiona e salva in PDF.'],['Invialo','Per email al tuo referente, chiedendo di rimandarlo firmato. Se il cliente ha un indirizzo per le comunicazioni ufficiali, usa quello.'],['Conserva tutto','Il PDF firmato da entrambi e l\'email di invio: sono la prova della data e del contenuto dell\'accordo.']]):
+      '<p>La PEC dà al contratto una <b>data certa</b> e una <b>prova di consegna</b>.</p>'+tdSteps([['Prepara il PDF','Il contratto aggiornato, firmato (meglio con firma digitale).'],['Trova la PEC del cliente','Per le imprese su registroimprese.it, per i professionisti su inipec.gov.it.'],['Invia dalla tua PEC','Allega il PDF e scrivi nell\'oggetto «Contratto di prestazione di servizi aggiornato».'],['Conserva le ricevute','Ricevuta di accettazione e di consegna: sono la prova dell\'invio.']]))+tdFine(t,'Ho inviato il contratto'),true);tdBindFine(t)}
+  // fattura: come ricomporre la fattura caricata, esempio e modello da scaricare
+  function tdFattura(t){var R=oCalc3(),h='<h3>Come rifare la fattura</h3><p>Ogni prestazione va su una <b>riga a parte</b>, con il suo importo e una descrizione precisa di quello che hai fatto. Il totale per il cliente non cambia. I codici ATECO non si scrivono in fattura: servono a te per sapere quanto hai incassato per ogni attività.</p>';
+    R.sp.forEach(function(x,k){var v=x.v;h+='<div class="kbox"><div class="lbl">La fattura '+(R.sp.length>1?'«'+oEsc(v.nome)+'» ':'')+'oggi</div><div class="kbox-t"><table class="kt ofat"><tr><th>Riga</th><th>Importo</th></tr>'+(v.righe||[]).map(function(r){return '<tr><td>'+oEsc(r.testo)+'</td><td>'+eur(r.importo)+'</td></tr>'}).join('')+'</table></div>'+
+      '<div class="lbl">Come rifarla</div><div class="kbox-t"><table class="kt ofat"><tr><th>Riga</th><th>Perché</th><th>Importo</th></tr><tr><td>'+oEsc((v.righe&&v.righe[0]&&v.righe[0].testo)||v.attivita||'Lavoro principale')+'</td><td>Il tuo lavoro principale (codice '+oEsc(OTMAIN.cod)+')</td><td>'+eur(x.main)+'</td></tr>'+
+      x.rows.map(function(r){return '<tr class="onew"><td>'+oEsc(r.m.riga_fattura||r.m.nome)+'</td><td>'+oEsc(r.m.collegamento||r.m.nome)+' (codice '+oEsc(r.m.codice_ateco)+', '+pc(r.m.coefficiente)+')</td><td>'+eur(r.eur)+'</td></tr>'}).join('')+'<tr class="otot"><td>Totale</td><td></td><td>'+eur(v.importo||0)+'</td></tr></table></div>'+
+      '<button class="cta s o2" data-tpl="'+k+'">Scarica il modello di fattura (PDF)</button></div>'});
+    h+=tdSteps([['Crea le voci nel tuo programma','Una voce di listino per ogni prestazione, con la descrizione d\'esempio.'],['Dividi l\'importo','Usa le proporzioni qui sopra, o quelle reali del lavoro svolto.'],['Annota il codice','Tieni a parte, per ogni riga, il codice ATECO dell\'attività: ti serve per il calcolo del reddito.']]);
+    if(t.tipo==='fattura_sep')h+='<p class="onote">Se una micro-attività la svolgi in momenti diversi o per importi a sé, puoi emettere una <b>fattura separata</b> solo per quella, con la normale numerazione delle tue fatture.</p>';
+    tdModal(h+tdFine(t,'Ho rifatto la fattura'),true);tdBindFine(t);
+    [].slice.call(document.querySelectorAll('[data-tpl]')).forEach(function(bt){bt.onclick=function(){var x=R.sp[+bt.getAttribute('data-tpl')],v=x.v;bt.disabled=true;bt.textContent='Preparo il modello…';tap('dafare_modello_fattura');
+      var righe=[{testo:(v.righe&&v.righe[0]&&v.righe[0].testo)||v.attivita||'Lavoro principale',importo:x.main}].concat(x.rows.map(function(r){return {testo:r.m.riga_fattura||r.m.nome,importo:r.eur}}));
+      fetch('/api/prova/template',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({righe:righe})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(bl){var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download='modello-fattura-taxscan.pdf';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},2000);bt.disabled=false;bt.textContent='Scarica di nuovo il modello'})
+      .catch(function(){bt.disabled=false;bt.textContent='Non riuscito: riprova'})}})}
+  function tdCciaa(t){tdModal('<h3>'+oEsc(t.titolo)+'</h3><p>'+oEsc(t.perche)+'</p>'+tdSteps([['Fai il conto','Confronta i contributi minimi INPS Commercianti (circa 4.600 € l\'anno, circa 3.000 € con la riduzione del 35% per i forfettari) con il risparmio della micro-attività.'],['Comunicazione Unica','Se conviene, la pratica si fa con ComUnica sul portale delle Camere di Commercio: iscrizione al Registro imprese, variazione IVA e INPS in un solo invio.'],['Chiedi la riduzione del 35%','Se sei forfettario, la domanda si fa all\'INPS online.']])+tdFine(t),true);tdBindFine(t)}
+  function tdCliente(t){var sc=typeof oScelte==='function'?oScelte():[],txt='Gentile cliente,\n\ndalla prossima fattura troverà le prestazioni che svolgo per voi indicate su righe separate, ognuna con il suo importo: '+[OTMAIN.nome].concat(sc.map(function(m){return m.nome})).join('; ').toLowerCase()+'. Il totale non cambia: è solo una descrizione più precisa del lavoro.\n\nResto a disposizione per qualsiasi chiarimento.\n\nCordiali saluti';
+    tdModal('<h3>Avvisa il cliente del nuovo formato</h3><p>Un messaggio breve, da mandare insieme al contratto aggiornato. Puoi modificarlo prima di copiarlo.</p><textarea id="tdmsg" rows="10">'+oEsc(txt)+'</textarea><div class="onav"><button class="kb" id="tdmsg_c">Copia il messaggio</button></div>'+tdFine(t,'Ho avvisato il cliente'),true);tdBindFine(t);
+    $('tdmsg_c').onclick=function(){try{navigator.clipboard.writeText($('tdmsg').value);this.textContent='Copiato'}catch(e){}}}
+  function tdIncassi(t){tdModal('<h3>'+oEsc(t.titolo)+'</h3><p>'+oEsc(t.perche)+'</p>'+tdSteps([['Una colonna per attività','Nel tuo foglio o nel programma di fatturazione: lavoro principale e ogni micro-attività, con il suo codice.'],['A ogni incasso','Dividi l\'importo incassato secondo le righe della fattura.'],['A fine anno','I totali per attività servono per il quadro LM della dichiarazione, ognuno con il suo coefficiente.']])+tdFine(t),true);tdBindFine(t)}
+  function tdGenerico(t){tdModal('<h3>'+oEsc(t.titolo)+'</h3>'+(t.perche?'<p>'+oEsc(t.perche)+'</p>':'')+(t.come?'<div class="kbox"><div class="lbl">Come fare</div><p>'+oEsc(t.come)+'</p></div>':'')+
+    (t.tipo==='verifica'?'<p class="onote">Puoi mostrare il report PDF al tuo commercialista: contiene tutti i calcoli e la fattura rifatta.</p>':'')+tdFine(t),true);tdBindFine(t)}
+  // scrivere all'avatar in «Da fare»: «aggiungi …», «ricordami di …» diventano compiti
   window.__tdWrite=function(v){var m=String(v||'').match(/^\s*(aggiungi|ricordami di|ricordami|segna|devo)\s+(.+)/i);if(!m)return false;tdAdd(m[2]);say('Fatto, l\'ho aggiunto ai tuoi compiti.');return true};
-  var TDP={'Da dove arrivano questi compiti?':{a:'Li preparo io quando completi l\'<b>Ottimizzazione fiscale</b>: sono le cose da fare per ottenere davvero il risparmio stimato, partendo dalle prestazioni che hai indicato.',n:['Devo farli tutti?']},
-    'Devo farli tutti?':{a:'No: sono passi consigliati. Alcuni, come aggiungere il codice alla partita IVA, servono perché il risparmio diventi reale. Se vuoi, un commercialista può controllarli con te.',n:[]},
-    'Come aggiungo un compito?':{a:'Scrivilo nel campo «Aggiungi un compito», oppure scrivimi qui sotto, per esempio «ricordami di chiamare il commercialista».',n:[]}};
-  function tdChips(){if(window.__chips)window.__chips(TDP,TD.l.length?['Da dove arrivano questi compiti?','Devo farli tutti?','Come aggiungo un compito?']:['Da dove arrivano questi compiti?','Come aggiungo un compito?'])}
+  var TDP={'Da dove arrivano questi compiti?':{a:'Li preparo io quando completi l\'<b>Ottimizzazione fiscale</b>: sono i passi per ottenere davvero il risparmio, in ordine di priorità.',n:['Cosa fa il pulsante Inizia?']},
+    'Cosa fa il pulsante Inizia?':{a:'Ti guida nel passo: per il codice ATECO ti spiego la procedura online, per il contratto leggo il tuo e scrivo le clausole che mancano, per la fattura ti preparo il modello da scaricare.',n:['Devo farli tutti?']},
+    'Devo farli tutti?':{a:'Sono passi consigliati. Alcuni, come aggiungere il codice alla partita IVA, servono perché il risparmio diventi reale. Se vuoi, un commercialista può controllarli con te.',n:[]}};
+  function tdChips(){if(window.__chips)window.__chips(TDP,TD.l.length?['Cosa fa il pulsante Inizia?','Da dove arrivano questi compiti?','Devo farli tutti?']:['Da dove arrivano questi compiti?'])}
   var _tdsv=showView;showView=function(v){_tdsv(v);if(v==='t'){tdRender();scrollTo(0,0);tap('dafare_apri');var n=TD.l.filter(function(t){return !t.fatto}).length;
-    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?'Ti restano <b>'+n+'</b> '+(n===1?'cosa':'cose')+' da fare. Spuntale man mano: le tengo io in ordine.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
+    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?'Ti restano <b>'+n+'</b> '+(n===1?'passo':'passi')+', in ordine di priorità. Tocca un riquadro e premi <b>Inizia</b>: ti guido io.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
   tdLoad();
   // ================= Marcello-pallino: un solo avatar mobile, con fumetto, barra in basso e volti video =================
   var MP={last:'',qa:false,typing:false};
