@@ -1000,9 +1000,6 @@ def _coerenza(x: dict, cert: dict) -> list:
     paese = str((x.get("cliente") or {}).get("paese") or "")
     if paese and not re.match(r"ital", paese, re.I) and "N2.2" in (ct.get("natura") or []) and (x.get("cliente") or {}).get("tipo") in ("azienda", "professionista", ""):
         out.append({"tipo": "natura_iva", "gravita": "bassa", "testo": "Per un servizio a un'azienda estera di solito si indica la natura N2.1 (art. 7-ter), non N2.2: fallo verificare."})
-    if len(x.get("righe") or []) == 1 and not any(a["tipo"] == "generica" for a in out):
-        out.append({"tipo": "una_riga", "gravita": "info",
-                    "testo": "Tutto il lavoro è su una riga sola: nell'Analisi controllo se una parte rientra in categorie con un coefficiente più basso, da fatturare a parte."})
     cl = x.get("cliente") or {}
     ue = paese.strip().lower() in _PAESI_UE
     if ue and cl.get("tipo") in ("azienda", "professionista", "ente pubblico") and ct and not ct.get("inversione_contabile"):

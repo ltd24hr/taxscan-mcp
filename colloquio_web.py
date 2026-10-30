@@ -948,7 +948,7 @@ function fineFatture() {
     PREFILL = l[0].nome;
     const em = (FATT.find(v => v.usa && !v.altra && v.emittente && v.emittente.nome) || {}).emittente || null;
     const d = {v: 1, ts: new Date().toISOString(), emit: em, extra: [], done1: false, desc: l.map(x => x.nome).join("; "), spec: "", cod: null, sin: l,
-      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {}, anomalie: v.anomalie || [], mia: !!v.mia,
+      inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {}, cliente_nome: v.cliente_nome || "", ctl: {numero: (v.controlli || {}).numero || "", data: (v.controlli || {}).data || ""}, anomalie: v.anomalie || [], mia: !!v.mia,
         righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
     fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
     // niente riepilogo qui: quello che ho capito si rivede insieme dentro l'app
