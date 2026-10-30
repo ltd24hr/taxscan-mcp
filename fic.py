@@ -249,3 +249,48 @@ def righe_incassate_anno(access_token: str, company_id: int, anno: int, max_pagi
             "senza_righe": round(senza_righe, 2),
             "righe": [{"testo": r["testo"], "importo": round(r["importo"], 2)} for r in righe]}
 
+
+_GENERICA = ("prestazione di servizi", "prestazione di servizio", "prestazioni di servizi", "servizi", "servizio", "consulenza", "compenso")
+
+
+def fatture_recenti(access_token: str, company_id: int, quante: int = 10) -> list:
+    """Le ultime fatture emesse (le piu' recenti prima), per l'Ottimizzazione fiscale: righe (descrizione + importo),
+    data, numero e chi e' il cliente (tipo, paese e, solo a schermo, il nome). Sola lettura."""
+    risposta = requests.get(
+        f"{API_BASE}/c/{company_id}/issued_documents",
+        headers={"Authorization": f"Bearer {access_token}"},
+        params={"type": "invoice", "page": 1, "per_page": max(1, min(int(quante), 30)), "sort": "-date", "fieldset": "detailed"},
+        timeout=25)
+    risposta.raise_for_status()
+    out = []
+    for doc in (risposta.json().get("data") or []):
+        ent = doc.get("entity") or {}
+        righe = []
+        for it in (doc.get("items_list") or []):
+            if not isinstance(it, dict):
+                continue
+            nome = " ".join(str(it.get("name") or "").split())
+            desc = " ".join(str(it.get("description") or "").split())
+            if desc and nome.lower() in _GENERICA:
+                testo = desc            # riga generica: la descrizione vera e' sotto
+            elif desc and desc.lower() not in nome.lower():
+                testo = f"{nome} — {desc}" if nome else desc
+            else:
+                testo = nome or desc
+            imp = _importo_riga(it)
+            if testo and imp > 0:
+                righe.append((testo[:200], round(imp, 2)))
+        tipo_ent = str(ent.get("type") or "").lower()
+        piva = str(ent.get("vat_number") or "").strip()
+        tipo = ("ente pubblico" if tipo_ent == "pa" else "privato" if tipo_ent == "person"
+                else "azienda" if (tipo_ent in ("company", "condo") or piva) else "privato")
+        try:
+            netto = float(doc.get("amount_net") or 0)
+        except (TypeError, ValueError):
+            netto = 0.0
+        out.append({"id": doc.get("id"), "numero": f"{doc.get('number') or ''}{doc.get('numeration') or ''}".strip(),
+                    "data": str(doc.get("date") or "")[:10], "importo": round(netto or sum(i for _, i in righe), 2), "righe": righe,
+                    "cliente": {"tipo": tipo, "paese": str(ent.get("country") or "Italia").strip()[:40] or "Italia",
+                                "nome": str(ent.get("name") or "").strip()[:90]}})
+    return out
+

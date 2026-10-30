@@ -1629,10 +1629,18 @@ async def fic_callback(request):
     if not email or not code:
         return pagina("Link scaduto o non valido",
                        "Torna su TaxScan e chiedi di nuovo il collegamento a Fatture in Cloud.", ok=False)
+    c_prova = prova.fic_da_chiave(email)   # collegamento avviato dall'app (legato al link personale, non a un'email)
     try:
         fic.scambia_codice(email, code)
     except Exception as e:
+        if c_prova:
+            from starlette.responses import RedirectResponse
+            return RedirectResponse(url=f"/prova?c={c_prova}&fic=errore", status_code=302)
         return pagina("Collegamento non riuscito", f"Errore: {e}. Riprova tra poco.", ok=False)
+    if c_prova:
+        from starlette.responses import RedirectResponse
+        _evento("fic_collegato", c_prova)
+        return RedirectResponse(url=f"/prova?c={c_prova}&fic=collegato", status_code=302)
     try:
         id_dash = db.dashboard_di_utente(email)
     except Exception:

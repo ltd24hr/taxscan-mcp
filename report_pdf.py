@@ -454,8 +454,9 @@ def genera_fattura(d: dict) -> bytes:
     p.testo(PAGE_W - MARG - 190, p.y - 16, "Totale documento", 10, True, SCURO)
     p.testo(PAGE_W - MARG - 10 - _lar(_eur(tot), 11, True), p.y - 16, _eur(tot), 11, True, SCURO)
     p.y -= 40
-    p.par("Diciture da riportare (regime forfettario):", 9.5, True, dopo=2)
-    for t in ["Operazione effettuata ai sensi dell'art. 1, commi da 54 a 89, della Legge n. 190/2014 (regime forfettario): non soggetta a IVA né a ritenuta d'acconto.",
+    dic = [_t(x, 400) for x in (d.get("diciture") or []) if str(x or "").strip()]
+    p.par("Diciture da riportare" + (" (cliente: " + _t(d.get("cliente_paese"), 40) + ")" if d.get("cliente_paese") else "") + ":", 9.5, True, dopo=2)
+    for t in dic or ["Operazione effettuata ai sensi dell'art. 1, commi da 54 a 89, della Legge n. 190/2014 (regime forfettario): non soggetta a IVA né a ritenuta d'acconto.",
               "Imposta di bollo da 2,00 € assolta sull'originale, se l'importo supera 77,47 €.",
               "Cliente estero: usa la natura dell'operazione e la dicitura che il tuo programma di fatturazione propone per le prestazioni verso l'estero (per esempio N2.1, art. 7-ter DPR 633/72)."]:
         p.par("• " + t, 9, False, GRIGIO, dopo=3, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)

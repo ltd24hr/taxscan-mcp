@@ -460,7 +460,9 @@ _SYS_OTTIMIZZA = (
     "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla). "
     "Indica anche l'attivita' principale come la capisci dalle fatture: descrizione semplice (massimo 12 parole) e codice ATECO; se il lavoro "
     "principale corrisponde a un codice DIVERSO da quello registrato, scrivi quello giusto in principale.codice_ateco (TaxScan lo segnala). "
-    "Da 4 a 8 micro-attivita'. "
+    "Da 4 a 8 micro-attivita'. Se le fatture sono piu' d'una, nel campo per_fattura scrivi per ognuna una frase su quel cliente: "
+    "quanta parte del lavoro per lui e' operativa o accessoria e quindi dove c'e' piu' margine (per esempio: «qui quasi tutto e' "
+    "consulenza: poco margine»). "
     "IMPORTANTE: TaxScan ha tolto dalle righe i nomi dei clienti e delle persone per privacy (dove vedi «[cliente]» o una frase senza nome): non e' "
     "un errore della fattura, non parlarne mai e non scrivere mai «[cliente]» o segnaposti nelle righe di fattura che proponi. "
     "I controlli formali della fattura (diciture, natura IVA, inversione contabile, VIES, bollo) li fa gia' TaxScan e li mostra accanto alla fattura: "
@@ -470,7 +472,7 @@ _SYS_OTTIMIZZA = (
     "Italiano semplice, dai del tu. Formato: "
     '{"principale":{"descrizione":"...","codice_ateco":"NN.NN.NN"},"sintesi":"2 frasi su cosa hai capito e dove si puo\' risparmiare",'
     '"micro":[{"nome":"...","descrizione":"...","collegamento":"...","fattura":"f0","categoria":"...","codice_ateco":"NN.NN.NN",'
-    '"riga_fattura":"...","attenzione":"","dichiarata":false}],"osservazioni":["..."],"domanda":{"testo":"","opzioni":[]}}')
+    '"riga_fattura":"...","attenzione":"","dichiarata":false}],"osservazioni":["..."],"per_fattura":[{"id":"f0","nota":"..."}],"domanda":{"testo":"","opzioni":[]}}')
 _SYS_FASI = (
     "Sei Marcello, l'agente di TaxScan, e ragioni come un commercialista che conosce bene il lavoro dei suoi clienti. " + _SIC +
     "Ti do le fatture di una persona con partita IVA in regime forfettario: per ognuna il lavoro fatturato e il tipo di cliente. "
@@ -754,6 +756,9 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                                    "coefficiente": None if co2.get("errore") else co2["coefficiente"]},
                     "sintesi": _pulisci(r.get("sintesi"), 400), "micro": [x for x in out if x["nome"]],
                     "osservazioni": [_senza_segnaposto(_pulisci(o, 400)) for o in (r.get("osservazioni") or [])[:2] if _pulisci(o, 400)],
+                    "per_fattura": [{"id": str(x.get("id")), "nota": _senza_segnaposto(_pulisci(x.get("nota"), 260))}
+                                    for x in (r.get("per_fattura") or [])[:6]
+                                    if isinstance(x, dict) and re.fullmatch(r"f\d", str(x.get("id") or "")) and _pulisci(x.get("nota"), 260)],
                     "domanda": {"testo": _pulisci(dom.get("testo"), 300),
                                 "opzioni": [_pulisci(o, 80) for o in (dom.get("opzioni") or [])[:4] if _pulisci(o, 80)]}}
         if task == "contratto":
@@ -1012,6 +1017,115 @@ _PAESI_UE = {"austria", "belgio", "bulgaria", "cipro", "croazia", "danimarca", "
              "romania", "slovacchia", "slovenia", "spagna", "svezia", "ungheria"}
 
 
+def _capisci_fatture(c: str, leggibili: list) -> None:
+    """Per ogni fattura: si capisce che lavoro e'? Se no, la domanda da fare (con opzioni). Modifica le voci in place."""
+    ia = {}
+    if ai.attiva() and _conta_ai(c):
+        try:
+            u = "\n\n".join("[f%d] " % x["idx"] + " | ".join("%s (%s €)" % (_pulisci(r["testo"], 160), r["importo"]) for r in x["righe"][:8])
+                             for x in leggibili)
+            r = ai.genera_json(_SYS_LETTURA, u, 1500) or {}
+            for f in (r.get("fatture") or []):
+                if isinstance(f, dict):
+                    ia[str(f.get("id") or "")] = f
+        except Exception as e:
+            print(f"prova: errore lettura fatture: {e}")
+    for x in leggibili:
+        f = ia.get("f%d" % x["idx"]) or {}
+        att = _pulisci(f.get("attivita"), 80)
+        capito = bool(f.get("capito")) and bool(att) and not _troppo_generico(x["righe"])
+        x["capito"] = capito
+        x["attivita"] = att if capito else ""
+        x["motivo"] = _pulisci(f.get("motivo"), 200)
+        if not capito:
+            gen = [r["testo"] for r in x["righe"][:2]]
+            x["domanda"] = _pulisci(f.get("domanda"), 220) or (
+                "In questa fattura c'e' scritto «%s»: di che tipo di lavoro si tratta?" % _pulisci(gen[0] if gen else "", 80))
+            x["opzioni"] = [_pulisci(o, 70) for o in (f.get("opzioni") or []) if _pulisci(o, 70)][:4]
+
+
+def _fic_chiave(c: str) -> str:
+    """Chiave del collegamento Fatture in Cloud per chi usa l'app: il link personale, non un'email (che qui non e' verificata)."""
+    return "prova-" + c.encode("utf-8").hex()
+
+
+def fic_da_chiave(chiave: str) -> str | None:
+    if not str(chiave or "").startswith("prova-"):
+        return None
+    try:
+        return bytes.fromhex(chiave[6:]).decode("utf-8")
+    except ValueError:
+        return None
+
+
+def _c_valido(c: str) -> str:
+    c = re.sub(r"[^A-Za-z0-9_-]", "", str(c or ""))[:64]
+    if len(c) < 6:
+        return ""
+    try:
+        if _dashboard(c) or db.carica_colloquio_web(c):
+            return c
+    except Exception:
+        pass
+    return ""
+
+
+def fic_stato(c: str) -> dict:
+    c = _c_valido(c)
+    if not c:
+        return {"ok": False}
+    try:
+        return {"ok": True, "collegato": bool(db.carica_fic_token(_fic_chiave(c)))}
+    except Exception:
+        return {"ok": True, "collegato": False}
+
+
+def fic_fatture(c: str, company_id=None) -> dict:
+    """Le ultime fatture emesse da Fatture in Cloud, lette come quelle caricate a mano (stesso formato di fatture_lettura)."""
+    import fic
+    import fatture_file
+    c = _c_valido(c)
+    if not c:
+        return {"ok": False, "errore": "Apri la pagina dal tuo link personale."}
+    k = _fic_chiave(c)
+    try:
+        token = fic.token_valido(k)
+        if not token:
+            return {"ok": False, "collegato": False, "errore": "Fatture in Cloud non è collegato."}
+        if company_id:
+            db.imposta_azienda_fic(k, int(company_id), "")
+        coll = db.carica_fic_token(k) or {}
+        if not coll.get("company_id"):
+            aziende = fic.lista_aziende(token)
+            if len(aziende) == 1:
+                db.imposta_azienda_fic(k, aziende[0]["id"], aziende[0].get("name", ""))
+            elif len(aziende) > 1:
+                return {"ok": False, "scegli_azienda": [{"id": a["id"], "nome": a.get("name", "")} for a in aziende]}
+            else:
+                return {"ok": False, "errore": "Su questo account di Fatture in Cloud non trovo nessuna azienda."}
+            coll = db.carica_fic_token(k) or {}
+        docs = fic.fatture_recenti(token, coll["company_id"], 10)
+    except Exception as e:
+        print(f"prova: fatture da Fatture in Cloud non lette: {e}")
+        return {"ok": False, "errore": "Non riesco a leggere le fatture da Fatture in Cloud in questo momento. Riprova tra poco."}
+    out = []
+    for i, d in enumerate(docs):
+        cl = d.get("cliente") or {}
+        righe = fatture_file._togli_nomi(d.get("righe") or [], [cl.get("nome")])
+        x = {"idx": i, "nome": "Fattura n. %s" % d.get("numero") if d.get("numero") else "Fattura", "ok": bool(righe), "motivo_non_letta": "" if righe else "senza righe",
+             "cliente_nome": cl.get("nome", "") if cl.get("tipo") in ("azienda", "ente pubblico") else "", "fonte": "fic", "fic_id": d.get("id"),
+             "righe": [{"testo": _senza_segnaposto(t), "importo": imp} for t, imp in righe], "importo": d.get("importo") or 0,
+             "emittente": {}, "cliente": {"tipo": cl.get("tipo", ""), "paese": cl.get("paese", "")}, "non_fattura": False,
+             "controlli": {"data": d.get("data", ""), "numero": d.get("numero", "")}, "anomalie": [],
+             "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []}
+        out.append(x)
+    leggibili = [x for x in out if x["ok"]]
+    if not leggibili:
+        return {"ok": True, "fatture": out, "vuoto": "Su Fatture in Cloud non ho trovato fatture emesse con delle righe."}
+    _capisci_fatture(c, leggibili)
+    return {"ok": True, "fatture": out}
+
+
 def fatture_lettura(c: str, files, prof=None) -> dict:
     """Legge ogni fattura da sola e dice, per ognuna, se si capisce cosa e' stato fatto. Se non si capisce, lo dice
     e propone una domanda: non indovina. Restano solo descrizione e importo delle righe; nulla viene salvato."""
@@ -1059,29 +1173,7 @@ def fatture_lettura(c: str, files, prof=None) -> dict:
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:
         return {"ok": True, "fatture": out, "vuoto": "Non sono riuscito a leggere righe di prestazioni dai file caricati."}
-    ia = {}
-    if ai.attiva() and _conta_ai(c):
-        try:
-            u = "\n\n".join("[f%d] " % x["idx"] + " | ".join("%s (%s €)" % (_pulisci(r["testo"], 160), r["importo"]) for r in x["righe"][:8])
-                             for x in leggibili)
-            r = ai.genera_json(_SYS_LETTURA, u, 1500) or {}
-            for f in (r.get("fatture") or []):
-                if isinstance(f, dict):
-                    ia[str(f.get("id") or "")] = f
-        except Exception as e:
-            print(f"prova: errore lettura fatture: {e}")
-    for x in leggibili:
-        f = ia.get("f%d" % x["idx"]) or {}
-        att = _pulisci(f.get("attivita"), 80)
-        capito = bool(f.get("capito")) and bool(att) and not _troppo_generico(x["righe"])
-        x["capito"] = capito
-        x["attivita"] = att if capito else ""
-        x["motivo"] = _pulisci(f.get("motivo"), 200)
-        if not capito:
-            gen = [r["testo"] for r in x["righe"][:2]]
-            x["domanda"] = _pulisci(f.get("domanda"), 220) or (
-                "In questa fattura c'e' scritto «%s»: di che tipo di lavoro si tratta?" % _pulisci(gen[0] if gen else "", 80))
-            x["opzioni"] = [_pulisci(o, 70) for o in (f.get("opzioni") or []) if _pulisci(o, 70)][:4]
+    _capisci_fatture(c, leggibili)
     # coerenza con il certificato dell'utente e con le regole del forfettario; i dati identificativi non escono dal server
     cert = _profilo_certificato(c if c != "demo" else "", prof)
     if not cert.get("piva"):
@@ -1261,6 +1353,27 @@ def _manda_report(email: str, pdf: bytes, nome: str, risparmio: float) -> bool:
         return False
 
 
+def _diciture(cl: dict, totale: float) -> list:
+    """Le diciture della fattura per QUEL cliente: dipendono da dove sta e da chi e' (azienda o privato)."""
+    paese = _pulisci((cl or {}).get("paese"), 40).lower()
+    tipo = _pulisci((cl or {}).get("tipo"), 20).lower()
+    impresa = tipo in ("azienda", "professionista", "ente pubblico") or not tipo
+    out = ["Operazione effettuata ai sensi dell'art. 1, commi da 54 a 89, della Legge n. 190/2014 (regime forfettario): "
+           "non soggetta a IVA né a ritenuta d'acconto."]
+    if paese and not paese.startswith("ital") and impresa and paese in _PAESI_UE:
+        out.append("Inversione contabile: operazione non soggetta a IVA ai sensi dell'art. 7-ter del DPR 633/72 "
+                   "(nella fattura elettronica: natura N2.1).")
+        out.append("Prima di emetterla controlla che la partita IVA del cliente sia attiva nel VIES, e che anche la tua sia iscritta al VIES.")
+    elif paese and not paese.startswith("ital") and impresa:
+        out.append("Operazione non soggetta a IVA ai sensi dell'art. 7-ter del DPR 633/72 (nella fattura elettronica: natura N2.1). "
+                   "Il cliente è fuori dall'Unione europea: non serve la dicitura «inversione contabile».")
+    else:
+        out.append("Nella fattura elettronica la natura dell'operazione è N2.2 (non soggetta, regime forfettario).")
+    if totale > 77.47:
+        out.append("Imposta di bollo da 2,00 € (l'importo supera 77,47 €): indicala in fattura e versala con F24.")
+    return out
+
+
 def template_fattura(d: dict):
     import report_pdf
     d = d if isinstance(d, dict) else {}
@@ -1272,8 +1385,10 @@ def template_fattura(d: dict):
             except Exception:
                 imp = 0.0
             righe.append({"testo": _pulisci(r.get("testo"), 160), "importo": imp})
+    cl = d.get("cliente") if isinstance(d.get("cliente"), dict) else {}
     try:
-        return report_pdf.genera_fattura({"righe": righe})
+        return report_pdf.genera_fattura({"righe": righe, "diciture": _diciture(cl, sum(r["importo"] for r in righe)),
+                                          "cliente_paese": _pulisci(cl.get("paese"), 40)})
     except Exception as e:
         print(f"prova: modello fattura non generato: {e}")
         return None
@@ -1398,6 +1513,41 @@ def registra(mcp, avvisi):
         if not pdf:
             return JSONResponse({"ok": False}, status_code=500)
         return Response(pdf, media_type="application/pdf", headers={"Content-Disposition": 'attachment; filename="modello-fattura-taxscan.pdf"', "Cache-Control": "no-store"})
+
+    # ---- Fatture in Cloud: collegamento (sola lettura) e ultime fatture emesse
+    @mcp.custom_route("/api/prova/fic/collega", methods=["GET"])
+    async def prova_fic_collega(request):
+        from starlette.responses import RedirectResponse
+        import fic
+        c = _c_valido(request.query_params.get("c", ""))
+        if not c:
+            return RedirectResponse(url="/prova", status_code=302)
+        try:
+            link = fic.link_autorizzazione(_fic_chiave(c))
+        except Exception as e:
+            print(f"prova: collegamento Fatture in Cloud non avviato: {e}")
+            return RedirectResponse(url="/prova?c=%s&fic=errore" % c, status_code=302)
+        try:
+            db.registra_evento("fic_collegamento_avviato", c)
+        except Exception:
+            pass
+        return RedirectResponse(url=link, status_code=302)
+
+    @mcp.custom_route("/api/prova/fic/stato", methods=["POST"])
+    async def prova_fic_stato(request):
+        try:
+            c = await request.json()
+            return JSONResponse(await asyncio.to_thread(fic_stato, (c or {}).get("c", "")))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=400)
+
+    @mcp.custom_route("/api/prova/fic/fatture", methods=["POST"])
+    async def prova_fic_fatture(request):
+        try:
+            c = await request.json() or {}
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=400)
+        return JSONResponse(await asyncio.to_thread(fic_fatture, c.get("c", ""), c.get("company_id")))
 
     @mcp.custom_route("/admin/ai", methods=["GET"])
     async def prova_admin_ai(request):
