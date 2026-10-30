@@ -1124,7 +1124,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 71</div>
+<div class="ver">Prototipo versione 72</div>
 </div>
 
 <script>
@@ -2371,6 +2371,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         var all=wgSorted(cont,sel),a=all.indexOf(el),b=all.indexOf(t);if(a<0||b<0)return;all[a]=t;all[b]=el;all.forEach(function(x,i){x.style.order=i});lastSw=Date.now();
         var L1=lr(el);sx+=L1.left-L0.left;sy+=L1.top-L0.top;el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
         if(!reduce)sibs.forEach(function(x,i){var N=x.getBoundingClientRect(),dx=F[i].left-N.left,dy=F[i].top-N.top;if(!dx&&!dy)return;x.style.transition='none';x.style.transform='translate('+dx+'px,'+dy+'px)';void x.offsetWidth;x.style.transition='transform .22s ease';x.style.transform='';setTimeout(function(){x.style.transition=''},260)})}
+      function liveMove(t){var sibs=[].slice.call(cont.querySelectorAll(sel)).filter(function(x){return x!==el&&x.offsetParent!==null}),F=sibs.map(function(x){return x.getBoundingClientRect()}),L0=lr(el);
+        var all=wgSorted(cont,sel),a=all.indexOf(el),b=all.indexOf(t);if(a<0||b<0)return;all.splice(a,1);b=all.indexOf(t);all.splice(a<=b?b+1:b,0,el);
+        all.forEach(function(x,i){x.style.order=i});lastSw=Date.now();
+        var L1=lr(el);sx+=L1.left-L0.left;sy+=L1.top-L0.top;el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
+        if(!reduce)sibs.forEach(function(x,i){var N=x.getBoundingClientRect(),dx=F[i].left-N.left,dy=F[i].top-N.top;if(!dx&&!dy)return;x.style.transition='none';x.style.transform='translate('+dx+'px,'+dy+'px)';void x.offsetWidth;x.style.transition='transform .22s ease';x.style.transform='';setTimeout(function(){x.style.transition=''},260)})}
       function clear(){[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')})}
       function begin(){on=true;r0=el.getBoundingClientRect();el.classList.add('wlift');document.body.classList.add('wgdragging');try{getSelection().removeAllRanges()}catch(x){}
         iv=setInterval(function(){if(py<90)scrollBy(0,-14);else if(py>innerHeight-90)scrollBy(0,14);place()},30)}
@@ -2378,6 +2383,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
         var pe=el.style.pointerEvents;el.style.pointerEvents='none';var u=document.elementFromPoint(px,py);el.style.pointerEvents=pe;
         var t=u&&u.closest&&u.closest(sel);clear();tg=null;
+        // Panoramica: come sullo schermo del telefono, il blocco si fa spazio mentre lo trascini e gli altri scorrono (in su se scendi, in giù se sali)
+        if(key==='p'&&t&&t!==el&&cont.contains(t)){if(Date.now()-lastSw>260)liveMove(t);return}
         if((WGZ[key]||WGS[key])&&t&&t!==el&&cont.contains(t)){if(wgSize(t)===wgSize(el)&&Date.now()-lastSw>260){liveSwap(t)}return}
         if(t&&t!==el&&cont.contains(t)){tg=t;var q=t.getBoundingClientRect(),dx=px-(q.left+q.width/2),dy=py-(q.top+q.height/2);
           aft=Math.abs(dy)*q.width>Math.abs(dx)*q.height?dy>0:dx>0;t.classList.add('wover')}}
@@ -2727,7 +2734,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     'Devo farli tutti?':{a:'Sono passi consigliati. Alcuni, come aggiungere il codice alla partita IVA, servono perché il risparmio diventi reale. Se vuoi, un commercialista può controllarli con te.',n:[]}};
   function tdChips(){if(window.__chips)window.__chips(TDP,TD.l.length?['Cosa fa il pulsante Inizia?','Da dove arrivano questi compiti?','Devo farli tutti?']:['Da dove arrivano questi compiti?'])}
   var _tdsv=showView;showView=function(v){_tdsv(v);if(v==='t'){tdRender();scrollTo(0,0);tap('dafare_apri');var n=TD.l.filter(function(t){return !t.fatto}).length;
-    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?'Ti restano <b>'+n+'</b> '+(n===1?'passo':'passi')+', in ordine di priorità. Tocca una scheda e premi <b>Inizia</b>: ti guido io. Quando ne cominci una, trascinala in <b>In corso</b>; a lavoro finito, in <b>Fatto</b>.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
+    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?(n===1?'Ti resta <b>un</b> passo':'Ti restano <b>'+n+'</b> passi')+', in ordine di priorità. Tocca una scheda e premi <b>Inizia</b>: ti guido io. Quando ne cominci una, trascinala in <b>In corso</b>; a lavoro finito, in <b>Fatto</b>.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
   tdLoad();
   // ================= Marcello-pallino: un solo avatar mobile, con fumetto, barra in basso e volti video =================
   var MP={last:'',qa:false,typing:false};
@@ -2904,6 +2911,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.style.left=c[0][0]+'px';d.style.top=c[0][1]+'px';_pbCore()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
   setInterval(mpAvoid,800);addEventListener('resize',function(){setTimeout(mpAvoid,120)});
+  // ---- l'avatar non prende l'iniziativa: entrando in una scheda il messaggio di benvenuto resta pronto ma non si apre.
+  // Si apre quando l'utente tocca l'avatar. Fa eccezione solo la presentazione iniziale della Panoramica.
+  (function(){var _qsv=showView;showView=function(v){var zitto=v!=='g'&&(SETTLED||v!=='p');MP.zitto=zitto;if(zitto)MP.last=null;try{_qsv(v)}finally{MP.zitto=false}};
+    var _qsay=say;say=function(h,cb){if(MP.zitto){MP.last=h;hideBub();if(cb)cb();return}return _qsay.apply(this,arguments)}})();
+
   window.__showView=showView;
   var nota=$('nota'),nt;
   document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
