@@ -898,23 +898,35 @@ function chiediCoerenza(i) {
   $("csi").onclick = () => { v.mia = true; v.usa = true; v.altra = false; chiediCoerenza(i + 1); };
   $("cno").onclick = () => { v.mia = false; v.usa = false; v.altra = true; chiediCoerenza(i + 1); };
 }
+// fatture con lo stesso testo (a parte mese, anno, numeri) sono lo stesso lavoro: si chiede una volta sola
+const MESI = /\b(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre|gen|feb|mar|apr|mag|giu|lug|ago|set|ott|nov|dic|january|february|march|april|may|june|july|august|september|october|november|december)\b/g;
+const chiaveFatt = v => (v.righe || []).map(r => String(r.testo || "").toLowerCase().replace(MESI, " ").replace(/\bmese( di)?\b/g, " ").replace(/[\d.,:;\/\-–—()«»"']+/g, " ").replace(/\s+/g, " ").trim()).join("|");
+const elenco = l => l.length < 2 ? (l[0] || "") : l.slice(0, -1).join(", ") + " e " + l[l.length - 1];
 function chiediFattura(i) {
   while (i < FATT.length && !FATT[i].chiesta && (FATT[i].capito || !FATT[i].usa)) i++;
   if (i >= FATT.length) return fineFatture();
   segna(() => chiediFattura(i));
   const v = FATT[i]; v.chiesta = true; v.usa = !v.altra;
+  const k = chiaveFatt(v), gruppo = FATT.filter(x => x === v || (!x.altra && !x.chiesta && chiaveFatt(x) === k && (!x.capito || x.daGruppo === v)));
+  const tot = gruppo.reduce((a, x) => a + (x.importo || 0), 0);
   $("passo").textContent = "Una domanda sulle fatture"; barra(0.13);
-  $("scheda").innerHTML = '<h1>Non voglio indovinare</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> (' + eur0(v.importo) + ') ' + esc(v.domanda || "non capisco di che lavoro si tratti.") + '</p><div class="opzioni">' +
-    (v.opzioni || []).slice(0, 3).map((o, k) => '<button class="opz" data-o="' + k + '"><span class="n">' + (k + 1) + '</span><span>' + esc(o) + '</span></button>').join("") +
-    '<button class="opz" id="fsc"><span class="n">✎</span><span>Scrivo io cosa è</span></button><button class="opz" id="fno"><span class="n">–</span><span>Non usare questa fattura</span></button></div>' +
-    '<div id="faltro" class="nascosto"><input class="testo" id="ftxt" maxlength="80" placeholder="Per esempio: consulenza sulla gestione delle royalties"><div class="riga"><button class="primario" id="fok">Avanti</button></div></div>';
-  NAV_INDIETRO();
-  const imposta = t => { t = (t || "").trim(); if (!t) return; v.capito = true; v.usa = true; v.attivita = t; v.risp = t; chiediFattura(i + 1); };
-  document.querySelectorAll("button[data-o]").forEach(b => b.onclick = () => imposta(v.opzioni[+b.dataset.o]));
+  $("scheda").innerHTML = '<h1>Non voglio indovinare</h1><p>' + (gruppo.length > 1
+      ? 'Le fatture ' + elenco(gruppo.map(x => '<b>' + esc(x.nome) + '</b>')) + ' (' + eur0(tot) + ') dicono la stessa cosa: te lo chiedo una volta sola. '
+      : 'Fattura <b>' + esc(v.nome) + '</b> (' + eur0(v.importo) + '). ') + esc(v.domanda || "Non capisco di che lavoro si tratti.") + '</p>' +
+    ((v.opzioni || []).length ? '<p class="hint">Puoi sceglierne più d\'una.</p>' : '') + '<div class="opzioni">' +
+    (v.opzioni || []).slice(0, 4).map((o, n) => '<label class="opz"><input type="checkbox" data-o="' + n + '"><span>' + esc(o) + '</span></label>').join("") +
+    '<button class="opz" id="fsc"><span class="n">✎</span><span>Scrivo io cosa è</span></button><button class="opz" id="fno"><span class="n">–</span><span>Non usare ' + (gruppo.length > 1 ? 'queste fatture' : 'questa fattura') + '</span></button></div>' +
+    '<div id="faltro" class="nascosto"><input class="testo" id="ftxt" maxlength="80" placeholder="Per esempio: consulenza sulla gestione delle royalties"></div>';
+  const caselle = [...document.querySelectorAll("input[data-o]")];
+  const imposta = t => { t = (t || "").trim(); if (!t) return;
+    gruppo.forEach(x => { x.capito = true; x.usa = true; x.attivita = t; x.risp = t; if (x !== v) x.daGruppo = v; });
+    chiediFattura(i + 1); };
+  const avanti = () => { const scelte = caselle.filter(c => c.checked).map(c => v.opzioni[+c.dataset.o]); const scritto = ($("ftxt").value || "").trim();
+    const t = elenco(scelte.concat(scritto ? [scritto] : [])); if (!t) { errore("Scegli almeno una risposta, oppure scrivi tu cosa è."); return; } imposta(t.charAt(0).toUpperCase() + t.slice(1)); };
+  nav([{testo: "Indietro", azione: indietroPrima}, {testo: "Avanti", classe: "primario", azione: avanti}]);
   $("fsc").onclick = () => { $("faltro").classList.remove("nascosto"); $("ftxt").focus(); };
-  $("fok").onclick = () => imposta($("ftxt").value);
-  $("ftxt").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); imposta($("ftxt").value); } };
-  $("fno").onclick = () => { v.usa = false; chiediFattura(i + 1); };
+  $("ftxt").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); avanti(); } };
+  $("fno").onclick = () => { gruppo.forEach(x => { x.usa = false; }); chiediFattura(i + 1); };
 }
 function chiediNome(em) {
   segna(() => chiediNome(em));
@@ -939,9 +951,8 @@ function fineFatture() {
       inv: FATT.map(v => ({nome: v.nome, ok: true, usa: v.usa, capito: !!(v.capito && v.attivita), attivita: v.attivita || "", risp: v.risp || "", chiesto: !!v.risp, importo: v.importo, fonte: v.risp ? "utente" : (v.capito ? "fattura" : "da chiedere"), cliente: v.cliente || {}, anomalie: v.anomalie || [], mia: !!v.mia,
         righe: (v.righe || []).slice(0, 12).map(r => ({testo: String(r.testo || "").slice(0, 160), importo: r.importo}))}))};
     fetch("/api/prova/profilo", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: ID, op: "set", data: d})}).catch(() => {});
-    $("scheda").innerHTML = '<h1>Ecco cosa ho capito</h1><div class="trovato">' + l.map(x => "<b>" + esc(x.nome) + "</b> · " + eur0(x.imp) + " (" + x.pct + "%)").join("<br>") + '</div><p class="hint">Lo riguardiamo insieme dentro l\'app: se qualcosa non torna, lo correggi lì.</p>';
-    const avanti = () => { if (em && !scheda.nome) chiediNome(em); else { fase = "domanda"; invia(); } };
-    nav([{testo: "Indietro", azione: () => { PILA.push(null); indietroPrima(); }}, {testo: "Continua", classe: "primario", azione: avanti}]);
+    // niente riepilogo qui: quello che ho capito si rivede insieme dentro l'app
+    if (em && !scheda.nome) chiediNome(em); else { fase = "domanda"; invia(); }
   } else { fase = "domanda"; invia(); }
 }
 

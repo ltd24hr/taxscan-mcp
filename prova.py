@@ -923,11 +923,15 @@ _SYS_LETTURA = (
     "capito=true SOLO se il testo stesso dice che tipo di lavoro e' (per esempio «supporto alla compilazione di adempimenti contabili», "
     "«montaggio video», «consulenza fiscale per dichiarazione»). Parole generiche da sole (consulenza, prestazione di servizio, servizi, "
     "lavori, onorari, compenso, collaborazione, supporto, joint customer consultancy e simili) NON bastano: in quel caso capito=false. "
+    "Ma una parola generica CON il suo ambito basta, come farebbe un commercialista: «consulenza amministrativa», «consulenza fiscale», "
+    "«supporto contabile», «assistenza informatica», «consulenza di marketing» dicono che lavoro e': capito=true. "
+    "Fatture con lo stesso testo (a parte mese, data o numero) sono lo stesso lavoro: stessa risposta per tutte. "
     "Non dedurre il lavoro dall'importo, dal paese del cliente o da cio' che fanno di solito le altre fatture; non indovinare. "
     "Per lo stesso tipo di lavoro usa SEMPRE la stessa etichetta in tutte le fatture (per esempio «Tenuta della contabilita'» sia per «registrazioni contabili» sia per «registrazione fatture»): non creare etichette diverse per cose uguali. Per ogni fattura rispondi con: id (quello dato), capito (true/false), "
     "attivita (se capito: cosa e' stato fatto, in italiano semplice, massimo 8 parole, altrimenti stringa vuota), "
     "motivo (una frase: cosa dice il testo che ti fa capire, oppure perche' non basta), "
-    "domanda (se capito=false: UNA domanda breve e precisa da fare alla persona su quella fattura, citando le parole generiche che hai letto; altrimenti vuota), "
+    "domanda (se capito=false: UNA domanda breve e precisa da fare alla persona su quella fattura, citando le parole generiche che hai letto; "
+    "NON citare l'id (f0, f1...) ne' il nome del file, che la pagina mostra gia': comincia direttamente, per esempio «C'e' scritto «Servizi»: che lavoro hai fatto?»; altrimenti vuota), "
     "opzioni (se capito=false: da 2 a 4 letture possibili molto brevi tra cui la persona puo' scegliere, senza darne nessuna per certa; altrimenti lista vuota). "
     "Formato: "
     '{"fatture":[{"id":"f1","capito":true,"attivita":"...","motivo":"...","domanda":"","opzioni":[]}]}')
@@ -1017,6 +1021,14 @@ _PAESI_UE = {"austria", "belgio", "bulgaria", "cipro", "croazia", "danimarca", "
              "romania", "slovacchia", "slovenia", "spagna", "svezia", "ungheria"}
 
 
+def _domanda_pulita(t) -> str:
+    """Toglie dalla domanda dell'IA i riferimenti interni («Nella fattura f0 …»): la pagina dice gia' di quale fattura si parla."""
+    t = _pulisci(t, 260)
+    t = re.sub(r"(?i)^\s*(nella|in questa|per la)\s+fattura\s*(\bf\d+\b)?\s*[,:]?\s*", "", t)
+    t = re.sub(r"(?i)\s*\(?\b(fattura\s+)?f\d+\b\)?", "", t)
+    return (t[:1].upper() + t[1:]) if t else ""
+
+
 def _capisci_fatture(c: str, leggibili: list) -> None:
     """Per ogni fattura: si capisce che lavoro e'? Se no, la domanda da fare (con opzioni). Modifica le voci in place."""
     ia = {}
@@ -1039,7 +1051,7 @@ def _capisci_fatture(c: str, leggibili: list) -> None:
         x["motivo"] = _pulisci(f.get("motivo"), 200)
         if not capito:
             gen = [r["testo"] for r in x["righe"][:2]]
-            x["domanda"] = _pulisci(f.get("domanda"), 220) or (
+            x["domanda"] = _domanda_pulita(f.get("domanda")) or (
                 "In questa fattura c'e' scritto «%s»: di che tipo di lavoro si tratta?" % _pulisci(gen[0] if gen else "", 80))
             x["opzioni"] = [_pulisci(o, 70) for o in (f.get("opzioni") or []) if _pulisci(o, 70)][:4]
 

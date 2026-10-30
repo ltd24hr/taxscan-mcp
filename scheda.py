@@ -629,7 +629,21 @@ def verifica_scheda(scheda: dict) -> dict:
     if prossimo["chiave"] == "conferma_deduzioni":
         domanda = _domanda_conferma(s)
         opzioni = _opzioni_di(prossimo, s)
-        if s.get("gestione_previdenziale") == "non_so":
+        # professione di solito con Ordine e cassa: si puo' anche lavorare senza iscrizione (per esempio la tenuta della
+        # contabilita'), e allora si paga l'INPS gestione separata. Non si da' per scontato: si chiede.
+        ordine = (s.get("gestione_previdenziale") == "cassa" and "gestione_previdenziale" in (s.get("dedotti") or [])
+                  and bool(s.get("_casse_plausibili")))
+        if ordine:
+            casse = ", ".join((s.get("_casse_plausibili") or [])[:3])
+            domanda = "Sei iscritto a un Ordine professionale?"
+            esito["dove_trovarlo"] = (f"Il tuo lavoro ({s.get('_descrizione_attivita') or 'attività professionale'}) di solito si fa con "
+                                      "l'iscrizione a un Ordine e alla sua cassa, ma si può svolgere anche senza: cambia dove paghi i contributi.")
+            opzioni = [("cassa", f"Sì, sono iscritto all'Ordine e alla sua cassa ({casse})"),
+                       ("separata", "No, non sono iscritto: pago l'INPS gestione separata"),
+                       ("non_so", "Non lo so")]
+            esito["campo_prossimo"] = "gestione_previdenziale"
+            esito["nota"] = "Metti il valore scelto in gestione_previdenziale e conferma_deduzioni=true."
+        elif s.get("gestione_previdenziale") == "non_so":
             # deduzione debole: meglio far scegliere subito la gestione che chiedere una conferma
             domanda = (f"Codice ATECO {s['codice_ateco']}: non riesco a dedurre con sicurezza la tua gestione "
                        "previdenziale. A quale sei iscritto?")
