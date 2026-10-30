@@ -1124,7 +1124,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 73</div>
+<div class="ver">Prototipo versione 74</div>
 </div>
 
 <script>
@@ -1823,7 +1823,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function hint(on){hintEl.classList.toggle('on',!!on&&!SETTLED)}
   function settle(on){SETTLED=on;document.documentElement.classList.toggle('settled',on);hint(false);
     try{localStorage.setItem('ts_intro_'+(window.TS_C||'demo'),on?'1':'')}catch(e){}
-    if(on){timers.forEach(clearTimeout);timers=[];document.querySelectorAll('.fade,.tb').forEach(function(e){e.classList.add('in')});var c=document.querySelector('.cards');if(c)c.classList.add('go');try{renderRisk(false)}catch(e){}}}
+    // prima di fermare tutto, le frasi che l'avatar sta ancora scrivendo si completano (altrimenti restano a metà, «Per rispar…»)
+    if(on){Object.keys(run).forEach(function(id){var r=run[id];if(r&&!r.fin){r.cb=null;end(id)}});timers.forEach(clearTimeout);timers=[];document.querySelectorAll('.fade,.tb').forEach(function(e){e.classList.add('in')});var c=document.querySelector('.cards');if(c)c.classList.add('go');try{renderRisk(false)}catch(e){}}}
   var _ss=setStep;setStep=function(n){if(SETTLED)return;if(step>=0&&n<step)return;hint(false);_ss(n)};
   var _end=end;end=function(id){_end(id);if(!SETTLED&&step>=0&&step<5&&IDS[step]===id)hint(true)};
   var _sv=showView;showView=function(v){if(v!=='p'&&!SETTLED)settle(true);_sv(v)};
