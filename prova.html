@@ -451,6 +451,59 @@ html.ottv .o3ov ~ *{pointer-events:none}
 .opsh{margin:14px 0 2px;padding-top:10px;border-top:1px solid var(--line,#d6dbe8);font-size:14.5px}.opsh:first-of-type{border-top:0;padding-top:0}
 .operf{margin:10px 0;font-size:14.5px}.operf ul{margin:4px 0 0;padding-left:18px}.operf li{margin:3px 0}
 .oup .onav,.kbox>.onav{gap:14px;flex-wrap:wrap;align-items:center}
+
+/* v69: Panoramica a bento. Ogni blocco ha una taglia [colonne x righe]; quello che non ci sta si nasconde a livelli */
+#stage.bn6.wgz,html:not(.settled) #stage.bn6.wgz{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(0,auto);grid-auto-flow:row dense;gap:14px;align-items:start}
+#stage.bn6>.slot:not(.bn){grid-column:1/-1}
+#stage.bn6>.slot:not(.on):not(#slC):not(#slT){display:none}
+html:not(.settled) #stage.bn6 .bn.fade:not(.in){display:none}
+#stage.bn6>#slC,#stage.bn6>#slT,#stage.bn6>#slC>.in-s,#stage.bn6>#slT>.in-s,#stage.bn6>#slC>.in-s>div,#stage.bn6>#slT>.in-s>div,#stage.bn6 #slC .cards,#stage.bn6 #slT .tabs{display:contents!important}
+#stage.bn6 #slC .xb,#stage.bn6 #slT .xb{grid-column:1/-1}
+.bn{box-sizing:border-box;min-width:0;position:relative;margin:0!important;container-type:inline-size;transition:transform .22s ease}
+.bn.slot{overflow:visible}.bn>.in-s,.bn>.in-s>div{height:100%;box-sizing:border-box}
+.bn>.in-s{display:block!important}
+.bn .next,.bn>.in-s .tb,.bn.card,.bn.tb{height:100%;box-sizing:border-box;overflow:hidden;margin:0!important}
+.bn[data-l="1"] .bnl2,.bn[data-l="1"] .bnl3,.bn[data-l="2"] .bnl3{display:none!important}
+.bn .sm.bnx2,.bn .sm.bnx3{margin-top:6px}
+.bn.bncut .next::after,.bn.bncut>.in-s .tb::after,.bn.card.bncut::after,.bn.tb.bncut::after{content:'';position:absolute;left:1px;right:1px;bottom:1px;height:22px;border-radius:0 0 14px 14px;background:linear-gradient(rgba(255,255,255,0),var(--surface,#fff));pointer-events:none}
+.bn .wc,.bn>.wr,.bn .wr{display:none!important}
+/* numeri che si adattano alla larghezza del blocco */
+.bn .big{font-size:clamp(28px,13cqi,64px)!important;line-height:1.05}
+.bn.card .n{font-size:clamp(22px,11cqi,40px)!important}
+.bn .dgrid{grid-template-columns:1fr!important}
+@container (min-width:560px){.bn .dgrid{grid-template-columns:1fr 1fr!important;column-gap:28px}}
+@container (min-width:900px){.bn .dgrid{grid-template-columns:1fr 1fr 1fr!important}}
+/* l'angolo per cambiare taglia */
+.bnr{position:absolute;right:3px;bottom:3px;width:28px;height:28px;cursor:nwse-resize;touch-action:none;z-index:6;opacity:0;transition:opacity .15s;display:flex;align-items:flex-end;justify-content:flex-end}
+.bnr i{width:12px;height:12px;border-right:3px solid var(--blue,#2b5bd7);border-bottom:3px solid var(--blue,#2b5bd7);border-radius:0 0 6px 0;margin:0 6px 6px 0}
+.bn:hover>.bnr,.bn:focus-within>.bnr,.bn.wsz>.bnr{opacity:.85}
+@media (hover:none){.bnr{opacity:.55}}
+html:not(.settled) .bnr{display:none}
+.bn.wsz{outline:2px dashed rgba(43,91,215,.45);outline-offset:3px;user-select:none;z-index:5}
+@media (max-width:899px){#stage.bn6.wgz,html:not(.settled) #stage.bn6.wgz{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+
+/* v70: Da fare come una bacheca (Trello) */
+.tdb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;margin-top:14px}
+.tdc{background:#e8ecf6;border-radius:16px;padding:10px;min-height:160px;display:flex;flex-direction:column}
+.tdc header{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;font-size:15px}
+.tdcn{font-size:12px;font-weight:700;background:#fff;border-radius:999px;padding:2px 9px;color:var(--mute,#5b6475)}
+.tdc[data-col="corso"] header b{color:#b8650f}.tdc[data-col="fatto"] header b{color:#0f8f6a}
+.tdcl{display:flex;flex-direction:column;gap:8px;min-height:60px;flex:1}
+.tdk{display:flex;gap:10px;align-items:flex-start;background:var(--surface,#fff);border-radius:12px;padding:11px 12px;box-shadow:0 1px 2px rgba(18,36,82,.12);cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;border:1px solid transparent;transition:box-shadow .15s,border-color .15s}
+.tdk:hover{box-shadow:0 4px 12px rgba(18,36,82,.14);border-color:#cdd6ee}.tdk:focus-visible{outline:2px solid #4355cc;outline-offset:2px}
+.tdk .tdic{flex:0 0 32px;height:32px;border-radius:9px;background:#eef2fd;color:#4355cc;display:flex;align-items:center;justify-content:center}
+.tdk.ok .tdic{background:#e6f5ef;color:#0f8f6a}.tdk.ok b{text-decoration:line-through;text-decoration-color:rgba(15,143,106,.5);color:var(--mute,#5b6475)}
+.tdkb{min-width:0}.tdkb b{display:block;font-size:14.5px;line-height:1.35}
+.tdkb small{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11.5px;color:var(--mute,#5b6475)}
+.tdpr{font-weight:700;background:#4355cc;color:#fff;border-radius:6px;padding:0 6px;line-height:18px}
+.tdtag{border-radius:6px;padding:0 7px;line-height:18px;background:#eef2fd;color:#4355cc}
+.tdtag.t-fatt{background:#fff3df;color:#9a5b0b}.tdtag.t-fic{background:#e8f6fb;color:#1f7893}.tdtag.t-utente{background:#f1eefc;color:#6a46c2}
+.tdvuota{margin:6px;padding:14px 10px;border:2px dashed #c9d1e6;border-radius:12px;font-size:13px;color:var(--mute,#5b6475);text-align:center}
+.tdph{border:2px dashed #8fa0d8;border-radius:12px;background:rgba(67,85,204,.06)}
+.tddrag{position:fixed;left:0;top:0;z-index:6000;pointer-events:none;box-shadow:0 18px 40px rgba(18,36,90,.3)!important;opacity:.97;cursor:grabbing}
+.tdc .tdf{margin-top:10px;display:flex;gap:8px}.tdc .tdf input{flex:1;min-width:0;font:inherit;font-size:14px;padding:9px 11px;border:1px solid transparent;border-radius:10px;background:#fff}
+.tdc .tdf input:focus{border-color:#4355cc;outline:0}.tdc .tdf .kb{padding:8px 12px;font-size:13px}
+@media (max-width:760px){.tdb{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding-bottom:6px;margin-right:-16px;padding-right:16px}.tdc{flex:0 0 82%;scroll-snap-align:start}}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -1048,7 +1101,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 68</div>
+<div class="ver">Prototipo versione 70</div>
 </div>
 
 <script>
@@ -2233,7 +2286,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function wgZSave(k,o){try{localStorage.setItem('ts_wz_'+k,JSON.stringify(o))}catch(e){}}
   function wgHost(el){return el.classList.contains('slot')?(el.querySelector('.in-s')||el):el}
   function wgFits(el){var h=wgHost(el);return h.scrollWidth<=h.clientWidth+2&&el.scrollWidth<=el.clientWidth+2}
-  function wgSize(el){return el.classList.contains('wt')?'t':el.classList.contains('wh')?'h':el.classList.contains('wm')?'m':'f'}
+  function wgSize(el){if(el.dataset&&el.dataset.bs)return el.dataset.bs;return el.classList.contains('wt')?'t':el.classList.contains('wh')?'h':el.classList.contains('wm')?'m':'f'}
   function wgSetSize(el,z){el.classList.toggle('wh',z==='h');el.classList.toggle('wt',z==='t');el.classList.toggle('wm',z==='m')}
   var WGC={f:6,m:4,h:3,t:2};
   function wgShake(el){el.classList.add('wno');setTimeout(function(){el.classList.remove('wno')},700)}
@@ -2299,18 +2352,80 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function wgInit(cont,key,sel){if(!cont)return;var els=[].slice.call(cont.querySelectorAll(sel));if(!els.length)return;var ord=wgLoad(key);
     els.forEach(function(el,i){var k=wgKey(el,i);el.setAttribute('data-wk',k);el.classList.add('wgt');wgPress(cont,key,sel,el);
       var p=ord.indexOf(k);el.style.order=p<0?ord.length+i:p;
+      if(key==='p'){bnPrep(cont,el);return}
       if(!WGZ[key])return;
       var zs=wgZLoad(key),def=el.classList.contains('scw')&&!el.classList.contains('wide')?'h':(el.classList.contains('card')||el.classList.contains('tb'))?'t':'f',sz=zs[k]||def;wgSetSize(el,sz);
       var host=wgHost(el);if(!host||host.querySelector(':scope>.wc'))return;
       var c=document.createElement('span');c.className='wc';c.setAttribute('role','group');
-      c.innerHTML='<button type="button" class="wo" aria-expanded="true" aria-label="Apri o chiudi il blocco" title="Chiudi il blocco">▾</button><button type="button" class="wz" aria-label="Cambia la misura del blocco" title="Cambia la misura del blocco">⤢</button>';
+      c.innerHTML='<button type="button" class="wz" aria-label="Cambia la misura del blocco" title="Cambia la misura del blocco">⤢</button>';
       var gr=document.createElement('span');gr.className='wr';gr.title='Trascina per allargare o rimpicciolire il blocco';gr.setAttribute('aria-hidden','true');gr.innerHTML='<i></i>';wgGrip(cont,key,el,gr);host.appendChild(gr);
       c.querySelector('.wz').onclick=function(e){e.stopPropagation();wgResize(cont,key,el)};
-      var wo=c.querySelector('.wo');wo.onclick=function(e){e.stopPropagation();wgFold(key,el,wo)};
-      if(wgOLoad(key)[k]){el.classList.add('wcl');wo.setAttribute('aria-expanded','false');wo.title='Apri il blocco'}
       host.appendChild(c)});
-    cont.classList.toggle('wgz',!!WGZ[key])}
+    cont.classList.toggle('wgz',!!WGZ[key]);if(key==='p'){cont.classList.add('bn6');bnTutti(cont)}}
   window.__wgInit=wgInit;
+  // ================= Panoramica a bento: ogni blocco ha più taglie, come i widget del telefono =================
+  // s: taglie possibili [colonne, righe] dalla più piccola alla più grande (oltre la più grande non si allarga);
+  // d: taglia di partenza; lv: cosa si vede in più al livello 2 e 3. Il livello lo decide lo spazio: si mostra tutto quello che ci sta.
+  // Su telefono le colonne sono 2: un blocco largo 2-3 su 6 diventa mezzo schermo, uno più largo tutto lo schermo.
+  var BN={
+    slN:{s:[[2,3],[3,3],[2,4],[3,4],[4,3],[4,4],[6,3]],d:[3,4],lv:{2:'.sub'}},
+    slC_1:{s:[[2,2],[3,2],[2,3],[3,3],[4,2]],d:[3,2],lv:{2:'.bnx2',3:'.bnx3'}},
+    slC_2:{s:[[2,2],[3,2],[2,3],[3,3],[4,2]],d:[3,2],lv:{2:'.bnx2',3:'.bnx3'}},
+    slC_3:{s:[[2,2],[2,3],[3,3],[2,4],[3,4]],d:[2,4],lv:{2:'.due~.due',3:'.bnx3'}},
+    slD:{s:[[2,3],[3,3],[2,4],[3,4],[4,3],[4,4],[6,3],[6,4]],d:[4,4],lv:{2:'[data-ex=ds_anno],[data-ex=ds_aliq],[data-ex=ds_inps],[data-ex=ds_inc]',3:'.sub2,.sm'}},
+    slT_5:{s:[[2,2],[2,3],[3,3],[2,4],[3,4]],d:[2,4],lv:{2:'[data-ex=reddito],[data-ex=contributi]'}},
+    slT_6:{s:[[2,2],[2,3],[3,3],[2,4],[3,4]],d:[2,4],lv:{2:'p:not(.em)'}},
+    slT_7:{s:[[2,2],[2,3],[3,3],[2,4],[3,4]],d:[2,4],lv:{2:'.sm'}},
+    slSo:{s:[[2,3],[3,3],[3,4],[4,3],[4,4],[6,3],[6,4],[6,5]],d:[6,4],lv:{2:'[data-ex=so_inc],[data-ex=so_soglia]',3:'[data-ex=so_proj],.sm'}}
+  },BNDEF={s:[[2,3],[3,3],[4,3],[4,4],[6,3],[6,4],[6,5],[6,6]],d:[6,4],lv:{}};
+  function bnMob(){return innerWidth<900}
+  function bnSpec(el){return BN[el.dataset.wk]||BNDEF}
+  // le taglie per lo schermo attuale (su telefono: mezza o intera larghezza), senza doppioni, dalla più piccola
+  function bnTaglie(el){var t=bnSpec(el).s.map(function(x){return bnMob()?[x[0]<=3?1:2,x[1]]:x}),u={},out=[];
+    t.forEach(function(x){var k=x[0]+'x'+x[1];if(!u[k]){u[k]=1;out.push(x)}});
+    return out.sort(function(a,b){return a[0]*a[1]-b[0]*b[1]||a[1]-b[1]})}
+  function bnLoad(){try{return JSON.parse(localStorage.getItem('ts_bn')||'{}')}catch(e){return{}}}
+  function bnSave(o){try{localStorage.setItem('ts_bn',JSON.stringify(o))}catch(e){}}
+  function bnBox(el){return el.matches('.card,.tb')?el:(el.querySelector('.next,.tb')||el)}
+  function bnRiga(){return bnMob()?56:60}
+  // contenuti in più che compaiono solo quando il blocco è grande
+  function bnExtra(el){var k=el.dataset.wk,b=bnBox(el);if(b.querySelector('.bnx2,.bnx3'))return;
+    var n=function(id){var e=document.getElementById(id);return e?parseInt(String(e.textContent).replace(/[^\d]/g,''),10)||0:0},x='';
+    if(k==='slC_1'){var p=n('perc');x='<div class="sm bnx2">Su 1.000 € incassati, circa <b>'+(p*10).toLocaleString('it-IT')+' €</b> vanno messi da parte.</div><div class="sm bnx3">Così a giugno e a novembre i soldi per imposta e contributi sono già pronti.</div>'}
+    if(k==='slC_2')x='<div class="sm bnx2">Quello che resta dei tuoi incassi dopo imposta e contributi.</div><div class="sm bnx3">È una stima sui tuoi dati: si aggiorna con gli incassi veri.</div>';
+    if(k==='slC_3')x='<div class="sm bnx3">Tocca una data per vedere cosa si paga.</div>';
+    if(x)b.insertAdjacentHTML('beforeend',x)}
+  function bnTag(el){var lv=bnSpec(el).lv,b=bnBox(el);[2,3].forEach(function(l){if(lv[l])[].slice.call(b.querySelectorAll(lv[l])).forEach(function(x){x.classList.add('bnl'+l)});
+      [].slice.call(b.querySelectorAll('.bnx'+l)).forEach(function(x){x.classList.add('bnl'+l)})})}
+  function bnStoc(b){return b.scrollHeight<=b.clientHeight+1&&b.scrollWidth<=b.clientWidth+1}
+  // mette la taglia e sceglie il livello: si mostra il massimo che ci sta. Se nemmeno l'essenziale ci sta, si passa alla taglia dopo.
+  function bnApply(el,t,noUp){var T=bnTaglie(el),i=-1;T.forEach(function(x,j){if(x[0]===t[0]&&x[1]===t[1])i=j});if(i<0){i=0;var best=1e9;T.forEach(function(x,j){var d=Math.abs(x[0]-t[0])*3+Math.abs(x[1]-t[1])*2;if(d<best){best=d;i=j}})}
+    var r=bnRiga(),b=bnBox(el);
+    for(;i<T.length;i++){var w=T[i][0],h=T[i][1];el.style.gridColumn='span '+w;el.style.gridRow='span '+h;el.style.height=(h*r+(h-1)*14)+'px';el.dataset.bs=w+'x'+h;
+      for(var l=3;l>=1;l--){el.dataset.l=l;if(bnStoc(b))break}
+      if(bnStoc(b)||noUp||i===T.length-1)break}
+    el.classList.toggle('bncut',!bnStoc(b));return T[i]}
+  function bnPrep(cont,el){el.classList.add('bn');el.classList.remove('wm','wh','wt','wcl');bnExtra(el);bnTag(el);
+    if(!el.querySelector(':scope>.bnr')){var g=document.createElement('span');g.className='bnr';g.title='Trascina l\'angolo per allargare o rimpicciolire';g.setAttribute('aria-hidden','true');g.innerHTML='<i></i>';el.appendChild(g);bnGrip(cont,el,g)}}
+  function bnTutti(cont){var o=bnLoad(),m=bnMob()?'m':'d';[].slice.call(cont.querySelectorAll('.bn')).forEach(function(el){if(!el.offsetParent&&el.style.display!=='')return;
+      var sv=(o[el.dataset.wk]||{})[m],d=bnSpec(el).d;bnApply(el,sv||(bnMob()?[d[0]<=3?1:2,d[1]]:d))})}
+  // angolo in basso a destra: si tira e il blocco cambia taglia, in larghezza e in altezza, solo tra le taglie possibili
+  function bnGrip(cont,el,g){g.addEventListener('pointerdown',function(e){if(e.button>0)return;e.preventDefault();e.stopPropagation();
+      var cr=cont.getBoundingClientRect(),cols=bnMob()?2:6,cw=(cr.width-(cols-1)*14)/cols,r=bnRiga(),start=el.dataset.bs,avv=false;
+      try{g.setPointerCapture(e.pointerId)}catch(x){}el.classList.add('wsz');
+      function mv(ev){var q=el.getBoundingClientRect(),w=Math.max(1,Math.round((ev.clientX-q.left+14)/(cw+14))),h=Math.max(1,Math.round((ev.clientY-q.top+14)/(r+14)));
+        var T=bnTaglie(el),best=T[0],bd=1e9;T.forEach(function(x){var d=Math.abs(x[0]-w)*3+Math.abs(x[1]-h)*2;if(d<bd){bd=d;best=x}});
+        if(el.dataset.bs===best[0]+'x'+best[1])return;var prima=el.dataset.bs,got=bnApply(el,best,true);
+        if(!bnStoc(bnBox(el))){bnApply(el,prima.split('x').map(Number),true);if(!avv){avv=true;wgShake(el);say('Più piccolo di così non si leggerebbe l\'essenziale.')}}}
+      function up(){g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);el.classList.remove('wsz');
+        if(el.dataset.bs!==start){var o=bnLoad(),k=el.dataset.wk;o[k]=o[k]||{};o[k][bnMob()?'m':'d']=el.dataset.bs.split('x').map(Number);bnSave(o);tap('widget_misura_'+el.dataset.bs)}}
+      g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up)})}
+  // i blocchi si ricalcolano quando cambia lo spazio o arrivano i dati veri
+  var bnTm=null,bnW=innerWidth;function bnPresto(){clearTimeout(bnTm);bnTm=setTimeout(function(){var c=$('stage');if(c&&c.classList.contains('bn6'))bnTutti(c)},120)}
+  addEventListener('resize',function(){if(Math.abs(innerWidth-bnW)>30){bnW=innerWidth;bnPresto()}});
+  [600,1600,3500].forEach(function(ms){setTimeout(bnPresto,ms)});
+  if(window.MutationObserver){var bnMo=new MutationObserver(function(){bnPresto()});setTimeout(function(){var c=$('stage');if(c)bnMo.observe(c,{attributes:true,attributeFilter:['class'],subtree:true})},300)}
+  window.__bnPresto=bnPresto;
   wgInit($('stage'),'p','#slN,#slD,#slSo,#slP,#slS,#slR,#slC .card,#slT .tb');
   // ---- piccola scuola: glossario e domande che l'utente potrebbe farsi
   function ans(h){(mpView()==='p'?showBub:say)(h)}
@@ -2429,17 +2544,56 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     attenzione:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',diciture:'<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h3"/>',fic:'<path d="M8 12a4 4 0 0 1 4-4h4"/><path d="M16 12a4 4 0 0 1-4 4H8"/><path d="M13 5l3 3-3 3M11 19l-3-3 3-3"/>',verifica:'<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>',ai:'<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',utente:'<path d="M12 5v14M5 12h14"/>'};
   function tdIco(t){return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(TDI[t]||TDI.ai)+'</svg>'}
   function tdStato(t){return t.fatto?'<span class="tds ok">Fatto</span>':t.stato==='corso'?'<span class="tds run">In corso</span>':'<span class="tds">Da fare</span>'}
+  // ---- bacheca stile Trello: tre colonne (Da fare, In corso, Fatto); le schede si trascinano tra le colonne e dentro la stessa colonna
+  var TDCOL=[['todo','Da fare','Le cose da fare, in ordine di priorità.'],['corso','In corso','Trascina qui quello che hai cominciato.'],['fatto','Fatto','Qui finiscono le cose fatte.']];
+  var TDFON={ott:'Risparmio',fatt:'Controlli fatture',fic:'Fatture in automatico',utente:'Tuo',ai:'Suggerito'};
+  function tdCol(t){return t.fatto?'fatto':t.stato==='corso'?'corso':'todo'}
+  function tdMetti(t,c){if(c==='fatto'){t.fatto=true;t.stato='fatto';t.quando=new Date().toISOString().slice(0,10)}else{t.fatto=false;t.stato=c==='corso'?'corso':'';t.quando=''}}
   function tdRender(){var box=$('tdlist');if(!box)return;
     var ctx=(TD.l.filter(function(t){return t.fonte==='ott'&&t.ctx})[0]||{}).ctx,fatti=TD.l.filter(function(t){return t.fatto}).length,h='';
     if(!TD.l.length)h+='<div class="kbox tde"><b>Qui trovi le cose da fare.</b><p class="onote">Arrivano da sole quando completi l\'<b>Ottimizzazione fiscale</b>: dopo il calcolo del risparmio salvo qui i passi per ottenerlo davvero, in ordine di priorità. Puoi anche aggiungerne di tuoi.</p><button class="kb" id="td_go">Vai a Ottimizzazione fiscale</button></div>';
-    else h+='<div class="kbox tdh"><div class="lbl">Da fare'+(ctx?' · '+oEsc(ctx):'')+'</div><div class="tdp"><span style="width:'+Math.round(fatti/TD.l.length*100)+'%"></span></div><small>'+fatti+' su '+TD.l.length+' fatti · tocca un riquadro per aprirlo, tienilo premuto per spostarlo</small></div>';
-    h+='<div class="tdg" id="tdgrid">'+TD.l.map(function(t,i){return '<div role="button" tabindex="0" class="tdt'+(t.fatto?' ok':'')+(t.stato==='corso'&&!t.fatto?' run':'')+'" data-wk="'+t.id+'" data-td="'+t.id+'" aria-label="'+oEsc(t.titolo)+'"><span class="tdn2">'+(i+1)+'</span><span class="tdic">'+tdIco(t.tipo)+'</span><b>'+oEsc(t.titolo)+'</b>'+tdStato(t)+'</div>'}).join('')+'</div>';
-    h+='<form class="tdf" id="tdf"><input type="text" id="td_in" maxlength="120" placeholder="Aggiungi un compito tuo…" aria-label="Aggiungi un compito"><button type="submit" class="kb">Aggiungi</button></form>';
+    else h+='<div class="kbox tdh"><div class="lbl">Da fare'+(ctx?' · '+oEsc(ctx):'')+'</div><div class="tdp"><span style="width:'+Math.round(fatti/TD.l.length*100)+'%"></span></div><small>'+fatti+' su '+TD.l.length+' fatti · tocca una scheda per aprirla, trascinala per spostarla</small></div>';
+    var n=0;
+    h+='<div class="tdb" id="tdb">'+TDCOL.map(function(c){var l=TD.l.filter(function(t){return tdCol(t)===c[0]});
+      return '<section class="tdc" data-col="'+c[0]+'" aria-label="'+c[1]+'"><header><b>'+c[1]+'</b><span class="tdcn">'+l.length+'</span></header><div class="tdcl" data-col="'+c[0]+'">'+
+        (l.length?l.map(function(t){return '<div role="button" tabindex="0" class="tdk'+(t.fatto?' ok':'')+'" data-td="'+t.id+'" aria-label="'+oEsc(t.titolo)+'"><span class="tdic">'+tdIco(t.tipo)+'</span><div class="tdkb"><b>'+oEsc(t.titolo)+'</b><small>'+
+          (c[0]==='todo'?'<span class="tdpr">'+(++n)+'</span>':'')+'<span class="tdtag t-'+oEsc(t.fonte)+'">'+oEsc(TDFON[t.fonte]||'Suggerito')+'</span>'+(t.quando&&t.fatto?'<span>'+t.quando.split('-').reverse().join('/')+'</span>':'')+'</small></div></div>'}).join('')
+          :'<p class="tdvuota">'+c[2]+'</p>')+'</div>'+
+        (c[0]==='todo'?'<form class="tdf" id="tdf"><input type="text" id="td_in" maxlength="120" placeholder="+ Aggiungi una scheda…" aria-label="Aggiungi un compito"><button type="submit" class="kb">Aggiungi</button></form>':'')+'</section>'}).join('')+'</div>';
     box.innerHTML=h;
-    if(window.__wgInit)window.__wgInit($('tdgrid'),'td','.tdt');
-    [].slice.call(box.querySelectorAll('.tdt')).forEach(function(b){b.onclick=function(){if(b.__wgj)return;tdApri(b.getAttribute('data-td'))};b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tdApri(b.getAttribute('data-td'))}}});
-    $('tdf').onsubmit=function(e){e.preventDefault();var i=$('td_in');if(tdAdd(i.value))i.value=''};
+    [].slice.call(box.querySelectorAll('.tdk')).forEach(function(k){tdDrag(k);k.onclick=function(){if(k.__dr)return;tdApri(k.getAttribute('data-td'))};k.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tdApri(k.getAttribute('data-td'))}}});
+    var f=$('tdf');if(f)f.onsubmit=function(e){e.preventDefault();var i=$('td_in');if(tdAdd(i.value))i.value=''};
     var g=$('td_go');if(g)g.onclick=function(){showView('g')}}
+  // trascinamento: con il mouse appena ci si muove, al tocco dopo una pressione breve (così lo scorrimento resta libero)
+  function tdDrag(k){k.addEventListener('pointerdown',function(e){if(e.button>0||!e.isPrimary)return;
+    var touch=e.pointerType==='touch',sx=e.clientX,sy=e.clientY,on=false,tm=null,cl=null,ph=null,dx=0,dy=0,px=sx,py=sy,iv=null,board=$('tdb');
+    function begin(){on=true;var r=k.getBoundingClientRect();dx=sx-r.left;dy=sy-r.top;
+      ph=document.createElement('div');ph.className='tdph';ph.style.height=r.height+'px';k.parentNode.insertBefore(ph,k);
+      cl=k.cloneNode(true);cl.className+=' tddrag';cl.style.width=r.width+'px';document.body.appendChild(cl);k.style.display='none';document.body.classList.add('wgdragging');
+      iv=setInterval(function(){if(!board)return;var br=board.getBoundingClientRect();if(px<br.left+40)board.scrollLeft-=14;else if(px>br.right-40)board.scrollLeft+=14;if(py<80)scrollBy(0,-12);else if(py>innerHeight-80)scrollBy(0,12)},30);mv2()}
+    function mv2(){cl.style.transform='translate('+(px-dx)+'px,'+(py-dy)+'px) rotate(2deg)';
+      cl.style.visibility='hidden';var u=document.elementFromPoint(px,py);cl.style.visibility='';var col=u&&u.closest&&u.closest('.tdc');if(!col)return;
+      var lst=col.querySelector('.tdcl'),vu=lst.querySelector('.tdvuota');if(vu)vu.remove();
+      var kids=[].slice.call(lst.querySelectorAll('.tdk')).filter(function(x){return x!==k}),dopo=null;
+      for(var i=0;i<kids.length;i++){var q=kids[i].getBoundingClientRect();if(py<q.top+q.height/2){dopo=kids[i];break}}
+      if(dopo)lst.insertBefore(ph,dopo);else lst.appendChild(ph)}
+    function mv(ev){if(ev.pointerId!==e.pointerId)return;px=ev.clientX;py=ev.clientY;
+      if(!on){var d=Math.hypot(px-sx,py-sy);if(touch){if(d>10){fine(true)}return}if(d>6)begin();else return}
+      ev.preventDefault();mv2()}
+    function fine(annulla){clearTimeout(tm);clearInterval(iv);removeEventListener('pointermove',mv);removeEventListener('pointerup',su);removeEventListener('pointercancel',an);removeEventListener('touchmove',tmv);
+      document.body.classList.remove('wgdragging');if(!on)return;on=false;k.__dr=1;setTimeout(function(){k.__dr=0},60);
+      var lst=ph&&ph.parentNode,colN=lst&&lst.getAttribute('data-col');
+      if(!annulla&&colN){var t=tdGet(k.getAttribute('data-td')),prima=tdCol(t);ph.parentNode.insertBefore(k,ph);
+        if(colN!==prima)tdMetti(t,colN);
+        // nuovo ordine: colonna per colonna, come si vede
+        var ord=[];[].slice.call(document.querySelectorAll('#tdb .tdk')).forEach(function(x){var y=tdGet(x.getAttribute('data-td'));if(y)ord.push(y)});
+        TD.l.forEach(function(y){if(ord.indexOf(y)<0)ord.push(y)});TD.l=ord;tdStore();tap('dafare_sposta_'+colN);
+        if(colN!==prima&&colN==='fatto')say(TD.l.filter(function(x){return !x.fatto}).length?'Fatto, segnato come completato.':'Hai completato <b>tutti i passi</b>. Ottimo lavoro.')}
+      if(cl)cl.remove();if(ph)ph.remove();k.style.display='';tdRender()}
+    function su(ev){if(ev.pointerId===e.pointerId)fine(false)}function an(ev){if(ev.pointerId===e.pointerId)fine(true)}
+    function tmv(ev){if(on)ev.preventDefault()}
+    addEventListener('pointermove',mv);addEventListener('pointerup',su);addEventListener('pointercancel',an);addEventListener('touchmove',tmv,{passive:false});
+    if(touch)tm=setTimeout(function(){if(!on){begin()}},350)})}
   // ---- finestra del compito
   function tdModal(html,wide){var o=$('tdmod');if(o)o.remove();o=document.createElement('div');o.id='tdmod';o.className='tdov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
     o.innerHTML='<div class="tdbox'+(wide?' wide':'')+'"><button class="tdx2" id="tdx2" aria-label="Chiudi">✕</button><div id="tdbody">'+html+'</div></div>';document.body.appendChild(o);
@@ -2531,7 +2685,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     'Devo farli tutti?':{a:'Sono passi consigliati. Alcuni, come aggiungere il codice alla partita IVA, servono perché il risparmio diventi reale. Se vuoi, un commercialista può controllarli con te.',n:[]}};
   function tdChips(){if(window.__chips)window.__chips(TDP,TD.l.length?['Cosa fa il pulsante Inizia?','Da dove arrivano questi compiti?','Devo farli tutti?']:['Da dove arrivano questi compiti?'])}
   var _tdsv=showView;showView=function(v){_tdsv(v);if(v==='t'){tdRender();scrollTo(0,0);tap('dafare_apri');var n=TD.l.filter(function(t){return !t.fatto}).length;
-    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?'Ti restano <b>'+n+'</b> '+(n===1?'passo':'passi')+', in ordine di priorità. Tocca un riquadro e premi <b>Inizia</b>: ti guido io.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
+    say(!TD.l.length?'Qui raccolgo le <b>cose da fare</b>. Per ora è vuoto: si riempie quando completi l\'Ottimizzazione fiscale.':n?'Ti restano <b>'+n+'</b> '+(n===1?'passo':'passi')+', in ordine di priorità. Tocca una scheda e premi <b>Inizia</b>: ti guido io. Quando ne cominci una, trascinala in <b>In corso</b>; a lavoro finito, in <b>Fatto</b>.':'Hai fatto tutto. Se ti viene in mente altro, aggiungilo qui.');tdChips()}};
   tdLoad();
   // ================= Marcello-pallino: un solo avatar mobile, con fumetto, barra in basso e volti video =================
   var MP={last:'',qa:false,typing:false};
