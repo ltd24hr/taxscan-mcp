@@ -146,6 +146,8 @@ def _conferma(c: str, azione: str, euro: int) -> bool:
     }
     if azione == "beneficio_ottenuto":
         return False  # la recensione parte dal passaggio giornaliero, almeno un giorno dopo (vedi promemoria)
+    if azione in ("fattura_caricata", "risparmio_calcolato"):
+        return False  # l'utente e' nell'app in quel momento (e il risparmio ha gia' il suo report via email): niente email in piu'
     if azione not in t:
         return False
     o, ti, corpo, b = t[azione]
@@ -190,12 +192,12 @@ def salva_email(c: str, email: str) -> dict:
             cur.execute("INSERT INTO prova_email (c, email) VALUES (%s, %s) "
                         "ON CONFLICT (c) DO UPDATE SET email = EXCLUDED.email", (c, email))
         conn.commit()
+    # benvenuto: una cosa vera sui suoi dati, non un elenco di funzioni (parte in un filo a parte)
     try:
-        _manda(email, c, "az_registrazione", "TaxScan: ci siamo", "Sei dentro, ti aiuto a pagare meno tasse",
-               "<p>Da ora ti scrivo quando fai un passo avanti e ti ricordo ciò che resta da fare, sempre con un link per "
-               "riprendere da dove eri. Il tuo obiettivo: <b>pagare meno tasse</b>, in modo corretto.</p>", "Apri TaxScan")
+        import email_ispira
+        email_ispira.benvenuto(c, email)
     except Exception as e:
-        print(f"azioni: email di benvenuto non mandata: {e}")
+        print(f"azioni: benvenuto non mandato: {e}")
     return {"ok": True}
 
 
@@ -229,37 +231,18 @@ def promemoria(prova: bool = False, gia: set | None = None) -> dict:
                     esito["falliti"].append({"email": email, "errore": str(e)[:120]})
             if prova:
                 continue
-        if "fattura_caricata" not in az and giorni >= 1:
-            scelta = ("rem_fattura", "TaxScan: ti manca una fattura", "Manca solo una fattura",
-                      "<p>Per dirti quanto puoi risparmiare mi serve una tua fattura e due righe su cosa fai davvero. "
-                      "Ci vogliono due minuti.</p>", "Carica la fattura")
-        elif "fattura_caricata" in az and "risparmio_calcolato" not in az and giorni >= 2:
-            scelta = ("rem_strategia", "TaxScan: la tua strategia è quasi pronta", "La tua strategia è quasi pronta",
-                      "<p>Hai caricato la fattura, ma non abbiamo ancora calcolato il risparmio. Descrivi cosa fai davvero "
-                      "per i clienti e ti dico quanto puoi risparmiare.</p>", "Calcola il risparmio")
-        elif "risparmio_calcolato" in az and "beneficio_ottenuto" not in az and giorni >= 2:
-            eu = az.get("risparmio_calcolato", 0)
-            scelta = ("rem_task", f"TaxScan: ti aspettano {_eur(eu)} l'anno", f"{_eur(eu)} l'anno ti aspettano",
-                      f"<p>Hai individuato un risparmio di <b>{_e(_eur(eu))} l'anno</b>, ma non hai ancora fatto nessuna azione. "
-                      "Ti basta il primo passo: aggiungere il nuovo codice alla partita IVA.</p>", "Riprendi da qui")
-        elif "beneficio_ottenuto" in az and giorni >= 4:
-            tot = az.get("beneficio_ottenuto", 0)
-            tasks = [k for k in ("task_cod", "task_contratto", "task_fatture") if k not in az]
-            if tasks and ("rem_task_rimasti" not in az):
-                scelta = ("rem_task_rimasti", "TaxScan: restano alcune azioni", "Restano alcune azioni",
-                          f"<p>Hai già attivato <b>{_e(_eur(tot))}</b> di risparmio. Mancano ancora "
-                          f"{len(tasks)} azioni per averlo tutto.</p>", "Completa la strategia")
-        if not scelta:
-            continue
-        chiave, oggetto, titolo, corpo, bott = scelta
-        if prova:
-            esito["previsti"].append({"email": email, "tipo": chiave, "chiave": c})
-            esito["email"].add(email)
-            continue
+        # le scoperte: una al giorno nei primi tre giorni, poi al massimo una a settimana (al posto dei vecchi solleciti)
         try:
-            if _manda(email, c, chiave, oggetto, titolo, corpo, bott):
-                esito["mandati"] += 1
-                esito["email"].add(email)
+            import email_ispira
+            if email_ispira.tocca(c, email, float(giorni or 0)):
+                r = email_ispira.manda(c, email, prova)
+                if r:
+                    if prova:
+                        esito["previsti"].append(r)
+                    else:
+                        esito["mandati"] += 1
+                    esito["email"].add(email)
+                    continue
         except Exception as e:
             esito["falliti"].append({"email": email, "errore": str(e)[:120]})
     return esito

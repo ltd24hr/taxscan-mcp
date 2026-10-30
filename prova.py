@@ -1414,6 +1414,12 @@ def registra(mcp, avvisi):
         idc = re.sub(r"[^A-Za-z0-9_-]", "", qp.get("c", ""))[:64]
         if idc:
             dati = await asyncio.to_thread(_dashboard, idc)
+            da = re.sub(r"[^a-z_]", "", qp.get("da", ""))[:30]
+            if dati and da:
+                try:   # da quale email arriva: serve a capire cosa incuriosisce davvero
+                    db.registra_evento("email_click", idc, {"tipo": da})
+                except Exception:
+                    pass
             if dati:
                 return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
