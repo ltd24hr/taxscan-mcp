@@ -629,14 +629,10 @@ nav.spotlit{z-index:30}nav.spotlit button:not(.spot){opacity:1}
 @media (max-width:900px){#hdr{flex-wrap:wrap;gap:0}#hdr .brand{flex:0 0 100%}#hdr nav{flex:0 0 100%;width:100%;justify-content:space-between}#hdr nav button{font-size:19px;padding:8px 10px}#hdr .logo{font-size:24px}}
 
 .mpg{visibility:hidden}
-button.astab .mpcue{position:absolute;top:-6px;right:-6px;display:none;pointer-events:none;z-index:4}
-button.astab.cue .mpcue{display:block}
-button.astab .mpcue i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-weight:800;font-size:16px;line-height:1;box-shadow:0 0 0 3px var(--surface);animation:mpcue 1.3s ease-out 3}
-button.astab .mpcue em{position:absolute;bottom:calc(100% + 8px);left:-20px;white-space:nowrap;font-style:normal;font-weight:600;font-size:14px;color:#fff;background:#14204a;padding:7px 12px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
-button.astab.cuel .mpcue em{left:auto;right:-6px}
-button.astab.cuet .mpcue em{opacity:1;transform:none}
-@keyframes mpcue{0%{box-shadow:0 0 0 3px var(--surface),0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px var(--surface),0 0 0 18px rgba(67,85,204,0)}}
-@media (prefers-reduced-motion:reduce){button.astab .mpcue i{animation:none}}
+button.astab::after{content:'';position:absolute;inset:-3px;border-radius:50%;pointer-events:none;z-index:5}
+button.astab.pulsa::after{animation:mppulsa .8s ease-out 1}
+@keyframes mppulsa{0%{box-shadow:0 0 0 0 rgba(67,85,204,.6)}100%{box-shadow:0 0 0 18px rgba(67,85,204,0)}}
+@media (prefers-reduced-motion:reduce){button.astab.pulsa::after{animation:none}}
 .bpc.sel,.pfr.sel{box-shadow:0 0 0 3px var(--accent-soft);border-color:var(--accent)}
 </style>
 </head><body>
@@ -1135,7 +1131,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 75</div>
+<div class="ver">Prototipo versione 76</div>
 </div>
 
 <script>
@@ -2964,11 +2960,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   setInterval(mpAvoid,800);addEventListener('resize',function(){setTimeout(mpAvoid,120)});
   // ---- toccare un blocco lo evidenzia e basta: la spiegazione arriva solo quando si tocca l'avatar (che lo segnala con un "?")
   var EXL={next:'Prossima scadenza',acc:'Gli acconti',contributi:'I contributi INPS',y26:'Il 2026',pot:'Quanto puoi risparmiare',att:'Già attivato'};
-  function mpCue(on){var d=$('astab');if(!d)return;var s=d.querySelector('.mpcue');
-    if(!s){s=document.createElement('span');s.className='mpcue';s.setAttribute('aria-hidden','true');s.innerHTML='<i>?</i><em>Toccami e te lo spiego</em>';d.appendChild(s)}
-    var rr=d.getBoundingClientRect();d.classList.toggle('cuel',rr.left+rr.width/2>innerWidth/2);d.classList.toggle('cue',!!on);clearTimeout(MP.cueT);
-    if(on){var n=0;try{n=+localStorage.getItem('ts_cue')||0;localStorage.setItem('ts_cue',n+1)}catch(e){}d.classList.toggle('cuet',n<3);MP.cueT=setTimeout(function(){d.classList.remove('cuet')},4500)}
-    else d.classList.remove('cuet')}
+  // selezionando un blocco, il cerchio dell'avatar fa una sola breve onda blu: niente scritte, niente punto di domanda
+  function mpCue(on){var d=$('astab');if(!d)return;d.classList.remove('pulsa');clearTimeout(MP.cueT);
+    if(on){void d.offsetWidth;d.classList.add('pulsa');MP.cueT=setTimeout(function(){d.classList.remove('pulsa')},900)}}
   function mpTieni(el,html,label,dopo){var was=el.classList.contains('sel');
     [].slice.call(document.querySelectorAll('[data-ex].sel,.bpc.sel,.pfr.sel')).forEach(function(e){e.classList.remove('sel')});
     if(!$('dbub').hidden)hideBub(true);

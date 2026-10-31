@@ -513,8 +513,8 @@ PAGINA_HTML = r"""<!doctype html>
   body { margin:0; font-family:var(--f-txt); background:var(--fondo); color:var(--testo); }
   .pagina { max-width:560px; margin:0 auto; padding:20px 16px 60px; }
   header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-  header .logo { font-weight:700; color:var(--testo); font-size:18px; letter-spacing:.2px; }
-  header .logo span { color:#05d5c8; }
+  header .logo { font-family:"Poppins",var(--f-tit); font-weight:700; color:#122452; font-size:22px; line-height:1.05; }
+  header .logo span { color:#4355cc; }
   header .passo { color:var(--grigio); font-size:13px; }
   header button.fatto { font:inherit; font-size:14px; font-weight:600; padding:8px 14px; border-radius:10px; border:none; background:var(--verde); color:#fff; cursor:pointer; }
   .barra { height:6px; background:#e3e7ea; border-radius:3px; overflow:hidden; margin-bottom:28px; }
@@ -539,7 +539,7 @@ PAGINA_HTML = r"""<!doctype html>
   button.primario:disabled { opacity:.45; cursor:not-allowed; }
   @media (min-width:900px) {
     .pagina { max-width:1120px; padding-top:24px; }
-    header .logo { font-size:22px; } header .passo { font-size:15px; } header button.fatto { font-size:16px; }
+    header .logo { font-size:26px; } header .passo { font-size:15px; } header button.fatto { font-size:16px; }
     h1 { font-size:28px; } p { font-size:18px; } .hint { font-size:16px; }
     button.opz, label.opz { font-size:18px; padding:16px 18px; } button.opz .n, label.opz .n { flex-basis:32px; height:32px; font-size:16px; }
     input.testo, textarea.testo, select.testo { font-size:20px; padding:16px; }
@@ -653,7 +653,6 @@ PAGINA_HTML = r"""<!doctype html>
   <header><div class="logo">Tax<span>Scan</span></div><div class="passo" id="passo"></div></header>
   <div class="barra"><div id="barra"></div></div>
   <div class="scheda" id="scheda"><p class="hint">Un attimo...</p></div>
-  <div class="riga" id="nav"></div>
   <footer>TaxScan prepara e spiega: le cifre sono stime e la responsabilità è tua; se vuoi, le fai controllare a un professionista. Niente di quello che scrivi qui è una dichiarazione fiscale. <a href="/termini" style="color:inherit">Termini e condizioni</a> · <a href="/privacy" style="color:inherit">Privacy policy</a> · <a href="#" class="tsck-open" style="color:inherit">Cookie</a></footer>
   <p class="by" style="font-size:12px;color:#7c7a74;margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">TaxScan è un servizio offerto da <a href="https://ltd24.co.uk" target="_blank" rel="noopener" style="display:inline-flex;font-weight:700;color:inherit;text-decoration:none"><img src="/logo-ltd24.png" alt="LTD24" style="height:20px;width:auto" onerror="this.replaceWith(document.createTextNode('LTD24'))"></a></p>
 </div>
@@ -752,11 +751,27 @@ async function api(metodo, corpo, suffisso = "") {
   return r.json();
 }
 
-function nav(bottoni) {
-  const n = $("nav"); n.innerHTML = "";
-  bottoni.forEach(b => { const el = document.createElement("button"); el.className = b.classe || "secondario";
-    el.textContent = b.testo; el.onclick = b.azione; n.appendChild(el); });
+// i pulsanti stanno dentro la scheda bianca: "Indietro" sempre a sinistra di "Avanti", sulla stessa riga
+let NAVB = [];
+function nav(bottoni) { NAVB = bottoni || []; disegnaNav(); }
+function disegnaNav() {
+  const s = $("scheda");
+  s.querySelectorAll(":scope > .azioni, .indietro-in").forEach(x => x.remove());
+  if (!NAVB.length) return;
+  const mk = b => { const el = document.createElement("button"); el.className = b.classe || "secondario"; el.textContent = b.testo; el.onclick = b.azione; return el; };
+  const rigaAvanti = [...s.querySelectorAll(":scope > .riga")].find(r => r.querySelector("button.primario"));
+  if (NAVB.length === 1 && NAVB[0].testo === "Indietro" && rigaAvanti) {
+    const el = mk(NAVB[0]); el.classList.add("indietro-in"); rigaAvanti.insertBefore(el, rigaAvanti.firstChild); return;
+  }
+  const d = document.createElement("div"); d.className = "riga azioni"; NAVB.forEach(b => d.appendChild(mk(b))); s.appendChild(d);
 }
+// se la scheda cambia contenuto dopo, i pulsanti restano (e restano in fondo)
+new MutationObserver(() => {
+  const s = $("scheda"); if (!NAVB.length) return;
+  const a = s.querySelector(":scope > .azioni");
+  if (!a && !s.querySelector(".indietro-in")) disegnaNav();
+  else if (a && s.lastElementChild !== a) s.appendChild(a);
+}).observe(document.getElementById("scheda"), {childList: true});
 
 function indietro() {
   // prima domanda: si torna alla schermata precedente (fatture, nome, certificato), non si ricomincia da capo
@@ -876,7 +891,7 @@ function mostraFatture() {
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
     '<input type="file" id="fatt" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp,.heic,.heif,image/*" class="nascosto">' +
     '<button class="opz" id="fsalta"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.tocco + '</svg></span><span>Salto: rispondo io a qualche domanda</span></button></div><div id="fesito"></div>';
-  NAV_INDIETRO();
+  nav([]);
   $("fsalta").onclick = () => { fase = "domanda"; invia(); };
   $("fatt").onchange = leggiFatture;
 }
@@ -896,7 +911,7 @@ async function leggiFattureDa(out, schermo) {
     const nf = r && r.fatture && r.fatture.find(v => v.non_fattura);
     if (ill) ill.classList.remove("legge");
     $("fesito").innerHTML = '<div class="errore">' + esc(nf ? "Il file " + nf.nome + " " + (nf.motivo || "non è una fattura") + "." : ((r && (r.errore || r.vuoto)) || "Non sono riuscito a leggere queste fatture.")) + ' Puoi caricarne altre oppure andare avanti senza.</div>';
-    nav([{testo: "Indietro", azione: indietroPrima}, {testo: "Continua senza fatture", classe: "primario", azione: () => { fase = "domanda"; invia(); }}]);
+    nav((schermo ? [{testo: "Carico altre fatture", azione: () => { PILA = []; mostraFatture(); }}] : []).concat([{testo: "Continua senza fatture", classe: "primario", azione: () => { fase = "domanda"; invia(); }}]));
     return;
   }
   if (ill) { ill.classList.remove("legge"); ill.classList.add("letto"); }

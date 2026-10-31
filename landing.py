@@ -21,8 +21,8 @@ PAGINA_HTML = r"""<!doctype html>
 h1,h2,h3,.logo{font-family:var(--f-tit)}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-txt);padding:24px 16px 40px}
 .pg{max-width:560px;margin:0 auto}
-.logo{font-weight:800;font-size:18px;letter-spacing:-.01em;margin-bottom:28px}
-.logo span{color:#05d5c8}
+.logo{font-family:"Poppins",var(--f-tit);font-weight:700;font-size:22px;line-height:1.05;letter-spacing:0;margin-bottom:28px}
+.logo span{color:var(--accent-ink)}
 h1{font-size:32px;line-height:1.12;letter-spacing:-.02em;margin-bottom:12px}
 .lead{font-size:17px;color:var(--ink2);margin-bottom:18px}
 .cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:18px;padding:16px;border-radius:14px;transition:transform .15s ease,box-shadow .15s ease}
@@ -122,7 +122,7 @@ li span{font-size:14px;color:var(--ink2)}
 @media (min-width:900px){
   body{padding:36px 32px 56px}
   .pg{max-width:1080px}
-  .logo{font-size:20px;margin-bottom:44px}
+  .logo{font-size:26px;margin-bottom:44px}
   .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);column-gap:56px}
   .txt{grid-column:1;grid-row:1;align-self:end}
   .azione{grid-column:1;grid-row:2;align-self:start}
@@ -257,7 +257,7 @@ ACCEDI_HTML = r"""<!doctype html>
 *{box-sizing:border-box;margin:0}
 h1,h2,h3,.logo{font-family:var(--f-tit)}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-txt);padding:24px 16px 40px;max-width:480px;margin:0 auto}
-.logo{font-weight:800;font-size:18px;margin-bottom:28px}.logo span{color:#05d5c8}
+.logo{font-family:"Poppins",var(--f-tit);font-weight:700;font-size:22px;line-height:1.05;margin-bottom:28px}.logo span{color:var(--accent-ink)}
 h1{font-size:26px;line-height:1.15;margin-bottom:8px}
 .lead{color:var(--ink2);margin-bottom:18px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
