@@ -626,6 +626,7 @@ PAGINA_HTML = r"""<!doctype html>
     .scheda:has(> .qi), .scheda:has(> .ill) { display:grid; grid-template-columns:200px minmax(0,1fr); column-gap:40px; align-items:start; }
     .scheda > * { grid-column:2; min-width:0; }
     .scheda > .qi, .scheda > .ill { grid-column:1; grid-row:1 / span 30; align-self:start; justify-self:center; }
+    .scheda > .indietro-in { justify-self:center; width:132px; }
     .scheda > .qi { width:132px; height:132px; border-radius:32px; margin:6px 0 0; }
     .scheda > .ill { margin:0; } .scheda > .ill svg { height:190px; }
     .scheda > h1 { margin-top:0; font-size:30px; }
@@ -751,27 +752,55 @@ async function api(metodo, corpo, suffisso = "") {
   return r.json();
 }
 
-// i pulsanti stanno dentro la scheda bianca: "Indietro" sempre a sinistra di "Avanti", sulla stessa riga
+// i pulsanti stanno dentro la scheda bianca. Su schermo largo: "Avanti" è largo quanto la colonna delle risposte e
+// "Indietro" sta nella colonna di sinistra, sotto l'animazione, alla stessa altezza di "Avanti" (se "Avanti" non c'è, in basso a sinistra).
+// Su telefono "Indietro" sta sulla stessa riga, a sinistra di "Avanti".
 let NAVB = [];
 function nav(bottoni) { NAVB = bottoni || []; disegnaNav(); }
+function bottone(b) { const el = document.createElement("button"); el.className = b.classe || "secondario"; el.textContent = b.testo; el.onclick = b.azione; return el; }
 function disegnaNav() {
   const s = $("scheda");
   s.querySelectorAll(":scope > .azioni, .indietro-in").forEach(x => x.remove());
-  if (!NAVB.length) return;
-  const mk = b => { const el = document.createElement("button"); el.className = b.classe || "secondario"; el.textContent = b.testo; el.onclick = b.azione; return el; };
-  const rigaAvanti = [...s.querySelectorAll(":scope > .riga")].find(r => r.querySelector("button.primario"));
-  if (NAVB.length === 1 && NAVB[0].testo === "Indietro" && rigaAvanti) {
-    const el = mk(NAVB[0]); el.classList.add("indietro-in"); rigaAvanti.insertBefore(el, rigaAvanti.firstChild); return;
-  }
-  const d = document.createElement("div"); d.className = "riga azioni"; NAVB.forEach(b => d.appendChild(mk(b))); s.appendChild(d);
+  const ind = NAVB.filter(b => b.testo === "Indietro"), altri = NAVB.filter(b => b.testo !== "Indietro");
+  let riga = [...s.querySelectorAll(":scope > .riga")].find(r => r.querySelector("button.primario")) || null;
+  if (altri.length) { const d = document.createElement("div"); d.className = "riga azioni"; altri.forEach(b => d.appendChild(bottone(b))); s.appendChild(d);
+    if (altri.some(b => b.classe === "primario")) riga = d; }
+  if (ind.length) { const el = bottone(ind[0]); el.classList.add("indietro-in"); el._riga = riga; s.appendChild(el); }
+  allinea();
 }
-// se la scheda cambia contenuto dopo, i pulsanti restano (e restano in fondo)
+function allinea() {
+  const s = $("scheda"), el = s.querySelector(".indietro-in"), ico = s.querySelector(":scope > .qi, :scope > .ill");
+  if (!el) { if (ico && ico.style.gridRow) ico.style.gridRow = ""; return; }
+  const riga = el._riga && el._riga.isConnected ? el._riga : null;
+  if (!(ico && getComputedStyle(s).display === "grid")) {
+    if (ico && ico.style.gridRow) ico.style.gridRow = "";
+    ["gridRow", "gridColumn", "alignSelf", "marginTop"].forEach(k => { if (el.style[k]) el.style[k] = ""; });
+    let dove = riga;
+    if (!dove) { dove = s.querySelector(":scope > .azioni"); if (!dove) { dove = document.createElement("div"); dove.className = "riga azioni"; s.appendChild(dove); } }
+    if (el.parentNode !== dove || dove.firstChild !== el) dove.insertBefore(el, dove.firstChild);
+    return;
+  }
+  if (el.parentNode !== s) s.appendChild(el);
+  const vuota = s.querySelector(":scope > .azioni:empty"); if (vuota) vuota.remove();
+  const col = [...s.children].filter(x => x !== el && x !== ico && getComputedStyle(x).display !== "none");
+  // con "Avanti": stessa riga di "Avanti". Senza: una riga sotto tutto, a sinistra
+  let i = riga ? col.indexOf(riga) : -1; if (i < 1) i = col.length;
+  const r = i + 1, gr = "1 / span " + Math.max(1, r - 1);
+  if (ico.style.gridRow !== gr) ico.style.gridRow = gr;
+  el.style.gridColumn = "1"; el.style.gridRow = String(r);
+  el.style.alignSelf = "start";
+  el.style.marginTop = riga && i < col.length ? getComputedStyle(riga).marginTop : "16px";
+}
+// se la scheda cambia contenuto dopo, i pulsanti restano al loro posto
 new MutationObserver(() => {
   const s = $("scheda"); if (!NAVB.length) return;
-  const a = s.querySelector(":scope > .azioni");
-  if (!a && !s.querySelector(".indietro-in")) disegnaNav();
-  else if (a && s.lastElementChild !== a) s.appendChild(a);
+  if (!s.querySelector(".indietro-in") && !s.querySelector(":scope > .azioni")) { disegnaNav(); return; }
+  const a = s.querySelector(":scope > .azioni"), el = s.querySelector(".indietro-in");
+  if (a && el && el.parentNode === s && a.nextElementSibling !== el) { s.insertBefore(a, el); return; }
+  if (a && !el && s.lastElementChild !== a) { s.appendChild(a); return; }
+  allinea();
 }).observe(document.getElementById("scheda"), {childList: true});
+addEventListener("resize", () => { clearTimeout(window.__al); window.__al = setTimeout(allinea, 80); });
 
 function indietro() {
   // prima domanda: si torna alla schermata precedente (fatture, nome, certificato), non si ricomincia da capo
