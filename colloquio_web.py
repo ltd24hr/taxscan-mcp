@@ -538,7 +538,7 @@ PAGINA_HTML = r"""<!doctype html>
   select.testo { appearance:auto; cursor:pointer; }
   button.primario:disabled { opacity:.45; cursor:not-allowed; }
   @media (min-width:900px) {
-    .pagina { max-width:720px; padding-top:32px; }
+    .pagina { max-width:1120px; padding-top:24px; }
     header .logo { font-size:22px; } header .passo { font-size:15px; } header button.fatto { font-size:16px; }
     h1 { font-size:28px; } p { font-size:18px; } .hint { font-size:16px; }
     button.opz, label.opz { font-size:18px; padding:16px 18px; } button.opz .n, label.opz .n { flex-basis:32px; height:32px; font-size:16px; }
@@ -619,6 +619,21 @@ PAGINA_HTML = r"""<!doctype html>
     .ill.letto .raggio { animation:none; }
     .pronto svg { animation:pronto .45s cubic-bezier(.2,.9,.3,1.4) both; }
     .pronto svg:nth-child(2) { animation-delay:.18s; } .pronto svg:nth-child(3) { animation-delay:.36s; }
+  }
+  /* su computer: l'animazione a sinistra, il testo a destra, le risposte su due colonne: tutto sta in una schermata */
+  @media (min-width:1000px) {
+    .scheda { padding:32px 40px; }
+    .scheda:has(> .qi), .scheda:has(> .ill) { display:grid; grid-template-columns:200px minmax(0,1fr); column-gap:40px; align-items:start; }
+    .scheda > * { grid-column:2; min-width:0; }
+    .scheda > .qi, .scheda > .ill { grid-column:1; grid-row:1 / span 30; align-self:start; justify-self:center; }
+    .scheda > .qi { width:132px; height:132px; border-radius:32px; margin:6px 0 0; }
+    .scheda > .ill { margin:0; } .scheda > .ill svg { height:190px; }
+    .scheda > h1 { margin-top:0; font-size:30px; }
+    .scheda .opzioni { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .scheda .opzioni > :only-child, .scheda .opzioni.una { grid-column:1 / -1; }
+    .scheda .riepilogo { display:grid; grid-template-columns:1fr 1fr; column-gap:28px; }
+    header { margin-bottom:10px; } .barra { margin-bottom:20px; } footer { margin-top:16px; }
+    .scheda textarea.testo { height:88px; min-height:88px; }
   }
   @keyframes entra { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
   @keyframes qi-entra { from { opacity:0; transform:scale(.8); } to { opacity:1; transform:none; } }
@@ -767,7 +782,7 @@ function mostraIntro() {
   $("passo").textContent = ""; barra(0.04);
   $("scheda").innerHTML = ILL_CERT + `
     <h1>La tua situazione fiscale in 2 minuti</h1>
-    <p>Rispondi toccando le risposte. Nessuna domanda difficile: quello che si può capire da solo, lo capisce TaxScan.</p>
+    <p>Poche domande, si risponde con un tocco.</p>
     <p class="hint">Se hai il <b>certificato di attribuzione della partita IVA</b>, caricalo in PDF o anche come foto: leggo io codice ATECO, data di apertura e partita IVA.</p>
     <div class="opzioni">
       <label class="opz" for="pdf"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.carica}</svg></span><span>Carico il certificato (PDF o foto)</span></label>
@@ -856,7 +871,7 @@ const eur0 = v => String(Math.round(v || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".
 function mostraFatture() {
   segna(mostraFatture);
   fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.1);
-  $("scheda").innerHTML = '<h1>Hai qualche fattura a portata di mano?</h1>' +
+  $("scheda").innerHTML = ILL_CERT + '<h1>Hai qualche fattura a portata di mano?</h1>' +
     '<p>Non è obbligatorio. Il certificato dice che codice hai, le fatture dicono che lavoro fai davvero: con due o tre capisco da solo la tua attività, ti faccio meno domande e dopo posso cercare dove risparmiare. Leggo le righe del lavoro e che tipo di cliente è: non conservo né il nome del cliente né il file.</p>' +
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
     '<input type="file" id="fatt" multiple accept=".xml,.p7m,.pdf,.xlsx,.jpg,.jpeg,.png,.webp,.heic,.heif,image/*" class="nascosto">' +
@@ -872,15 +887,19 @@ async function leggiFatture(ev) {
   leggiFattureDa(out, false);
 }
 async function leggiFattureDa(out, schermo) {
-  if (schermo) { $("passo").textContent = "Le tue fatture"; barra(0.11); $("scheda").innerHTML = '<h1>Leggo le fatture</h1><div id="fesito"></div>'; nav([]); }
+  if (schermo) { $("passo").textContent = "Le tue fatture"; barra(0.11); $("scheda").innerHTML = ILL_CERT + '<h1>Leggo le fatture</h1><div id="fesito"></div>'; nav([]); }
   $("fesito").innerHTML = '<p class="hint">Leggo le fatture, una alla volta…</p>';
+  const ill = $("ill"); if (ill) { ill.classList.remove("letto"); ill.classList.add("legge"); }
   let r = null;
   try { const x = await fetch("/api/prova/lettura", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({c: ID, files: out, profilo: {partita_iva: scheda.partita_iva || "", codice_fiscale: scheda.codice_fiscale || "", nome: scheda.nome || "", cognome: scheda.cognome || "", data_apertura: scheda.data_apertura || ""}})}); r = await x.json(); } catch (e) {}
   if (!r || r.ok === false || !r.fatture || !r.fatture.some(v => v.ok)) {
     const nf = r && r.fatture && r.fatture.find(v => v.non_fattura);
-    $("fesito").innerHTML = '<div class="errore">' + esc(nf ? "Il file " + nf.nome + " " + (nf.motivo || "non è una fattura") + "." : ((r && (r.errore || r.vuoto)) || "Non sono riuscito a leggere queste fatture.")) + ' Nessun problema: ti faccio qualche domanda.</div>';
-    setTimeout(() => { fase = "domanda"; invia(); }, 2400); return;
+    if (ill) ill.classList.remove("legge");
+    $("fesito").innerHTML = '<div class="errore">' + esc(nf ? "Il file " + nf.nome + " " + (nf.motivo || "non è una fattura") + "." : ((r && (r.errore || r.vuoto)) || "Non sono riuscito a leggere queste fatture.")) + ' Puoi caricarne altre oppure andare avanti senza.</div>';
+    nav([{testo: "Indietro", azione: indietroPrima}, {testo: "Continua senza fatture", classe: "primario", azione: () => { fase = "domanda"; invia(); }}]);
+    return;
   }
+  if (ill) { ill.classList.remove("legge"); ill.classList.add("letto"); }
   FATT = r.fatture.filter(v => v.ok).map(v => Object.assign({usa: true, risp: ""}, v));
   chiediCoerenza(0);
 }
@@ -891,7 +910,7 @@ function chiediCoerenza(i) {
   segna(() => chiediCoerenza(i));
   const v = FATT[i], a = v.anomalie.find(x => x.gravita === "alta"), ric = a.tipo === "ricevuta";
   $("passo").textContent = "Un controllo sulle fatture"; barra(0.12);
-  $("scheda").innerHTML = '<h1>' + (ric ? "L\'hai emessa tu?" : "Questa fattura è tua?") + '</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> qualcosa non torna. ' + esc(a.testo) + '</p><div class="opzioni">' +
+  $("scheda").innerHTML = ico("scudo") + '<h1>' + (ric ? "L\'hai emessa tu?" : "Questa fattura è tua?") + '</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> qualcosa non torna. ' + esc(a.testo) + '</p><div class="opzioni">' +
     '<button class="opz" id="csi"><span class="n">1</span><span>' + (ric ? "Sì, l\'ho emessa io" : "Sì, è mia (per esempio ho più partite IVA)") + '</span></button>' +
     '<button class="opz" id="cno"><span class="n">2</span><span>' + (ric ? "No, l\'ho ricevuta: è una spesa, non usarla" : "No, è di un\'altra persona: non usarla") + '</span></button></div>';
   NAV_INDIETRO();
@@ -910,7 +929,7 @@ function chiediFattura(i) {
   const k = chiaveFatt(v), gruppo = FATT.filter(x => x === v || (!x.altra && !x.chiesta && chiaveFatt(x) === k && (!x.capito || x.daGruppo === v)));
   const tot = gruppo.reduce((a, x) => a + (x.importo || 0), 0);
   $("passo").textContent = "Una domanda sulle fatture"; barra(0.13);
-  $("scheda").innerHTML = '<h1>Non voglio indovinare</h1><p>' + (gruppo.length > 1
+  $("scheda").innerHTML = ico("lente") + '<h1>Non voglio indovinare</h1><p>' + (gruppo.length > 1
       ? 'Le fatture ' + elenco(gruppo.map(x => '<b>' + esc(x.nome) + '</b>')) + ' (' + eur0(tot) + ') dicono la stessa cosa: te lo chiedo una volta sola. '
       : 'Fattura <b>' + esc(v.nome) + '</b> (' + eur0(v.importo) + '). ') + esc(v.domanda || "Non capisco di che lavoro si tratti.") + '</p>' +
     ((v.opzioni || []).length ? '<p class="hint">Puoi sceglierne più d\'una.</p>' : '') + '<div class="opzioni">' +
@@ -931,7 +950,7 @@ function chiediFattura(i) {
 function chiediNome(em) {
   segna(() => chiediNome(em));
   $("passo").textContent = "Una conferma"; barra(0.15);
-  $("scheda").innerHTML = '<h1>Ti chiami ' + esc(em.nome + " " + (em.cognome || "")) + '?</h1><p class="hint">Le fatture sono intestate a questo nome: così posso salutarti per nome.</p><div class="opzioni">' +
+  $("scheda").innerHTML = ico("persone") + '<h1>Ti chiami ' + esc(em.nome + " " + (em.cognome || "")) + '?</h1><p class="hint">Le fatture sono intestate a questo nome: così posso salutarti per nome.</p><div class="opzioni">' +
     '<button class="opz" id="nsi"><span class="n">1</span><span>Sì, sono io</span></button><button class="opz" id="nno"><span class="n">2</span><span>No, scrivo io il mio nome</span></button></div>';
   NAV_INDIETRO();
   $("nsi").onclick = () => { scheda.nome = em.nome; if (em.cognome) scheda.cognome = em.cognome; fase = "domanda"; nomeChiesto = true; invia(); };
@@ -964,14 +983,14 @@ function mostraNome() {
   if (NOME_IP && NOME_IP.nome) {
     // un documento (anche quello sbagliato) mi ha gia' detto un nome: lo propongo invece di chiederlo da zero
     const ip = NOME_IP;
-    $("scheda").innerHTML = '<h1>Ti chiami ' + esc([ip.nome, ip.cognome].filter(Boolean).join(" ")) + '?</h1><p class="hint">L\'ho letto nel documento che mi hai dato.</p><div class="opzioni">' +
+    $("scheda").innerHTML = ico("persone") + '<h1>Ti chiami ' + esc([ip.nome, ip.cognome].filter(Boolean).join(" ")) + '?</h1><p class="hint">L\'ho letto nel documento che mi hai dato.</p><div class="opzioni">' +
       '<button class="opz" id="nsi"><span class="n">1</span><span>Sì, sono io</span></button><button class="opz" id="nno"><span class="n">2</span><span>No, scrivo io il mio nome</span></button></div>';
     NAV_INDIETRO();
     $("nsi").onclick = () => { scheda.nome = ip.nome; if (ip.cognome) scheda.cognome = ip.cognome; fase = "domanda"; invia(); };
     $("nno").onclick = () => { NOME_IP = null; PILA.pop(); mostraNome(); };
     return;
   }
-  $("scheda").innerHTML = '<h1>Come ti chiami?</h1><p class="hint">Così posso salutarti per nome. Se preferisci non dirlo, vai avanti.</p><input id="nm" class="testo" type="text" maxlength="40" autocomplete="given-name" aria-label="Il tuo nome" placeholder="Il tuo nome">';
+  $("scheda").innerHTML = ico("persone") + '<h1>Come ti chiami?</h1><p class="hint">Così posso salutarti per nome. Se preferisci non dirlo, vai avanti.</p><input id="nm" class="testo" type="text" maxlength="40" autocomplete="given-name" aria-label="Il tuo nome" placeholder="Il tuo nome">';
   const vai = () => { const v = ($("nm").value || "").trim(); if (v) scheda.nome = v; fase = "domanda"; invia(); };
   nav([{testo: "Indietro", azione: indietroPrima}, {testo: "Avanti", classe: "primario", azione: vai}]);
   $("nm").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); vai(); } };
@@ -1006,6 +1025,8 @@ const WEB = {
 };
 const WEB_OPZ = {usa_fatture_in_cloud: {si: "Sì, lo uso"}};
 function errore(msg) { let e = $("err-domanda"); if (!e) { e = document.createElement("p"); e.id = "err-domanda"; e.className = "errore"; e.setAttribute("role", "alert"); $("scheda").appendChild(e); } e.textContent = msg; }
+const PARTI = {identita: "La tua partita IVA", conferma: "I tuoi dati", aliquota: "La tua aliquota", previdenza: "I contributi",
+               situazioni: "La tua situazione", numeri: "I tuoi incassi"};
 function mostraDomanda(v) {
   fase = "domanda";
   const campo = v.campo_prossimo;
@@ -1013,9 +1034,9 @@ function mostraDomanda(v) {
   v = Object.assign({}, v, {prossima_domanda: W.d || v.prossima_domanda, dove_trovarlo: ("h" in W) ? W.h : v.dove_trovarlo,
     opzioni: (v.opzioni || []).map(o => Object.assign({}, o, {etichetta: ((WEB_OPZ[campo] || {})[o.valore]) || o.etichetta}))});
   // la barra si basa sulle domande che restano davvero (le chiede il server), non su un numero fisso
-  const restano = Math.max(1, (v.campi_mancanti || []).length), quota = 0.18 + 0.8 * passo / (passo + restano);
+  const restano = Math.max(1, (v.campi_mancanti || []).length), quota = restano === 1 ? 0.92 : 0.18 + 0.72 * passo / (passo + restano);
   BARV = tornando ? quota : Math.max(BARV, quota); tornando = false;
-  $("passo").textContent = restano === 1 ? "Ultima domanda" : "Domanda " + (passo + 1); barra(BARV);
+  $("passo").textContent = restano === 1 ? "Quasi fatto · ultima domanda" : (PARTI[v.gruppo_corrente] || "Il tuo profilo"); barra(BARV);
   const box = $("scheda");
   const opz = v.opzioni || [];
   let html = icona(campo) + `<h1>${esc(v.prossima_domanda)}</h1>`;
@@ -1027,7 +1048,7 @@ function mostraDomanda(v) {
       const anni = d.anni_nel_regime === 0 ? "primo anno" : d.anni_nel_regime === 1 ? "da un anno" : d.anni_nel_regime != null ? `da ${d.anni_nel_regime} anni` : "";
       const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Attività", scheda.descrizione_attivita_certificato || scheda.descrizione_attivita || d.descrizione_attivita], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
                      ["Previdenza", d.gestione_previdenziale_etichetta], ["Partita IVA aperta nel", d.anno_apertura], ["Nel forfettario", anni]];
-      html = icona(campo) + `<h1>Ho capito così. Giusto?</h1><div class="riepilogo">` +
+      html = icona(campo) + `<h1>Ecco cosa so di te</h1><p class="hint">L'ho ricavato dai tuoi documenti e dalle tue risposte. Dai un'occhiata: se qualcosa non torna, lo correggi in un attimo.</p><div class="riepilogo">` +
         righe.filter(r => r[1]).map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join("") + "</div>";
     }
     html += '<div class="opzioni">' + opz.map(o => `<button class="opz" data-v="${esc(o.valore)}"><span class="n">${o.numero}</span><span>${esc(o.etichetta)}</span></button>`).join("") + "</div>";
