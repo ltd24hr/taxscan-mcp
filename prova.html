@@ -625,6 +625,9 @@ small.pvs{font-size:12.5px;color:var(--mute)}
 @media (prefers-reduced-motion:reduce){.pvnew{animation:none}.pvbar span{transition:none}}
 #stage [data-wk=slC_3] .sm{font-size:12.5px;color:var(--mute)}
 #stage [data-wk=slC_3] .pvsp{margin:0 0 4px!important}
+#pfok,#pview .pfn{display:none!important}
+#pflist .pfr{cursor:pointer}
+#pflist .pfr.pfman .pfv i{color:#9a3b12;font-style:normal;font-weight:600}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -1192,7 +1195,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 77</div>
+<div class="ver">Prototipo versione 78</div>
 </div>
 
 <script>
@@ -2359,34 +2362,94 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     'Come scegli quali mostrarmi?':{a:'Parto da quello che so di te: regime, anno di apertura, tipo di contributi, codice ATECO. Per questo il profilo completo mi aiuta a non farti vedere cose inutili.',n:['Cosa controlli per me?']},
     'Sono adatti a me?':{a:'No: sono <b>possibilità</b>, non promesse. Ognuna va verificata sui tuoi dati, ed è quello che faccio dopo il tuo «Mi interessa».',n:[]}};
   function bpChips(){var ls=bpCount()?['Cosa controlli per me?','Quanto costa chiederli?','Posso perdere una scadenza?']:['Come scegli quali mostrarmi?','Sono adatti a me?','Quanto costa chiederli?'];window.__chips(BPP,ls)}
-  var PF={nome:'',email:'',av:'',ok:false};
-  function renderProfilo(){var nome=PF.nome||D.nome;
-    var r=function(k,l,v,ed){return '<div class="pfr" data-k="'+k+'"><span class="pfl">'+l+'</span><span class="pfv">'+(v||'<i>da aggiungere</i>')+'</span>'+(ed?'<button class="pfe" data-e="'+k+'">Modifica</button>':'')+'</div>'};
-    $('pflist').innerHTML=r('nome','Come ti chiamo',oEsc(nome),1)+r('att','Il tuo lavoro principale',oEsc(OTMAIN.nome)+' · ATECO '+oEsc(OTMAIN.cod),0)+(OT.sin&&OT.sin.length?r('fatt','Cosa fai davvero, dalle tue fatture',OT.sin.filter(function(x){return x.pct>0}).map(function(x){return oEsc(x.nome)+' '+x.pct+'%'}).join(' · '),0):'')+r('reg','Regime','Forfettario',0)+r('email','Email per gli avvisi',oEsc(PF.email),1)+
-      '<div class="pfr"><span class="pfl">Come ti avviso</span><span class="pfv"><label><input type="radio" name="pfav" value="email"'+(PF.av==='email'?' checked':'')+'> Email</label> <label><input type="radio" name="pfav" value="wa"'+(PF.av==='wa'?' checked':'')+'> WhatsApp</label> <label><input type="radio" name="pfav" value="tutti"'+(PF.av==='tutti'?' checked':'')+'> Tutti e due</label></span></div>';
+  // ================= Profilo (v78): niente pulsanti «Modifica» e «Sì, sono giusti». Si tocca un dato e lo si cambia scrivendolo a Marcello.
+  // I dati fiscali sono la base di tutti i calcoli: quando ne cambia uno, il server rifà tutta la situazione (scadenze, quota, soglia, avvisi).
+  var PFK='ts_pf_'+(window.TS_C||'demo');
+  var PF=(function(){var o=null;try{o=JSON.parse(localStorage.getItem(PFK)||'null')}catch(e){}o=o||{};return {nome:o.nome||'',email:o.email||'',av:o.av||'',tel:o.tel||'',ok:true}})();
+  function pfSave(){try{localStorage.setItem(PFK,JSON.stringify({nome:PF.nome,email:PF.email,av:PF.av,tel:PF.tel}))}catch(e){}
+    try{if(typeof PRO!=='undefined'&&PRO&&PRO.v===1){PRO.pf={nome:PF.nome,av:PF.av,tel:PF.tel};oSaveSoon()}}catch(e){}}
+  function pfDs(k){var e=document.querySelector('#slD [data-ex="'+k+'"] b');return e?e.textContent.trim():''}
+  function pfMail(){return PF.email||window.TS_MAIL||''}
+  // i dati del profilo: etichetta, valore, perché serve, cosa chiedere per cambiarlo, campo da ricalcolare sul server
+  function pfRighe(){var nome=PF.nome||D.nome,wa=PF.av==='wa'||PF.av==='tutti',L=[
+      {k:'nome',l:'Come ti chiamo',v:nome,x:'È il nome con cui ti saluto.',q:'Scrivimi qui sotto il nome giusto.',c:'nome'},
+      {k:'email',l:'Email per gli avvisi',v:pfMail(),x:'Serve per avvisarti prima delle scadenze e mandarti il report, solo se vuoi.',q:'Scrivimi qui sotto la tua email.'},
+      {k:'av',l:'Come ti avviso',v:PF.av==='wa'?'WhatsApp':PF.av==='tutti'?'Email e WhatsApp':PF.av==='email'?'Email':'',x:'È il canale con cui ti ricordo le scadenze.',q:'Dimmi: email, WhatsApp o tutti e due?'}];
+    if(wa)L.push({k:'tel',l:'Numero WhatsApp',v:PF.tel,x:'Mi serve per scriverti su WhatsApp. Nel prototipo i messaggi non partono ancora.',q:'Scrivimi il numero, con il prefisso se non è italiano.'});
+    L.push({k:'att',l:'Il tuo lavoro principale',v:OTMAIN.nome,x:'È il lavoro da cui parto per scegliere codice e coefficiente.',q:'Raccontami in una riga cosa fai adesso: preparo il controllo del codice.'},
+      {k:'ateco',l:'Codice ATECO · coefficiente',v:pfDs('ds_ateco')||OTMAIN.cod,x:'Dal codice dipende il coefficiente, cioè la parte dei tuoi incassi su cui paghi.',q:'Scrivimi il codice nuovo, per esempio 62.01.00.',c:'codice_ateco'});
+    if(OT.sin&&OT.sin.length)L.push({k:'fatt',l:'Cosa fai davvero, dalle tue fatture',v:OT.sin.filter(function(x){return x.pct>0}).map(function(x){return x.nome+' '+x.pct+'%'}).join(' · '),x:'L\'ho letto dalle fatture che mi hai dato. Se qualcosa non torna, lo correggiamo in Ottimizzazione fiscale.'});
+    L.push({k:'anno',l:'Partita IVA aperta nel',v:pfDs('ds_anno'),x:'Dall\'anno di apertura dipendono l\'aliquota e gli acconti.',q:'Scrivimi l\'anno di apertura, per esempio 2024.',c:'data_apertura'},
+      {k:'aliq',l:'Aliquota dell\'imposta',v:pfDs('ds_aliq'),x:'Il 5% vale per i primi cinque anni di un\'attività nuova, se hai i requisiti; poi il 15%.',q:'Scrivimi 5% o 15%.',c:'aliquota'},
+      {k:'inps',l:'Contributi',v:pfDs('ds_inps'),x:'È la gestione in cui versi i contributi per la pensione: cambia molto quanto paghi.',q:'Dimmi dove versi: gestione separata, artigiani, commercianti o la tua cassa (per esempio Inarcassa).',c:'gestione_previdenziale'},
+      {k:'inc',l:'Incassi di quest\'anno finora',v:pfDs('ds_inc'),x:'Da qui calcolo quanto mettere da parte e quanto spazio ti resta prima della soglia.',q:'Scrivimi quanto hai incassato finora quest\'anno, in tutto.',c:'ricavi_anno_corrente'},
+      {k:'reg',l:'Regime',v:'Forfettario',x:'Il regime in cui calcolo imposta e contributi. Se ti avvicini alla soglia degli 85.000 € te lo dico per tempo.'});
+    if(window.TS_C)L.push({k:'fic',l:'Fatture in Cloud',v:OT.ficOk?'Collegato':'Non collegato',x:OT.ficOk?'Prendo da solo le fatture che emetti.':'Se lo colleghi, prendo da solo le fatture che emetti: niente più caricamenti a mano.',q:OT.ficOk?'':'Vuoi collegarlo adesso? Scrivimi «sì».'});
+    L.push({k:'dati',l:'I tuoi dati',v:'Puoi scaricarli o cancellarli',x:'Li vedi tu e nessun altro senza il tuo permesso.',q:'Scrivimi se vuoi scaricarli o cancellarli: te lo preparo.'});
+    return L}
+  // cosa manca: Marcello lo ricorda tra i suggerimenti
+  function pfMancano(){var m=[];if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
+    if(!PF.av)m.push(['av','Scegli come ti avviso']);if((PF.av==='wa'||PF.av==='tutti')&&!PF.tel)m.push(['tel','Aggiungi il numero WhatsApp']);
+    if(window.TS_C&&!OT.ficOk)m.push(['fic','Collega Fatture in Cloud']);return m}
+  function pfRiga(k){return document.querySelector('#pflist .pfr[data-k="'+k+'"]')}
+  // tocca un dato «mancante» dai suggerimenti: lo seleziono e chiedo il valore
+  function pfVai(k){var r=pfRiga(k),d=pfRighe().filter(function(x){return x.k===k})[0];if(!r||!d)return;
+    if(k==='fic'&&window.TS_C){say('Ti porto su Fatture in Cloud per il collegamento: dai l\'ok e torni qui.');setTimeout(oFicCollega,1200);return}
+    if(!r.classList.contains('sel'))window.__tieni(r,d.x+(d.q?' '+d.q:''),d.l,pfChips);
+    try{r.scrollIntoView({block:'center',behavior:reduce?'auto':'smooth'})}catch(e){}
+    say(d.q||d.x);pfChips(k);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
+  function renderProfilo(){var L=pfRighe(),man={};pfMancano().forEach(function(x){man[x[0]]=1});
+    $('pflist').innerHTML=L.map(function(d){return '<div class="pfr'+(man[d.k]?' pfman':'')+'" data-k="'+d.k+'" tabindex="0" role="button"><span class="pfl">'+d.l+'</span><span class="pfv">'+(d.v?oEsc(d.v):'<i>da aggiungere</i>')+'</span></div>'}).join('');
     wgInit($('pflist'),'f','.pfr');
-    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),m={nome:'È il nome con cui ti saluto: puoi cambiarlo quando vuoi.',att:'È il lavoro da cui parto per scegliere il codice ATECO e il coefficiente. Lo verifichiamo in Ottimizzazione fiscale.',fatt:'L\'ho letto dalle fatture che mi hai dato, una per una. Se qualcosa non è giusto, correggilo in Ottimizzazione fiscale, scheda Fatture.',reg:'Il forfettario è il regime in cui calcolo imposta e contributi per te.',email:'Serve per mandarti gli avvisi sulle scadenze e il report, solo se vuoi.'};tap('profilo_riga_'+k);window.__tieni(r,m[k]||'Questo dato mi serve per i calcoli.',null,function(){window.__chips(XA,XL.pf)})}});
-    [].slice.call($('pflist').querySelectorAll('[data-e]')).forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-e'),row=b.parentNode,cur=k==='nome'?nome:PF.email;
-      row.querySelector('.pfv').innerHTML='<input type="'+(k==='email'?'email':'text')+'" class="pfi" value="'+oEsc(cur)+'" aria-label="'+(k==='nome'?'Nome':'Email')+'"><button class="pfs">Salva</button>';b.hidden=true;
-      var i=row.querySelector('.pfi');i.focus();row.querySelector('.pfs').onclick=function(){PF[k]=i.value.trim();tap('profilo_salva_'+k);if(k==='nome'&&PF.nome){D.nome=PF.nome;var h1=$('nome');if(h1)h1.textContent='Ciao '+PF.nome+', benvenuto su TaxScan'}
-        renderProfilo();say(k==='nome'?'Ok, da ora ti chiamo <b>'+oEsc(PF.nome||nome)+'</b>.':'Segnato: gli avvisi li mando a questa email.')}}});
-    [].slice.call($('pflist').querySelectorAll('[name=pfav]')).forEach(function(i){i.onchange=function(){PF.av=i.value;tap('profilo_avvisi_'+i.value);say(PF.av==='wa'?'Perfetto: ti scrivo su WhatsApp. Nel prototipo non parte ancora davvero.':PF.av==='email'?'Perfetto: ti scrivo per email.':'Perfetto: ti avviso su entrambi.')}});
-    $('pfok').disabled=PF.ok;$('pfok').textContent=PF.ok?'Dati confermati ✓':'Sì, sono giusti'}
-  $('pfok').onclick=function(){PF.ok=true;tap('profilo_conferma');renderProfilo();say('Perfetto, grazie! Da ora <b>tengo io aggiornati questi dati</b> mentre leggo le tue fatture, e ti chiedo qualcosa solo se cambia una cosa importante.');pfChips()};
-  var PFP={'Perché mi servono questi dati?':{a:'Con il lavoro principale scelgo il coefficiente giusto, con il regime e l\'email ti avviso al momento giusto. Non chiedo niente che non mi serva per farti pagare meno.',n:['Chi vede i miei dati?']},
+    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),d=L.filter(function(x){return x.k===k})[0]||{};
+      tap('profilo_riga_'+k);window.__tieni(r,d.x+(d.q?' <b>'+d.q+'</b>':''),d.l,function(){pfChips(k)})}});
+    $('pfok').hidden=true}
+  var PFP={'Perché mi servono questi dati?':{a:'Con il codice e l\'anno di apertura scelgo coefficiente e aliquota, con i contributi calcolo quanto versi, con gli incassi la quota da mettere da parte. Non chiedo niente che non mi serva per farti pagare il giusto.',n:['Chi vede i miei dati?']},
     'Chi vede i miei dati?':{a:'Li vedi tu e <b>nessun altro</b> senza il tuo permesso. Se vuoi, solo un commercialista che scegli tu li controlla insieme a te. Puoi chiedere di cancellarli quando vuoi.',n:['Posso cancellare tutto?']},
     'Posso cancellare tutto?':{a:'Sì: ti basta chiederlo e cancello il tuo profilo e le fatture caricate. Nel prototipo il pulsante vero arriva con la versione finale.',n:[]},
-    'Come cambio il codice ATECO?':{a:'Lo vediamo insieme in <b>Ottimizzazione fiscale</b>: lì leggo le fatture e ti dico se il codice sembra quello giusto, poi decidi tu.',n:[]},
-    'Perché WhatsApp?':{a:'Perché è dove guardi i messaggi: un avviso su una scadenza lo leggi subito. Se preferisci l\'email, scegli quella.',n:[]}};
-  function pfChips(){window.__chips(PFP,PF.ok?['Chi vede i miei dati?','Posso cancellare tutto?']:['Perché mi servono questi dati?','Come cambio il codice ATECO?','Perché WhatsApp?'])}
+    'Come cambio un dato?':{a:'Tocca il dato e scrivimi qui sotto quello giusto. Se cambia un dato fiscale, <b>rifaccio io tutti i calcoli</b>: scadenze, quota da mettere da parte, soglia.',n:['Perché mi servono questi dati?']}};
+  // suggerimenti: prima quello che manca (escluso il dato già selezionato), poi le domande
+  function pfChips(sel){var pool={},ls=[];
+    pfMancano().forEach(function(m){if(m[0]===sel)return;pool[m[1]]={a:function(){pfVai(m[0])},e:1};ls.push(m[1])});
+    Object.keys(PFP).forEach(function(q){pool[q]=PFP[q]});
+    ls=ls.slice(0,2).concat(sel?['Come cambio un dato?','Perché mi servono questi dati?']:['Come cambio un dato?','Chi vede i miei dati?']);
+    window.__chips(pool,ls)}
   var _bpsv=showView;showView=function(v){_bpsv(v);
     if(v==='b'){renderBandi();scrollTo(0,0);tap('bandi_apri');say(bpCount()?'Eccoli di nuovo. Vuoi cambiare qualcosa?':'Ho guardato <b>bandi e agevolazioni</b> per la tua attività: ti mostro quelli che potrebbero fare al caso tuo. Dimmi quali ti interessano: <b>poi ci penso io</b>.');bpChips()}
-    else if(v==='f'){renderProfilo();scrollTo(0,0);tap('profilo_apri');say('Se vuoi modificare qualcosa, scrivimelo qui sotto o toccalo.');pfChips()}};
-
-  // scrivere a Marcello nel Profilo: nome ed email si cambiano a parole
-  window.__pfWrite=function(t){var m=t.match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/),n=t.match(/(?:chiamami|mi chiamo|il mio nome (?:è|e'))\s+([A-Za-zÀ-ÿ'’-]{2,24})/i);
-    if(m){PF.email=m[0];tap('profilo_scrive_email');renderProfilo();say('Segnato: gli avvisi li mando a <b>'+oEsc(m[0])+'</b>.');return true}
-    if(n){var nm=n[1].charAt(0).toUpperCase()+n[1].slice(1);PF.nome=nm;D.nome=nm;var h1=$('nome');if(h1)h1.textContent='Ciao '+nm+', benvenuto su TaxScan';tap('profilo_scrive_nome');renderProfilo();say('Ok, da ora ti chiamo <b>'+oEsc(nm)+'</b>.');return true}
+    else if(v==='f'){renderProfilo();scrollTo(0,0);tap('profilo_apri');var m=pfMancano();
+      say('Tocca un dato e scrivimi qui sotto quello giusto: se è un dato fiscale, <b>rifaccio io tutti i calcoli</b>.'+(m.length?' Mi manca ancora qualcosa: '+m.map(function(x){return '<b>'+x[1].replace(/^(Aggiungi|Scegli|Collega|Dimmi) /,'').replace(/^la tua |^il /,'')+'</b>'}).join(', ')+'.':''));pfChips()}};
+  // un dato fiscale è cambiato: il server rifà la situazione e la pagina si ricarica con i numeri nuovi
+  function pfCorreggi(campo,valore,ok){if(!window.TS_C){say('Nel prototipo di prova non posso rifare i calcoli: con la tua situazione vera lo faccio subito.');return}
+    say('Ci penso un attimo: rifaccio i calcoli con il dato nuovo…');
+    fetch('/api/prova/correggi',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,campo:campo,valore:valore})}).then(function(r){return r.json()}).then(function(j){
+      if(!j||!j.ok){say((j&&j.errore)||'Non sono riuscito a salvarlo: riprova tra un attimo.');return}
+      tap('profilo_corretto_'+campo);if(campo==='ricavi_anno_corrente'){try{var o=JSON.parse(localStorage.getItem('ts_pv_'+window.TS_C)||'null');if(o){o.incx=[];localStorage.setItem('ts_pv_'+window.TS_C,JSON.stringify(o))}}catch(e){}}
+      try{sessionStorage.setItem('ts_pf_msg',ok)}catch(e){}say(ok+' Aggiorno la pagina con i numeri nuovi.');
+      setTimeout(function(){location.href='/prova?c='+encodeURIComponent(window.TS_C)+'&vai=f'},1600)}).catch(function(){say('Non sono riuscito a salvarlo: riprova tra un attimo.')})}
+  setTimeout(function(){var m=null;try{m=sessionStorage.getItem('ts_pf_msg');sessionStorage.removeItem('ts_pf_msg')}catch(e){}if(m)setTimeout(function(){showView('f');setTimeout(function(){say(m+' Lo vedi anche in Panoramica: scadenze, quota da mettere da parte e soglia sono già aggiornate.');pfChips()},300)},700)},0);
+  // scrivere a Marcello nel Profilo: si cambia il dato selezionato (o nome ed email riconosciuti dalla frase)
+  window.__pfWrite=function(t){t=String(t||'').trim();var r=document.querySelector('#pflist .pfr.sel'),k=r&&r.getAttribute('data-k');
+    var mail=t.match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/),nm=t.match(/(?:chiamami|mi chiamo|il mio nome (?:è|e'))\s+([A-Za-zÀ-ÿ'’-]{2,24})/i);
+    function setNome(n){n=n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();PF.nome=n;D.nome=n;pfSave();var h1=$('nome');if(h1)h1.textContent='Ciao '+n+', benvenuto su TaxScan';renderProfilo();
+      if(window.TS_C)fetch('/api/prova/correggi',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,campo:'nome',valore:n})}).catch(function(){});
+      tap('profilo_scrive_nome');say('Ok, da ora ti chiamo <b>'+oEsc(n)+'</b>.');pfChips()}
+    function setMail(e){PF.email=e;pfSave();renderProfilo();tap('profilo_scrive_email');
+      if(window.TS_C)fetch('/api/prova/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,email:e})}).catch(function(){});
+      say('Segnato: gli avvisi li mando a <b>'+oEsc(e)+'</b>.');pfChips()}
+    if(mail&&(!k||k==='email')){setMail(mail[0]);return true}
+    if(nm&&!k){setNome(nm[1]);return true}
+    if(!k)return false;
+    if(k==='nome'){var n=t.replace(/^(mi chiamo|chiamami|sono|il mio nome (è|e'))\s+/i,'').split(/\s+/)[0]||'';if(!/^[A-Za-zÀ-ÿ'’-]{2,24}$/.test(n)){say('Scrivimi solo il nome, con lettere.');return true}setNome(n);return true}
+    if(k==='email'){say('Non mi sembra un\'email: scrivila così, <b>nome@esempio.it</b>.');return true}
+    if(k==='av'){var a=/tutt|entramb|due|tutte e due/i.test(t)?'tutti':/whats|wa\b/i.test(t)?'wa':/mail/i.test(t)?'email':'';if(!a){say('Dimmi: email, WhatsApp o tutti e due?');return true}
+      PF.av=a;pfSave();renderProfilo();tap('profilo_avvisi_'+a);say(a==='email'?'Perfetto: ti scrivo per email.':(a==='wa'?'Perfetto: ti scrivo su WhatsApp.':'Perfetto: ti avviso su tutti e due.')+(a!=='email'&&!PF.tel?' Mi serve il <b>numero</b>: scrivimelo qui sotto.':''));
+      if(a!=='email'&&!PF.tel)setTimeout(function(){var rr=pfRiga('tel');if(rr&&!rr.classList.contains('sel'))window.__tieni(rr,'Mi serve per scriverti su WhatsApp.','Numero WhatsApp',pfChips);say('Scrivimi il numero WhatsApp, con il prefisso se non è italiano.')},400);else pfChips();return true}
+    if(k==='tel'){var tel=t.replace(/[^\d+]/g,'');if(tel.replace(/\D/g,'').length<8){say('Scrivimi il numero con tutte le cifre.');return true}PF.tel=tel;pfSave();renderProfilo();tap('profilo_scrive_tel');say('Segnato. Nel prototipo i messaggi WhatsApp non partono ancora: quando arrivano, uso questo numero.');pfChips();return true}
+    if(k==='fic'){if(/^(s[iì]|ok|va bene|collega)/i.test(t)&&!OT.ficOk){pfVai('fic');return true}return false}
+    if(k==='att'){window.__tdSet&&window.__tdSet('profilo',[{titolo:'Controlla il codice ATECO per il lavoro che fai adesso',tipo:'verifica_ateco',perche:'Mi hai detto che il tuo lavoro è: «'+t.slice(0,140)+'». Se non è quello del codice attuale, potresti pagare con il coefficiente sbagliato.',come:'Apri Ottimizzazione fiscale: leggo le fatture e ti propongo il codice giusto, poi decidi tu.'}]);
+      tap('profilo_lavoro');say('Segnato. Ti ho messo in <b>Da fare</b> il controllo del codice ATECO per questo lavoro: in Ottimizzazione fiscale lo verifichiamo insieme sulle fatture.');return true}
+    var d=pfRighe().filter(function(x){return x.k===k})[0];
+    if(d&&d.c){var ok={codice_ateco:'Fatto: ora calcolo con il codice <b>'+oEsc(t)+'</b>.',data_apertura:'Fatto: ho segnato l\'anno di apertura.',aliquota:'Fatto: ho cambiato l\'aliquota.',gestione_previdenziale:'Fatto: ho cambiato la gestione dei contributi.',ricavi_anno_corrente:'Fatto: ho aggiornato gli incassi di quest\'anno.'}[d.c]||'Fatto.';pfCorreggi(d.c,t,ok);return true}
     return false};
   // ================= Blocchi spostabili, spiegazioni con domande suggerite, Scadenze ragionata =================
   function wgLoad(k){try{return JSON.parse(localStorage.getItem('ts_w_'+k)||'[]')}catch(e){return[]}}

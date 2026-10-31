@@ -238,8 +238,8 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         mp.pop("__REAL__", None)
         rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
         t = rx.sub(lambda m: mp[m.group(0)], t)
-        extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;</script>" % (
-            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]))
+        extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;window.TS_MAIL=%s;</script>" % (
+            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]), json.dumps(d.get("_mail") or ""))
         t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
         print(f"personalizza prova: {e}")
@@ -307,6 +307,104 @@ def documento(uid: str, op: str, path: str, dati) -> dict:
 
 
 _ID_PROFILO = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
+
+
+# ---------------------------------------------------------------- correzioni dal Profilo: un dato cambia, si ricalcola tutto
+_CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente")
+
+
+def _gestione_da_testo(t: str):
+    """Dalla frase dell'utente alla gestione previdenziale (e, se e' una cassa, quale)."""
+    import scheda as S
+    x = (t or "").lower()
+    if "separat" in x:
+        return "separata", None
+    if "artigian" in x:
+        return "artigiani", None
+    if "commerc" in x and "dottori" not in x:
+        return "commercianti", None
+    for nome in S.CASSE:
+        if nome.lower() in x:
+            return "cassa", nome
+    return None, None
+
+
+def correggi(c: str, campo: str, valore) -> dict:
+    """L'utente corregge un dato del profilo scrivendolo a Marcello: si aggiorna la scheda e si rifa'
+    tutta la situazione (scadenze, quota da mettere da parte, soglia, avvisi), come quando cambia un incasso."""
+    import datetime
+    import dashboard
+    import scheda as S
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    if not c or campo not in _CAMPI_CORREGGIBILI:
+        return {"ok": False, "errore": "Questo dato non si cambia da qui."}
+    dati = db.carica_dashboard(c)
+    if not dati:
+        return {"ok": False, "errore": "Non trovo la tua situazione."}
+    sch = dict(dati.get("_scheda") or {})
+    v = str(valore or "").strip()
+    if campo == "nome":
+        n = S.pulisci_nome(v)
+        if not n:
+            return {"ok": False, "errore": "Scrivimi solo il nome, con lettere."}
+        sch["nome"] = n
+    elif campo == "aliquota":
+        m = re.search(r"\b(5|15)\b", v)
+        if not m:
+            return {"ok": False, "errore": "L'aliquota del forfettario è il 5% o il 15%: quale delle due?"}
+        sch["aliquota"] = m.group(1)
+    elif campo == "gestione_previdenziale":
+        g, cassa = _gestione_da_testo(v)
+        if not g:
+            return {"ok": False, "errore": "Dimmi se versi in gestione separata, come artigiano, come commerciante o a una cassa (per esempio Inarcassa)."}
+        sch["gestione_previdenziale"] = g
+        if cassa:
+            sch["nome_cassa"] = cassa
+            sch.pop("aliquota_cassa", None)
+    elif campo == "data_apertura":
+        m = re.search(r"\b(19[89]\d|20\d\d)\b", v)
+        anno = int(m.group(1)) if m else 0
+        if not (1980 <= anno <= datetime.date.today().year):
+            return {"ok": False, "errore": "Scrivimi l'anno, per esempio 2024."}
+        sch["data_apertura"] = str(anno)
+        sch["anno_ingresso_forfettario"] = anno
+    elif campo == "codice_ateco":
+        m = re.search(r"\b(\d{2})[.\s]?(\d{2})(?:[.\s]?(\d{1,2}))?\b", v)
+        if not m:
+            return {"ok": False, "errore": "Scrivimi il codice con le cifre, per esempio 62.01.00."}
+        sch["codice_ateco"] = m.group(1) + "." + m.group(2) + "." + (m.group(3) or "00").zfill(2)
+        sch.pop("codice_ateco_stimato", None)
+    elif campo == "ricavi_anno_corrente":
+        n = re.sub(r"[^\d]", "", v.split(",")[0])
+        if not n:
+            return {"ok": False, "errore": "Scrivimi l'importo in cifre, per esempio 18000."}
+        sch["ricavi_anno_corrente"] = int(n)
+    nuovi = dashboard._ricostruisci(c, dati, sch)
+    if not isinstance(nuovi, dict) or "errore" in nuovi:
+        return {"ok": False, "errore": (nuovi or {}).get("errore") or "Con questo dato non riesco a rifare i calcoli: controlla e riprova."}
+    if dati.get("_email"):
+        try:
+            db.salva_scheda(dati["_email"], sch)
+        except Exception as e:
+            print(f"prova correggi: scheda non salvata: {e}")
+    try:
+        db.registra_evento("profilo_corretto", c, {"campo": campo})
+    except Exception:
+        pass
+    return {"ok": True}
+
+
+def email_mascherata(c: str) -> str:
+    """L'email salvata, con il nome nascosto in parte: basta per riconoscerla."""
+    try:
+        import azioni
+        e = azioni.email_di(c) or ""
+    except Exception:
+        e = ""
+    if not e:
+        return ""
+    nome, _, dom = e.partition("@")
+    return (nome[:2] + "•••@" + dom) if dom else ""
 
 
 def profilo(pid: str, op: str, dati=None) -> dict:
@@ -1421,6 +1519,7 @@ def registra(mcp, avvisi):
                 except Exception:
                     pass
             if dati:
+                dati["_mail"] = await asyncio.to_thread(email_mascherata, idc)
                 return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
             return HTMLResponse(ingresso(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
@@ -1440,6 +1539,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(profilo, c.get("id", ""), c.get("op", ""), c.get("data"))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/correggi", methods=["POST"])
+    async def prova_correggi(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(correggi, c.get("c", ""), c.get("campo", ""), c.get("valore", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
