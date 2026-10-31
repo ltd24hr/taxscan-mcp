@@ -823,6 +823,11 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
             gia_ = [_pulisci(x, 90) for x in (dati.get("gia") or [])[:20] if _pulisci(x, 90)]
             if gia_:
                 u += "\nMicro-attivita' GIA' IN ELENCO (trovane solo di DIVERSE, nemmeno riformulate): " + "; ".join(gia_)
+            ris_ = [_pulisci(x, 160) for x in (dati.get("risposte") or [])[:20] if _pulisci(x, 160)]
+            if ris_:
+                u += ("\nRISPOSTE GIA' DATE DALLA PERSONA (non richiederle): " + "; ".join(ris_) +
+                      ".\nUsale per capire meglio il suo lavoro e andare piu' a fondo: proponi prestazioni NUOVE coerenti con quelle che fa davvero "
+                      "(fasi vicine, lavori per gli stessi clienti, servizi collegati), non varianti di quelle gia' chieste.")
             r, usato = ai.genera_json_ottimizza(_SYS_OTTIMIZZA, u, 5000)
             r = r if isinstance(r, dict) else {}
             out = []

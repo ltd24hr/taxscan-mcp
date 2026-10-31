@@ -527,6 +527,19 @@ html:not(.settled) .bnr{display:none}
 
 .oshell .ofase .ofh{justify-content:flex-start;text-align:left}.oshell .ofase .ofh small{flex:1 1 100%;margin-top:-2px}
 .oshell{display:block!important}
+
+/* v79: domande con risposte della stessa forma, blocco fattura con Visualizza/Scarica */
+.oqa.oq2,.oqa.oq5{display:grid;gap:10px}
+.oqa.oq2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:520px}
+.oqa.oq5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:640px){.oqa.oq5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.oqa.oq2 .och,.oqa.oq5 .och{border-radius:12px;padding:14px 10px;font-size:15px;min-height:54px;text-align:center;line-height:1.25}
+.oqa.oq2 .och:hover,.oqa.oq5 .och:hover{border-color:#4355cc}
+.ofbt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.ofb{font:inherit;font-size:13px;font-weight:700;padding:7px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:#4355cc;cursor:pointer}
+.ofb:hover{border-color:#4355cc}
+.orig{font-size:13px;font-weight:600;color:#087308}
+.ovbox iframe{width:100%;height:70vh;border:1px solid var(--line);border-radius:10px;margin:8px 0 10px;background:#fff}
 #bview,#pview{padding-bottom:20px}
 .bpc{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);padding:14px 16px;margin-bottom:12px}.bpc.ok{border-left-color:var(--ok)}.bpc.no{opacity:.6}
 .bpt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.bpt h3{margin:0;font-size:18px}.bptag{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;white-space:nowrap}.bpc.ok .bptag{color:var(--ok);background:none;border:1px solid var(--ok)}
@@ -1195,7 +1208,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 78</div>
+<div class="ver">Prototipo versione 79</div>
 </div>
 
 <script>
@@ -1934,7 +1947,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function oSave(){var id=oPid();if(!id||!OT.inv.length)return;var d=PRO&&PRO.v===1?PRO:{v:1,emit:null,extra:[],desc:'',spec:'',cod:null};
     d.ts=new Date().toISOString();OT.sin=oSin();d.sin=OT.sin;d.done1=!!OT.done[1];
     d.inv=OT.inv.map(function(v){return {nome:v.nome,ok:v.ok,usa:v.usa!==false,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',chiesto:!!v.risp,importo:v.importo||0,fonte:v.fonte||(v.capito?'fattura':'da chiedere'),
-      cliente:v.cliente||{},cliente_nome:v.clNome||'',ctl:v.ctl||{},fonte_doc:v.fonteDoc||'',fic_id:v.ficId||null,fasi:v.fasi||null,fsel:v.fsel||[],anomalie:v.anomalie||[],dubbio:!!v.dubbio,mia:!!v.mia,det:String(v.det||'').slice(0,800),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}});
+      cliente:v.cliente||{},cliente_nome:v.clNome||'',ctl:v.ctl||{},fonte_doc:v.fonteDoc||'',fic_id:v.ficId||null,fasi:v.fasi||null,fsel:v.fsel||[],anomalie:v.anomalie||[],dubbio:!!v.dubbio,mia:!!v.mia,rig:!!v.rig,det:String(v.det||'').slice(0,800),righe:(v.righe||[]).slice(0,12).map(function(r){return {testo:String(r.testo||'').slice(0,160),importo:r.importo}})}});
     oTdFatt();
     d.ott={v:57,done:OT.done,micro:OT.micro,scelte:OT.scelte,escluse:OT.escluse.slice(0,30),peso:OT.peso,risparmio:OT.ris||0,sbloccato:!!OT.sbloccato,mailInv:!!OT.mailInv};PRO=d;
     try{fetch('/api/prova/profilo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,op:'set',data:d})}).catch(function(){})}catch(e){}}
@@ -1948,14 +1961,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(!d||d.v!==1||!d.inv||!d.inv.length){oRender();return}
       PRO=d;if(OT.inv.length){oRender();return}
       if(d.cod&&d.cod.cod){OTMAIN={nome:d.cod.nome,cod:d.cod.cod}}
-      OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:v.ok!==false,righe:oPulisciRighe(v.righe),clNome:v.cliente_nome||'',ctl:v.ctl||{},fonteDoc:v.fonte_doc||'',ficId:v.fic_id||null,fasi:v.fasi||undefined,fsel:v.fsel||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',usa:v.usa!==false,cliente:v.cliente||{},anomalie:v.anomalie||[],dubbio:!!v.dubbio,mia:!!v.mia,det:v.det||'',fonte:v.fonte||'',dalOnb:!d.ott}});
+      OT.inv=d.inv.map(function(v){return {nome:v.nome,tipo:'',url:'',ok:v.ok!==false,righe:oPulisciRighe(v.righe),clNome:v.cliente_nome||'',ctl:v.ctl||{},fonteDoc:v.fonte_doc||'',ficId:v.fic_id||null,fasi:v.fasi||undefined,fsel:v.fsel||[],importo:v.importo||0,capito:!!v.capito,attivita:v.attivita||'',risp:v.risp||'',usa:v.usa!==false,cliente:v.cliente||{},anomalie:v.anomalie||[],dubbio:!!v.dubbio,mia:!!v.mia,rig:!!v.rig,det:v.det||'',fonte:v.fonte||'',dalOnb:!d.ott}});
       var o=d.ott||{};OT.done=o.done||{};OT.micro=o.micro||null;if(OT.micro&&OT.micro.items)OT.micro.items.forEach(function(m){m.riga_fattura=oNoPh(m.riga_fattura)});OT.scelte=o.scelte||{};OT.escluse=o.escluse||[];OT.peso=o.peso||{};OT.ris=o.risparmio||0;OT.sbloccato=!!o.sbloccato;OT.mailInv=!!o.mailInv;OT.sin=oSin();
       OT.open=OT.done[2]?3:OT.done[1]?2:1;oRender();if(!$('gview').hidden)oParla()}).catch(function(){OTLOADED=true;oRender()})}
   // ---- impalcatura: due schede in alto, il contenuto sotto
   function oRender(){var op=$('opane');if(!op)return;oStato();var ovx=$('o3ovl');if(ovx)ovx.remove();
     var n=OT.open,F=OTN[n-1];
     var h='<div class="oshell sm" id="oshell"><div class="ofase" id="ofase"><div class="ofh">'+(n>1?'<button class="lnk2 oback" id="o_back">‹ '+(n===2?'Fatture':'Domande')+'</button>':'')+
-      '<span class="ofn">Fase '+n+' di 3</span><b>'+F[1]+'</b><small>'+oEsc(oSub(n)||F[2])+'</small></div><div class="ofp" aria-hidden="true"><i style="width:'+Math.round(n/3*100)+'%"></i></div></div>'+
+      '</div><div class="ofp" aria-hidden="true"><i style="width:'+Math.round(n/3*100)+'%"></i></div></div>'+
       '<section class="odos" id="odos" aria-live="polite"><div class="opanel act" id="opn'+n+'"><div class="obody" id="obody"></div></div></section></div>';
     op.innerHTML=h;
     var bk=$('o_back');if(bk)bk.onclick=function(){if(OT.busy)return;OT.open=n-1;OT.qpeso=null;tap('ott_indietro_'+n);oRender();oParla()};
@@ -2005,6 +2018,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call(b.querySelectorAll('[data-fs]')).forEach(function(c){c.onchange=function(){var v=OT.inv[+c.getAttribute('data-fs')],t=v&&v.fasi&&v.fasi[+c.getAttribute('data-k')];if(!t)return;v.fsel=(v.fsel||[]).filter(function(x){return x!==t});if(c.checked)v.fsel.push(t);
       c.closest('.ofc').classList.toggle('on',c.checked);tap('ott_fase_'+(c.checked?'si':'no'));oSaveSoon()}});
     [].slice.call(b.querySelectorAll('[data-ano]')).forEach(function(x){x.onclick=function(){tap('ott_da_controllare');oAnoSay(+x.getAttribute('data-ano'))}});
+    [].slice.call(b.querySelectorAll('[data-vis]')).forEach(function(x){x.onclick=function(){oVedi(+x.getAttribute('data-vis'))}});
+    [].slice.call(b.querySelectorAll('[data-dl]')).forEach(function(x){x.onclick=function(){oScarica(+x.getAttribute('data-dl'))}});
     var sk=$('o_dsk');if(sk)sk.onclick=function(){oVai(false)};var v2=$('o_vai2');if(v2)v2.onclick=function(){OT.open=2;oRender();oParla()}}
   // domande mirate: per ogni fattura l'IA propone le fasi tipiche di quel lavoro, la persona spunta quelle che fa
   function oFasi(){var us=oUsate().filter(function(v){return v.fasi===undefined});if(!us.length||OT.fasiBusy)return;OT.fasiBusy=true;
@@ -2029,41 +2044,58 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(OT.done[1]){delete OT.done[2];delete OT.done[3]}oSaveSoon();oRender();tap('ott_fic_importate');
       say('Ho preso <b>'+nuove.length+'</b> '+(nuove.length===1?'fattura':'fatture')+' da Fatture in Cloud, le più recenti.'+(gia+nuove.length>5?' Per l\'analisi ne uso al massimo 5: puoi scegliere quali con «Usa».':''));setTimeout(oParla,reduce?0:900)}).catch(function(){OT.busy=false;oStato();say('Non riesco a raggiungere Fatture in Cloud adesso: riprova tra poco.')})}
   // promemoria nella conversazione: una volta sola, quando ha appena caricato fatture a mano e non e' collegato
-  function oFicRicorda(){if(!window.TS_C||OT.ficOk||OT.ficDetto)return;OT.ficDetto=true;
-    setTimeout(function(){say('Se fatturi con <b>Fatture in Cloud</b>, puoi collegarlo: prendo io le fatture, senza caricarle una per una. Con un altro programma, puoi scaricare le fatture in XML (anche tutte insieme da «Fatture e Corrispettivi» dell\'Agenzia delle Entrate) e caricarle qui.');
+  function oFicRicorda(){if(!window.TS_C||OT.ficOk||OT.ficDetto)return;OT.ficDetto=true;var t0=Date.now();
+    setTimeout(function(){if((OT.tocco||0)>t0){OT.ficDetto=false;return}say('Se fatturi con <b>Fatture in Cloud</b>, puoi collegarlo: prendo io le fatture, senza caricarle una per una. Con un altro programma, puoi scaricare le fatture in XML (anche tutte insieme da «Fatture e Corrispettivi» dell\'Agenzia delle Entrate) e caricarle qui.');
       oChipsP({'Collega Fatture in Cloud':{a:oFicCollega,e:1}},['Collega Fatture in Cloud'])},reduce?0:2600)}
   // problemi trovati nelle fatture (diciture mancanti...) diventano un passo in «Da fare», con il testo da aggiungere
   function oTdFatt(){if(typeof window.__tdSet!=='function')return;var tipi={},testi=[];
     oUsate().forEach(function(v){(v.anomalie||[]).forEach(function(a){if((a.gravita==='media'||a.gravita==='bassa')&&a.tipo!=='generica'&&!tipi[a.tipo]){tipi[a.tipo]=1;testi.push(a.testo)}})});
     if(!testi.length){window.__tdSet('fatt',[],'');return}
     var tit=tipi.inversione&&tipi.dicitura?'Aggiungi «inversione contabile» e la dicitura del forfettario nelle prossime fatture':tipi.inversione?'Aggiungi «inversione contabile» nelle fatture ai clienti UE':tipi.dicitura?'Aggiungi la dicitura del forfettario nelle prossime fatture':'Correggi le prossime fatture';
-    var L=[{titolo:tit,tipo:'diciture',perche:testi.join(' '),come:'Aggiungila nel tuo programma di fatturazione come nota fissa, così compare da sola in ogni fattura. Puoi scaricare la fattura con le diciture giuste toccando «Da controllare» sulla fattura, in Ottimizzazione fiscale.'}];
+    var L=[{titolo:tit,tipo:'diciture',perche:testi.join(' '),come:'Aggiungila nel tuo programma di fatturazione come nota fissa, così compare da sola in ogni fattura. Le fatture già fatte le puoi rigenerare con le diciture giuste toccando «Da controllare» sulla fattura, in Ottimizzazione fiscale.'}];
     if(tipi.inversione)L.push({titolo:'Controlla l\'iscrizione al VIES',tipo:'vies',perche:'Per fatturare senza IVA a un\'azienda di un altro Paese dell\'Unione europea, la tua partita IVA deve essere iscritta al VIES (l\'archivio europeo delle partite IVA) e quella del cliente deve risultare attiva.',come:'Controlla la tua partita IVA e quella del cliente sul sito VIES della Commissione europea. Se la tua non risulta, chiedi l\'iscrizione dall\'area riservata dell\'Agenzia delle Entrate oppure tramite il tuo intermediario.'});
     window.__tdSet('fatt',L,'Controlli sulle fatture')}
   function oAlta(v){return (v.anomalie||[]).filter(function(a){return a.gravita==='alta'})[0]}
   function oAltra(v){return !!oAlta(v)}
   var OALT={altra_persona:['Attenzione: questa fattura non sembra tua.','Sì, è mia','No, è di un\'altra persona','è di un\'altra persona. Per analizzarla serve il suo certificato o il suo profilo.'],ricevuta:['Attenzione: sembra una fattura che hai ricevuto.','No, l\'ho emessa io','Sì, è una spesa: non usarla','è una fattura ricevuta (una spesa): nel forfettario le spese non si deducono.']};
-  function oAnoBox(v,i){var alta=oAlta(v),T=alta?(OALT[alta.tipo]||OALT.altra_persona):null,alt=(v.anomalie||[]).filter(function(a){return a.gravita!=='alta'});
+  function oAnoBox(v,i){var alta=oAlta(v),T=alta?(OALT[alta.tipo]||OALT.altra_persona):null,alt=oAnoAperte(v);
     return (alta&&v.dubbio?'<div class="oano alta"><b>'+T[0]+'</b><p>'+oEsc(alta.testo)+'</p><div class="onav"><button class="och" data-mia="'+i+'">'+T[1]+'</button><button class="och" data-nomia="'+i+'">'+T[2]+'</button></div></div>':'')+
       (alta&&!v.dubbio&&!v.mia?'<div class="oano"><b>Non usata:</b> '+T[3]+'</div>':'')+
       (alt.filter(function(a){return a.gravita!=='info'}).length?'<button class="oanob" data-ano="'+i+'"><span class="oanoi" aria-hidden="true">!</span>Da controllare nella fattura <span class="oanon">'+alt.filter(function(a){return a.gravita!=='info'}).length+'</span></button>':'')}
   // il dettaglio di cosa controllare lo spiega l'agente, con le azioni possibili
-  function oAnoSay(i){var v=OT.inv[i];if(!v)return;var al=(v.anomalie||[]).filter(function(a){return a.gravita!=='alta'&&a.gravita!=='info'}),inv=al.some(function(a){return a.tipo==='inversione'}),dic=al.some(function(a){return a.tipo==='dicitura'||a.tipo==='inversione'});
-    say('<b>Da controllare nella '+oTitFatt(v).replace(/^Fattura/,'fattura')+'</b><br>'+al.map(function(a){return '• '+oEsc(a.testo)}).join('<br>')+'<br>'+(dic?'Se vuoi, ti preparo la fattura con le diciture giuste da copiare nel tuo programma.':'')+(inv?' Per il VIES ti ho messo un passo in <b>Da fare</b>.':''));
-    var P={},L=[];if(dic){P['Rigenera la fattura con le diciture']={a:function(){oRigenera(i)},n:[]};L.push('Rigenera la fattura con le diciture')}
+  function oRisolta(v,a){return !!v.rig&&(a.tipo==='dicitura'||a.tipo==='inversione')}
+  function oAnoAperte(v){return (v.anomalie||[]).filter(function(a){return a.gravita!=='alta'&&!oRisolta(v,a)})}
+  function oDaRigenerare(v){return v.ok&&v.usa!==false&&!v.rig&&(v.anomalie||[]).some(function(a){return a.gravita!=='alta'&&a.gravita!=='info'&&(a.tipo==='dicitura'||a.tipo==='inversione')})}
+  function oAnoSay(i){var v=OT.inv[i];if(!v)return;OT.tocco=Date.now();var al=oAnoAperte(v).filter(function(a){return a.gravita!=='info'}),inv=al.some(function(a){return a.tipo==='inversione'}),dic=al.some(function(a){return a.tipo==='dicitura'||a.tipo==='inversione'});
+    var altre=OT.inv.map(function(x,k){return k}).filter(function(k){return k!==i&&oDaRigenerare(OT.inv[k])});
+    say('<b>Da controllare nella '+oTitFatt(v).replace(/^Fattura/,'fattura')+'</b><br>'+al.map(function(a){return '• '+oEsc(a.testo)}).join('<br>')+'<br>'+(dic?'Se vuoi, la rigenero con le diciture giuste: prende il posto di questa e la vedi o la scarichi dal blocco.'+(altre.length?' Lo stesso manca in '+(altre.length===1?'un\'altra fattura':'altre '+altre.length+' fatture')+': posso rigenerarle tutte insieme.':''):'')+(inv?' Per il VIES ti ho messo un passo in <b>Da fare</b>.':''));
+    var P={},L=[];if(dic){P['Rigenera la fattura con le diciture']={a:function(){oRigenera([i])},n:[]};L.push('Rigenera la fattura con le diciture');
+      if(altre.length){var tl='Rigenera tutte le '+(altre.length+1)+' fatture';P[tl]={a:function(){oRigenera([i].concat(altre))},n:[]};L.unshift(tl)}}
     if(inv){P['Cos\'è il VIES?']={a:'È l\'archivio europeo delle partite IVA che possono lavorare con aziende di altri Paesi dell\'Unione senza applicare l\'IVA. Per fatturare così a un\'azienda UE devi esserci tu, e deve esserci il cliente. Ti ho messo un passo in «Da fare» per controllare e, se serve, iscriverti.',n:[]};L.push('Cos\'è il VIES?')}
     oChipsP(P,L)}
-  function oRigenera(i){var v=OT.inv[i];if(!v)return;say('Preparo la fattura con le diciture…');tap('ott_rigenera_fattura');
-    fetch('/api/prova/template',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({righe:(v.righe||[]).map(function(r){return {testo:oFrase(r.testo),importo:r.importo}}),cliente:v.cliente||{}})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(bl){
-      var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download='fattura-con-diciture.pdf';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},2000);
-      say('Ecco la fattura con le diciture che mancavano, scritte per questo cliente: copiale nel tuo programma di fatturazione, meglio come nota fissa così compaiono sempre.')}).catch(function(){say('Non sono riuscito a preparare il file adesso: riprova tra poco.')})}
+  function oPdfTemplate(v){return fetch('/api/prova/template',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({righe:(v.righe||[]).map(function(r){return {testo:oFrase(r.testo),importo:r.importo}}),cliente:v.cliente||{}})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(bl){v.rigUrl=URL.createObjectURL(bl);return v.rigUrl})}
+  function oRigenera(ks){ks=(ks||[]).filter(function(k){return OT.inv[k]});if(!ks.length)return;say(ks.length>1?'Rigenero le '+ks.length+' fatture con le diciture…':'Rigenero la fattura con le diciture…');tap('ott_rigenera_fattura'+(ks.length>1?'_tutte':''));
+    Promise.all(ks.map(function(k){return oPdfTemplate(OT.inv[k]).then(function(){OT.inv[k].rig=true;return 1},function(){return 0})})).then(function(r){var ok=r.filter(Boolean).length;
+      if(!ok){say('Non sono riuscito a rigenerarle adesso: riprova tra poco.');return}
+      oSaveSoon();oRender();say((ok>1?'Fatto: le <b>'+ok+' fatture</b> ora hanno le diciture giuste e hanno preso il posto di quelle di prima.':'Fatto: la fattura ora ha le diciture giuste e ha preso il posto di quella di prima.')+' Le vedi o le scarichi con i pulsanti sul blocco. Per le prossime, aggiungi le diciture come nota fissa nel tuo programma: te l\'ho lasciato in <b>Da fare</b>.')})}
+  // vedere e scaricare: la fattura rigenerata se c'è; se no l'originale (solo in questa visita: il file non lo conservo), oppure una copia ricostruita
+  function oFileFatt(i){var v=OT.inv[i];if(!v)return Promise.reject();var orig=v.url&&!v.rig&&/pdf|image/.test(v.tipo||'');
+    if(orig)return Promise.resolve({u:v.url,t:'La fattura che mi hai dato',n:v.nome||'fattura'});
+    var nm='fattura'+((v.ctl||{}).numero?'-'+String(v.ctl.numero).replace(/[^\w-]+/g,'-'):'-'+(i+1))+(v.rig?'-rigenerata':'')+'.pdf';
+    return (v.rigUrl?Promise.resolve(v.rigUrl):oPdfTemplate(v)).then(function(u){return {u:u,t:v.rig?'Fattura rigenerata con le diciture':'Copia ricostruita dalla fattura che ho letto',n:nm}})}
+  function oVedi(i){OT.tocco=Date.now();tap('ott_fattura_vedi');oFileFatt(i).then(function(f){var o=$('ovmod');if(o)o.remove();o=document.createElement('div');o.id='ovmod';o.className='tdov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+      o.innerHTML='<div class="tdbox wide ovbox"><button class="tdx2" aria-label="Chiudi">✕</button><h3>'+oEsc(f.t)+'</h3><iframe src="'+f.u+'" title="'+oEsc(f.t)+'"></iframe><div class="onav"><button class="cta s o2" id="ov_dl">Scarica</button></div></div>';document.body.appendChild(o);
+      var chiudi=function(){o.remove();document.removeEventListener('keydown',esc)},esc=function(e){if(e.key==='Escape')chiudi()};o.querySelector('.tdx2').onclick=chiudi;o.onclick=function(e){if(e.target===o)chiudi()};document.addEventListener('keydown',esc);
+      $('ov_dl').onclick=function(){oScarica(i)}}).catch(function(){say('Non riesco ad aprirla adesso: riprova tra poco.')})}
+  function oScarica(i){tap('ott_fattura_scarica');oFileFatt(i).then(function(f){var a=document.createElement('a');a.href=f.u;a.download=f.n;document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},2000)}).catch(function(){say('Non riesco a prepararla adesso: riprova tra poco.')})}
   function oCard(v,i){var cl=v.cliente||{},rg=(v.righe||[]).slice(0,3);
     return '<div class="oft'+(v.ok?'':' no')+(v.usa===false?' off':'')+(v.dubbio?' dub':'')+'">'+
       '<div class="ofh"><b>'+oTitFatt(v)+'</b>'+(v.ok&&OT.inv.filter(function(x){return x.ok}).length>1?'<label class="oiu"><input type="checkbox" data-u="'+i+'"'+(v.usa!==false?' checked':'')+'> Usa</label>':'')+'</div>'+
       (!v.ok?'<p class="onote">'+(v.nonFatt?'Questo file '+oEsc(v.motivo||'non è una fattura')+': non lo uso.':'Non sono riuscito a leggerla'+(v.motivo?': '+oEsc(v.motivo):'')+'.')+'</p>':
       '<dl class="ofd"><dt>Cliente</dt><dd>'+(v.clNome?'<b>'+oEsc(v.clNome)+'</b>'+(cl.paese&&!/^ital/i.test(cl.paese)?' <span class="omute">· '+oEsc(cl.paese)+'</span>':''):(cl.tipo||cl.paese?oEsc(oCliBreve(cl)):'<span class="omute">non indicato in fattura</span>'))+'</dd>'+
       '<dt>Prestazione</dt><dd>'+rg.map(function(r){return oEsc(oFrase(r.testo))}).join('<br>')+((v.righe||[]).length>3?'<br><span class="omute">e altre '+((v.righe.length-3))+' righe</span>':'')+(v.attivita?'':'<br><span class="omute">Non è chiaro che lavoro sia: raccontamelo qui sotto.</span>')+'</dd>'+
-      '<dt>Importo</dt><dd>'+oEur0(v.importo)+'</dd></dl>'+oAnoBox(v,i))+'</div>'}
+      '<dt>Importo</dt><dd>'+oEur0(v.importo)+'</dd></dl>'+oAnoBox(v,i)+
+      '<div class="ofbt"><button class="ofb" data-vis="'+i+'">Visualizza</button><button class="ofb" data-dl="'+i+'">Scarica</button>'+(v.rig?'<span class="orig">✓ Rigenerata con le diciture</span>':'')+'</div>')+'</div>'}
   // titolo della fattura: numero e data (il nome del file all'utente non dice niente)
   function oCliBreve(c){var t=c.tipo==='privato'?'Un privato':c.tipo==='professionista'?'Un professionista':c.tipo==='ente pubblico'?'Un ente pubblico':'Un\'azienda';return t+(c.paese?(/^ital/i.test(c.paese)?' in Italia':' · '+c.paese):'')}
   function oTitFatt(v){var c=v.ctl||{},d=c.data?c.data.split('-').reverse().join('/'):'';return c.numero||d?'Fattura'+(c.numero?' n. '+oEsc(c.numero):'')+(d?' del '+d:''):oEsc(v.nome)}
@@ -2105,7 +2137,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var msgs=['Sto guardando cosa hai fatto e per chi…','Scompongo il lavoro nelle sue fasi concrete…','Per ogni fase cerco la categoria ufficiale e il suo coefficiente…','Controllo Ordine, cassa, INPS e Camera di Commercio…','Quasi fatto: scrivo le righe di fattura d\'esempio…'];
     var k=0;say(msgs[0]);var iv=setInterval(function(){k++;if(k<msgs.length&&OT.busy)say(msgs[k]);else clearInterval(iv)},reduce?2000:9000);
     var gia=OT.micro&&testo?OT.micro.items.filter(function(m){return OT.scelte[m.id]}).map(function(m){return m.nome}):[];
-    aiCall('ottimizza',{principale:{nome:OTMAIN.nome,cod:OTMAIN.cod},coef_principale:typeof CCOEF==='number'?CCOEF:.78,testo:testo||'',escludi:OT.escluse,gia:gia,gia_chiesto:!!OT.qfatta,
+    var risposte=OT.micro&&testo?OT.micro.items.filter(function(m){return OT.scelte[m.id]!=null}).map(function(m){var l=OLIV.filter(function(x){return x[0]===oPeso(m,oInvK(m)>=0?oInvK(m):0)})[0];return m.nome+': '+(OT.scelte[m.id]?'sì, la fa'+(l?' ('+l[3]+')':''):'no, non la fa')}):[];
+    aiCall('ottimizza',{principale:{nome:OTMAIN.nome,cod:OTMAIN.cod},coef_principale:typeof CCOEF==='number'?CCOEF:.78,testo:testo||'',escludi:OT.escluse,gia:gia,risposte:risposte,gia_chiesto:!!OT.qfatta,
       fatture:oUsate().map(function(v){return {righe:(v.righe||[]).slice(0,10),importo:v.importo,cliente:v.cliente||{},attivita:v.attivita||'',dettagli:oDetTot(v),anomalie:(v.anomalie||[]).filter(function(a){return a.gravita!=='alta'||v.mia}).map(function(a){return a.testo})}})}).then(function(j){clearInterval(iv);OT.busy=false;
       if(!j||!j.ok){OT.errore=j&&j.limite?'Per oggi ho fatto abbastanza analisi: riprova domani.':'Non sono riuscito a completare l\'analisi.';oRender();say(OT.errore+' Puoi riprovare dal pulsante qui sotto.');return}
       var vecchie=OT.micro&&testo?OT.micro.items.filter(function(m){return OT.scelte[m.id]}):[],nomi={};vecchie.forEach(function(m){nomi[m.nome.toLowerCase()]=1});
@@ -2113,13 +2146,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       OT.micro={items:it,principale:j.principale||{},sintesi:j.sintesi||'',oss:j.osservazioni||[],perf:j.per_fattura||[],cp:j.coef_principale||CCOEF,modello:j.modello||''};
       it.forEach(function(m){if(m.dichiarata&&OT.scelte[m.id]==null)OT.scelte[m.id]=true});
       (j.micro||[]).forEach(function(m){m.riga_fattura=oNoPh(m.riga_fattura)});
-      OT.domanda=j.domanda&&j.domanda.testo&&!OT.qfatta?j.domanda:null;OT.qi=0;OT.qpeso=null;OT.det2=it[0]?it[0].id:'';tap('ott_analisi_ok');oSaveSoon();oRender();oP2Msg()})}
+      OT.domanda=j.domanda&&j.domanda.testo&&!OT.qfatta?j.domanda:null;OT.qi=OT.domanda?0:vecchie.length;OT.qpeso=null;
+      if(testo&&it.length===vecchie.length){tap('ott_altre_nessuna');oRender();say('Ho cercato ancora, ma con quello che so non trovo altre attività diverse da quelle che fai già. Se mi racconti un lavoro che non c\'è nelle fatture, riprovo.');oSaveSoon();return}
+      if(testo&&vecchie.length){OT.micro._detto=1;var nn=it.length-vecchie.length;say('Ne ho trovate <b>'+nn+'</b> '+(nn===1?'nuova':'nuove')+', partendo da quello che mi hai già detto: ti chiedo solo '+(nn===1?'questa':'queste')+', le risposte di prima restano.')}OT.det2=it[0]?it[0].id:'';tap('ott_analisi_ok');oSaveSoon();oRender();oP2Msg()})}
   function oCodDiverso(){var p=OT.micro&&OT.micro.principale;return !!(p&&p.codice_ateco&&OTMAIN.cod&&String(p.codice_ateco).slice(0,2)!==String(OTMAIN.cod).slice(0,2))}
   function oNSc(){return Object.keys(OT.scelte).filter(function(k){return OT.scelte[k]&&OT.micro&&OT.micro.items.some(function(m){return m.id===k})}).length}
   function oQList(){var q=[];if(OT.domanda)q.push({t:'dom'});(OT.micro?OT.micro.items:[]).forEach(function(m){q.push({t:'m',m:m})});return q}
   function oMin(t){t=String(t||'');return t.charAt(0).toLowerCase()+t.slice(1)}
   function oPesoMetti(m,l){var k=oInvK(m),us=oUsate(),ks=k>=0?[k]:us.map(function(v,i){return i});ks.forEach(function(i){if(l)OT.peso[m.id+'@'+i]=l;else delete OT.peso[m.id+'@'+i]});if(!l)delete OT.peso[m.id]}
-  function oP2(b){if(OT.busy){b.innerHTML='<div class="kbox owork"><div class="ospin" aria-hidden="true"></div><b>Sto guardando il tuo lavoro</b><p class="onote">Cerco le attività collegate a quello che fai e preparo qualche domanda. Può volerci fino a un minuto.</p></div>';return}
+  function oP2(b){if(OT.busy){b.innerHTML='<div class="kbox owork"><div class="ospin" aria-hidden="true"></div><b>Sto guardando il tuo lavoro</b></div>';return}
     if(!OT.micro){b.innerHTML='<div class="kbox"><b>'+(OT.errore?oEsc(OT.errore):'Le domande non sono ancora pronte.')+'</b><div class="oask"><button class="cta s o2" id="o_rif">'+(OT.errore?'Riprova':'Comincia')+'</button></div></div>';$('o_rif').onclick=function(){oAnalizza('')};return}
     var M=OT.micro,cp=M.cp||CCOEF,Q=oQList(),i=Math.min(OT.qi||0,Q.length);
     if(!Q.length||i>=Q.length)return oP2Fine(b,cp);
@@ -2128,20 +2163,20 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     else{var m=q.m,src=oUsate().length>1&&oInvK(m)>=0?oUsate()[oInvK(m)]:null,st=OT.scelte[m.id];
       h+=(src?'<div class="oqsrc">Per '+(src.clNome?'<b>'+oEsc(src.clNome)+'</b>':oTitFatt(src))+'</div>':'')+'<h3>Ti capita di <b>'+oEsc(oMin(m.nome))+'</b>?</h3>'+(m.collegamento?'<p class="onote">'+oEsc(m.collegamento)+'</p>':'')+
         '<p class="onote oqfis">Per il fisco è <b>'+oEsc(oMin(m.categoria||m.gruppo))+'</b>: coefficiente <b>'+pc(m.coefficiente)+'</b> invece del '+pc(cp)+'.</p>'+(m.attenzione?'<p class="onote owarn">'+oEsc(m.attenzione)+'</p>':'');
-      if(OT.qpeso===m.id){var cur=oPeso(m,oInvK(m)>=0?oInvK(m):0);h+='<div class="oqpeso"><b>Quanto pesa, più o meno, sul lavoro'+(src||oUsate().length===1?' per questo cliente':'')+'?</b><div class="oqa">'+OLIV.map(function(x){return '<button class="och" data-pz="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+x[1]+'</button>'}).join('')+'<button class="lnk2" data-pz="">Non lo so</button></div></div>'}
-      else h+='<div class="oqa"><button class="cta s o2'+(st===true&&!m.potenziale?' on':'')+'" data-r="si">Sì, lo faccio</button><button class="och" data-r="forse" aria-pressed="'+(st===true&&!!m.potenziale)+'">Potrei farlo</button><button class="och" data-r="no" aria-pressed="'+(st===false)+'">No</button></div>'}
+      if(OT.qpeso===m.id){var cur=oPeso(m,oInvK(m)>=0?oInvK(m):0);h+='<div class="oqpeso"><b>Su 10 ore di lavoro'+(src||oUsate().length===1?' per questo cliente':'')+', quante ne dedichi a questo?</b><div class="oqa oq5">'+OLIV.map(function(x){return '<button class="och" data-pz="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+x[1]+'</button>'}).join('')+'<button class="och" data-pz="">Non lo so</button></div></div>'}
+      else h+='<div class="oqa oq2"><button class="och" data-r="si" aria-pressed="'+(st===true)+'">Sì, lo faccio</button><button class="och" data-r="no" aria-pressed="'+(st===false)+'">No</button></div>'}
     h+='<div class="oqnav">'+(i>0||OT.qpeso?'<button class="lnk2" id="o_qprev">‹ Indietro</button>':'')+'<span class="omute">'+oSumTxt()+'</span></div></div>';
     b.innerHTML=h;
     var avanti=function(){OT.qi=i+1;OT.qpeso=null;oSaveSoon();oRender();if(OT.qi>=Q.length)oP2Msg()};
     [].slice.call(b.querySelectorAll('[data-q]')).forEach(function(x){x.onclick=function(){var t=x.getAttribute('data-q');tap('ott_risposta_domanda');oLog('me',oEsc(t));OT.qfatta=true;say('Grazie: ne tengo conto e preparo le domande.');oAnalizza((OT.domanda?OT.domanda.testo+' ':'')+'Risposta: '+t)}});
     [].slice.call(b.querySelectorAll('[data-r]')).forEach(function(x){x.onclick=function(){var r=x.getAttribute('data-r'),m=q.m;tap('ott_micro_'+r);if(OT.done[2]){delete OT.done[2];delete OT.done[3]}
-      if(r==='no'){OT.scelte[m.id]=false;oPesoMetti(m,'');return avanti()}OT.scelte[m.id]=true;m.potenziale=r==='forse';OT.qpeso=m.id;oRender()}});
+      if(r==='no'){OT.scelte[m.id]=false;oPesoMetti(m,'');return avanti()}OT.scelte[m.id]=true;m.potenziale=false;OT.qpeso=m.id;oRender()}});
     [].slice.call(b.querySelectorAll('[data-pz]')).forEach(function(x){x.onclick=function(){oPesoMetti(q.m,x.getAttribute('data-pz'));tap('ott_peso_'+(x.getAttribute('data-pz')||'nonso'));avanti()}});
     var pv=$('o_qprev');if(pv)pv.onclick=function(){if(OT.qpeso){OT.qpeso=null}else{OT.qi=Math.max(0,i-1)}oRender()}}
   // fine delle domande: il riepilogo, poi il risparmio
   function oP2Fine(b,cp){var sc=oScelte(),h='<div class="kbox oqz"><div class="oqh"><span>Riepilogo</span><div class="oqp" aria-hidden="true"><i style="width:100%"></i></div></div>';
     h+='<h3>'+(sc.length?(sc.length===1?'Fai un\'attività':'Fai '+sc.length+' attività')+' con un coefficiente più basso':'Nessuna di queste attività fa per te')+'</h3>';
-    if(sc.length)h+='<ul class="oqsum">'+sc.map(function(m){var l=oPeso(m,oInvK(m)>=0?oInvK(m):0),lv=OLIV.filter(function(x){return x[0]===l})[0];return '<li><b>'+oEsc(m.nome)+'</b><span class="omute">'+pc(m.coefficiente)+' invece del '+pc(cp)+(m.potenziale?' · potresti farlo':'')+(lv?' · pesa '+lv[1].toLowerCase():'')+'</span></li>'}).join('')+'</ul><p class="onote">'+oSumTxt()+'</p>';
+    if(sc.length)h+='<ul class="oqsum">'+sc.map(function(m){var l=oPeso(m,oInvK(m)>=0?oInvK(m):0),lv=OLIV.filter(function(x){return x[0]===l})[0];return '<li><b>'+oEsc(m.nome)+'</b><span class="omute">'+pc(m.coefficiente)+' invece del '+pc(cp)+(lv?' · '+lv[3]:'')+'</span></li>'}).join('')+'</ul><p class="onote">'+oSumTxt()+'</p>';
     else h+='<p class="onote">Può succedere. Raccontami meglio cosa fai, scrivendo all\'agente, oppure cerco altre attività.</p>';
     h+='<div class="oask">'+(sc.length?'<button class="cta s o2" id="o_ok2">Calcola il risparmio</button>':'')+'<button class="och" id="o_altre">Cercane altre</button><button class="lnk2" id="o_rifai">Rifai le domande</button></div></div>';
     b.innerHTML=h;
@@ -2164,7 +2199,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     'È legale?':{a:'Sì, se fai davvero quelle prestazioni: le fatturi su righe separate, ognuna con il suo importo, e aggiungi il codice ATECO della categoria alla partita IVA. Non si cambiano le parole: ogni riga descrive quello che hai fatto. Se vuoi, un commercialista può controllare con te.',n:['Come le scrivo in fattura?']},
     'Come le scrivo in fattura?':{a:'Una riga per ogni prestazione, con il suo importo. Alla fine delle domande ti mostro la fattura rifatta, riga per riga.',n:[]}};
   // ---- passo 3: la fattura divisa e il risparmio in euro (poi i compiti vanno in «Da fare»)
-  var OLIV=[['poco','Poco',5],['unpo','Un po\'',15],['parecchio','Parecchio',30],['meta','Circa metà',50]],OLIVm={};OLIV.forEach(function(x){OLIVm[x[0]]=x[2]});
+  var OLIV=[['poco','Circa 1 ora',10,'circa un decimo del lavoro'],['unpo','2 o 3 ore',25,'circa un quarto del lavoro'],['parecchio','4 ore',40,'quasi metà del lavoro'],['meta','5 o più',50,'metà del lavoro o più']],OLIVm={};OLIV.forEach(function(x){OLIVm[x[0]]=x[2]});
   function oPeso(m,i){return OT.peso[m.id+'@'+i]||OT.peso[m.id]||''}
   function oScelte(){return OT.micro?OT.micro.items.filter(function(m){return OT.scelte[m.id]}):[]}
   function oInvK(m){var k=/^f(\d)$/.exec(m.fattura||''),us=oUsate();return k&&us[+k[1]]?+k[1]:-1}
