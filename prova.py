@@ -100,7 +100,8 @@ def _per_pagina(d: dict) -> dict:
         acc = sch.get("accantonato") or 0
     return {"pref": d.get("_pref") or {}, "reg": ((ag.get("luogo") or {}).get("regione")) or sch.get("regione") or "",
             "incx": [i for i in (sch.get("incassi_segnati") or []) if isinstance(i, dict)][-200:], "acc": acc,
-            "bandi": bandi, "norm": d.get("_norm") or []}
+            "bandi": bandi, "norm": d.get("_norm") or [], "app": d.get("_app") or {},
+            "ps": (d.get("prossima_scadenza") or {}).get("data") or ""}
 
 
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
@@ -528,6 +529,43 @@ def preferenze(c: str, dati) -> dict:
                         "ON CONFLICT (path) DO UPDATE SET dati = EXCLUDED.dati, aggiornato = now()", (path, Json(nuovo)))
         conn.commit()
     return {"ok": True}
+
+
+_CHIAVI_APP = ("td", "pv", "chat")
+
+
+def stato_app(c: str, chiave: str, dati) -> dict:
+    """Lo stato dell'app che deve seguire la persona su ogni dispositivo: i passi di Da fare (td), i blocchi
+    scelti in Panoramica (pv) e la memoria delle conversazioni con Marcello (chat)."""
+    import time
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    if not c or chiave not in _CHIAVI_APP or not isinstance(dati, (dict, list)):
+        return {"ok": False}
+    doc = {"t": int(time.time() * 1000), "v": dati}
+    if len(json.dumps(doc)) > MAX_BYTE_DOC or db.carica_dashboard(c) is None:
+        return {"ok": False}
+    _tabella()
+    from psycopg2.extras import Json
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO prova_doc (path, dati) VALUES (%s, %s) "
+                        "ON CONFLICT (path) DO UPDATE SET dati = EXCLUDED.dati, aggiornato = now()", ("app/%s/%s" % (c, chiave), Json(doc)))
+        conn.commit()
+    return {"ok": True, "t": doc["t"]}
+
+
+def _stato_app_di(c: str) -> dict:
+    out = {}
+    try:
+        _tabella()
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT path, dati FROM prova_doc WHERE path = ANY(%s)", (["app/%s/%s" % (c, k) for k in _CHIAVI_APP],))
+                for path, dati in cur.fetchall():
+                    out[path.rsplit("/", 1)[-1]] = dati
+    except Exception as e:
+        print(f"prova: stato app non letto: {e}")
+    return out
 
 
 def _preferenze_di(c: str) -> dict:
@@ -1692,6 +1730,7 @@ def registra(mcp, avvisi):
                 dati["_mail"] = await asyncio.to_thread(email_mascherata, idc)
                 dati["_pref"] = await asyncio.to_thread(_preferenze_di, idc)
                 dati["_norm"] = await asyncio.to_thread(novita_normative)
+                dati["_app"] = await asyncio.to_thread(_stato_app_di, idc)
                 return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
             return HTMLResponse(ingresso(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
@@ -1729,6 +1768,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(salvadanaio, c.get("c", ""), c.get("totale"), c.get("scadenza", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/stato", methods=["POST"])
+    async def prova_stato(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(stato_app, c.get("c", ""), c.get("chiave", ""), c.get("dati"))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)

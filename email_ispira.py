@@ -77,6 +77,25 @@ def fatti(c: str) -> dict:
             f["prossima_scadenza"]["a_settimana_per_arrivarci"] = _eur(float(ps["importo"]) / max(1, g / 7))
         else:
             f["prossima_scadenza"]["al_mese_per_arrivarci"] = _eur(float(ps["importo"]) / max(1, round(g / 30)))
+    # quello che la persona ha fatto nell'app: salvadanaio e incassi segnati (il server li conosce)
+    try:
+        sch = (db.carica_dashboard(c) or {}).get("_scheda") or {}
+    except Exception:
+        sch = {}
+    try:
+        acc = float(sch.get("accantonato") or 0)
+    except Exception:
+        acc = 0.0
+    if acc > 0 and ps.get("data") and str(sch.get("accantonato_scadenza") or "") == str(ps["data"]) and ps.get("importo"):
+        manca = max(0.0, float(ps["importo"]) - acc)
+        f["salvadanaio"] = {"messo_da_parte": _eur(acc), "manca": _eur(manca), "pronto": manca <= 0,
+                            "decimi": min(10, int(acc * 10 / max(1.0, float(ps["importo"]))))}
+        if manca > 0:
+            f["salvadanaio"]["a_settimana_per_il_resto"] = _eur(manca / max(1, max(1, int(ps.get("giorni") or 0)) / 7))
+    oggi_ = _dt.date.today()
+    seg = [i for i in (sch.get("incassi_segnati") or []) if isinstance(i, dict) and str(i.get("d", ""))[:7] == oggi_.strftime("%Y-%m")]
+    if seg:
+        f["incassi_segnati_questo_mese"] = {"quanti": len(seg), "totale": _eur(sum(float(i.get("e") or 0) for i in seg))}
     ric = float(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora") or 0)
     if ric:
         f["incassato_finora_quest_anno"] = _eur(ric)
@@ -121,7 +140,29 @@ def _spunti(f: dict) -> list:
                     "ris": (f"{f['risparmio_stimato_annuo']} l'anno, a pochi passi", f"{f['risparmio_stimato_annuo']} l'anno ti aspettano",
                             [f"Hai trovato un risparmio stimato di <b>{_e(f['risparmio_stimato_annuo'])} l'anno</b>. Per ottenerlo servono pochi passi, già in ordine nella tua bacheca «Da fare».",
                              "Il primo richiede pochi minuti: comincia da lì."], "Vedi il prossimo passo")})
-    if ps and 0 < ps.get("giorni", 0) <= 45:
+    sal = f.get("salvadanaio") or {}
+    if sal and ps:
+        if sal.get("pronto"):
+            out.append({"k": "salvadanaio_pronto_" + re.sub(r"\W", "", ps.get("quando", "")), "vai": "p",
+                        "angolo": "Ha gia' messo da parte tutti i soldi per la prossima scadenza: complimenti sinceri e brevi, e cosa resta da fare (solo pagare il giorno giusto).",
+                        "ris": ("I soldi per la scadenza ci sono", f"Per il {ps['quando']} sei a posto",
+                                [f"Hai già messo da parte <b>{_e(sal['messo_da_parte'])}</b>: i soldi per il {_e(ps['quando'])} ci sono tutti.",
+                                 "Resta solo da pagare il giorno giusto: te lo ricordiamo noi."], "Apri TaxScan")})
+        elif 0 < ps.get("giorni", 0) <= 60:
+            out.append({"k": "salvadanaio_%s_%d" % (re.sub(r"\W", "", ps.get("quando", "")), sal.get("decimi", 0)), "vai": "p",
+                        "angolo": "A che punto e' con il salvadanaio per la prossima scadenza: quanto ha gia' messo da parte, quanto manca e quanto mettere via a settimana. Riconosci il lavoro fatto, tono incoraggiante.",
+                        "ris": ("A che punto è il tuo salvadanaio", f"Hai già messo da parte {sal['messo_da_parte']}",
+                                [f"Per il {_e(ps['quando'])} hai già messo da parte <b>{_e(sal['messo_da_parte'])}</b>. Mancano <b>{_e(sal['manca'])}</b>.",
+                                 f"Con circa <b>{_e(sal.get('a_settimana_per_il_resto', ''))} a settimana</b> ci arrivi tranquillo."], "Vedi il salvadanaio")})
+    im = f.get("incassi_segnati_questo_mese") or {}
+    if im and f.get("spazio_prima_della_soglia_di_85000"):
+        out.append({"k": "incassi_mese_" + _dt.date.today().strftime("%Y%m"), "vai": "p",
+                    "angolo": "Questo mese ha segnato in TaxScan i suoi incassi: dagli il quadro (quanto ha incassato, quanto spazio resta prima della soglia, quanto mettere da parte) come farebbe un commercialista attento.",
+                    "ris": ("Il tuo mese, in tre numeri", f"Questo mese hai segnato {im['totale']} di incassi",
+                            [f"Questo mese hai segnato <b>{im['quanti']}</b> {'incasso' if im['quanti'] == 1 else 'incassi'}, per <b>{_e(im['totale'])}</b>.",
+                             f"Prima della soglia del forfettario hai ancora circa <b>{_e(f['spazio_prima_della_soglia_di_85000'])}</b>"
+                             + (f", e da ogni incasso conviene mettere da parte il {_e(f['quota_da_mettere_da_parte'])}." if f.get("quota_da_mettere_da_parte") else ".")], "Vedi i tuoi numeri")})
+    if ps and 0 < ps.get("giorni", 0) <= 45 and not (sal and sal.get("pronto")):
         out.append({"k": "scadenza_" + re.sub(r"\W", "", ps.get("quando", "")), "vai": "s",
                     "angolo": "La prossima scadenza si avvicina: dai il numero dei giorni, l'importo e quanto mettere da parte (a settimana o al mese, come nei fatti) per arrivarci tranquillo. Tono calmo, niente ansia.",
                     "ris": (f"{ps['quando']}: ci arrivi tranquillo?", f"Mancano {ps['giorni']} giorni al {ps['quando']}",

@@ -642,6 +642,9 @@ small.pvs{font-size:12.5px;color:var(--mute)}
 #pflist .pfr{cursor:pointer}
 #pflist .pfr.pfman .pfv i{color:#9a3b12;font-style:normal;font-weight:600}
 .bpu{margin:4px 0 0;font-size:13px}.bpu a{color:#4355cc;font-weight:600}
+.pvsa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#next .go.pvsb{display:inline-flex;align-items:center;border:0;border-radius:10px;padding:9px 14px;font-size:14px;background:var(--accent);color:#fff}
+#next .go.pvsb.pvsl{background:transparent;color:var(--accent);border:1.5px solid var(--line)}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -1209,7 +1212,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 80</div>
+<div class="ver">Prototipo versione 81</div>
 </div>
 
 <script>
@@ -2791,8 +2794,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ================= Da fare (v62): riquadri spostabili con solo il titolo; al clic il dettaglio e il pulsante Inizia =================
   var TD={l:[]};
   function tdKey(){return 'ts_td_'+oPid()}
-  function tdStore(quiet){try{localStorage.setItem(tdKey(),JSON.stringify(TD.l))}catch(e){}tdBadge();if(!quiet)oSaveSoon()}
-  function tdLoad(){try{TD.l=JSON.parse(localStorage.getItem(tdKey())||'[]')||[]}catch(e){TD.l=[]}tdBadge()}
+  // lo stato dell'app segue la persona su ogni dispositivo: si salva sul server (con l'ora, vince il più recente)
+  var STT={};window.__statoSalva=function(k,v){if(!window.TS_C)return;clearTimeout(STT[k]);STT[k]=setTimeout(function(){
+    fetch('/api/prova/stato',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,chiave:k,dati:v})}).catch(function(){})},700)};
+  window.__statoServer=function(k){var a=window.TS_SRV&&window.TS_SRV.app;return a&&a[k]&&a[k].v!=null?a[k]:null};
+  function tdStore(quiet){var t=Date.now();try{localStorage.setItem(tdKey(),JSON.stringify(TD.l));localStorage.setItem(tdKey()+'_t',String(t))}catch(e){}tdBadge();if(!quiet)oSaveSoon();window.__statoSalva('td',TD.l)}
+  function tdLoad(){var lt=0;try{TD.l=JSON.parse(localStorage.getItem(tdKey())||'[]')||[];lt=+localStorage.getItem(tdKey()+'_t')||0}catch(e){TD.l=[]}
+    var sv=window.__statoServer('td');if(sv&&Array.isArray(sv.v)&&(sv.t>lt||!TD.l.length)){TD.l=sv.v;try{localStorage.setItem(tdKey(),JSON.stringify(TD.l));localStorage.setItem(tdKey()+'_t',String(sv.t))}catch(e){}}
+    else if(!sv&&TD.l.length)window.__statoSalva('td',TD.l);
+    tdBadge()}
   function tdBadge(){var n=TD.l.filter(function(t){return !t.fatto}).length,e=$('tdn');if(e){e.textContent=n;e.hidden=!n}}
   function tdId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
   // sostituisce i compiti di una fonte (es. 'ott') tenendo stato e posizione di quelli gia' presenti, riconosciuti dal titolo
@@ -2983,10 +2993,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- stato (su questo dispositivo, e nel profilo quando c'è)
   var PVK='ts_pv_'+(window.TS_C||'demo');
   function pvGet(){var o=null;try{o=JSON.parse(localStorage.getItem(PVK)||'null')}catch(e){}return o||{on:{},sal:{},incx:[]}}
-  function pvPut(o){try{localStorage.setItem(PVK,JSON.stringify(o))}catch(e){}try{if(typeof PRO!=='undefined'&&PRO&&PRO.v===1){PRO.pv=o;oSaveSoon()}}catch(e){}}
+  function pvPut(o){o._t=Date.now();window.__statoSalva&&window.__statoSalva('pv',{on:o.on||{},visti:o.visti||{},anno:o.anno||0});try{localStorage.setItem(PVK,JSON.stringify(o))}catch(e){}try{if(typeof PRO!=='undefined'&&PRO&&PRO.v===1){PRO.pv=o;oSaveSoon()}}catch(e){}}
   var PV=pvGet();PV.on=PV.on||{};PV.sal=PV.sal||{};PV.incx=PV.incx||[];
   // quello che sa il server vale più di quello che c'è sul dispositivo: incassi segnati, salvadanaio
   var SRV=window.TS_SRV||null;
+  (function(){var sv=window.__statoServer&&window.__statoServer('pv');if(sv&&sv.v&&sv.t>(PV._t||0)){PV.on=sv.v.on||{};PV.visti=sv.v.visti||{};PV.anno=sv.v.anno||0;PV._t=sv.t}})();
   if(SRV){PV.incx=PV.incx.filter(function(x){return !x.s}).concat((SRV.incx||[]).map(function(x){return {e:+x.e||0,d:x.d,s:1}}))}
   function pvPost(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({c:window.TS_C},b))}).then(function(r){return r.json()})}
   // il server ha rifatto i calcoli: la pagina prende i numeri nuovi senza ricaricarsi
@@ -3137,7 +3148,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   (function(){var _or=oRender;oRender=function(){var r=_or.apply(this,arguments);var vuoto=true;try{vuoto=!localStorage.getItem(PVK)}catch(e){}if(typeof PRO!=='undefined'&&PRO&&PRO.pv&&vuoto){PV=PRO.pv;PV.on=PV.on||{};PV.sal=PV.sal||{};PV.incx=PV.incx||[]}pvSoon();return r};
     var _ts=tdStore;tdStore=function(){var r=_ts.apply(this,arguments);pvSoon();return r};
     if(typeof bpSet==='function'){var _bp=bpSet;bpSet=function(){var r=_bp.apply(this,arguments);pvSoon();return r}}})();
-  setTimeout(function(){var b=$('pvpb');if(b)b.onclick=pvPannello;pvTutti()},0);
+  // la prossima scadenza si paga da qui: l'F24 con le righe da copiare nella banca, e tutte le date nel calendario del telefono
+  EX.s_f24='Tocca <b>Prepara l\'F24</b> nel blocco della prossima scadenza: ti preparo le righe con codici tributo, anni e importi, da ricopiare nell\'F24 della tua banca. Gli importi sono stime sui tuoi numeri: controllali prima di pagare.';
+  function pvScad(){var n=$('next');if(!n||!window.TS_C||!(SRV&&SRV.ps)||n.querySelector('.pvsa'))return;var c=encodeURIComponent(window.TS_C);
+    (n.firstElementChild||n).insertAdjacentHTML('beforeend','<div class="pvsa"><button class="go pvsb" id="pvF24">Prepara l\'F24</button><button class="go pvsb pvsl" id="pvCal">Nel calendario</button></div>');
+    $('pvF24').onclick=function(e){e.stopPropagation();tap('pv_f24');window.open('/d/'+c+'/f24?data='+encodeURIComponent(SRV.ps),'_blank','noopener')};
+    $('pvCal').onclick=function(e){e.stopPropagation();tap('pv_calendario');window.open('/d/'+c+'/calendario','_blank','noopener')}}
+  setTimeout(function(){var b=$('pvpb');if(b)b.onclick=pvPannello;pvTutti();pvScad()},0);
   // incassi segnati prima che il server li ricevesse: li mando adesso, così i calcoli li contano
   setTimeout(function(){if(!window.TS_C)return;var y=String(new Date().getFullYear());PV.incx.filter(function(x){return !x.s&&String(x.d||'').slice(0,4)===y}).reduce(function(pr,x){return pr.then(function(){return pvPost('/api/prova/incasso',{importo:x.e,data:x.d}).then(function(j){if(j&&j.ok){x.s=1;pvPut(PV);pvNumeri(j.numeri);pvSoglia()}})})},Promise.resolve()).catch(function(){})},1500);
   // ================= Marcello-pallino: un solo avatar mobile, con fumetto, barra in basso e volti video =================
@@ -3201,7 +3218,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function mpPairs(ctx,n,exclude){return ask('Marcello sta parlando con una persona che sa poco di tasse. '+ctx+' Scrivi '+n+' domande brevissime (massimo 8 parole, con il punto interrogativo) che questa persona potrebbe farsi subito dopo'+(exclude&&exclude.length?', diverse da queste: '+exclude.join(' / '):'')+', ciascuna con la risposta di Marcello (massimo 2 frasi semplici e calde, in italiano, stime e mai certezze). Formato, una per riga: domanda?|risposta. Senza numeri né virgolette.').then(function(t){
       return (t||'').split('\n').map(function(x){var i=x.indexOf('|');if(i<0)return null;var q=x.slice(0,i).replace(/^[-\d\.\)\s«"]+|[»"\s]+$/g,'').trim(),a=x.slice(i+1).replace(/^["«\s]+|["»\s]+$/g,'').trim();
         return q.length>6&&q.length<80&&/\?$/.test(q)&&a.length>12?[q,a]:null}).filter(Boolean).slice(0,n)})}
-  function mpAns(q,a){MP.ftok++;HIST.push(['Utente',q]);HIST.push(['Marcello',a]);say(esc(a));mpFollow(q,a)}
+  function mpAns(q,a){MP.ftok++;HIST.push(['Utente',q]);HIST.push(['Marcello',a]);window.__memSalva&&window.__memSalva();say(esc(a));mpFollow(q,a)}
   // almeno tre suggerimenti: se ne mancano, l'IA li scrive in base a quello che Marcello ha appena detto
   var MPFB=['Puoi spiegarmelo più semplice?','Cosa mi consigli di fare adesso?','Cosa succede se non faccio nulla?','Dove vedo questi numeri?'];
   function mpTopLater(){clearTimeout(MP.topT);MP.topT=setTimeout(mpTop,1700)}
@@ -3259,7 +3276,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     'Come tratti i miei dati?':{a:'Uso quello che mi hai detto nel questionario. Nelle fatture leggo solo descrizione e importo delle righe, mai i dati dei tuoi clienti, e non conservo i file.',n:[]},
     [QP]:{a:'È una stima della quota di ogni incasso che serve per imposta e contributi: così, quando arriva la scadenza, i soldi ci sono già.',n:['Cosa succede se non pago?']},
     'Cosa succede se non pago?':{a:'Non è la fine: ci sono sanzioni e interessi, ma puoi <b>regolarizzare</b> con il ravvedimento. Meglio farlo presto.',n:['Come posso pagare?']},
-    'Come posso pagare?':{a:'Con il modello F24. In TaxScan lo preparo io con codici e importi: nel prototipo non si paga davvero, la funzione arriva dopo.',n:[]},
+    'Come posso pagare?':{a:'Con il modello F24, dalla tua banca. Tocca <b>Prepara l\'F24</b> nel blocco della prossima scadenza: ti preparo le righe con codici e importi da ricopiare. Sono stime: controllale prima di pagare.',n:[]},
     'Da dove arriva questa cifra?':{a:function(){return EX.d1||'Sono il 2° acconto: imposta più contributi, calcolati sui tuoi incassi.'},n:['Posso cambiare i numeri?']},
     'Posso cambiare i numeri?':{a:'Sono stime sui tuoi dati. Se cambiano gli incassi cambiano anche loro: per questo conviene ricontrollarli ogni tanto.',n:[]},
     'Dove ritrovo le scadenze?':{a:'Qui in <b>Panoramica</b>: il blocco <b>Prossime scadenze</b> le mette in ordine. Se lo allarghi tirando l\'angolo, vedi anche imposta e contributi di ogni data.',n:['Sono cifre vere?']},
@@ -3304,11 +3321,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');
     say('Ci penso un attimo…');
     ask(PERS+ctx+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Domanda dell\'utente: '+v).then(function(t){
-      if(t){HIST.push(['Utente',v]);HIST.push(['Marcello',t]);say(esc(t));mpFollow(v,t)}else say('Grazie, ho segnato la tua domanda. Sono ancora una versione di prova e non so rispondere a tutto, ma la leggeremo per migliorare.')})}
+      if(t){HIST.push(['Utente',v]);HIST.push(['Marcello',t]);window.__memSalva&&window.__memSalva();say(esc(t));mpFollow(v,t)}else say('Grazie, ho segnato la tua domanda. Sono ancora una versione di prova e non so rispondere a tutto, ma la leggeremo per migliorare.')})}
   $('astab').onclick=function(){var dd=$('astab'),b=$('dbub');tap('assistente');if(!$('aspanel').hidden)closePanel();
     if(b.hidden){dd.classList.add('happy');clearTimeout(window.__ht);window.__ht=setTimeout(function(){dd.classList.remove('happy')},1800);
       if(MP.pend){var pp=MP.pend;MP.pend=null;mpCue(false);MP.qa=false;tap('assistente_spiega');(mpView()==='p'?showBub:say)(pp.h);if(pp.f)pp.f();return}
-      if(MP.last)showBub(MP.last);else showBub(MPGREET,true);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
+      if(MP.last)showBub(MP.last);else if(MP.ripresa){var rp=MP.ripresa;MP.ripresa=null;tap('marcello_riprende');showBub('Ciao <b>'+D.nome+'</b>! '+esc(rp),true)}else showBub(MPGREET,true);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
     else hideBub()};
   window.__oWrite=oWrite;
   document.documentElement.classList.add('flow');
@@ -3330,6 +3347,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.style.left=c[0][0]+'px';d.style.top=c[0][1]+'px';_pbCore()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
   setInterval(mpAvoid,800);addEventListener('resize',function(){setTimeout(mpAvoid,120)});
+  // ---- memoria: Marcello si ricorda le conversazioni (le tiene il server) e alla visita dopo riprende il filo, come un commercialista
+  (function(){var sv=window.__statoServer&&window.__statoServer('chat'),M=sv&&sv.v&&Array.isArray(sv.v.h)?sv.v:null;
+    if(M)M.h.slice(-16).forEach(function(x){if(Array.isArray(x)&&x.length===2)HIST.push([String(x[0]),String(x[1]).slice(0,600)])});
+    window.__memSalva=function(){window.__statoSalva&&window.__statoSalva('chat',{h:HIST.slice(-16).map(function(x){return [x[0],String(x[1]).slice(0,600)]}),ult:Date.now()})};
+    var ore=M&&M.ult?(Date.now()-M.ult)/36e5:0;
+    if(M&&M.h.length&&ore>3&&ore<24*60){var conv=M.h.slice(-6).map(function(x){return x[0]+': '+plain(x[1]).slice(0,300)}).join('\n');
+      setTimeout(function(){ask(PERS+'Questa è la fine dell\'ultima conversazione con la persona, '+(ore<24?'qualche ora fa':Math.round(ore/24)+(Math.round(ore/24)===1?' giorno fa':' giorni fa'))+':\n'+conv+
+        '\nScrivi UNA frase breve (massimo 25 parole) per riprendere il filo come un commercialista che si ricorda del cliente: richiama la cosa concreta di cui parlavate e chiedi come è andata o se serve altro. Niente saluti e niente nome.').then(function(t){
+          if(t)MP.ripresa=String(t).replace(/^[\s"«]+|[\s"»]+$/g,'').slice(0,240)})},2500)}})();
   // ---- toccare un blocco lo evidenzia e basta: la spiegazione arriva solo quando si tocca l'avatar (che lo segnala con un "?")
   var EXL={next:'Prossima scadenza',acc:'Gli acconti',contributi:'I contributi INPS',y26:'Il 2026',pot:'Quanto puoi risparmiare',att:'Già attivato'};
   // selezionando un blocco, il cerchio dell'avatar fa una sola breve onda blu: niente scritte, niente punto di domanda
