@@ -84,6 +84,25 @@ def ingresso() -> str:
     return _cache["ingresso"]
 
 
+def _per_pagina(d: dict) -> dict:
+    """Quello che il server sa e la pagina usa: preferenze, regione, incassi segnati, salvadanaio, bandi veri, novita' normative."""
+    import datetime
+    sch = d.get("_scheda") or {}
+    ag = d.get("agevolazioni") or {}
+    bandi = []
+    for b in (ag.get("curati") or [])[:12]:
+        if not isinstance(b, dict) or not b.get("titolo"):
+            continue
+        bandi.append({"id": b.get("id"), "t": _pulisci(b.get("titolo"), 140), "x": _pulisci(b.get("descrizione"), 420),
+                      "u": b.get("url_fonte") or "", "s": b.get("scadenza") or "", "a": b.get("apre_il") or "", "tema": b.get("tema") or ""})
+    acc = 0
+    if str(sch.get("accantonato_scadenza") or "") >= datetime.date.today().isoformat():
+        acc = sch.get("accantonato") or 0
+    return {"pref": d.get("_pref") or {}, "reg": ((ag.get("luogo") or {}).get("regione")) or sch.get("regione") or "",
+            "incx": [i for i in (sch.get("incassi_segnati") or []) if isinstance(i, dict)][-200:], "acc": acc,
+            "bandi": bandi, "norm": d.get("_norm") or []}
+
+
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
     """Sostituisce nel prototipo le cifre di esempio con quelle vere della dashboard di questo utente."""
     import datetime
@@ -238,8 +257,8 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         mp.pop("__REAL__", None)
         rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
         t = rx.sub(lambda m: mp[m.group(0)], t)
-        extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;window.TS_MAIL=%s;</script>" % (
-            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]), json.dumps(d.get("_mail") or ""))
+        extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;window.TS_MAIL=%s;window.TS_SRV=%s;</script>" % (
+            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]), json.dumps(d.get("_mail") or ""), json.dumps(_per_pagina(d)))
         t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
         print(f"personalizza prova: {e}")
@@ -310,7 +329,7 @@ _ID_PROFILO = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
 
 
 # ---------------------------------------------------------------- correzioni dal Profilo: un dato cambia, si ricalcola tutto
-_CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente")
+_CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente", "regione")
 
 
 def _gestione_da_testo(t: str):
@@ -379,19 +398,164 @@ def correggi(c: str, campo: str, valore) -> dict:
         if not n:
             return {"ok": False, "errore": "Scrivimi l'importo in cifre, per esempio 18000."}
         sch["ricavi_anno_corrente"] = int(n)
-    nuovi = dashboard._ricostruisci(c, dati, sch)
-    if not isinstance(nuovi, dict) or "errore" in nuovi:
-        return {"ok": False, "errore": (nuovi or {}).get("errore") or "Con questo dato non riesco a rifare i calcoli: controlla e riprova."}
-    if dati.get("_email"):
-        try:
-            db.salva_scheda(dati["_email"], sch)
-        except Exception as e:
-            print(f"prova correggi: scheda non salvata: {e}")
+    elif campo == "regione":
+        import agevolazioni
+        reg = agevolazioni.regione_da_dati(v, "")
+        if not reg:
+            return {"ok": False, "errore": "Non ho riconosciuto la regione: scrivimela per intero, per esempio Lombardia."}
+        sch["regione"] = reg
+    nuovi = _rifai(c, dati, sch)
+    if "errore" in nuovi:
+        return {"ok": False, "errore": nuovi.get("errore") or "Con questo dato non riesco a rifare i calcoli: controlla e riprova."}
     try:
         db.registra_evento("profilo_corretto", c, {"campo": campo})
     except Exception:
         pass
     return {"ok": True}
+
+
+def _rifai(c: str, dati: dict, sch: dict) -> dict:
+    """Rifa' tutta la situazione dalla scheda aggiornata (come dashboard._ricostruisci), tenendo conto anche di
+    quanto la persona ha gia' messo da parte per la prossima scadenza. Salva dashboard e scheda."""
+    import datetime
+    import dashboard
+    acc = 0.0
+    try:
+        if str(sch.get("accantonato_scadenza") or "") >= datetime.date.today().isoformat():
+            acc = float(sch.get("accantonato") or 0)
+    except Exception:
+        acc = 0.0
+    nuovi = dashboard.costruisci(sch, acc)
+    if not isinstance(nuovi, dict) or "errore" in nuovi:
+        return nuovi if isinstance(nuovi, dict) else {"errore": ""}
+    for k, v in dati.items():   # quello che non nasce dai calcoli (email, collegamenti) resta
+        if k.startswith("_") and k not in nuovi:
+            nuovi[k] = v
+    nuovi["_scheda"] = dict(sch)
+    db.salva_dashboard(c, nuovi)
+    if dati.get("_email"):
+        try:
+            db.salva_scheda(dati["_email"], sch)
+        except Exception as e:
+            print(f"prova: scheda non salvata: {e}")
+    return nuovi
+
+
+def _numeri(d: dict) -> dict:
+    """I numeri che la pagina aggiorna al volo dopo un incasso o un accantonamento."""
+    ac = d.get("anno_corrente") or {}
+    so = d.get("soglia") or {}
+    num = d.get("numeri") or {}
+    ps = d.get("prossima_scadenza") or {}
+    return {"incassato": float(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora") or 0), "netto": ac.get("netto"),
+            "margine": so.get("margine"), "previsione": so.get("previsione"), "quota": str(d.get("quota_per_fattura") or ""),
+            "scadenza": ps.get("importo")}
+
+
+def incasso(c: str, importo, data: str = "") -> dict:
+    """La persona segna un incasso dalla Panoramica: si aggiunge agli incassi dell'anno e si rifa' tutto."""
+    import datetime
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    try:
+        x = round(float(importo), 2)
+    except Exception:
+        x = 0
+    if not c or not (0 < x < 1_000_000):
+        return {"ok": False, "errore": "Scrivi un importo valido."}
+    dati = db.carica_dashboard(c)
+    if not dati:
+        return {"ok": False}
+    sch = dict(dati.get("_scheda") or {})
+    oggi = datetime.date.today()
+    d = str(data or "")[:10] if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(data or "")[:10]) else oggi.isoformat()
+    if d[:4] != str(oggi.year):
+        return {"ok": False, "errore": "Segno qui solo gli incassi di quest'anno."}
+    sch["ricavi_anno_corrente"] = int(round(float(sch.get("ricavi_anno_corrente") or 0) + x))
+    seg = [i for i in (sch.get("incassi_segnati") or []) if str(i.get("d", ""))[:4] == str(oggi.year)][-200:]
+    seg.append({"e": x, "d": d})
+    sch["incassi_segnati"] = seg
+    nuovi = _rifai(c, dati, sch)
+    if "errore" in nuovi:
+        return {"ok": False, "errore": nuovi.get("errore") or "Non riesco a rifare i calcoli adesso."}
+    try:
+        db.registra_evento("incasso_segnato", c, {"euro": x})
+    except Exception:
+        pass
+    return {"ok": True, "numeri": _numeri(nuovi)}
+
+
+def salvadanaio(c: str, totale, scadenza: str = "") -> dict:
+    """Quanto la persona ha gia' messo da parte per la prossima scadenza: entra nel piano dei pagamenti."""
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    try:
+        t = max(0.0, round(float(totale), 2))
+    except Exception:
+        return {"ok": False}
+    dati = db.carica_dashboard(c) if c else None
+    if not dati:
+        return {"ok": False}
+    sch = dict(dati.get("_scheda") or {})
+    ps = (dati.get("prossima_scadenza") or {}).get("data") or str(scadenza or "")[:10]
+    sch["accantonato"] = t
+    sch["accantonato_scadenza"] = ps
+    nuovi = _rifai(c, dati, sch)
+    if "errore" in nuovi:
+        return {"ok": False}
+    return {"ok": True, "numeri": _numeri(nuovi)}
+
+
+def preferenze(c: str, dati) -> dict:
+    """Come avvisare la persona (email, WhatsApp, tutti e due) e il numero WhatsApp: restano sul server."""
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    if not c or not isinstance(dati, dict) or db.carica_dashboard(c) is None:
+        return {"ok": False}
+    p = {}
+    if dati.get("av") in ("email", "wa", "tutti"):
+        p["av"] = dati["av"]
+    tel = re.sub(r"[^\d+]", "", str(dati.get("tel") or ""))[:16]
+    if tel:
+        p["tel"] = tel
+    _tabella()
+    from psycopg2.extras import Json
+    path = "preferenze/" + c
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT dati FROM prova_doc WHERE path = %s", (path,))
+            r = cur.fetchone()
+            nuovo = dict(r[0] or {}) if r else {}
+            nuovo.update(p)
+            cur.execute("INSERT INTO prova_doc (path, dati) VALUES (%s, %s) "
+                        "ON CONFLICT (path) DO UPDATE SET dati = EXCLUDED.dati, aggiornato = now()", (path, Json(nuovo)))
+        conn.commit()
+    return {"ok": True}
+
+
+def _preferenze_di(c: str) -> dict:
+    try:
+        _tabella()
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT dati FROM prova_doc WHERE path = %s", ("preferenze/" + c,))
+                r = cur.fetchone()
+        return dict(r[0] or {}) if r else {}
+    except Exception:
+        return {}
+
+
+def novita_normative() -> list:
+    """Gli avvisi normativi gia' rivisti e approvati (titolo e riassunto in linguaggio semplice), i piu' recenti."""
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, titolo_utente, riassunto, url, revisionato_il FROM avvisi_candidati "
+                            "WHERE stato = 'approvato' AND revisionato_il > now() - interval '180 days' "
+                            "ORDER BY revisionato_il DESC LIMIT 5")
+                righe = cur.fetchall()
+        return [{"id": r[0], "t": r[1] or "", "x": r[2] or "", "u": r[3] or "", "d": r[4].date().isoformat() if r[4] else ""}
+                for r in righe if r[1]]
+    except Exception as e:
+        print(f"prova: novita normative non lette: {e}")
+        return []
 
 
 def email_mascherata(c: str) -> str:
@@ -555,7 +719,7 @@ _SYS_OTTIMIZZA = (
     "Per ogni micro-attivita': nome (verbo all'infinito, max 90 caratteri, come lo direbbe la persona), descrizione (una frase), collegamento "
     "(perche' e' connessa al lavoro fatto per quel cliente, una frase), fattura (id della fattura da cui nasce, per esempio f0, oppure vuoto), "
     "categoria (nome semplice), codice_ateco (6 cifre NN.NN.NN), riga_fattura (esempio di riga di fattura separata che descrive con precisione "
-    "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla). "
+    "quella prestazione), attenzione (vincoli concreti in una frase, oppure vuoto), dichiarata (true solo se la persona ha detto di farla), domanda (come la chiederebbe un bravo commercialista al cliente: linguaggio di tutti i giorni ma preciso e professionale, dando del tu, una sola domanda chiusa a cui si risponde si' o no, massimo 16 parole, concreta sul lavoro per quel cliente; per esempio «Per qualche cliente curi anche il sito web?» o «Oltre alla consulenza, emetti tu le fatture per conto del cliente?»; mai termini come micro-attivita', categoria o coefficiente). "
     "Indica anche l'attivita' principale come la capisci dalle fatture: descrizione semplice (massimo 12 parole) e codice ATECO; se il lavoro "
     "principale corrisponde a un codice DIVERSO da quello registrato, scrivi quello giusto in principale.codice_ateco (TaxScan lo segnala). "
     "Da 4 a 8 micro-attivita'. Se le fatture sono piu' d'una, nel campo per_fattura scrivi per ognuna una frase su quel cliente: "
@@ -846,7 +1010,8 @@ def _ai_task(uid: str, c: str, task: str, dati: dict) -> dict:
                             "collegamento": _pulisci(a.get("collegamento"), 240), "fattura": fid if re.fullmatch(r"f\d", fid) else "",
                             "categoria": _pulisci(a.get("categoria"), 80), "codice_ateco": cod, "coefficiente": co["coefficiente"],
                             "gruppo": co.get("gruppo", ""), "riga_fattura": _pulisci(a.get("riga_fattura"), 180),
-                            "attenzione": _pulisci(a.get("attenzione"), 300), "dichiarata": bool(a.get("dichiarata"))})
+                            "attenzione": _pulisci(a.get("attenzione"), 300), "dichiarata": bool(a.get("dichiarata")),
+                            "domanda": _pulisci(a.get("domanda"), 160) if str(a.get("domanda") or "").strip().endswith("?") else ""})
             out = _senza_doppioni(out, [_pulisci(x, 90) for x in (dati.get("gia") or [])[:20]])
             for x in out:
                 x["riga_fattura"] = _senza_segnaposto(x["riga_fattura"])
@@ -1525,6 +1690,8 @@ def registra(mcp, avvisi):
                     pass
             if dati:
                 dati["_mail"] = await asyncio.to_thread(email_mascherata, idc)
+                dati["_pref"] = await asyncio.to_thread(_preferenze_di, idc)
+                dati["_norm"] = await asyncio.to_thread(novita_normative)
                 return HTMLResponse(personalizza(pagina(), dati, idc, qp.get("vai", "")), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
         if qp.get("demo") != "1" and os.environ.get("PROVA_FLUSSO", "1") != "0":
             return HTMLResponse(ingresso(), headers={"Cache-Control": "no-cache", "X-Robots-Tag": "noindex"})
@@ -1544,6 +1711,33 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(profilo, c.get("id", ""), c.get("op", ""), c.get("data"))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/incasso", methods=["POST"])
+    async def prova_incasso(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(incasso, c.get("c", ""), c.get("importo"), c.get("data", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/salvadanaio", methods=["POST"])
+    async def prova_salvadanaio(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(salvadanaio, c.get("c", ""), c.get("totale"), c.get("scadenza", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/preferenze", methods=["POST"])
+    async def prova_preferenze(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(preferenze, c.get("c", ""), c.get("dati"))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
