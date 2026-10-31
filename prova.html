@@ -627,6 +627,17 @@ nav.spotlit{z-index:30}nav.spotlit button:not(.spot){opacity:1}
 #hdr nav{flex:1 1 auto;width:auto;display:flex;justify-content:flex-end;gap:0;overflow-x:auto;align-self:flex-start}
 #hdr nav button{font-size:clamp(14px,1.6vw,23px);padding:6px 15px 9px;white-space:nowrap}
 @media (max-width:900px){#hdr{flex-wrap:wrap;gap:0}#hdr .brand{flex:0 0 100%}#hdr nav{flex:0 0 100%;width:100%;justify-content:space-between}#hdr nav button{font-size:19px;padding:8px 10px}#hdr .logo{font-size:24px}}
+
+.mpg{visibility:hidden}
+button.astab .mpcue{position:absolute;top:-6px;right:-6px;display:none;pointer-events:none;z-index:4}
+button.astab.cue .mpcue{display:block}
+button.astab .mpcue i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-weight:800;font-size:16px;line-height:1;box-shadow:0 0 0 3px var(--surface);animation:mpcue 1.3s ease-out 3}
+button.astab .mpcue em{position:absolute;bottom:calc(100% + 8px);left:-20px;white-space:nowrap;font-style:normal;font-weight:600;font-size:14px;color:#fff;background:#14204a;padding:7px 12px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+button.astab.cuel .mpcue em{left:auto;right:-6px}
+button.astab.cuet .mpcue em{opacity:1;transform:none}
+@keyframes mpcue{0%{box-shadow:0 0 0 3px var(--surface),0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px var(--surface),0 0 0 18px rgba(67,85,204,0)}}
+@media (prefers-reduced-motion:reduce){button.astab .mpcue i{animation:none}}
+.bpc.sel,.pfr.sel{box-shadow:0 0 0 3px var(--accent-soft);border-color:var(--accent)}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -1124,7 +1135,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 74</div>
+<div class="ver">Prototipo versione 75</div>
 </div>
 
 <script>
@@ -2280,7 +2291,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       h+='<div class="bpc'+(s?' '+s:'')+'" data-wk="'+b.id+'" data-b="'+b.id+'"><div class="bpt"><h3>'+b.t+'</h3><span class="bptag">'+(s==='ok'?'Ci penso io':s==='no'?'Lasciato stare':b.tag)+'</span></div><p>'+b.x+'</p>'+
         (s?'<div class="bpa"><button class="l" data-b="'+b.id+'" data-a="undo">Cambia idea</button></div>':'<div class="bpa"><button data-b="'+b.id+'" data-a="ok">Mi interessa</button><button class="l" data-b="'+b.id+'" data-a="no">Non fa per me</button></div>')+'</div>'});
     $('bplist').innerHTML=h;wgInit($('bplist'),'b','.bpc');
-    [].slice.call($('bplist').querySelectorAll('.bpc')).forEach(function(c){c.onclick=function(e){if(e.target.closest('button,.wc'))return;var id=c.getAttribute('data-b'),b=BD.filter(function(x){return x.id===id})[0];tap('bando_apri_'+id);say(b.x+' <br>Tocca <b>Mi interessa</b> e ci penso io.');window.__chips(XA,XL['bx_'+id])}});
+    [].slice.call($('bplist').querySelectorAll('.bpc')).forEach(function(c){c.onclick=function(e){if(e.target.closest('button,.wc'))return;var id=c.getAttribute('data-b'),b=BD.filter(function(x){return x.id===id})[0];tap('bando_apri_'+id);window.__tieni(c,b.x+' <br>Tocca <b>Mi interessa</b> e ci penso io.',null,function(){window.__chips(XA,XL['bx_'+id])})}});
     [].slice.call($('bplist').querySelectorAll('[data-a]')).forEach(function(bt){bt.onclick=function(){bpSet(bt.getAttribute('data-b'),bt.getAttribute('data-a'))}})}
   function bpSet(id,a){delete BP.ok[id];delete BP.no[id];if(a==='ok')BP.ok[id]=1;if(a==='no')BP.no[id]=1;tap('bando_'+a+'_'+id);renderBandi();
     if(a==='ok'){say('Perfetto: da qui <b>vado avanti io</b>. Controllo i requisiti con i dati che ho e ti scrivo solo se serve un tuo passo o se c\'è una scadenza.');bpChips()}
@@ -2297,7 +2308,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     $('pflist').innerHTML=r('nome','Come ti chiamo',oEsc(nome),1)+r('att','Il tuo lavoro principale',oEsc(OTMAIN.nome)+' · ATECO '+oEsc(OTMAIN.cod),0)+(OT.sin&&OT.sin.length?r('fatt','Cosa fai davvero, dalle tue fatture',OT.sin.filter(function(x){return x.pct>0}).map(function(x){return oEsc(x.nome)+' '+x.pct+'%'}).join(' · '),0):'')+r('reg','Regime','Forfettario',0)+r('email','Email per gli avvisi',oEsc(PF.email),1)+
       '<div class="pfr"><span class="pfl">Come ti avviso</span><span class="pfv"><label><input type="radio" name="pfav" value="email"'+(PF.av==='email'?' checked':'')+'> Email</label> <label><input type="radio" name="pfav" value="wa"'+(PF.av==='wa'?' checked':'')+'> WhatsApp</label> <label><input type="radio" name="pfav" value="tutti"'+(PF.av==='tutti'?' checked':'')+'> Tutti e due</label></span></div>';
     wgInit($('pflist'),'f','.pfr');
-    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),m={nome:'È il nome con cui ti saluto: puoi cambiarlo quando vuoi.',att:'È il lavoro da cui parto per scegliere il codice ATECO e il coefficiente. Lo verifichiamo in Ottimizzazione fiscale.',fatt:'L\'ho letto dalle fatture che mi hai dato, una per una. Se qualcosa non è giusto, correggilo in Ottimizzazione fiscale, scheda Fatture.',reg:'Il forfettario è il regime in cui calcolo imposta e contributi per te.',email:'Serve per mandarti gli avvisi sulle scadenze e il report, solo se vuoi.'};tap('profilo_riga_'+k);say(m[k]||'Questo dato mi serve per i calcoli.');window.__chips(XA,XL.pf)}});
+    [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),m={nome:'È il nome con cui ti saluto: puoi cambiarlo quando vuoi.',att:'È il lavoro da cui parto per scegliere il codice ATECO e il coefficiente. Lo verifichiamo in Ottimizzazione fiscale.',fatt:'L\'ho letto dalle fatture che mi hai dato, una per una. Se qualcosa non è giusto, correggilo in Ottimizzazione fiscale, scheda Fatture.',reg:'Il forfettario è il regime in cui calcolo imposta e contributi per te.',email:'Serve per mandarti gli avvisi sulle scadenze e il report, solo se vuoi.'};tap('profilo_riga_'+k);window.__tieni(r,m[k]||'Questo dato mi serve per i calcoli.',null,function(){window.__chips(XA,XL.pf)})}});
     [].slice.call($('pflist').querySelectorAll('[data-e]')).forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-e'),row=b.parentNode,cur=k==='nome'?nome:PF.email;
       row.querySelector('.pfv').innerHTML='<input type="'+(k==='email'?'email':'text')+'" class="pfi" value="'+oEsc(cur)+'" aria-label="'+(k==='nome'?'Nome':'Email')+'"><button class="pfs">Salva</button>';b.hidden=true;
       var i=row.querySelector('.pfi');i.focus();row.querySelector('.pfs').onclick=function(){PF[k]=i.value.trim();tap('profilo_salva_'+k);if(k==='nome'&&PF.nome){D.nome=PF.nome;var h1=$('nome');if(h1)h1.textContent='Ciao '+PF.nome+', benvenuto su TaxScan'}
@@ -2356,7 +2367,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(shrink&&!wgFits(el)){continue}done=true;zs[k]=to;wgZSave(key,zs);tap('widget_misura_'+to)}
     if(!done){wgSetSize(el,cur);el.classList.add('wno');setTimeout(function(){el.classList.remove('wno')},700);say('Questo blocco non si può rimpicciolire di più: non si leggerebbe tutto.')}}
   function wgSorted(cont,sel){return [].slice.call(cont.querySelectorAll(sel)).sort(function(a,b){return (+a.style.order)-(+b.style.order)})}
-  function wgApply(cont,key,sel,list){list.forEach(function(el,i){el.style.order=i});wgSave(key,list.map(wgKey))}
+  function wgApply(cont,key,sel,list){list.forEach(function(el,i){el.style.order=i});wgSave(key,list.map(wgKey));if(key==='p')bnRiempi(cont)}
   function wgMove(cont,key,sel,el,d){var all=wgSorted(cont,sel),vis=all.filter(function(x){return x===el||(x.offsetParent!==null&&(!x.classList.contains('slot')||x.classList.contains('on')))});
     var i=vis.indexOf(el),t=vis[i+d];if(!t)return;var a=all.indexOf(el),b=all.indexOf(t);all[a]=t;all[b]=el;wgApply(cont,key,sel,all);tap('widget_sposta');
     try{el.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'})}catch(e){}}
@@ -2374,7 +2385,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         if(!reduce)sibs.forEach(function(x,i){var N=x.getBoundingClientRect(),dx=F[i].left-N.left,dy=F[i].top-N.top;if(!dx&&!dy)return;x.style.transition='none';x.style.transform='translate('+dx+'px,'+dy+'px)';void x.offsetWidth;x.style.transition='transform .22s ease';x.style.transform='';setTimeout(function(){x.style.transition=''},260)})}
       function liveMove(t){var sibs=[].slice.call(cont.querySelectorAll(sel)).filter(function(x){return x!==el&&x.offsetParent!==null}),F=sibs.map(function(x){return x.getBoundingClientRect()}),L0=lr(el);
         var all=wgSorted(cont,sel),a=all.indexOf(el),b=all.indexOf(t);if(a<0||b<0)return;all.splice(a,1);b=all.indexOf(t);all.splice(a<=b?b+1:b,0,el);
-        all.forEach(function(x,i){x.style.order=i});lastSw=Date.now();
+        all.forEach(function(x,i){x.style.order=i});lastSw=Date.now();if(key==='p')bnRiempi(cont);
         var L1=lr(el);sx+=L1.left-L0.left;sy+=L1.top-L0.top;el.style.transform='translate('+(px-sx)+'px,'+(py-sy+scrollY-s0)+'px) scale(1.02)';
         if(!reduce)sibs.forEach(function(x,i){var N=x.getBoundingClientRect(),dx=F[i].left-N.left,dy=F[i].top-N.top;if(!dx&&!dy)return;x.style.transition='none';x.style.transform='translate('+dx+'px,'+dy+'px)';void x.offsetWidth;x.style.transition='transform .22s ease';x.style.transform='';setTimeout(function(){x.style.transition=''},260)})}
       function clear(){[].slice.call(cont.querySelectorAll('.wover')).forEach(function(x){x.classList.remove('wover')})}
@@ -2458,7 +2469,30 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function bnPrep(cont,el){el.classList.add('bn');el.classList.remove('wm','wh','wt','wcl');bnExtra(el);bnTag(el);
     if(!el.querySelector(':scope>.bnr')){var g=document.createElement('span');g.className='bnr';g.title='Trascina l\'angolo per allargare o rimpicciolire';g.setAttribute('aria-hidden','true');g.innerHTML='<i></i>';el.appendChild(g);bnGrip(cont,el,g)}}
   function bnTutti(cont){var o=bnLoad(),m=bnMob()?'m':'d';[].slice.call(cont.querySelectorAll('.bn')).forEach(function(el){if(!el.offsetParent&&el.style.display!=='')return;
-      var sv=(o[el.dataset.wk]||{})[m],d=bnSpec(el).d;bnApply(el,sv||(bnMob()?[d[0]<=3?1:2,d[1]]:d))})}
+      var sv=(o[el.dataset.wk]||{})[m],d=bnSpec(el).d;delete el.dataset.bf;bnApply(el,sv||(bnMob()?[d[0]<=3?1:2,d[1]]:d))});bnRiempi(cont)}
+  // ---- mai spazi vuoti: si rifà il posizionamento della griglia (come lo fa il browser, "dense") e i blocchi accanto a un buco
+  // si allargano a destra o si allungano in giù fino a riempirlo. La misura scelta dall'utente (data-bs) non cambia: è solo riempimento.
+  function bnSet(el,w,h){var r=bnRiga(),b=bnBox(el);el.style.gridColumn='span '+w;el.style.gridRow='span '+h;el.style.height=(h*r+(h-1)*14)+'px';
+    for(var l=3;l>=1;l--){el.dataset.l=l;if(bnStoc(b))break}el.classList.toggle('bncut',!bnStoc(b))}
+  function bnItems(cont){var out=[];(function walk(p){[].forEach.call(p.children,function(ch){var cs=getComputedStyle(ch);
+      if(cs.display==='none'||cs.position==='absolute'||cs.position==='fixed')return;if(cs.display==='contents'){walk(ch);return}out.push({el:ch,cs:cs,i:out.length})})})(cont);
+    return out.sort(function(a,b){return (parseInt(a.cs.order,10)||0)-(parseInt(b.cs.order,10)||0)||a.i-b.i})}
+  function bnRiempi(cont,excl){if(!cont||!cont.classList.contains('bn6'))return;var cols=bnMob()?2:6;
+    [].slice.call(cont.querySelectorAll('.bn[data-bf]')).forEach(function(el){if(el===excl)return;var t=(el.dataset.bs||'').split('x').map(Number);delete el.dataset.bf;if(t[0])bnSet(el,t[0],t[1])});
+    var it=bnItems(cont),G=[],P=[];
+    function cell(r,c){return G[r]&&G[r][c]}function mark(p,v){for(var r=p.r;r<p.r+p.h;r++){G[r]=G[r]||[];for(var c=p.c;c<p.c+p.w;c++)G[r][c]=v}}
+    function libera(r,c,w,h){if(c+w>cols)return false;for(var y=r;y<r+h;y++)for(var x=c;x<c+w;x++)if(cell(y,x))return false;return true}
+    it.forEach(function(o){var el=o.el,w,h;
+      if(el.classList.contains('bn')){w=Math.min(cols,parseInt((el.style.gridColumn.match(/span (\d+)/)||[])[1],10)||1);h=parseInt((el.style.gridRow.match(/span (\d+)/)||[])[1],10)||1}
+      else{var m=/span (\d+)/.exec(o.cs.gridColumnEnd+' '+o.cs.gridColumnStart);w=o.cs.gridColumnEnd==='-1'?cols:m?Math.min(cols,+m[1]):1;h=1}
+      for(var r=0;;r++){var ok=-1;for(var c=0;c+w<=cols;c++)if(libera(r,c,w,h)){ok=c;break}if(ok>-1){var p={el:el,r:r,c:ok,w:w,h:h,w0:w,h0:h};mark(p,p);P.push(p);break}if(r>400)return}});
+    var maxR=0;P.forEach(function(p){maxR=Math.max(maxR,p.r+p.h)});
+    var bn=P.filter(function(p){return p.el.classList.contains('bn')&&p.el!==excl}),giro=0,mosso=true;
+    while(mosso&&giro++<20){mosso=false;
+      bn.forEach(function(p){var k=0;while(p.c+p.w+k<cols&&libera(p.r,p.c+p.w+k,1,p.h))k++;if(k){mark({r:p.r,c:p.c+p.w,w:k,h:p.h},p);p.w+=k;mosso=true}});
+      bn.forEach(function(p){var k=0;while(p.r+p.h+k<maxR&&libera(p.r+p.h+k,p.c,p.w,1))k++;if(k){mark({r:p.r+p.h,c:p.c,w:p.w,h:k},p);p.h+=k;mosso=true}})}
+    bn.forEach(function(p){if(p.w!==p.w0||p.h!==p.h0){p.el.dataset.bf=p.w+'x'+p.h;bnSet(p.el,p.w,p.h)}})}
+  window.__bnRiempi=bnRiempi;
   // angolo in basso a destra: si tira e il blocco cambia taglia, in larghezza e in altezza, solo tra le taglie possibili
   function bnGrip(cont,el,g){g.addEventListener('pointerdown',function(e){if(e.button>0)return;e.preventDefault();e.stopPropagation();
       var cr=cont.getBoundingClientRect(),cols=bnMob()?2:6,cw=(cr.width-(cols-1)*14)/cols,r=bnRiga(),start=el.dataset.bs,avv=false;
@@ -2466,8 +2500,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       function mv(ev){var q=el.getBoundingClientRect(),w=Math.max(1,Math.round((ev.clientX-q.left+14)/(cw+14))),h=Math.max(1,Math.round((ev.clientY-q.top+14)/(r+14)));
         var T=bnTaglie(el),best=T[0],bd=1e9;T.forEach(function(x){var d=Math.abs(x[0]-w)*3+Math.abs(x[1]-h)*2;if(d<bd){bd=d;best=x}});
         if(el.dataset.bs===best[0]+'x'+best[1])return;var prima=el.dataset.bs,got=bnApply(el,best,true);
-        if(!bnStoc(bnBox(el))){bnApply(el,prima.split('x').map(Number),true);if(!avv){avv=true;wgShake(el);say('Più piccolo di così non si leggerebbe l\'essenziale.')}}}
-      function up(){g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);el.classList.remove('wsz');
+        if(!bnStoc(bnBox(el))){bnApply(el,prima.split('x').map(Number),true);if(!avv){avv=true;wgShake(el);say('Più piccolo di così non si leggerebbe l\'essenziale.')}}
+        delete el.dataset.bf;bnRiempi(cont,el)}
+      function up(){g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);el.classList.remove('wsz');bnRiempi(cont,el);
         if(el.dataset.bs!==start){var o=bnLoad(),k=el.dataset.wk;o[k]=o[k]||{};o[k][bnMob()?'m':'d']=el.dataset.bs.split('x').map(Number);bnSave(o);tap('widget_misura_'+el.dataset.bs)}}
       g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up)})}
   // i blocchi si ricalcolano quando cambia lo spazio o arrivano i dati veri
@@ -2751,7 +2786,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(!reduce){var p=MP.vi.play();if(p&&p.catch)p.catch(function(){})}})();
   function mpTalk(on){var d=$('astab');on=!!on;d.classList.toggle('talk',on);if(reduce||!MP.vl)return;
     var cur=d.classList.contains('vl')?MP.vl:MP.vr;[MP.vl,MP.vr].forEach(function(v){if(on&&v===cur){var p=v.play();if(p&&p.catch)p.catch(function(){})}else v.pause()})}
-  var _mphb=hideBub;hideBub=function(k){_mphb(k);mpTalk(false)};
+  var _mphb=hideBub;hideBub=function(k){_mphb(k);mpTalk(false);if(!k){MP.pend=null;mpCue(false)}};
   playSeq=function(a,ms,done){if(done)done()};
   wink=function(){var d=$('astab');d.classList.remove('cheer');void d.offsetWidth;d.classList.add('cheer');setTimeout(function(){d.classList.remove('cheer')},900)};window.__wink=wink;
   // ---- barra per scrivere, larga, in basso
@@ -2821,19 +2856,33 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var _mpsay=say;say=function(){MP.xc=null;return _mpsay.apply(this,arguments)};
   function mpChips(on){var c=$('dbub').querySelector('.mpc');c.innerHTML='';if(!on)return;
     MPCHIPS.forEach(function(q,qi){var x=document.createElement('button');x.type='button';x.textContent=q[0];x.style.setProperty('--i',qi);mpPrev(x,q[0]);x.onclick=function(){tap('chip_fumetto');MP.qa=true;var qq=$('dbub').querySelector('.mpq');qq.textContent='«'+q[0]+'»';qq.hidden=false;showBub(q[1]());$('dbub').querySelector('.mpq').hidden=false};c.appendChild(x)})}
-  showBub=function(html,chips){var b=mpFrame();b.querySelector('.mpt').innerHTML=html;MP.last=html;MP.typing=false;mpTalk(false);
+  showBub=function(html,chips){var b=mpFrame(),t0=b.querySelector('.mpt');t0.innerHTML=html;t0.style.fontSize='';t0.scrollTop=0;MP.fk=null;MP.last=html;MP.typing=false;mpTalk(false);
     if(!MP.qa)b.querySelector('.mpq').hidden=true;mpChips(!!chips);if(!chips)mpXChips();mpPh();b.hidden=false;placeBub()};
-  function mpNarr(el){var c=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
-    var h=c.innerHTML,fin=!el.querySelector('.gh'),b=mpFrame();MP.last=h;MP.typing=!fin;
-    b.querySelector('.mpt').innerHTML=h;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpXChips();mpPh();b.hidden=false;
+  // il testo ancora da scrivere c'è già, invisibile: così il fumetto ha subito la misura giusta e il carattere si adatta una volta sola
+  function mpNarr(el){var c=el.cloneNode(true),c2=el.cloneNode(true);[].slice.call(c.querySelectorAll('.gh')).forEach(function(x){x.remove()});
+    [].slice.call(c2.querySelectorAll('.gh')).forEach(function(x){x.className='mpg'});
+    var h=c.innerHTML,fin=!el.querySelector('.gh'),b=mpFrame(),t=b.querySelector('.mpt'),key=el.textContent;MP.last=h;MP.typing=!fin;
+    t.innerHTML=fin?h:c2.innerHTML;b.querySelector('.mpq').hidden=!MP.qa;mpChips(false);mpXChips();mpPh();b.hidden=false;
+    if(MP.fk!==key){MP.fk=key;t.style.fontSize='';t.scrollTop=0}
     mpTalk(!fin);placeBub();if(fin)vsArm()}
+  // il carattere si rimpicciolisce un poco se il testo non entra nel fumetto; se non basta, il fumetto scorre seguendo la scrittura
+  function mpFit(b){var t=b&&b.querySelector('.mpt');if(!t||t.clientHeight<40)return false;var cs=parseFloat(getComputedStyle(t).fontSize)||20,
+      base=t.style.fontSize?(MP.fb||cs):cs,min=Math.max(14,Math.round(base*0.72)),f=cs,ch=false;if(!t.style.fontSize)MP.fb=cs;
+    while(t.scrollHeight>t.clientHeight+1&&f>min){f=Math.max(min,f-1);t.style.fontSize=f+'px';ch=true}return ch}
+  function mpSegui(t){if(!t||t.scrollHeight<=t.clientHeight+1)return;var g=t.querySelector('.mpg');if(!g)return;
+    var gr=g.getBoundingClientRect(),tr=t.getBoundingClientRect(),lh=parseFloat(getComputedStyle(t).lineHeight)||30;
+    if(gr.top>tr.bottom-lh*1.2)t.scrollTop+=gr.top-(tr.bottom-lh*1.6);else if(gr.top<tr.top)t.scrollTop-=tr.top-gr.top+lh}
   var _mpdraw=draw;draw=function(el,segs,n){_mpdraw(el,segs,n);if(el.id!=='dbub'&&el.classList.contains('bub')&&!el.closest('[hidden]'))mpNarr(el)};
   placeBub=function(){var b=$('dbub'),d=$('astab');if(b.hidden)return;var r=d.getBoundingClientRect(),fl=r.left+r.width/2>innerWidth/2;
     d.classList.toggle('vl',fl);d.classList.toggle('vr',!fl);if(d.classList.contains('talk'))mpTalk(true);
-    if(innerWidth<=640){b.style.setProperty('bottom',Math.max(80,innerHeight-r.top+8)+'px','important');return}
+    var hb0=($('hdr')?Math.max(0,$('hdr').getBoundingClientRect().bottom):0)+10;
+    if(innerWidth<=640){var bv=Math.max(80,innerHeight-r.top+8);b.style.setProperty('bottom',bv+'px','important');b.style.maxHeight=Math.max(160,innerHeight-bv-Math.min(hb0,90)-8)+'px';return}
+    b.style.maxHeight=Math.max(200,innerHeight-hb0-24)+'px';
     var av=fl?r.left-14-12:innerWidth-r.right-14-12;b.style.width=Math.max(320,Math.min(av,1500))+'px';var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
     x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+10,bt=innerHeight-10,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
+  var _pbRaw=placeBub;placeBub=function(){_pbRaw();var b=$('dbub');if(b.hidden)return;var t=b.querySelector('.mpt');
+    if(t&&!t.querySelector('.mpg')&&mpFit(b))_pbRaw();else if(t&&t.querySelector('.mpg')&&t.scrollHeight>t.clientHeight+1&&mpFit(b))_pbRaw();mpSegui(t)};
   window.__pb=placeBub;
   // suggerimenti per la Panoramica
   var QP='Perché metto da parte il '+D.perc+'%?';
@@ -2883,18 +2932,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(mpView()==='f'&&window.__pfWrite&&window.__pfWrite(v))return;
     if(mpView()==='t'&&window.__tdWrite&&window.__tdWrite(v))return;
     tap('domanda_libera');var area=CTX?'Domanda su: '+CTX.label:'Domanda generale';saveVoce(area,v);
-    var ctx=CTX?'L\'utente sta guardando «'+CTX.label+'»'+(EX[CTX.k]?': '+plain(EX[CTX.k]):'')+'. ':(MP.last?'Marcello ha appena detto: «'+plain(MP.last).slice(0,500)+'». ':'');
+    var ctx=CTX?'L\'utente sta guardando «'+CTX.label+'»'+((EX[CTX.k]||CTX.h)?': '+plain(EX[CTX.k]||CTX.h):'')+'. ':(MP.last?'Marcello ha appena detto: «'+plain(MP.last).slice(0,500)+'». ':'');
     var conv=HIST.slice(-4).map(function(x){return x[0]+': '+x[1]}).join('\n');
     say('Ci penso un attimo…');
     ask(PERS+ctx+(conv?'Conversazione finora:\n'+conv+'\n':'')+'Domanda dell\'utente: '+v).then(function(t){
       if(t){HIST.push(['Utente',v]);HIST.push(['Marcello',t]);say(esc(t));mpFollow(v,t)}else say('Grazie, ho segnato la tua domanda. Sono ancora una versione di prova e non so rispondere a tutto, ma la leggeremo per migliorare.')})}
   $('astab').onclick=function(){var dd=$('astab'),b=$('dbub');tap('assistente');if(!$('aspanel').hidden)closePanel();
     if(b.hidden){dd.classList.add('happy');clearTimeout(window.__ht);window.__ht=setTimeout(function(){dd.classList.remove('happy')},1800);
+      if(MP.pend){var pp=MP.pend;MP.pend=null;mpCue(false);MP.qa=false;tap('assistente_spiega');(mpView()==='p'?showBub:say)(pp.h);if(pp.f)pp.f();return}
       if(MP.last)showBub(MP.last);else showBub(MPGREET,true);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
     else hideBub()};
   window.__oWrite=oWrite;
   document.documentElement.classList.add('flow');
-  var _mpsv=showView;showView=function(v){MP.qa=false;MP.asked={};MP.ftok++;clearTimeout(vsTm);_mpsv(v)};
+  var _mpsv=showView;showView=function(v){MP.pend=null;mpCue(false);MP.qa=false;MP.asked={};MP.ftok++;clearTimeout(vsTm);_mpsv(v)};
   if(!(function(){try{return sessionStorage.getItem('astpos')}catch(e){return null}})()&&window.__putDot)window.__putDot(14,innerWidth>640?innerHeight-210:innerHeight-170,false);
   // ---- l'avatar e il fumetto non coprono mai i pulsanti da cliccare ("Confermo" e simili)
   var _pbCore=placeBub,MPA={t:null};
@@ -2912,6 +2962,20 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     d.style.left=c[0][0]+'px';d.style.top=c[0][1]+'px';_pbCore()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
   setInterval(mpAvoid,800);addEventListener('resize',function(){setTimeout(mpAvoid,120)});
+  // ---- toccare un blocco lo evidenzia e basta: la spiegazione arriva solo quando si tocca l'avatar (che lo segnala con un "?")
+  var EXL={next:'Prossima scadenza',acc:'Gli acconti',contributi:'I contributi INPS',y26:'Il 2026',pot:'Quanto puoi risparmiare',att:'Già attivato'};
+  function mpCue(on){var d=$('astab');if(!d)return;var s=d.querySelector('.mpcue');
+    if(!s){s=document.createElement('span');s.className='mpcue';s.setAttribute('aria-hidden','true');s.innerHTML='<i>?</i><em>Toccami e te lo spiego</em>';d.appendChild(s)}
+    var rr=d.getBoundingClientRect();d.classList.toggle('cuel',rr.left+rr.width/2>innerWidth/2);d.classList.toggle('cue',!!on);clearTimeout(MP.cueT);
+    if(on){var n=0;try{n=+localStorage.getItem('ts_cue')||0;localStorage.setItem('ts_cue',n+1)}catch(e){}d.classList.toggle('cuet',n<3);MP.cueT=setTimeout(function(){d.classList.remove('cuet')},4500)}
+    else d.classList.remove('cuet')}
+  function mpTieni(el,html,label,dopo){var was=el.classList.contains('sel');
+    [].slice.call(document.querySelectorAll('[data-ex].sel,.bpc.sel,.pfr.sel')).forEach(function(e){e.classList.remove('sel')});
+    if(!$('dbub').hidden)hideBub(true);
+    if(was){CTX=null;MP.pend=null;mpCue(false);return}
+    el.classList.add('sel');CTX={k:el.getAttribute('data-ex')||'_',label:label||(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,40),h:html};MP.pend={h:html,f:dopo};mpCue(true)}
+  window.__tieni=mpTieni;
+  openEx=function(el){var k=el.getAttribute('data-ex');if(!el.classList.contains('sel'))tap('num_'+k);mpTieni(el,EX[k],EXL[k])};
   // ---- l'avatar non prende l'iniziativa: entrando in una scheda il messaggio di benvenuto resta pronto ma non si apre.
   // Si apre quando l'utente tocca l'avatar. Fa eccezione solo la presentazione iniziale della Panoramica.
   (function(){var _qsv=showView;showView=function(v){var zitto=v!=='g'&&(SETTLED||v!=='p');MP.zitto=zitto;if(zitto)MP.last=null;try{_qsv(v)}finally{MP.zitto=false}};
