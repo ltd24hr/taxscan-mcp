@@ -27,6 +27,7 @@ import prova
 import promemoria
 import privacy
 import termini
+import admin_pannello
 import cookie_banner
 import db
 import fic
@@ -1655,11 +1656,19 @@ async def fic_callback(request):
 
 
 prova.registra(mcp, avvisi)
+admin_pannello.registra(mcp, _evento)
 
 
 @mcp.custom_route("/", methods=["GET", "HEAD"])
 async def home(request):
     from starlette.responses import HTMLResponse
+    if request.method == "GET":
+        # per il pannello /admin: da dove arrivano le visite (utm_source o sito di provenienza), bot esclusi
+        fonte = admin_pannello.fonte_visita(dict(request.query_params), request.headers.get("referer", ""),
+                                            request.headers.get("user-agent", ""))
+        if fonte:
+            import asyncio
+            asyncio.get_running_loop().run_in_executor(None, _evento, "visita", None, {"fonte": fonte})
     return HTMLResponse(cookie_banner.inietta(landing.PAGINA_HTML))
 
 
