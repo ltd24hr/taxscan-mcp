@@ -768,13 +768,14 @@ def interpreta_f24(righe: list, data_versamento: str = "") -> dict:
 
 def _acconti_imposta(imposta_anno_precedente: float) -> dict:
     """Acconto imposta sostitutiva forfettari: 100% dell'imposta dell'anno prima, in due rate UGUALI (50/50,
-    art. 58 DL 124/2019, come per i soggetti ISA). Niente acconto sotto 51,65 €; unica rata a novembre sotto 257,52 €."""
+    art. 58 DL 124/2019, come per i soggetti ISA). Niente acconto fino a 51,65 €; unica rata a novembre fino a 206 € (con il riparto 50/50 la prima rata
+    sarebbe sotto i 103 €: soglia 206 €, non i 257,52 € che valgono per chi paga 40/60)."""
     if imposta_anno_precedente <= 51.65:
         return {"dovuto": 0.0, "rate": [], "regola": "Imposta dell'anno precedente fino a 51,65 €: nessun acconto dovuto."}
-    if imposta_anno_precedente <= 257.52:
+    if imposta_anno_precedente <= 206:
         return {"dovuto": round(imposta_anno_precedente, 2),
                 "rate": [{"scadenza": "30 novembre", "importo": round(imposta_anno_precedente, 2)}],
-                "regola": "Imposta dell'anno precedente fino a 257,52 €: acconto in unica soluzione entro il 30 novembre."}
+                "regola": "Imposta dell'anno precedente fino a 206 €: acconto in unica soluzione entro il 30 novembre."}
     meta = round(imposta_anno_precedente / 2, 2)
     return {"dovuto": round(imposta_anno_precedente, 2),
             "rate": [{"scadenza": "30 giugno", "importo": meta}, {"scadenza": "30 novembre", "importo": meta}],
@@ -922,7 +923,7 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
         if calc_corr:
             imp = calc_corr["imposta_sostitutiva"]; contr = calc_corr["contributi_previdenziali"]["totale_contributi"]
             storia.append(f"Con i {_eur(ricavi_corr)} € incassati finora, a giugno {anno + 1} pagheresti circa {_eur(imp)} € di "
-                          f"saldo imposta più {_eur(imp * 0.5 if imp > 257.52 else 0)} € di primo acconto, e circa {_eur(contr)} € di "
+                          f"saldo imposta più {_eur(imp * 0.5 if imp > 206 else 0)} € di primo acconto, e circa {_eur(contr)} € di "
                           f"contributi per l'anno {anno} (più gli acconti INPS, se dovuti). Se incassi altro, la cifra cresce in proporzione.")
     else:
         if calc_prec:
