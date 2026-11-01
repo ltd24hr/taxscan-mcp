@@ -102,8 +102,7 @@ def _per_pagina(d: dict) -> dict:
             "incx": [i for i in (sch.get("incassi_segnati") or []) if isinstance(i, dict)][-200:], "acc": acc,
             "bandi": bandi, "norm": d.get("_norm") or [], "app": d.get("_app") or {},
             "ps": (d.get("prossima_scadenza") or {}).get("data") or "",
-            "aliq_conf": bool((d.get("profilo") or {}).get("aliquota_da_confermare")) or (
-                not sch.get("origine_attivita") and not sch.get("aliquota") and int((d.get("profilo") or {}).get("anni_nel_regime") or 9) < 5)}
+            "aliq_conf": bool((d.get("profilo") or {}).get("aliquota_da_confermare")) and sch.get("origine_attivita") == "altro"}
 
 
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:

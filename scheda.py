@@ -462,6 +462,9 @@ def _normalizza(scheda: dict) -> dict:
         s["prevalenza_ex_datore"] = "ex_datore" in sit
         if "dipendente_o_pensione" not in sit:
             s["redditi_dipendente_pensione"] = 0.0
+        elif s.get("altra_copertura_previdenziale") is None:
+            # chi ha gia' un lavoro dipendente o una pensione e' gia' coperto: in gestione separata paga il 24%, non il 26,07%
+            s["altra_copertura_previdenziale"] = True
         if "dipendenti_collaboratori" not in sit:
             s["spese_personale"] = 0.0
     elif sit is None and any(k in s for k in ("partecipazioni_societarie", "prevalenza_ex_datore",
@@ -842,6 +845,9 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
     req = [s.get("req5_prima_attivita"), s.get("req5_no_attivita_simile_3_anni"), s.get("req5_non_prosecuzione_dipendente")]
     requisiti_ok = all(r is True for r in req)
     requisiti_ignoti = not any(r is False for r in req) and not requisiti_ok
+    # schede salvate prima della domanda sull'aliquota: nei primi 5 anni sono al 5% (lo conferma chi le ha seguite), niente avviso
+    if s.get("aliquota") == "incerto" and not s.get("origine_attivita") and requisiti_ignoti and anni_nel_regime < 5:
+        s["aliquota"] = "5"
     if s.get("aliquota") == "incerto":
         probabile = "5" if (anni_nel_regime < 5 and (requisiti_ok or requisiti_ignoti)) else "15"
         s["aliquota"] = probabile
