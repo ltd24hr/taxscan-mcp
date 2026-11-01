@@ -26,7 +26,9 @@ import db
 CLIENT_ID = os.environ.get("FIC_CLIENT_ID", "")
 CLIENT_SECRET = os.environ.get("FIC_CLIENT_SECRET", "")
 PUBLIC_URL = os.environ.get("PUBLIC_URL", "https://taxscan-mcp.onrender.com").rstrip("/")
-REDIRECT_URI = f"{PUBLIC_URL}/oauth/fic/callback"
+# Si può fissare a parte (FIC_REDIRECT_URI) quando cambia il dominio pubblico ma l'app su Fatture in Cloud
+# non è ancora stata aggiornata con il nuovo indirizzo di ritorno.
+REDIRECT_URI = os.environ.get("FIC_REDIRECT_URI", "").strip() or f"{PUBLIC_URL}/oauth/fic/callback"
 
 AUTH_URL = "https://api-v2.fattureincloud.it/oauth/authorize"
 TOKEN_URL = "https://api-v2.fattureincloud.it/oauth/token"
