@@ -1698,7 +1698,7 @@ async def home(request):
         if fonte:
             import asyncio
             asyncio.get_running_loop().run_in_executor(None, _evento, "visita", None, {"fonte": fonte})
-    return HTMLResponse(cookie_banner.inietta(landing.PAGINA_HTML))
+    return HTMLResponse(cookie_banner.inietta(landing.pagina_home()))
 
 
 if __name__ == "__main__":

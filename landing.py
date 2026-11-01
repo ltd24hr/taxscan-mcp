@@ -310,3 +310,46 @@ $("cod").onkeydown=e=>{if(e.key==="Enter")$("ok2").click()};
 </body>
 </html>
 """
+
+
+# --------------------------------------------------------------------- Messaggio di stagione
+# Nei mesi delle due scadenze grosse (giugno e novembre) la home parla di quella scadenza: è lì che i forfettari
+# cercano "quanto devo pagare". Il resto dell'anno resta il messaggio di sempre. Nessuna manutenzione: va a data.
+
+_H1 = "<h1>TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse.</h1>"
+_LEAD = ('<p class="lead">Per partite IVA in regime forfettario. In 2 minuti scopri quanto puoi risparmiare, in euro, '
+         'e cosa fare per ottenerlo. Senza domande difficili.</p>')
+_CTA = '<a class="cta" href="/colloquio/nuovo">Scopri quanto puoi risparmiare</a>'
+
+_STAGIONI = {
+    11: {"h1": "Quanto paghi il 30\u00a0novembre? Scoprilo in 2\u00a0minuti.",
+         "lead": "Per partite IVA in regime forfettario. Il 30 novembre scade il secondo acconto di imposta sostitutiva e "
+                 "contributi INPS: TaxScan ti dice quanto versare, in euro, e quanto mettere da parte per giugno. "
+                 "Senza domande difficili.",
+         "cta": "Calcola il mio acconto",
+         "title": "Acconto forfettario 30 novembre: quanto paghi? Calcolalo in 2 minuti - TaxScan"},
+    6: {"h1": "Quanto paghi il 30\u00a0giugno? Scoprilo in 2\u00a0minuti.",
+        "lead": "Per partite IVA in regime forfettario. Il 30 giugno scadono saldo e primo acconto di imposta "
+                "sostitutiva e contributi INPS: TaxScan ti dice quanto versare, in euro, e cosa fare per pagare meno. "
+                "Senza domande difficili.",
+        "cta": "Calcola saldo e acconto",
+        "title": "Saldo e acconto forfettario 30 giugno: quanto paghi? Calcolalo in 2 minuti - TaxScan"},
+}
+
+
+def pagina_home(oggi=None) -> str:
+    """La home con il messaggio della stagione, se c'è (vedi _STAGIONI)."""
+    import html as _h
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    mese = (oggi or datetime.now(ZoneInfo("Europe/Rome"))).month
+    st = _STAGIONI.get(mese)
+    if not st:
+        return PAGINA_HTML
+    p = PAGINA_HTML
+    p = p.replace(_H1, f"<h1>{_h.escape(st['h1'])}</h1>", 1)
+    p = p.replace(_LEAD, f'<p class="lead">{_h.escape(st["lead"])}</p>', 1)
+    p = p.replace(_CTA, f'<a class="cta" href="/colloquio/nuovo">{_h.escape(st["cta"])}</a>', 1)
+    p = p.replace("<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title>",
+                  f"<title>{_h.escape(st['title'])}</title>", 1)
+    return p
