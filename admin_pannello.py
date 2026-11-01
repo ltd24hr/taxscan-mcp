@@ -161,6 +161,21 @@ def raccogli(giorni: int = 30) -> dict:
     }
 
 
+def elimina_iscritti(emails: list[str]) -> int:
+    """Cancella per intero gli iscritti indicati (scheda, dashboard, chat, eventi, collegamenti, feedback...),
+    con la stessa funzione usata quando è l'utente stesso a chiudere l'account. Ritorna quanti ne ha cancellati."""
+    puliti = sorted({(e or "").strip().lower() for e in emails if e and "@" in e})[:200]
+    if not puliti:
+        return 0
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email, dashboard_id FROM utenti WHERE email = ANY(%s)", (puliti,))
+            trovati = cur.fetchall()
+    for email, id_dashboard in trovati:
+        db.cancella_dati(email, id_dashboard or "")
+    return len(trovati)
+
+
 def csv_utenti(dati: dict) -> str:
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
@@ -218,6 +233,10 @@ th{color:var(--quiet);font-weight:600;font-size:12.5px;position:sticky;top:0;bac
 input,select,button,a.btn{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none}
 button,a.btn{cursor:pointer}a.btn:hover,button:hover{border-color:var(--acc)}
 .vuoto{color:var(--quiet);font-size:13.5px}
+button.pericolo{border-color:#b4483a;color:#b4483a}button.pericolo:disabled{opacity:.45;cursor:default}
+.conferma{border:1px solid #b4483a;border-radius:10px;padding:12px 14px;margin:0 0 12px;font-size:13.5px}
+.conferma p{margin:0 0 10px}.conferma input{margin:0 8px}
+.avviso{background:var(--card);border:1px solid var(--acc);border-radius:10px;padding:10px 14px;margin:0 0 16px}
 """
 
 
@@ -269,7 +288,7 @@ def _barre(righe: list[tuple[str, int]], massimo: int | None = None, con_quota: 
     return "".join(out)
 
 
-def pagina(dati: dict) -> str:
+def pagina(dati: dict, avviso: str = "") -> str:
     k = dati["kpi"]
     kpi = "".join(f"<div class='k'><b>{v}</b><span>{_e(t)}</span></div>" for t, v in (
         ("Iscritti totali", k["iscritti"]), ("Nuovi ultimi 7 giorni", k["nuovi7"]), ("Nuovi ultimi 30 giorni", k["nuovi30"]),
@@ -286,12 +305,14 @@ def pagina(dati: dict) -> str:
             badge += f"<span class='pill'>consiglia: {_e(u['consiglia'])}</span>"
         righe.append(
             f"<tr data-q='{_e((u['email'] + ' ' + u['ateco'] + ' ' + u['attivita'] + ' ' + luogo).lower())}'>"
+            f"<td><input type='checkbox' name='email' value='{_e(u['email'])}' form='elimina' onchange='conta()' "
+            f"aria-label='Seleziona {_e(u['email'])}'></td>"
             f"<td><a href='mailto:{_e(u['email'])}'>{_e(u['email'])}</a></td>"
             f"<td title='{_e(u['iscritto_il'][:16])}'>{_quando(u['iscritto_il'])}</td>"
             f"<td title='{_e(u['ultima_attivita'][:16])}'>{_quando(u['ultima_attivita'])}</td>"
             f"<td>{u['eventi']}</td><td>{_e(u['ateco'])}<div class='sub' style='margin:0'>{_e(u['attivita'])}</div></td>"
             f"<td>{_e(luogo) or '—'}</td><td>{badge}</td></tr>")
-    tabella = ("<div class='wrap'><table id='t'><thead><tr><th>Email</th><th>Iscritto</th><th>Ultima attività</th>"
+    tabella = ("<div class='wrap'><table id='t'><thead><tr><th><input type='checkbox' id='tutti' onchange='tutti_(this)' aria-label='Seleziona tutti i visibili'></th><th>Email</th><th>Iscritto</th><th>Ultima attività</th>"
                "<th>Azioni</th><th>ATECO / attività</th><th>Luogo</th><th></th></tr></thead><tbody>"
                + "".join(righe) + "</tbody></table></div>") if righe else "<p class='vuoto'>Nessun iscritto ancora.</p>"
     imbuto = _barre([(r["fase"], r["n"]) for r in dati["imbuto"]], con_quota=True)
@@ -305,7 +326,7 @@ def pagina(dati: dict) -> str:
 <h1>TaxScan · Pannello amministratore</h1>
 <p class="sub">Aggiornato {datetime.now(timezone.utc).astimezone().strftime('%d/%m/%Y %H:%M')} ·
 <a href="/admin/esci">Esci</a></p>
-<div class="kpi">{kpi}</div>
+{('<p class="avviso">' + _e(avviso) + '</p>') if avviso else ''}<div class="kpi">{kpi}</div>
 <div class="card"><div class="tool"><h2 style="margin:0;flex:1">Andamento giornaliero</h2>
 <form method="get" action="/admin"><select name="giorni" onchange="this.form.submit()">{scelte}</select></form></div>
 <div class="leg"><span><i style="background:var(--acc2)"></i>Visite alla home</span><span><i style="background:var(--acc);opacity:.55"></i>Colloqui aperti</span>
@@ -317,8 +338,22 @@ def pagina(dati: dict) -> str:
 <div class="card"><h2>Dove si fermano nel colloquio</h2>{abbandoni}</div>
 <div class="card"><div class="tool"><h2 style="margin:0;flex:1">Iscritti ({len(dati['utenti'])})</h2>
 <input id="q" type="search" placeholder="Cerca email, ATECO, comune…" oninput="filtra()">
-<a class="btn" href="/admin/utenti.csv">Scarica CSV</a></div>{tabella}</div>
+<a class="btn" href="/admin/utenti.csv">Scarica CSV</a>
+<button type="button" id="btnel" class="pericolo" disabled onclick="apri()">Elimina selezionati</button></div>
+<form id="elimina" method="post" action="/admin/elimina" class="conferma" hidden>
+<p><b>Elimini definitivamente <span id="nsel">0</span> iscritti?</b> Si cancellano scheda, dashboard, chat, eventi, collegamento
+a Fatture in Cloud e feedback. Non si può annullare: se servono, scarica prima il CSV.</p>
+<label>Scrivi <b>ELIMINA</b> per confermare <input name="conferma" autocomplete="off" oninput="pronto()"></label>
+<button id="btnok" class="pericolo" disabled>Elimina</button> <button type="button" onclick="chiudi()">Annulla</button></form>
+{tabella}</div>
 </main><script>
+function sel(){{return document.querySelectorAll('#t tbody input[type=checkbox]:checked')}}
+function conta(){{var n=sel().length;var b=document.getElementById('btnel');b.disabled=!n;
+b.textContent=n?'Elimina selezionati ('+n+')':'Elimina selezionati';document.getElementById('nsel').textContent=n;if(!n)chiudi()}}
+function tutti_(c){{document.querySelectorAll('#t tbody tr').forEach(function(r){{if(r.style.display!=='none')r.querySelector('input').checked=c.checked}});conta()}}
+function apri(){{var f=document.getElementById('elimina');f.hidden=false;f.conferma.focus()}}
+function chiudi(){{var f=document.getElementById('elimina');f.hidden=true;f.conferma.value='';pronto()}}
+function pronto(){{document.getElementById('btnok').disabled=document.getElementById('elimina').conferma.value.trim()!=='ELIMINA'}}
 function filtra(){{var q=document.getElementById('q').value.trim().toLowerCase();
 document.querySelectorAll('#t tbody tr').forEach(function(r){{r.style.display=!q||r.dataset.q.indexOf(q)>=0?'':'none'}})}}
 </script></body></html>"""
@@ -369,7 +404,9 @@ def registra(mcp, evento) -> None:
             dati = await asyncio.to_thread(raccogli, giorni)
         except Exception as e:
             return HTMLResponse(f"<p>Non riesco a leggere i dati: {_e(e)}</p>", status_code=500, headers=intest)
-        resp = HTMLResponse(pagina(dati), headers=intest)
+        n_el = request.query_params.get("eliminati", "")
+        avviso = (f"Eliminati {n_el} iscritti." if n_el.isdigit() else "")
+        resp = HTMLResponse(pagina(dati, avviso), headers=intest)
         # chi entra con ?chiave= riceve il cookie e la volta dopo non serve più la chiave nell'indirizzo
         return _con_cookie(resp) if request.query_params.get("chiave") else resp
 
@@ -382,6 +419,26 @@ def registra(mcp, evento) -> None:
         nome = f"taxscan-iscritti-{date.today().isoformat()}.csv"
         return Response(csv_utenti(dati), media_type="text/csv; charset=utf-8",
                         headers={**intest, "Content-Disposition": f"attachment; filename={nome}"})
+
+    @mcp.custom_route("/admin/elimina", methods=["POST"])
+    async def admin_elimina(request):
+        """Solo con il cookie (non con ?chiave=), solo dalla stessa origine, solo con la parola ELIMINA."""
+        import asyncio
+        from urllib.parse import parse_qs, urlparse
+        if not cookie_ok(request.cookies.get(COOKIE, "")):
+            return Response("non autorizzato", status_code=403)
+        origine = request.headers.get("origin") or request.headers.get("referer") or ""
+        if origine and urlparse(origine).netloc != request.headers.get("host", ""):
+            return Response("origine non valida", status_code=403)
+        corpo = parse_qs((await request.body()).decode("utf-8", "ignore"))
+        if (corpo.get("conferma") or [""])[0].strip() != "ELIMINA":
+            return RedirectResponse("/admin", status_code=303)
+        try:
+            n = await asyncio.to_thread(elimina_iscritti, corpo.get("email", []))
+        except Exception as e:
+            return HTMLResponse(f"<p>Eliminazione non riuscita: {_e(e)}</p>", status_code=500, headers=intest)
+        evento("admin_eliminati", None, {"n": n})
+        return RedirectResponse(f"/admin?eliminati={n}", status_code=303)
 
     @mcp.custom_route("/admin/esci", methods=["GET"])
     async def admin_esci(request):
