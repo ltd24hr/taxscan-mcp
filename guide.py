@@ -139,6 +139,162 @@ riduzione del 35% entro il 28 febbraio.</p>
 }
 
 
+
+def _quota(coeff: float, aliq_inps: float, aliq_imp: float) -> float:
+    """Quota di ogni euro incassato da mettere da parte: contributi sul reddito + imposta sul reddito al netto dei contributi."""
+    return coeff * (aliq_inps + (1 - aliq_inps) * aliq_imp)
+
+
+_Q15 = _quota(0.78, _GS, D.ALIQUOTA_ORDINARIA)
+_Q5 = _quota(0.78, _GS, D.ALIQUOTA_STARTUP)
+_Q15_67 = _quota(D.COEFFICIENTE_RESIDUALE[0], _GS, D.ALIQUOTA_ORDINARIA)
+_righe_coeff = "".join(
+    f"<tr><td>{_html.escape(desc)}</td><td>{', '.join(pref)}</td><td><b>{_pct(c)}</b></td></tr>"
+    for pref, c, desc in D.GRUPPI_COEFFICIENTE) + \
+    f"<tr><td>{_html.escape(D.COEFFICIENTE_RESIDUALE[1])}</td><td>tutti gli altri</td><td><b>{_pct(D.COEFFICIENTE_RESIDUALE[0])}</b></td></tr>"
+_requisiti = "".join(f"<li>{_html.escape(r)}</li>" for r in D.REQUISITI_ACCESSO)
+_AC = D.ARTIGIANI_COMMERCIANTI
+
+GUIDE.update({
+    "quanto-mettere-da-parte-forfettario": {
+        "titolo": "Quanto mettere da parte su ogni fattura nel regime forfettario",
+        "descrizione": "La percentuale di ogni incasso da accantonare per tasse e contributi nel forfettario, "
+                       "con esempi per professionisti al 15% e al 5%.",
+        "corpo": f"""
+<p class="lead">Per un professionista in gestione separata con coefficiente 78% conviene mettere da parte circa il
+<b>{round(_Q15 * 100)}% di ogni incasso</b> con l'imposta al 15%, circa il <b>{round(_Q5 * 100)}%</b> con l'imposta al 5%.</p>
+
+<h2>Da dove viene la percentuale</h2>
+<p>Su ogni euro incassato, il reddito è il coefficiente (78 centesimi). Su quel reddito si pagano i contributi
+({_pct(_GS)} in gestione separata) e sul resto l'imposta sostitutiva. Il totale è la quota da accantonare.</p>
+<ul>
+<li>Coefficiente 78%, imposta 15%: circa <b>{round(_Q15 * 100)}%</b> di ogni incasso</li>
+<li>Coefficiente 78%, imposta 5%: circa <b>{round(_Q5 * 100)}%</b></li>
+<li>Coefficiente 67% (informatica e altre attività), imposta 15%: circa <b>{round(_Q15_67 * 100)}%</b></li>
+</ul>
+
+<h2>Esempio</h2>
+<p>Fattura da {_eur(1_000)} incassata: con coefficiente 78% e imposta al 15% metti da parte circa
+<b>{_eur(_Q15 * 1000)}</b>. Su {_eur(_RICAVI)} in un anno sono circa {_eur(_Q15 * _RICAVI)}.</p>
+
+<h2>Perché al secondo anno serve di più</h2>
+<p>Il secondo anno si pagano insieme il saldo del primo e gli acconti del secondo: a giugno può arrivare circa una volta e
+mezza l'imposta di un anno. Chi ha accantonato la quota giusta dal primo giorno non ha sorprese.</p>
+
+<h2>Artigiani e commercianti</h2>
+<p>Hanno contributi fissi (circa {_eur(_AC['artigiani']['fisso_annuo'])} l'anno per gli artigiani) che si pagano anche
+con pochi incassi: la percentuale cambia molto con il fatturato, quindi conviene fare il calcolo sul proprio caso.</p>
+""",
+    },
+    "coefficienti-redditivita-forfettario-ateco": {
+        "titolo": f"Coefficienti di redditività del forfettario per codice ATECO ({D.ANNO})",
+        "descrizione": "La tabella dei coefficienti di redditività del regime forfettario per gruppo di codici ATECO, "
+                       "con un esempio di come cambiano le tasse.",
+        "corpo": f"""
+<p class="lead">Il coefficiente dice quale parte dei tuoi incassi diventa reddito tassabile. Va dal <b>40%</b> del
+commercio all'<b>86%</b> di costruzioni e immobiliare; molti professionisti hanno il <b>78%</b>.</p>
+
+<h2>La tabella</h2>
+<table><thead><tr><th>Attività</th><th>Codici ATECO che iniziano con</th><th>Coefficiente</th></tr></thead>
+<tbody>{_righe_coeff}</tbody></table>
+<p class="meta">Allegato 4 della Legge 190/2014. Nel {D.ANNO} si continuano ad applicare i coefficienti storici
+anche dopo la nuova classificazione ATECO 2025: per alcuni codici del commercio (divisioni 46 e 47) conviene
+verificare il proprio caso.</p>
+
+<h2>Quanto pesa sulle tasse</h2>
+<p>Con {_eur(_RICAVI)} incassati il reddito è {_eur(_RICAVI * 0.40)} al 40%, {_eur(_RICAVI * 0.67)} al 67%,
+{_eur(_RICAVI * 0.78)} al 78% e {_eur(_RICAVI * 0.86)} all'86%. Imposta e contributi si calcolano su questo reddito.</p>
+
+<h2>Se fai più attività</h2>
+<p>Chi ha più codici ATECO in gruppi diversi applica a ogni attività il suo coefficiente, sui ricavi di quella
+attività tenuti separati. La soglia degli {_eur(D.SOGLIA_RICAVI)} invece conta la somma di tutti gli incassi.</p>
+""",
+    },
+    "soglia-85000-forfettario": {
+        "titolo": "Soglia degli 85.000 euro nel forfettario: cosa succede se la superi",
+        "descrizione": "Cosa succede se superi 85.000 o 100.000 euro di incassi nel regime forfettario, "
+                       "quando si esce e da quando si applica l'IVA.",
+        "corpo": f"""
+<p class="lead">Se superi <b>{_eur(D.SOGLIA_RICAVI)}</b> di incassi resti forfettario fino a fine anno ed esci
+dall'anno dopo. Se superi <b>{_eur(D.SOGLIA_USCITA_IMMEDIATA)}</b> esci subito.</p>
+
+<h2>I tre casi</h2>
+<ul>
+<li><b>Fino a {_eur(D.SOGLIA_RICAVI)}</b>: nessun cambiamento, resti nel forfettario anche l'anno dopo.</li>
+<li><b>Tra {_eur(D.SOGLIA_RICAVI)} e {_eur(D.SOGLIA_USCITA_IMMEDIATA)}</b>: chiudi l'anno da forfettario, dal 1° gennaio
+passi al regime ordinario (IVA, spese reali, IRPEF a scaglioni).</li>
+<li><b>Oltre {_eur(D.SOGLIA_USCITA_IMMEDIATA)}</b>: esci nell'anno stesso e applichi l'IVA già dalla fattura che fa
+superare la soglia.</li>
+</ul>
+
+<h2>Cosa conta per la soglia</h2>
+<p>Contano gli <b>incassi</b> dell'anno (principio di cassa), non le fatture emesse. Se hai più attività si sommano
+tutte. Una fattura emessa a dicembre e incassata a gennaio conta per l'anno dopo.</p>
+
+<h2>Come accorgersene in tempo</h2>
+<p>Chi si avvicina alla soglia può valutare quando incassare le ultime fatture: conviene tenere il conto aggiornato
+durante l'anno, non a dicembre.</p>
+""",
+    },
+    "contributi-inps-forfettario": {
+        "titolo": f"Contributi INPS nel forfettario ({D.ANNO}): gestione separata, artigiani e commercianti",
+        "descrizione": "Quanto si paga di contributi INPS nel regime forfettario: aliquote della gestione separata, "
+                       "contributi fissi di artigiani e commercianti e riduzione del 35%.",
+        "corpo": f"""
+<p class="lead">I contributi dipendono da chi sei: i <b>professionisti senza cassa</b> pagano la gestione separata in
+percentuale, <b>artigiani e commercianti</b> pagano una quota fissa più una percentuale sopra il minimale.</p>
+
+<h2>Gestione separata</h2>
+<p>Aliquota <b>{_pct(_GS)}</b> sul reddito forfettario (incassi × coefficiente), {_pct(D.GESTIONE_SEPARATA['aliquota_pensionati_o_altra_cassa'])}
+se sei pensionato o hai già un'altra copertura. Non c'è un minimo: se incassi poco paghi poco. Si paga con saldo e acconti
+a giugno e novembre.</p>
+
+<h2>Artigiani e commercianti</h2>
+<ul>
+<li>Contributo fisso annuo sul minimale di {_eur(_AC['minimale_reddito'])}: <b>{_eur(_AC['artigiani']['fisso_annuo'], 2)}</b>
+per gli artigiani, <b>{_eur(_AC['commercianti']['fisso_annuo'], 2)}</b> per i commercianti, in quattro rate (maggio, agosto,
+novembre, febbraio).</li>
+<li>Sopra il minimale: {_pct(_AC['artigiani']['aliquota'])} (artigiani) o {_pct(_AC['commercianti']['aliquota'])}
+(commercianti), un punto in più oltre {_eur(_AC['soglia_aliquota_maggiorata'])}.</li>
+<li>I forfettari possono chiedere la <b>riduzione del 35%</b> dei contributi entro il 28 febbraio: si paga meno, ma si
+matura anche meno pensione.</li>
+</ul>
+
+<h2>Professionisti con cassa</h2>
+<p>Avvocati, ingegneri, architetti, commercialisti, medici e altri iscritti a un albo con cassa propria seguono le
+regole della loro cassa, non dell'INPS.</p>
+
+<h2>I contributi abbassano l'imposta</h2>
+<p>I contributi versati nell'anno si sottraggono dal reddito prima di calcolare l'imposta sostitutiva: per questo
+conviene tenerli nel conto quando si stima quanto pagare.</p>
+<p class="meta">Fonti: Circolare INPS n. 8 del 3/2/2026 (gestione separata), Circolare INPS n. 14 del 9/2/2026
+(artigiani e commercianti).</p>
+""",
+    },
+    "requisiti-regime-forfettario": {
+        "titolo": f"Requisiti per il regime forfettario ({D.ANNO}): chi può entrare e chi no",
+        "descrizione": "Le condizioni per entrare e restare nel regime forfettario: limite di ricavi, spese per "
+                       "personale, redditi da lavoro dipendente, partecipazioni e altre cause di esclusione.",
+        "corpo": f"""
+<p class="lead">Puoi stare nel forfettario se l'anno prima hai incassato fino a <b>{_eur(D.SOGLIA_RICAVI)}</b> e non
+rientri in nessuna causa di esclusione. Ecco l'elenco completo.</p>
+
+<h2>Le condizioni</h2>
+<ul>{_requisiti}</ul>
+
+<h2>Il limite dei redditi da lavoro dipendente</h2>
+<p>Chi ha anche uno stipendio o una pensione può restare forfettario se l'anno prima quei redditi non hanno superato
+{_eur(D.LIMITE_REDDITI_DIPENDENTE)}. Il limite non conta se il rapporto di lavoro è finito.</p>
+
+<h2>Il 5% per chi inizia</h2>
+<p>Nei primi cinque anni l'imposta può essere al {_pct(D.ALIQUOTA_STARTUP)} invece del {_pct(D.ALIQUOTA_ORDINARIA)}, se
+l'attività è davvero nuova: non devi averne svolta una simile nei tre anni precedenti e non deve essere la prosecuzione
+di un lavoro dipendente.</p>
+""",
+    },
+})
+
+
 def _e(x) -> str:
     return _html.escape(str(x))
 
@@ -157,7 +313,8 @@ p,ul,ol{margin-bottom:12px;color:var(--ink2)}b{color:var(--ink)}ul,ol{padding-le
 .lead{font-size:18px}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin:32px 0}
 .box p{margin-bottom:14px}.cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:18px;padding:15px;border-radius:14px}
-.meta{font-size:13px;color:var(--ink2)}.altre a{color:var(--accent-ink);font-weight:600}
+.meta{font-size:13px;color:var(--ink2)}
+table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:14px;background:var(--surface);border-radius:12px;overflow:hidden}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:13px}td{color:var(--ink2)}.altre a{color:var(--accent-ink);font-weight:600}
 """
 
 
