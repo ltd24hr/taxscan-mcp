@@ -1659,9 +1659,38 @@ prova.registra(mcp, avvisi)
 admin_pannello.registra(mcp, _evento)
 
 
+DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().lower()
+
+
+@mcp.custom_route("/robots.txt", methods=["GET"])
+async def robots_txt(request):
+    from starlette.responses import PlainTextResponse
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini",
+             "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
+             "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
+             "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
+    return PlainTextResponse("\n".join(righe))
+
+
+@mcp.custom_route("/sitemap.xml", methods=["GET"])
+async def sitemap_xml(request):
+    from starlette.responses import Response
+    pagine = [("/", "1.0"), ("/privacy", "0.3"), ("/termini", "0.3")]
+    url = "".join(f"<url><loc>https://{DOMINIO_PRINCIPALE}{p}</loc><priority>{pr}</priority></url>" for p, pr in pagine)
+    return Response('<?xml version="1.0" encoding="UTF-8"?>'
+                    f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{url}</urlset>',
+                    media_type="application/xml")
+
+
 @mcp.custom_route("/", methods=["GET", "HEAD"])
 async def home(request):
-    from starlette.responses import HTMLResponse
+    from starlette.responses import HTMLResponse, RedirectResponse
+    # La home vive solo su taxscan.it: dai vecchi indirizzi (onrender.com, taxscan.ltd24.co.uk) si viene portati li',
+    # cosi' Google non vede due copie della stessa pagina. Solo la home: /mcp, dashboard e link nelle email restano dove sono.
+    host = (request.headers.get("host") or "").split(":")[0].lower()
+    if DOMINIO_PRINCIPALE and host and host != DOMINIO_PRINCIPALE and not host.startswith(("localhost", "127.", "0.0.0.0")):
+        q = request.url.query
+        return RedirectResponse(f"https://{DOMINIO_PRINCIPALE}/" + (f"?{q}" if q else ""), status_code=301)
     if request.method == "GET":
         # per il pannello /admin: da dove arrivano le visite (utm_source o sito di provenienza), bot esclusi
         fonte = admin_pannello.fonte_visita(dict(request.query_params), request.headers.get("referer", ""),
