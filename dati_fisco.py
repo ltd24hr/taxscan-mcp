@@ -37,7 +37,13 @@ ARTIGIANI_COMMERCIANTI = {
     "soglia_aliquota_maggiorata": 56_224,
     "massimale_ante_1996": 93_707,
     "massimale_post_1996": 122_295,
-    "riduzione_forfettari": 0.35,  # facoltativa, domanda all'INPS entro il 28 febbraio
+    "riduzione_forfettari": 0.35,  # facoltativa: si chiede una volta (entro il 28/2, o subito dopo l'apertura) e resta finche' non si rinuncia
+    # L. 207/2024 c. 186-187 (circ. INPS 83/2025): chi si iscrive per la prima volta nel 2025 paga il 50% della sola quota IVS
+    # per 36 mesi dall'avvio; non si somma al 35% dei forfettari ne' alla riduzione dei pensionati over 65
+    "riduzione_nuovi_iscritti": {"quota": 0.50, "anno_iscrizione": 2025, "mesi": 36},
+    "riduzione_pensionati_65": 0.50,   # art. 59 c. 15 L. 449/1997: pensionati INPS con piu' di 65 anni, a domanda
+    "maternita_mensile": 0.62,         # contributo di maternita' (non si riduce)
+    "aliquota_non_ivs": {"artigiani": 0.0, "commercianti": 0.0048},  # indennizzo cessazione attivita' (non si riduce)
     "artigiani": {
         "fisso_annuo": 4_521.36,      # IVS sul minimale + maternità
         "aliquota": 0.24,
@@ -119,3 +125,29 @@ CONTATTI = {
     "email": "info@ltd24ore.com",
     "sito": "https://ltd24.co.uk/?utm_source=taxscan",
 }
+
+
+# --- Come ragiona TaxScan sui contributi (lo legge l'assistente IA: aggiornare con le regole dell'anno) ---
+RAGIONAMENTO_CONTRIBUTI = (
+    "Sui contributi previdenziali ragiona come un commercialista: i contributi spesso pesano piu' dell'imposta, quindi chiediti sempre "
+    "se la persona puo' pagarne di meno in modo legale, e se la stima e' giusta per la sua situazione. Le domande da farti: "
+    "1) Anno di apertura: per artigiani e commercianti i contributi fissi si pagano solo per i mesi di attivita' (chi apre ad agosto "
+    "paga 5 mesi su 12); se non conosci il mese, chiedilo. "
+    "2) Artigiani e commercianti forfettari: riduzione del 35% di fissi e percentuali, si chiede una volta all'INPS (entro il 28 febbraio, "
+    "o subito dopo l'apertura) e resta finche' non si rinuncia; riduce anche l'accredito per la pensione. "
+    "3) Chi si e' iscritto per la prima volta alla gestione artigiani o commercianti nel 2025: 50% in meno sulla quota IVS per 36 mesi "
+    "dall'avvio, non cumulabile con il 35% (di solito conviene di piu'). "
+    "4) Pensionati INPS con piu' di 65 anni iscritti come artigiani o commercianti: possono chiedere il 50% in meno. "
+    "5) Chi ha anche un lavoro dipendente prevalente e apre un'attivita' commerciale: l'iscrizione alla gestione commercianti spesso "
+    "non e' dovuta (manca la prevalenza), da verificare con un professionista. "
+    "6) Gestione separata: niente minimo, si paga in percentuale; aliquota 26,07%, ma 24% se la persona ha gia' un'altra copertura "
+    "obbligatoria (lavoro dipendente, pensione). Si puo' addebitare al cliente una rivalsa INPS del 4% in fattura. "
+    "7) I contributi si deducono dal reddito forfettario per cassa, nell'anno in cui si pagano; la parte che supera il reddito "
+    "forfettario si deduce dagli altri redditi IRPEF (lavoro dipendente, pensione). "
+    "8) Casse professionali: spesso riducono i minimi per i giovani o i nuovi iscritti nei primi anni; il contributo integrativo "
+    "si addebita al cliente. "
+    "9) Il fondo pensione si deduce solo da altri redditi IRPEF, non dal reddito forfettario. "
+    "Collega sempre i dati tra loro (data di apertura, gestione, altri redditi, eta' se nota, incassi) e, se un dato che cambierebbe "
+    "il calcolo manca, fai una domanda precisa invece di supporre. Ogni riduzione dei contributi riduce anche la pensione futura: dillo. "
+    "Sono stime: le riduzioni vanno sempre verificate con l'INPS o con la propria cassa."
+)

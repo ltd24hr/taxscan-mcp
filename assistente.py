@@ -228,6 +228,7 @@ def rispondi(id_dashboard: str, domanda: str, storia=None, contesto: str = "") -
             .replace("{ateco}", str((dati.get("_scheda") or {}).get("codice_ateco") or "non indicato"))
     else:
         sistema = _REGOLE.replace("{oggi}", date.today().strftime("%d/%m/%Y")).replace("{consulenza}", D.CONTATTI["consulenza_gratuita"]) + \
+            "\n\n" + getattr(D, "RAGIONAMENTO_CONTRIBUTI", "") + \
             "\n\nDATI DELLA DASHBOARD DELL'UTENTE (JSON, stime):\n" + _contesto(dati)
     messaggi = _pulisci_storia(storia) + [{"role": "user", "content": domanda}]
     try:

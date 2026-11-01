@@ -69,36 +69,60 @@ def _contributi_gestione_separata(reddito: float, altra_copertura: bool) -> dict
 
 
 def _contributi_artigiani_commercianti(reddito: float, tipo: str, riduzione_35: bool,
-                                       iscritto_ante_1996: bool) -> dict:
+                                       iscritto_ante_1996: bool, mesi: int = 12, mesi_riduzione_50: int = 0) -> dict:
+    """Contributi INPS artigiani/commercianti.
+    mesi: mesi di attivita' nell'anno (nell'anno di apertura i fissi e il minimale si rapportano ai mesi).
+    mesi_riduzione_50: quanti di quei mesi godono del 50% sulla quota IVS (nuovi iscritti 2025, 36 mesi)."""
     p = D.ARTIGIANI_COMMERCIANTI
     conf = p[tipo]
+    mesi = max(0, min(12, int(mesi or 0)))
+    mesi_riduzione_50 = max(0, min(mesi, int(mesi_riduzione_50 or 0)))
     massimale = p["massimale_ante_1996"] if iscritto_ante_1996 else p["massimale_post_1996"]
     reddito = min(reddito, massimale)
+    _eur = lambda v: f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    if mesi == 0:
+        return {"gestione": f"INPS {tipo}", "aliquota": conf["aliquota"], "imponibile_previdenziale": 0.0,
+                "contributi_fissi": 0.0, "contributi_variabili": 0.0, "totale_contributi": 0.0, "mesi_attivita": 0,
+                "note": ["Nessun mese di attività in quest'anno: nessun contributo."]}
 
-    fisso = conf["fisso_annuo"]
-    eccedenza = max(0.0, reddito - p["minimale_reddito"])
-    fino_soglia = min(eccedenza, max(0.0, p["soglia_aliquota_maggiorata"] - p["minimale_reddito"]))
-    oltre_soglia = max(0.0, reddito - p["soglia_aliquota_maggiorata"])
+    minimale_anno = p["minimale_reddito"] * mesi / 12
+    fisso = conf["fisso_annuo"] * mesi / 12
+    eccedenza = max(0.0, reddito - minimale_anno)
+    fino_soglia = min(eccedenza, max(0.0, p["soglia_aliquota_maggiorata"] - minimale_anno))
+    oltre_soglia = max(0.0, eccedenza - fino_soglia)
     variabili = fino_soglia * conf["aliquota"] + oltre_soglia * conf["aliquota_oltre_soglia"]
 
-    _eur = lambda v: f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     minimale = f"{p['minimale_reddito']:,.0f}".replace(",", ".")
-    note = [f"Il contributo fisso di {_eur(fisso)} euro è dovuto anche con reddito inferiore al "
-            f"minimale di {minimale} euro."]
-    if riduzione_35:
+    note = []
+    if mesi < 12:
+        note.append(f"Anno di apertura: contributi fissi e minimale rapportati a {mesi} mesi di attività "
+                    f"({_eur(fisso)} euro invece di {_eur(conf['fisso_annuo'])}).")
+    else:
+        note.append(f"Il contributo fisso di {_eur(fisso)} euro è dovuto anche con reddito inferiore al "
+                    f"minimale di {minimale} euro.")
+    if mesi_riduzione_50:
+        # si riduce solo la quota IVS: restano piene maternita' e (commercianti) indennizzo di cessazione
+        non_ivs_fisso = (p["maternita_mensile"] * 12 + p["minimale_reddito"] * p["aliquota_non_ivs"][tipo]) * mesi / 12
+        ivs_fisso = fisso - non_ivs_fisso
+        ivs_var = variabili - eccedenza * p["aliquota_non_ivs"][tipo]
+        quota = p["riduzione_nuovi_iscritti"]["quota"] * mesi_riduzione_50 / mesi
+        fisso, variabili = fisso - ivs_fisso * quota, variabili - ivs_var * quota
+        note.append(f"Applicata la riduzione del 50% per i nuovi iscritti del 2025 ({mesi_riduzione_50} mesi su {mesi} "
+                    "quest'anno): vale sulla quota per la pensione, per 36 mesi dall'avvio. Riduce anche l'accredito pensionistico.")
+    elif riduzione_35:
         sconto = p["riduzione_forfettari"]
         fisso, variabili = fisso * (1 - sconto), variabili * (1 - sconto)
-        note.append("Applicata la riduzione del 35% per i forfettari (domanda all'INPS entro il "
-                    "28 febbraio). Riduce anche l'accredito ai fini pensionistici.")
+        note.append("Applicata la riduzione del 35% per i forfettari. Riduce anche l'accredito ai fini pensionistici.")
     else:
-        note.append("Non applicata la riduzione del 35%: se spetta, va richiesta all'INPS entro "
-                    "il 28 febbraio.")
+        note.append("Non applicata la riduzione del 35%: se spetta, si chiede all'INPS (entro il 28 febbraio, o subito "
+                    "dopo l'apertura) e poi resta attiva finché non rinunci.")
 
     return {"gestione": f"INPS {tipo}", "aliquota": conf["aliquota"],
             "imponibile_previdenziale": round(reddito, 2),
             "contributi_fissi": round(fisso, 2),
             "contributi_variabili": round(variabili, 2),
             "totale_contributi": round(fisso + variabili, 2),
+            "mesi_attivita": mesi,
             "note": note}
 
 
@@ -119,7 +143,8 @@ def calcola_forfettario(ricavi_incassati: float, codice_ateco: str = "",
                         aliquota_imposta: float | None = None, nuova_attivita: bool = False,
                         riduzione_35: bool = False, altra_copertura_previdenziale: bool = False,
                         aliquota_cassa: float = 0.0, iscritto_ante_1996: bool = False,
-                        contributi_versati_nell_anno: float | None = None) -> dict:
+                        contributi_versati_nell_anno: float | None = None,
+                        mesi_attivita: int = 12, mesi_riduzione_50: int = 0) -> dict:
     """Calcola reddito, contributi e imposta sostitutiva di un forfettario."""
     if ricavi_incassati is None or ricavi_incassati < 0:
         return {"errore": "Indica i ricavi o compensi incassati nell'anno."}
@@ -138,7 +163,7 @@ def calcola_forfettario(ricavi_incassati: float, codice_ateco: str = "",
     gestione = (gestione or "separata").lower()
     if gestione in ("artigiani", "commercianti"):
         contributi = _contributi_artigiani_commercianti(reddito_lordo, gestione, riduzione_35,
-                                                        iscritto_ante_1996)
+                                                        iscritto_ante_1996, mesi_attivita, mesi_riduzione_50)
     elif gestione == "cassa":
         contributi = _contributi_cassa(reddito_lordo, aliquota_cassa)
     else:
@@ -168,6 +193,8 @@ def calcola_forfettario(ricavi_incassati: float, codice_ateco: str = "",
         "reddito_forfettario_lordo": round(reddito_lordo, 2),
         "contributi_previdenziali": contributi,
         "imponibile_imposta_sostitutiva": round(imponibile, 2),
+        # contributi che superano il reddito forfettario: non si perdono, si deducono dagli altri redditi IRPEF
+        "contributi_eccedenti_reddito": round(max(0.0, deducibili - reddito_lordo), 2),
         "aliquota_imposta": f"{aliquota * 100:.0f}%",
         "imposta_sostitutiva": round(imposta, 2),
         "totale_da_versare": round(contributi["totale_contributi"] + imposta, 2),

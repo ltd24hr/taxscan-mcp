@@ -189,8 +189,10 @@ CAMPI = [
      "opzioni": "casse_plausibili"},
     {"chiave": "aliquota_cassa", "gruppo": "previdenza", "obbligatorio": False, "tipo": "numero"},
     {"chiave": "riduzione_35", "gruppo": "previdenza", "obbligatorio": "se_artigiani_commercianti",
-     "domanda": "Hai chiesto all'INPS la riduzione del 35% dei contributi riservata ai forfettari?",
-     "opzioni": [("si", "Sì"), ("no", "No"), ("non_so", "Non lo so")]},
+     "domanda": "Hai chiesto all'INPS uno sconto sui contributi?",
+     "opzioni": [("si", "Sì, il 35% riservato ai forfettari"),
+                 ("si_50", "Sì, il 50% per chi si è iscritto la prima volta nel 2025"),
+                 ("no", "No"), ("non_so", "Non lo so")]},
     {"chiave": "altra_copertura_previdenziale", "gruppo": "previdenza", "obbligatorio": False, "tipo": "bool"},
 
     # --- situazioni particolari: 1 scelta multipla al posto di 5 domande
@@ -300,6 +302,46 @@ def _bool(v):
     if s in ("no", "false", "0", "falso"):
         return False
     return None
+
+
+def _inizio(v):
+    """(anno, mese) di una data scritta in vari modi: 2025-08-14, 14/08/2025, 08/2025, 2025. Mese None se non c'e'."""
+    if v is None or v == "":
+        return None
+    t = [x for x in str(v).strip()[:10].replace("/", "-").replace(".", "-").split("-") if x.isdigit()]
+    if not t:
+        return None
+    if len(t[0]) == 4:   # 2025-08-14 / 2025-08 / 2025
+        a, m = int(t[0]), (int(t[1]) if len(t) > 1 else None)
+    elif len(t) >= 2 and len(t[-1]) == 4:   # 14-08-2025 / 08-2025
+        a, m = int(t[-1]), int(t[-2])
+    else:
+        return None
+    return (a, m if m and 1 <= m <= 12 else None)
+
+
+def mesi_attivita(s: dict, anno: int) -> int:
+    """Mesi di attivita' in quell'anno: nell'anno di apertura contano i mesi dal mese di avvio (compreso)."""
+    ini = _inizio(s.get("data_apertura"))
+    if not ini:
+        return 12
+    a, m = ini
+    if anno < a:
+        return 0
+    if anno > a or not m:
+        return 12
+    return 13 - m
+
+
+def mesi_riduzione_50(s: dict, anno: int) -> int:
+    """Mesi dell'anno coperti dalla riduzione del 50% dei nuovi iscritti 2025 (36 mesi dall'avvio)."""
+    if not s.get("riduzione_50"):
+        return 0
+    ini = _inizio(s.get("data_apertura"))
+    r = D.ARTIGIANI_COMMERCIANTI["riduzione_nuovi_iscritti"]
+    a, m = (ini[0], ini[1] or 1) if ini else (r["anno_iscrizione"], 1)
+    da, a_fine = a * 12 + m - 1, a * 12 + m - 1 + r["mesi"] - 1
+    return sum(1 for mm in range(12) if da <= anno * 12 + mm <= a_fine)
 
 
 def _anno(v):
@@ -449,6 +491,9 @@ def _normalizza(scheda: dict) -> dict:
         if v == "non_so":
             s["riduzione_35"] = False
             s["riduzione_35_incerta"] = True
+        elif v in ("si_50", "riduzione_50", "50"):
+            s["riduzione_35"] = False
+            s["riduzione_50"] = True
         else:
             s["riduzione_35"] = _bool(v)
 
@@ -800,7 +845,7 @@ def _acconti_inps_separata(contributi_anno_precedente: float) -> dict:
             "regola": "Acconto contributi gestione separata pari all'80% dei contributi dell'anno precedente, in due rate uguali."}
 
 
-def _calcolo(s: dict, ricavi: float, contributi_versati: float | None = None) -> dict:
+def _calcolo(s: dict, ricavi: float, contributi_versati: float | None = None, anno: int | None = None) -> dict:
     gestione = s.get("gestione_previdenziale") or "separata"
     if gestione == "non_so":
         gestione = "separata"
@@ -816,7 +861,9 @@ def _calcolo(s: dict, ricavi: float, contributi_versati: float | None = None) ->
         nuova_attivita=aliquota_5, riduzione_35=bool(s.get("riduzione_35")),
         altra_copertura_previdenziale=bool(s.get("altra_copertura_previdenziale")),
         aliquota_cassa=float(s.get("aliquota_cassa") or 0.0),
-        contributi_versati_nell_anno=contributi_versati)
+        contributi_versati_nell_anno=contributi_versati,
+        mesi_attivita=mesi_attivita(s, anno) if anno else 12,
+        mesi_riduzione_50=mesi_riduzione_50(s, anno) if anno else 0)
     if misto is not None and "errore" not in esito:
         esito["gruppo_ateco"] = "Più attività: coefficiente medio dei tuoi servizi"
     return esito
@@ -901,7 +948,7 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
                        "testo": "Non sai se hai chiesto lo sconto del 35% sui contributi: ho calcolato senza. "
                                 "Controlla su inps.it (Cassetto previdenziale artigiani e commercianti) o chiedi a chi "
                                 "ti segue: se è attivo i contributi sono più bassi di quanto stimo."})
-    elif s.get("gestione_previdenziale") in ("artigiani", "commercianti") and s.get("riduzione_35") is False:
+    elif s.get("gestione_previdenziale") in ("artigiani", "commercianti") and s.get("riduzione_35") is False and not s.get("riduzione_50"):
         avvisi.append({"livello": "informativo", "titolo": "Riduzione INPS del 35% non attiva",
                        "testo": "Come forfettario puoi chiedere all'INPS lo sconto del 35% sui contributi (domanda entro il "
                                 "28 febbraio). Riduce anche l'accredito pensionistico: valuta con un professionista."})
@@ -909,8 +956,9 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
     # --- calcoli
     ricavi_prec = s.get("ricavi_anno_precedente") or 0.0
     ricavi_corr = s.get("ricavi_anno_corrente") or 0.0
-    calc_prec = _calcolo(s, ricavi_prec, s.get("contributi_versati_anno_precedente")) if ricavi_prec > 0 else None
-    calc_corr = _calcolo(s, ricavi_corr) if ricavi_corr > 0 else None
+    calc_prec = _calcolo(s, ricavi_prec, s.get("contributi_versati_anno_precedente"), anno - 1) if ricavi_prec > 0 else None
+    calc_corr = _calcolo(s, ricavi_corr, None, anno) if ricavi_corr > 0 else None
+    avvisi.extend(_ragiona_contributi(s, anno, data_oggi, calc_prec, ricavi_corr))
     imposta_prec = calc_prec["imposta_sostitutiva"] if calc_prec else 0.0
     acconti = _acconti_imposta(imposta_prec)
     acconti_inps = None
@@ -1031,6 +1079,8 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
             "gestione_previdenziale": s.get("gestione_previdenziale"),
             "nome_cassa": s.get("nome_cassa"),
             "riduzione_35": s.get("riduzione_35"),
+            "riduzione_50": bool(s.get("riduzione_50")),
+            "mesi_attivita_anno": mesi_attivita(s, anno),
             "programma_fatturazione": s.get("programma_fatturazione"),
         },
         "situazione_maturata": storia,
@@ -1048,6 +1098,122 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
     }
 
 
+# --------------------------------------------------------------------------- contributi: il ragionamento
+
+def _proiezione(s: dict, ricavi_corr: float, data_oggi: date) -> float:
+    """Incassi stimati a fine anno: nell'anno di apertura si proietta solo sui mesi di attivita'."""
+    if not ricavi_corr or ricavi_corr <= 0:
+        return 0.0
+    attivi = mesi_attivita(s, data_oggi.year)
+    trascorsi = max(1, data_oggi.month - (12 - attivi))
+    return ricavi_corr / trascorsi * attivi
+
+
+def _rata_fissa(s: dict, gest: str, anno: int, m_da: int, m_a: int) -> float:
+    """Rata dei contributi fissi per i mesi m_da..m_a di quell'anno, solo per i mesi di attivita', con lo sconto spettante."""
+    p = D.ARTIGIANI_COMMERCIANTI
+    attivi = mesi_attivita(s, anno)
+    primo = 13 - attivi
+    mesi = [m for m in range(m_da, m_a + 1) if m >= primo]
+    if not mesi:
+        return 0.0
+    mensile = p[gest]["fisso_annuo"] / 12
+    non_ivs = p["maternita_mensile"] + p["minimale_reddito"] * p["aliquota_non_ivs"][gest] / 12
+    ridotti = 0
+    if s.get("riduzione_50"):
+        r50 = mesi_riduzione_50(s, anno)
+        # i mesi coperti dalla riduzione sono i primi dell'anno se la riduzione finisce in quell'anno, gli ultimi se comincia
+        ini = _inizio(s.get("data_apertura")) or (anno, 1)
+        coperti = set(range(13 - r50, 13)) if ini[0] == anno else set(range(1, r50 + 1))
+        ridotti = sum(1 for m in mesi if m in coperti)
+    tot = mensile * len(mesi)
+    if ridotti:
+        tot -= (mensile - non_ivs) * p["riduzione_nuovi_iscritti"]["quota"] * ridotti
+    elif s.get("riduzione_35"):
+        tot *= 1 - p["riduzione_forfettari"]
+    return tot
+
+
+def _ragiona_contributi(s: dict, anno: int, data_oggi: date, calc_prec: dict | None, ricavi_corr: float) -> list:
+    """Le domande che un commercialista si fa sui contributi, per trovare dove si puo' pagare meno (o dove la stima sbaglia)."""
+    out = []
+    gest = s.get("gestione_previdenziale")
+    sit = s.get("situazioni_particolari") or []
+    altro_reddito = "dipendente_o_pensione" in sit or (s.get("redditi_dipendente_pensione") or 0) > 0
+    p = D.ARTIGIANI_COMMERCIANTI
+    ini = _inizio(s.get("data_apertura"))
+    # stima dell'anno in corso proiettata a fine anno (o l'anno scorso se non c'e')
+    proj = _proiezione(s, ricavi_corr, data_oggi)
+    calc_anno = _calcolo(s, proj, None, anno) if proj > 0 else None
+    rif = calc_anno or calc_prec
+
+    # 1. anno di apertura: i contributi fissi si pagano solo per i mesi di attivita'
+    if gest in ("artigiani", "commercianti") and ini and ini[0] == anno:
+        if ini[1]:
+            m = mesi_attivita(s, anno)
+            if m < 12:
+                out.append({"livello": "informativo", "titolo": f"Quest'anno paghi i contributi fissi solo per {m} mesi",
+                            "testo": f"Hai aperto {'ad' if MESI[ini[1] - 1][0] in 'aeiou' else 'a'} {MESI[ini[1] - 1]}: per il {anno} i contributi fissi INPS si pagano da {MESI[ini[1] - 1]} "
+                                     f"a dicembre, cioè {m} mesi su 12. Nelle stime ne ho già tenuto conto. Dal {anno + 1} l'importo è pieno: "
+                                     "conviene metterlo in conto da subito."})
+        else:
+            out.append({"livello": "informativo", "titolo": "In che mese hai aperto?",
+                        "testo": f"Nel primo anno i contributi fissi INPS si pagano solo per i mesi di attività. So che hai aperto nel {anno} "
+                                 "ma non il mese: per ora ho contato l'anno intero, quindi la stima dei contributi può essere più alta del vero. "
+                                 "Dimmi la data di apertura e la sistemo."})
+
+    # 2. nuovi iscritti 2025: il 50% per 36 mesi conviene piu' del 35%
+    r50 = p["riduzione_nuovi_iscritti"]
+    if (gest in ("artigiani", "commercianti") and not s.get("riduzione_50") and ini and ini[0] == r50["anno_iscrizione"]
+            and anno <= r50["anno_iscrizione"] + 3 and mesi_riduzione_50(dict(s, riduzione_50=True), anno)):
+        prova = dict(s, riduzione_50=True, riduzione_35=False)
+        base = (rif or {}).get("ricavi_incassati") or 0.0
+        attuale = _calcolo(s, base, None, anno)["contributi_previdenziali"]["totale_contributi"] if base else None
+        con50 = _calcolo(prova, base, None, anno)["contributi_previdenziali"]["totale_contributi"] if base else None
+        diff = (attuale - con50) if (attuale is not None and con50 is not None) else None
+        out.append({"livello": "attenzione", "titolo": "Potresti pagare la metà dei contributi INPS",
+                    "testo": f"Hai aperto nel {r50['anno_iscrizione']}: se è stata la prima volta che ti iscrivi alla gestione {gest}, la legge "
+                             f"ti dà il 50% in meno sulla quota per la pensione per {r50['mesi']} mesi dall'avvio. "
+                             + (f"Rispetto a come sei messo oggi vuol dire circa {_eur(diff)} € in meno quest'anno. " if diff and diff > 1 else "")
+                             + "Non si somma al 35% dei forfettari: si sceglie una delle due, e il 50% di solito conviene. Si chiede sul "
+                             "Portale delle agevolazioni dell'INPS. Riduce anche i contributi che contano per la pensione: valutalo."})
+
+    # 3. riduzione del 35%: si chiede una volta e poi resta
+    # (gli avvisi "35% non attiva / da verificare" restano dove sono, in genera_quadro)
+
+    # 4. lavoro dipendente o pensione + artigiani/commercianti
+    if gest in ("artigiani", "commercianti") and altro_reddito:
+        fisso = p[gest]["fisso_annuo"]
+        out.append({"livello": "attenzione", "titolo": "Hai anche un lavoro o una pensione: controlla i contributi INPS",
+                    "testo": f"Due casi in cui si paga meno. Se sei in pensione e hai più di 65 anni, puoi chiedere all'INPS il 50% in meno "
+                             f"sui contributi {gest} (non si somma al 35%). Se invece hai un lavoro da dipendente che ti impegna più "
+                             "dell'attività, l'iscrizione alla gestione commercianti spesso non è dovuta, perché manca la «prevalenza»: "
+                             f"vuol dire non pagare circa {_eur(fisso)} € l'anno di contributi fissi. Per gli artigiani conta l'iscrizione "
+                             "all'Albo. Sono casi da verificare con un professionista prima di cambiare qualcosa."})
+
+    # 5. contributi oltre il reddito forfettario: la parte in piu' si deduce dagli altri redditi
+    ecc = (rif or {}).get("contributi_eccedenti_reddito") or 0.0
+    if ecc > 50:
+        if altro_reddito:
+            out.append({"livello": "attenzione", "titolo": f"Circa {_eur(ecc)} € di contributi da recuperare",
+                        "testo": f"I contributi che paghi superano il reddito della partita IVA di circa {_eur(ecc)} €. Questa parte non va "
+                                 "persa: nella dichiarazione si toglie dal reddito da lavoro dipendente o da pensione, e si paga meno IRPEF "
+                                 f"(con un'aliquota IRPEF del 23% sono circa {_eur(ecc * 0.23)} €). Ricordalo a chi ti fa la dichiarazione."})
+        elif gest in ("artigiani", "commercianti"):
+            out.append({"livello": "informativo", "titolo": "I contributi fissi pesano più di quanto guadagni",
+                        "testo": f"Con questi incassi i contributi fissi superano il reddito della partita IVA di circa {_eur(ecc)} €. "
+                                 "Se hai altri redditi tassati con l'IRPEF, quella parte si può dedurre lì. Altrimenti vale la pena chiedersi "
+                                 "se la riduzione del 35% è attiva e se l'attività rende abbastanza da coprire il minimo INPS."})
+
+    # 6. gestione separata: 24% se c'e' gia' un'altra copertura (applicato da solo se c'e' lavoro dipendente o pensione)
+    if gest == "separata" and s.get("altra_copertura_previdenziale"):
+        out.append({"livello": "informativo", "titolo": "Contributi al 24%, non al 26,07%",
+                    "testo": "Hai anche un lavoro da dipendente o una pensione: sei già coperto da un'altra previdenza, quindi in gestione "
+                             "separata paghi il 24% invece del 26,07%. Nei calcoli l'ho già applicato. Se il lavoro da dipendente finisce, "
+                             "dimmelo: l'aliquota torna piena."})
+    return out
+
+
 # --------------------------------------------------------------------------- piano pagamenti
 
 MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -1063,14 +1229,14 @@ def _scadenze_con_importi(s: dict, data_oggi: date) -> list:
     if gest == "non_so":
         gest = "separata"
 
-    calc_prec = _calcolo(s, ricavi_prec, s.get("contributi_versati_anno_precedente")) if ricavi_prec > 0 else None
+    calc_prec = _calcolo(s, ricavi_prec, s.get("contributi_versati_anno_precedente"), anno - 1) if ricavi_prec > 0 else None
     imposta_prec = calc_prec["imposta_sostitutiva"] if calc_prec else 0.0
     contrib_prec = calc_prec["contributi_previdenziali"]["totale_contributi"] if calc_prec else 0.0
 
     # stima dell'anno in corso proiettando i ricavi a fine anno
     mese = data_oggi.month
-    proiezione = (ricavi_corr / mese * 12) if (ricavi_corr > 0 and mese > 0) else 0.0
-    calc_corr = _calcolo(s, proiezione) if proiezione > 0 else None
+    proiezione = _proiezione(s, ricavi_corr, data_oggi)
+    calc_corr = _calcolo(s, proiezione, None, anno) if proiezione > 0 else None
     imposta_corr = calc_corr["imposta_sostitutiva"] if calc_corr else 0.0
     contrib_corr = calc_corr["contributi_previdenziali"]["totale_contributi"] if calc_corr else 0.0
 
@@ -1146,11 +1312,10 @@ def _scadenze_con_importi(s: dict, data_oggi: date) -> list:
     # --- rate fisse INPS artigiani/commercianti
     if gest in ("artigiani", "commercianti"):
         p = D.ARTIGIANI_COMMERCIANTI
-        fisso = p[gest]["fisso_annuo"] * (1 - p["riduzione_forfettari"] if s.get("riduzione_35") else 1)
-        rata = fisso / 4
         for giorno, mese_n, anno_n in [(20, 8, anno), (16, 11, anno), (16, 2, anno + 1), (18, 5, anno + 1)]:
             # periodo coperto dalla rata: 20/8 apr-giu, 16/11 lug-set, 16/2 ott-dic (anno prima), maggio gen-mar
             per = {8: (4, 6, anno_n), 11: (7, 9, anno_n), 2: (10, 12, anno_n - 1), 5: (1, 3, anno_n)}[mese_n]
+            rata = _rata_fissa(s, gest, per[2], per[0], per[1])
             aggiungi(giorno, mese_n, anno_n, "Rata fissa INPS " + gest, rata,
                      [f"{_eur(rata, 2)} € contributi fissi sul minimale"],
                      righe=[riga("INPS", "AF" if gest == "artigiani" else "CF", per[2], rata,
@@ -1180,7 +1345,8 @@ def piano_pagamenti(scheda: dict, oggi: str = "", accantonamento_attuale: float 
 
     totale = sum(x["importo"] for x in voci)
     ricavi_corr = s.get("ricavi_anno_corrente") or 0.0
-    calc_corr = _calcolo(s, ricavi_corr) if ricavi_corr > 0 else None
+    proiezione = _proiezione(s, ricavi_corr, data_oggi)
+    calc_corr = _calcolo(s, proiezione, None, data_oggi.year) if proiezione > 0 else None
     quota_fattura = calc_corr["pressione_fiscale_su_incassato"] if calc_corr else None
 
     # --- mese per mese: quanto accantonare per coprire ogni scadenza in tempo

@@ -1216,7 +1216,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 83</div>
+<div class="ver">Prototipo versione 85</div>
 </div>
 
 <script>
@@ -2449,10 +2449,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     L.push({k:'att',l:'Il tuo lavoro principale',v:OTMAIN.nome,x:'È il lavoro da cui parto per scegliere codice e coefficiente.',q:'Raccontami in una riga cosa fai adesso: preparo il controllo del codice.'},
       {k:'ateco',l:'Codice ATECO · coefficiente',v:pfDs('ds_ateco')||OTMAIN.cod,x:'Dal codice dipende il coefficiente, cioè la parte dei tuoi incassi su cui paghi.',q:'Scrivimi il codice nuovo, per esempio 62.01.00.',c:'codice_ateco'});
     if(OT.sin&&OT.sin.length)L.push({k:'fatt',l:'Cosa fai davvero, dalle tue fatture',v:OT.sin.filter(function(x){return x.pct>0}).map(function(x){return x.nome+' '+x.pct+'%'}).join(' · '),x:'L\'ho letto dalle fatture che mi hai dato. Se qualcosa non torna, lo correggiamo in Ottimizzazione fiscale.'});
-    L.push({k:'anno',l:'Partita IVA aperta nel',v:pfDs('ds_anno'),x:'Dall\'anno di apertura dipendono l\'aliquota e gli acconti.',q:'Scrivimi l\'anno di apertura, per esempio 2024.',c:'data_apertura'},
+    var SV=window.TS_SRV||{};
+    L.push({k:'anno',l:'Partita IVA aperta',v:SV.ap||pfDs('ds_anno'),x:'Dalla data di apertura dipendono l\'aliquota, gli acconti e, nel primo anno, i mesi di contributi da pagare.',q:'Scrivimi mese e anno di apertura, per esempio agosto 2024.',c:'data_apertura'},
       {k:'aliq',l:'Aliquota dell\'imposta',v:pfDs('ds_aliq')+(pfAliqConf()?' · da confermare':''),x:'Il 5% vale per i primi cinque anni di un\'attività nuova, se hai i requisiti; poi il 15%.',q:'Scrivimi 5% o 15%.',c:'aliquota'},
-      {k:'inps',l:'Contributi',v:pfDs('ds_inps'),x:'È la gestione in cui versi i contributi per la pensione: cambia molto quanto paghi.',q:'Dimmi dove versi: gestione separata, artigiani, commercianti o la tua cassa (per esempio Inarcassa).',c:'gestione_previdenziale'},
-      {k:'zona',l:'Dove lavori',v:(window.TS_SRV&&window.TS_SRV.reg)||'',x:'Dalla regione dipendono i bandi e i contributi regionali che cerco per te.',q:'Scrivimi la regione in cui lavori, per esempio Lombardia.',c:'regione'},
+      {k:'inps',l:'Contributi',v:pfDs('ds_inps'),x:'È la gestione in cui versi i contributi per la pensione: cambia molto quanto paghi.',q:'Dimmi dove versi: gestione separata, artigiani, commercianti o la tua cassa (per esempio Inarcassa).',c:'gestione_previdenziale'});
+    if(SV.gest==='artigiani'||SV.gest==='commercianti')L.push({k:'rid',l:'Sconto contributi INPS',v:SV.rid||'',x:'Da artigiano o commerciante forfettario puoi pagare il 35% in meno; se ti sei iscritto per la prima volta nel 2025, il 50% per tre anni. Riduce anche la pensione futura.',q:'Dimmi quale hai: il 35% dei forfettari, il 50% dei nuovi iscritti 2025, nessuno, oppure «non lo so».',c:'riduzione_inps'});
+    if(window.TS_SRV)L.push({k:'altri',l:'Lavoro dipendente o pensione',v:SV.altri||'',x:'Se hai anche uno stipendio o una pensione cambiano i contributi (in gestione separata il 24% invece del 26,07%) e c\'è un limite di 35.000 € per restare nel forfettario.',q:'Oltre alla partita IVA hai un lavoro da dipendente o una pensione? Se sì, dimmi più o meno quanto l\'anno scorso.',c:'altri_redditi'});
+    L.push({k:'zona',l:'Dove lavori',v:(window.TS_SRV&&window.TS_SRV.reg)||'',x:'Dalla regione dipendono i bandi e i contributi regionali che cerco per te.',q:'Scrivimi la regione in cui lavori, per esempio Lombardia.',c:'regione'},
       {k:'inc',l:'Incassi di quest\'anno finora',v:pfDs('ds_inc'),x:'Da qui calcolo quanto mettere da parte e quanto spazio ti resta prima della soglia.',q:'Scrivimi quanto hai incassato finora quest\'anno, in tutto.',c:'ricavi_anno_corrente'},
       {k:'reg',l:'Regime',v:'Forfettario',x:'Il regime in cui calcolo imposta e contributi. Se ti avvicini alla soglia degli 85.000 € te lo dico per tempo.'});
     if(window.TS_C)L.push({k:'fic',l:'Fatture in Cloud',v:OT.ficOk?'Collegato':'Non collegato',x:OT.ficOk?'Prendo da solo le fatture che emetti.':'Se lo colleghi, prendo da solo le fatture che emetti: niente più caricamenti a mano.',q:OT.ficOk?'':'Vuoi collegarlo adesso? Scrivimi «sì».'});
@@ -2466,7 +2469,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var PFORIG=[['mai_fatta','No, è nuova (al massimo tirocinio o praticantato)'],['da_dipendente','Sì, da dipendente o collaboratore, e la continuo'],['altra_piva_o_simile','Sì, negli ultimi 3 anni avevo una partita IVA o un\'attività simile'],['altro','Non saprei']];
   function pfAliqChiedi(){say('Per sapere se hai l\'imposta al <b>5%</b> o al <b>15%</b> mi serve una cosa: prima di aprire la partita IVA, questo lavoro lo facevi già?');
     var P={},L=[];PFORIG.forEach(function(o){P[o[1]]={a:function(){pfCorreggi('origine_attivita',o[0],o[0]==='mai_fatta'||o[0]==='praticantato'?'Allora l\'attività è nuova: imposta al <b>5%</b> per i primi cinque anni.':o[0]==='altro'?'Va bene: per ora calcolo con il 5%, che è il caso più comune nei primi anni, e lo segno da confermare.':'Allora l\'imposta è al <b>15%</b>: il 5% spetta solo alle attività davvero nuove.')},e:1};L.push(o[1])});window.__chips(P,L)}
-  function pfMancano(){var m=[];if(pfAliqConf())m.push(['aliq','Conferma la tua aliquota']);if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
+  function pfMancano(){var m=[],SV=window.TS_SRV||{};if(pfAliqConf())m.push(['aliq','Conferma la tua aliquota']);
+    // dati che cambiano i contributi: il mese di apertura nel primo anno, lo sconto INPS, gli altri redditi
+    if(SV.ap&&/^\d{4}$/.test(SV.ap)&&+SV.ap>=new Date().getFullYear()-1)m.push(['anno','Dimmi il mese di apertura']);
+    if((SV.gest==='artigiani'||SV.gest==='commercianti')&&!SV.rid)m.push(['rid','Hai uno sconto INPS?']);
+    if(window.TS_SRV&&!SV.altri)m.push(['altri','Hai un lavoro o una pensione?']);if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
     if(!PF.av)m.push(['av','Scegli come ti avviso']);if((PF.av==='wa'||PF.av==='tutti')&&!PF.tel)m.push(['tel','Aggiungi il numero WhatsApp']);
     if(window.TS_C&&!(window.TS_SRV&&window.TS_SRV.reg))m.push(['zona','Dimmi in che regione lavori']);if(window.TS_C&&!OT.ficOk)m.push(['fic','Collega Fatture in Cloud']);return m}
   function pfRiga(k){return document.querySelector('#pflist .pfr[data-k="'+k+'"]')}

@@ -48,14 +48,27 @@ def spunti(pub: dict, scheda: dict, risposte: dict | None, id_dashboard: str, re
                               "il calcolo diventa più giusto e, in molti casi, le tasse stimate scendono. Conta ciò che fai davvero, tenuto separato in fattura.",
                      "tag": "Il passo che pesa di più", "link": f"/d/{id_dashboard}/attivita", "link_testo": "Fai il check (2 minuti)"})
 
-    # 1. riduzione del 35% dei contributi INPS (artigiani e commercianti)
-    if gest in ("artigiani", "commercianti") and not _si(scheda.get("riduzione_35")):
+    # 1. contributi: dove si puo' pagare meno, a seconda della gestione
+    rid = str(scheda.get("riduzione_35") or "").strip().lower()
+    if gest in ("artigiani", "commercianti") and not _si(rid) and rid not in ("si_50", "riduzione_50"):
         t = ("Se sei artigiano o commerciante in regime forfettario puoi chiedere all'INPS la riduzione del 35% sui contributi. "
-             "Di norma la domanda va presentata ogni anno entro il 28 febbraio. Attenzione: riduce anche i contributi "
-             "che contano per la pensione.")
+             "Si chiede una volta (entro il 28 febbraio, o subito dopo l'apertura se apri in corso d'anno) e poi resta attiva "
+             "finché non rinunci. Attenzione: riduce anche i contributi che contano per la pensione.")
         if anno.get("contributi"):
             t += f" Sui contributi stimati di quest'anno ({_eur(anno['contributi'])}) varrebbe circa {_eur(float(anno['contributi']) * 0.35)} in meno."
         voci.append({"titolo": "Riduzione del 35% dei contributi INPS", "testo": t, "tag": "Da verificare con l'INPS"})
+    elif gest == "separata":
+        voci.append({"titolo": "Rivalsa INPS del 4% in fattura",
+                     "testo": "In gestione separata puoi aggiungere in fattura una rivalsa INPS del 4% sui compensi: la paga il cliente e "
+                              "ti aiuta a coprire i contributi. Fa parte dei ricavi (conta per le tasse e per la soglia degli 85.000 €) "
+                              "e va concordata con il cliente, meglio se scritta nel preventivo.",
+                     "tag": "Da valutare"})
+    elif gest == "cassa":
+        voci.append({"titolo": "Gli sconti della tua cassa per i primi anni",
+                     "testo": "Molte casse professionali riducono i contributi minimi per i nuovi iscritti o per chi ha meno di 35 anni "
+                              "(spesso per i primi 5 anni), e il contributo integrativo si addebita al cliente in fattura. Controlla "
+                              "sul sito della tua cassa se ti spetta una riduzione e se la stai già usando.",
+                     "tag": "Da verificare con la cassa"})
 
     # 2. aliquota agevolata del 5%
     dal15 = prof.get("dal_anno_15")
