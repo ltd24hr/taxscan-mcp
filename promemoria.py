@@ -83,7 +83,10 @@ def _data_it(iso: str) -> str:
         return str(iso or "")
 
 
-def _cornice(email: str, titolo: str, corpo: str, pulsante: tuple[str, str] | None = None) -> str:
+def _cornice(email: str, titolo: str, corpo: str, pulsante: tuple[str, str] | None = None, profilo: str = "") -> str:
+    """profilo: link al Profilo dell'app. Chi usa l'app per ora non si disiscrive: se non vuole piu' email chiude l'account dal Profilo."""
+    fuori = (f"Non vuoi più ricevere queste email? Puoi chiudere il tuo account dal <a href='{_e(profilo)}' style='color:#6b7599'>Profilo</a>." if profilo else
+             f"Non vuoi più ricevere queste email? <a href='{_e(_link_disiscrizione(email))}' style='color:#6b7599'>Disiscriviti</a>.")
     piede = (
         "<p style='font-size:13px;color:#3d4a73;border-top:1px solid #d8e2ed;padding-top:14px;margin-top:26px'>"
         "Le cifre sono stime a scopo informativo, non una consulenza: la responsabilità di ciò che dichiari e paghi è tua. "
@@ -91,8 +94,7 @@ def _cornice(email: str, titolo: str, corpo: str, pulsante: tuple[str, str] | No
         "style='color:#4355cc'>consulenza gratuita</a>.</p>"
         "<p style='font-size:12px;color:#6b7599'>TaxScan è un servizio offerto da "
         f"<a href='{_e(D.CONTATTI['sito'])}' style='color:#6b7599'>LTD24</a>. "
-        f"Non vuoi più ricevere queste email? <a href='{_e(_link_disiscrizione(email))}' "
-        f"style='color:#6b7599'>Disiscriviti</a>. <a href='{_e(PUBLIC_URL)}/privacy' style='color:#6b7599'>Privacy</a>.</p>"
+        f"{fuori} <a href='{_e(PUBLIC_URL)}/privacy' style='color:#6b7599'>Privacy</a>.</p>"
     )
     return emailtpl.cornice(titolo, corpo, pulsante, piede)
 

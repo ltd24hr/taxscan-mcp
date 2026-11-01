@@ -264,7 +264,7 @@ def _html(email: str, c: str, f: dict, sp: dict, testo: tuple) -> tuple:
              (f"<p>Ciao {_e(f['nome'])},</p>" if f.get("nome") else "") +
              "".join(f"<p>{p}</p>" for p in par))
     corpo_firma = f"<p style='margin-top:4px;color:#3d4a73'>{FIRMA}</p>"
-    return og, promemoria._cornice(email, ti, corpo, (pu, link)).replace(
+    return og, promemoria._cornice(email, ti, corpo, (pu, link), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f").replace(
         "<p style='font-size:13px;color:#3d4a73;border-top", corpo_firma + "<p style='font-size:13px;color:#3d4a73;border-top", 1)
 
 

@@ -434,12 +434,18 @@ def genera_fattura(d: dict) -> bytes:
     p = _Pdf()
     p.rett(0, PAGE_H - 8, PAGE_W, 8, BLU)
     _logo(p, MARG, PAGE_H - 44, 14)
-    p.testo(MARG, PAGE_H - 58, "Modello di fattura con le prestazioni separate", 8.5, False, GRIGIO)
-    p.testo(PAGE_W - MARG - _lar("FATTURA N. [numero]", 18, True), PAGE_H - 50, "FATTURA N. [numero]", 18, True, SCURO)
-    p.testo(PAGE_W - MARG - _lar("Data: [gg/mm/aaaa]", 9), PAGE_H - 66, "Data: [gg/mm/aaaa]", 9, False, GRIGIO)
+    em = d.get("emittente") if isinstance(d.get("emittente"), dict) else {}
+    p.testo(MARG, PAGE_H - 58, "Fattura con le prestazioni separate e le diciture giuste" if em else "Modello di fattura con le prestazioni separate", 8.5, False, GRIGIO)
+    num = "FATTURA N. " + (_t(d.get("numero"), 20) or "[numero]")
+    dat = "Data: " + (_t(d.get("data"), 12) or "[gg/mm/aaaa]")
+    p.testo(PAGE_W - MARG - _lar(num, 18, True), PAGE_H - 50, num, 18, True, SCURO)
+    p.testo(PAGE_W - MARG - _lar(dat, 9), PAGE_H - 66, dat, 9, False, GRIGIO)
     y0 = PAGE_H - 100
-    for i, (tit, righe) in enumerate((("Da", ["[Il tuo nome e cognome]", "[Indirizzo]", "P.IVA [la tua partita IVA]", "C.F. [il tuo codice fiscale]"]),
-                                      ("A", ["[Ragione sociale del cliente]", "[Indirizzo, paese]", "P.IVA / VAT [del cliente]", "[PEC o codice destinatario, se italiano]"]))):
+    da = [_t(em.get("nome"), 60) or "[Il tuo nome e cognome]", _t(em.get("indirizzo"), 70) or "[Indirizzo]",
+          "P.IVA " + (_t(em.get("piva"), 16) or "[la tua partita IVA]"), "C.F. [il tuo codice fiscale]"]
+    cl_nome = _t(d.get("cliente_nome"), 60)
+    for i, (tit, righe) in enumerate((("Da", da),
+                                      ("A", [cl_nome or "[Ragione sociale del cliente]", "[Indirizzo, paese]", "P.IVA / VAT [del cliente]", "[PEC o codice destinatario, se italiano]"]))):
         x = MARG + i * ((PAGE_W - 2 * MARG) / 2 + 10)
         p.rett(x, y0 - 78, (PAGE_W - 2 * MARG) / 2 - 10, 78, CHIARO)
         p.testo(x + 10, y0 - 16, tit.upper(), 8, True, GRIGIO)
@@ -460,6 +466,9 @@ def genera_fattura(d: dict) -> bytes:
               "Imposta di bollo da 2,00 € assolta sull'originale, se l'importo supera 77,47 €.",
               "Cliente estero: usa la natura dell'operazione e la dicitura che il tuo programma di fatturazione propone per le prestazioni verso l'estero (per esempio N2.1, art. 7-ter DPR 633/72)."]:
         p.par("• " + t, 9, False, GRIGIO, dopo=3, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)
+    if em.get("iban"):
+        p.y -= 4
+        p.par("Pagamento: bonifico bancario su IBAN " + _t(em.get("iban"), 40), 9.5, True, SCURO, dopo=4)
     p.y -= 6
     p.par("Come usarlo: copia le righe nel tuo programma di fatturazione, una riga per ogni prestazione, con il suo importo. Scrivi in ogni riga cosa hai fatto davvero. "
           "I codici ATECO non vanno in fattura: tieni a parte, per ogni attività, il totale incassato.", 9, False, BLU, dopo=4)

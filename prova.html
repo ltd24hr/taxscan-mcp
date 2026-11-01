@@ -529,12 +529,12 @@ html:not(.settled) .bnr{display:none}
 .oshell{display:block!important}
 
 /* v79: domande con risposte della stessa forma, blocco fattura con Visualizza/Scarica */
-.oqa.oq2,.oqa.oq5{display:grid;gap:10px}
-.oqa.oq2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:520px}
-.oqa.oq5{grid-template-columns:repeat(5,minmax(0,1fr))}
-@media (max-width:640px){.oqa.oq5{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.oqa.oq2 .och,.oqa.oq5 .och{border-radius:12px;padding:14px 10px;font-size:15px;min-height:54px;text-align:center;line-height:1.25}
-.oqa.oq2 .och:hover,.oqa.oq5 .och:hover{border-color:#4355cc}
+.oqa.oqsn,.oqa.oqpz{display:grid;gap:10px}
+.oqa.oqsn{grid-template-columns:repeat(2,minmax(0,1fr));max-width:520px}
+.oqa.oqpz{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:640px){.oqa.oqpz{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.oqa.oqsn .och,.oqa.oqpz .och{border-radius:12px;padding:14px 10px;font-size:15px;min-height:54px;text-align:center;line-height:1.25}
+.oqa.oqsn .och:hover,.oqa.oqpz .och:hover{border-color:#4355cc}
 .ofbt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
 .ofb{font:inherit;font-size:13px;font-weight:700;padding:7px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:#4355cc;cursor:pointer}
 .ofb:hover{border-color:#4355cc}
@@ -645,6 +645,9 @@ small.pvs{font-size:12.5px;color:var(--mute)}
 .pvsa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #next .go.pvsb{display:inline-flex;align-items:center;border:0;border-radius:10px;padding:9px 14px;font-size:14px;background:var(--accent);color:#fff}
 #next .go.pvsb.pvsl{background:transparent;color:var(--accent);border:1.5px solid var(--line)}
+@media (max-width:640px){#tview{padding-left:0!important}}
+#td_in{min-width:0;flex:1}
+#next{flex-wrap:wrap}#next .pvsa{flex:1 0 100%;order:9}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -1212,7 +1215,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 81</div>
+<div class="ver">Prototipo versione 82</div>
 </div>
 
 <script>
@@ -2083,7 +2086,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(altre.length){var tl='Rigenera tutte le '+(altre.length+1)+' fatture';P[tl]={a:function(){oRigenera([i].concat(altre))},n:[]};L.unshift(tl)}}
     if(inv){P['Cos\'è il VIES?']={a:'È l\'archivio europeo delle partite IVA che possono lavorare con aziende di altri Paesi dell\'Unione senza applicare l\'IVA. Per fatturare così a un\'azienda UE devi esserci tu, e deve esserci il cliente. Ti ho messo un passo in «Da fare» per controllare e, se serve, iscriverti.',n:[]};L.push('Cos\'è il VIES?')}
     oChipsP(P,L)}
-  function oPdfTemplate(v){return fetch('/api/prova/template',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({righe:(v.righe||[]).map(function(r){return {testo:oFrase(r.testo),importo:r.importo}}),cliente:v.cliente||{}})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(bl){v.rigUrl=URL.createObjectURL(bl);return v.rigUrl})}
+  function oPdfTemplate(v){return fetch('/api/prova/template',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({righe:(v.righe||[]).map(function(r){return {testo:oFrase(r.testo),importo:r.importo}}),cliente:v.cliente||{},emittente:window.__modello||null,cliente_nome:v.clNome||'',numero:(v.ctl||{}).numero||'',data:(v.ctl||{}).data||''})}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(bl){v.rigUrl=URL.createObjectURL(bl);return v.rigUrl})}
   function oRigenera(ks){ks=(ks||[]).filter(function(k){return OT.inv[k]});if(!ks.length)return;say(ks.length>1?'Rigenero le '+ks.length+' fatture con le diciture…':'Rigenero la fattura con le diciture…');tap('ott_rigenera_fattura'+(ks.length>1?'_tutte':''));
     Promise.all(ks.map(function(k){return oPdfTemplate(OT.inv[k]).then(function(){OT.inv[k].rig=true;return 1},function(){return 0})})).then(function(r){var ok=r.filter(Boolean).length;
       if(!ok){say('Non sono riuscito a rigenerarle adesso: riprova tra poco.');return}
@@ -2157,7 +2160,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       OT.micro={items:it,principale:j.principale||{},sintesi:j.sintesi||'',oss:j.osservazioni||[],perf:j.per_fattura||[],cp:j.coef_principale||CCOEF,modello:j.modello||''};
       it.forEach(function(m){if(m.dichiarata&&OT.scelte[m.id]==null)OT.scelte[m.id]=true});
       (j.micro||[]).forEach(function(m){m.riga_fattura=oNoPh(m.riga_fattura)});
-      OT.domanda=j.domanda&&j.domanda.testo&&!OT.qfatta?j.domanda:null;OT.qi=OT.domanda?0:vecchie.length;OT.qpeso=null;
+      OT.domanda=j.domanda&&j.domanda.testo&&!OT.qfatta?j.domanda:null;OT.qi=OT.domanda?0:vecchie.length;OT.qbase=testo?vecchie.length:0;OT.qpeso=null;
       if(testo&&it.length===vecchie.length){tap('ott_altre_nessuna');oRender();say('Ho cercato ancora, ma con quello che so non trovo altre attività diverse da quelle che fai già. Se mi racconti un lavoro che non c\'è nelle fatture, riprovo.');oSaveSoon();return}
       if(testo&&vecchie.length){OT.micro._detto=1;var nn=it.length-vecchie.length;say((nn===1?'Ne ho trovata <b>una</b> nuova':'Ne ho trovate <b>'+nn+'</b> nuove')+', partendo da quello che mi hai già detto: ti chiedo solo '+(nn===1?'questa':'queste')+', le risposte di prima restano.')}OT.det2=it[0]?it[0].id:'';tap('ott_analisi_ok');oSaveSoon();oRender();oP2Msg()})}
   function oCodDiverso(){var p=OT.micro&&OT.micro.principale;return !!(p&&p.codice_ateco&&OTMAIN.cod&&String(p.codice_ateco).slice(0,2)!==String(OTMAIN.cod).slice(0,2))}
@@ -2169,13 +2172,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(!OT.micro){b.innerHTML='<div class="kbox"><b>'+(OT.errore?oEsc(OT.errore):'Le domande non sono ancora pronte.')+'</b><div class="oask"><button class="cta s o2" id="o_rif">'+(OT.errore?'Riprova':'Comincia')+'</button></div></div>';$('o_rif').onclick=function(){oAnalizza('')};return}
     var M=OT.micro,cp=M.cp||CCOEF,Q=oQList(),i=Math.min(OT.qi||0,Q.length);
     if(!Q.length||i>=Q.length)return oP2Fine(b,cp);
-    var q=Q[i],h='<div class="kbox oqz"><div class="oqh"><span>Domanda '+(i+1)+' di '+Q.length+'</span><div class="oqp" aria-hidden="true"><i style="width:'+Math.round(i/Q.length*100)+'%"></i></div></div>';
+    var qb=Math.min(OT.qbase||0,i),q=Q[i],h='<div class="kbox oqz"><div class="oqh"><span>'+(qb?'Domanda nuova '+(i+1-qb)+' di '+(Q.length-qb):'Domanda '+(i+1)+' di '+Q.length)+'</span><div class="oqp" aria-hidden="true"><i style="width:'+Math.round((i-qb)/Math.max(1,Q.length-qb)*100)+'%"></i></div></div>';
     if(q.t==='dom'){h+='<h3>'+oEsc(OT.domanda.testo)+'</h3><div class="oqa">'+(OT.domanda.opzioni||[]).map(function(o){return '<button class="och" data-q="'+oEsc(o)+'">'+oEsc(o)+'</button>'}).join('')+'</div><p class="onote">Oppure rispondimi con parole tue, scrivendo all\'agente.</p>'}
     else{var m=q.m,src=oUsate().length>1&&oInvK(m)>=0?oUsate()[oInvK(m)]:null,st=OT.scelte[m.id];
-      h+=(src?'<div class="oqsrc">Per '+(src.clNome?'<b>'+oEsc(src.clNome)+'</b>':oTitFatt(src))+'</div>':'')+(m.domanda?'<h3>'+oEsc(m.domanda)+'</h3><p class="onote oqnm">'+oEsc(m.nome)+'</p>':'<h3>Ti capita di <b>'+oEsc(oMin(m.nome))+'</b>?</h3>')+(m.collegamento?'<p class="onote">'+oEsc(m.collegamento)+'</p>':'')+
+      h+=(src?'<div class="oqsrc">Per '+(src.clNome?'<b>'+oEsc(src.clNome)+'</b>':oTitFatt(src))+'</div>':'')+(m.domanda?'<h3>'+oEsc(m.domanda)+'</h3><p class="onote oqnm">'+oEsc(m.nome)+'</p>':(/^[a-zàèéìòù]+(are|ere|ire|arsi|ersi|irsi)\b/i.test(m.nome)?'<h3>Ti capita di <b>'+oEsc(oMin(m.nome))+'</b>?</h3>':'<h3>Nel tuo lavoro c\'è anche questo: <b>'+oEsc(oMin(m.nome))+'</b>?</h3>'))+(m.collegamento?'<p class="onote">'+oEsc(m.collegamento)+'</p>':'')+
         '<p class="onote oqfis">Per il fisco è <b>'+oEsc(oMin(m.categoria||m.gruppo))+'</b>: coefficiente <b>'+pc(m.coefficiente)+'</b> invece del '+pc(cp)+'.</p>'+(m.attenzione?'<p class="onote owarn">'+oEsc(m.attenzione)+'</p>':'');
-      if(OT.qpeso===m.id){var cur=oPeso(m,oInvK(m)>=0?oInvK(m):0);h+='<div class="oqpeso"><b>Su 10 ore di lavoro'+(src||oUsate().length===1?' per questo cliente':'')+', quante ne dedichi a questo?</b><div class="oqa oq5">'+OLIV.map(function(x){return '<button class="och" data-pz="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+x[1]+'</button>'}).join('')+'<button class="och" data-pz="">Non lo so</button></div></div>'}
-      else h+='<div class="oqa oq2"><button class="och" data-r="si" aria-pressed="'+(st===true)+'">Sì, lo faccio</button><button class="och" data-r="no" aria-pressed="'+(st===false)+'">No</button></div>'}
+      if(OT.qpeso===m.id){var cur=oPeso(m,oInvK(m)>=0?oInvK(m):0);h+='<div class="oqpeso"><b>Su 10 ore di lavoro'+(src||oUsate().length===1?' per questo cliente':'')+', quante ne dedichi a questo?</b><div class="oqa oqpz">'+OLIV.map(function(x){return '<button class="och" data-pz="'+x[0]+'" aria-pressed="'+(cur===x[0])+'">'+x[1]+'</button>'}).join('')+'<button class="och" data-pz="">Non lo so</button></div></div>'}
+      else h+='<div class="oqa oqsn"><button class="och" data-r="si" aria-pressed="'+(st===true)+'">Sì, lo faccio</button><button class="och" data-r="no" aria-pressed="'+(st===false)+'">No</button></div>'}
     h+='<div class="oqnav">'+(i>0||OT.qpeso?'<button class="lnk2" id="o_qprev">‹ Indietro</button>':'')+'<span class="omute">'+oSumTxt()+'</span></div></div>';
     b.innerHTML=h;
     var avanti=function(){OT.qi=i+1;OT.qpeso=null;oSaveSoon();oRender();if(OT.qi>=Q.length)oP2Msg()};
@@ -2418,6 +2421,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ================= Profilo (v78): niente pulsanti «Modifica» e «Sì, sono giusti». Si tocca un dato e lo si cambia scrivendolo a Marcello.
   // I dati fiscali sono la base di tutti i calcoli: quando ne cambia uno, il server rifà tutta la situazione (scadenze, quota, soglia, avvisi).
   var PFK='ts_pf_'+(window.TS_C||'demo');
+  // modello di fattura: intestazione, indirizzo, partita IVA, IBAN (il codice fiscale non lo conservo). Lo usa «Rigenera» in Ottimizzazione.
+  window.__modello=(function(){var s=window.__statoServer&&window.__statoServer('modello');if(s&&s.v)return s.v;try{return JSON.parse(localStorage.getItem('ts_mod_'+(window.TS_C||'demo'))||'null')}catch(e){return null}})();
+  function pfModTxt(m){if(!m)return '';return [m.nome,m.piva?'P.IVA '+m.piva:'',m.iban?'IBAN …'+String(m.iban).slice(-4):''].filter(Boolean).join(' · ')}
+  function pfModSalva(m){window.__modello=m;try{localStorage.setItem('ts_mod_'+(window.TS_C||'demo'),JSON.stringify(m))}catch(e){}window.__statoSalva&&window.__statoSalva('modello',m);
+    try{(OT.inv||[]).forEach(function(v){v.rigUrl=null})}catch(e){}}
   var PF=(function(){var o=null;try{o=JSON.parse(localStorage.getItem(PFK)||'null')}catch(e){}o=o||{};var sp=(window.TS_SRV&&window.TS_SRV.pref)||{};return {nome:o.nome||'',email:o.email||'',av:sp.av||o.av||'',tel:sp.tel||o.tel||'',ok:true}})();
   function pfSave(){try{localStorage.setItem(PFK,JSON.stringify({nome:PF.nome,email:PF.email,av:PF.av,tel:PF.tel}))}catch(e){}
     try{if(typeof PRO!=='undefined'&&PRO&&PRO.v===1){PRO.pf={nome:PF.nome,av:PF.av,tel:PF.tel};oSaveSoon()}}catch(e){}
@@ -2440,7 +2448,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       {k:'inc',l:'Incassi di quest\'anno finora',v:pfDs('ds_inc'),x:'Da qui calcolo quanto mettere da parte e quanto spazio ti resta prima della soglia.',q:'Scrivimi quanto hai incassato finora quest\'anno, in tutto.',c:'ricavi_anno_corrente'},
       {k:'reg',l:'Regime',v:'Forfettario',x:'Il regime in cui calcolo imposta e contributi. Se ti avvicini alla soglia degli 85.000 € te lo dico per tempo.'});
     if(window.TS_C)L.push({k:'fic',l:'Fatture in Cloud',v:OT.ficOk?'Collegato':'Non collegato',x:OT.ficOk?'Prendo da solo le fatture che emetti.':'Se lo colleghi, prendo da solo le fatture che emetti: niente più caricamenti a mano.',q:OT.ficOk?'':'Vuoi collegarlo adesso? Scrivimi «sì».'});
-    L.push({k:'dati',l:'I tuoi dati',v:'Puoi scaricarli o cancellarli',x:'Li vedi tu e nessun altro senza il tuo permesso.',q:'Scrivimi se vuoi scaricarli o cancellarli: te lo preparo.'});
+    L.push({k:'dati',l:'I tuoi dati',v:'Li vedi solo tu',x:'Li vedi tu e nessun altro senza il tuo permesso.',q:'Se vuoi una copia, scrivimelo qui sotto: te la preparo.'});
+    L.push({k:'modello',l:'Il tuo modello di fattura',v:pfModTxt(window.__modello),x:'Lo uso quando rigenero le tue fatture: intestazione, indirizzo, partita IVA e IBAN. Il codice fiscale non lo conservo: lo aggiungi tu.',q:'Scrivimi in un messaggio nome o ragione sociale, indirizzo, partita IVA e IBAN (anche solo quelli che vuoi).'});
+    if(window.TS_C)L.push({k:'account',l:'Il tuo account',v:'Attivo',x:'Se non vuoi più usare TaxScan né ricevere le nostre email, puoi chiudere l\'account: cancello la tua situazione, le fatture lette e la memoria delle nostre conversazioni.',q:'Se vuoi chiuderlo, scrivimi «chiudi l\'account».'});
     return L}
   // cosa manca: Marcello lo ricorda tra i suggerimenti
   function pfMancano(){var m=[];if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
@@ -2483,7 +2493,18 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       setTimeout(function(){location.href='/prova?c='+encodeURIComponent(window.TS_C)+'&vai=f'},1600)}).catch(function(){say('Non sono riuscito a salvarlo: riprova tra un attimo.')})}
   setTimeout(function(){var m=null;try{m=sessionStorage.getItem('ts_pf_msg');sessionStorage.removeItem('ts_pf_msg')}catch(e){}if(m)setTimeout(function(){showView('f');setTimeout(function(){say(m+' Lo vedi anche in Panoramica: scadenze, quota da mettere da parte e soglia sono già aggiornate.');pfChips()},300)},700)},0);
   // scrivere a Marcello nel Profilo: si cambia il dato selezionato (o nome ed email riconosciuti dalla frase)
+  // chiudere l'account: si chiede conferma, poi (se c'è un'email) un codice mandato lì, poi si cancella tutto
+  function pfChiudi(passo,codice){fetch('/api/prova/chiudi',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,passo:passo,codice:codice||''})}).then(function(r){return r.json()}).then(function(j){
+      if(!j||!j.ok){say((j&&j.errore)||'Non ci sono riuscito: riprova tra poco.');return}
+      if(passo==='richiedi'&&j.serve_codice){PF.codice=true;say('Ti ho mandato un codice a <b>'+oEsc(j.email||'la tua email')+'</b>: scrivimelo qui sotto e chiudo l\'account.');return}
+      if(passo==='richiedi'){pfChiudi('conferma');return}
+      PF.codice=false;tap('account_chiuso');try{Object.keys(localStorage).forEach(function(x){if(/^ts_/.test(x))localStorage.removeItem(x)})}catch(e){}
+      say('Fatto: ho chiuso il tuo account e cancellato i tuoi dati. Non riceverai più email da TaxScan. Grazie di averci provato.');setTimeout(function(){location.href='/'},3500)}).catch(function(){say('Non ci sono riuscito: riprova tra poco.')})}
+  function pfChiediChiusura(){
+    say('Vuoi davvero chiudere l\'account? Cancello la tua situazione, le fatture lette e la memoria delle nostre conversazioni, e <b>non riceverai più email</b>. Non si può annullare.');window.__chips({'Sì, chiudi l\'account':{a:function(){if(!window.TS_C){say('Nel prototipo di prova non c\'è un account da chiudere.');return}say('Va bene, procedo…');pfChiudi('richiedi')},e:1},'No, resto':{a:'Bene, resto qui. Se cambi idea, scrivimelo quando vuoi.',e:1}},['Sì, chiudi l\'account','No, resto']);}
   window.__pfWrite=function(t){t=String(t||'').trim();var r=document.querySelector('#pflist .pfr.sel'),k=r&&r.getAttribute('data-k');
+    if(PF.codice&&/^\s*\d[\d\s]{3,9}$/.test(t)){pfChiudi('conferma',t);return true}
+    if(/chiud\w*\s+(l'|il\s+)?(mio\s+)?account|cancell\w*\s+(l'|il\s+)?(mio\s+)?account|elimin\w*\s+(l'|il\s+)?(mio\s+)?account|non\s+voglio\s+più\s+(ricevere\s+)?(le\s+)?email/i.test(t)||(k==='account'&&/chiud|cancell|elimin/i.test(t))){pfChiediChiusura();return true}
     var mail=t.match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/),nm=t.match(/(?:chiamami|mi chiamo|il mio nome (?:è|e'))\s+([A-Za-zÀ-ÿ'’-]{2,24})/i);
     function setNome(n){n=n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();PF.nome=n;D.nome=n;pfSave();var h1=$('nome');if(h1)h1.textContent='Ciao '+n+', benvenuto su TaxScan';renderProfilo();
       if(window.TS_C)fetch('/api/prova/correggi',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,campo:'nome',valore:n})}).catch(function(){});
@@ -2499,6 +2520,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(k==='av'){var a=/tutt|entramb|due|tutte e due/i.test(t)?'tutti':/whats|wa\b/i.test(t)?'wa':/mail/i.test(t)?'email':'';if(!a){say('Dimmi: email, WhatsApp o tutti e due?');return true}
       PF.av=a;pfSave();renderProfilo();tap('profilo_avvisi_'+a);say(a==='email'?'Perfetto: ti scrivo per email.':(a==='wa'?'Perfetto: ti scrivo su WhatsApp.':'Perfetto: ti avviso su tutti e due.')+(a!=='email'&&!PF.tel?' Mi serve il <b>numero</b>: scrivimelo qui sotto.':''));
       if(a!=='email'&&!PF.tel)setTimeout(function(){var rr=pfRiga('tel');if(rr&&!rr.classList.contains('sel'))window.__tieni(rr,'Mi serve per scriverti su WhatsApp.','Numero WhatsApp',pfChips);say('Scrivimi il numero WhatsApp, con il prefisso se non è italiano.')},400);else pfChips();return true}
+    if(k==='modello'){var m=Object.assign({},window.__modello||{}),x=t,iban=x.replace(/\s/g,'').match(/IT\d{2}[A-Z]\d{10}[0-9A-Z]{12}/i),piva=x.match(/\b\d{11}\b/);
+      if(iban){m.iban=iban[0].toUpperCase();x=x.replace(new RegExp(iban[0].split('').join('\\s*'),'i'),' ')}
+      if(piva){m.piva=piva[0];x=x.replace(piva[0],' ')}
+      x=x.replace(/\b(p\.?\s?iva|partita iva|iban|c\.?f\.?|codice fiscale)\b[:\s]*/gi,' ').replace(/\s+/g,' ').replace(/^[\s,;.-]+|[\s,;.-]+$/g,'');
+      var p=x.split(/\s*[,;]\s*/).filter(Boolean);if(p.length){if(/^(via|viale|piazza|corso|largo|vicolo|strada|p\.za|v\.)\b/i.test(p[0])){m.indirizzo=p.join(', ')}else{m.nome=p[0];if(p.length>1)m.indirizzo=p.slice(1).join(', ')}}
+      if(!m.nome&&!m.piva&&!m.iban&&!m.indirizzo){say('Non ho capito: scrivimi per esempio «Mario Rossi, Via Roma 1 Milano, P.IVA 12345678901, IBAN IT60…».');return true}
+      pfModSalva(m);renderProfilo();tap('profilo_modello');var manca=[!m.nome&&'nome',!m.indirizzo&&'indirizzo',!m.piva&&'partita IVA',!m.iban&&'IBAN'].filter(Boolean);
+      say('Segnato: <b>'+oEsc(pfModTxt(m))+'</b>'+(m.indirizzo?', '+oEsc(m.indirizzo):'')+'. '+(manca.length?'Se vuoi, aggiungi anche '+manca.join(', ')+'.':'Il modello è completo.')+' Lo uso quando rigeneri le fatture in Ottimizzazione fiscale.');return true}
     if(k==='tel'){var tel=t.replace(/[^\d+]/g,'');if(tel.replace(/\D/g,'').length<8){say('Scrivimi il numero con tutte le cifre.');return true}PF.tel=tel;pfSave();renderProfilo();tap('profilo_scrive_tel');say('Segnato. Nel prototipo i messaggi WhatsApp non partono ancora: quando arrivano, uso questo numero.');pfChips();return true}
     if(k==='fic'){if(/^(s[iì]|ok|va bene|collega)/i.test(t)&&!OT.ficOk){pfVai('fic');return true}return false}
     if(k==='att'){window.__tdSet&&window.__tdSet('profilo',[{titolo:'Controlla il codice ATECO per il lavoro che fai adesso',tipo:'verifica_ateco',perche:'Mi hai detto che il tuo lavoro è: «'+t.slice(0,140)+'». Se non è quello del codice attuale, potresti pagare con il coefficiente sbagliato.',come:'Apri Ottimizzazione fiscale: leggo le fatture e ti propongo il codice giusto, poi decidi tu.'}]);
@@ -2647,16 +2676,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       [].slice.call(b.querySelectorAll('.bnx'+l)).forEach(function(x){x.classList.add('bnl'+l)})})}
   function bnStoc(b){return b.scrollHeight<=b.clientHeight+1&&b.scrollWidth<=b.clientWidth+1}
   // mette la taglia e sceglie il livello: si mostra il massimo che ci sta. Se nemmeno l'essenziale ci sta, si passa alla taglia dopo.
-  function bnApply(el,t,noUp){var T=bnTaglie(el),i=-1;T.forEach(function(x,j){if(x[0]===t[0]&&x[1]===t[1])i=j});if(i<0){i=0;var best=1e9;T.forEach(function(x,j){var d=Math.abs(x[0]-t[0])*3+Math.abs(x[1]-t[1])*2;if(d<best){best=d;i=j}})}
+  function bnApply(el,t,noUp,stringi){var T=bnTaglie(el),i=-1;T.forEach(function(x,j){if(x[0]===t[0]&&x[1]===t[1])i=j});if(i<0){i=0;var best=1e9;T.forEach(function(x,j){var d=Math.abs(x[0]-t[0])*3+Math.abs(x[1]-t[1])*2;if(d<best){best=d;i=j}})}
     var r=bnRiga(),b=bnBox(el);
     for(;i<T.length;i++){var w=T[i][0],h=T[i][1];el.style.gridColumn='span '+w;el.style.gridRow='span '+h;el.style.height=(h*r+(h-1)*14)+'px';el.dataset.bs=w+'x'+h;
       for(var l=3;l>=1;l--){el.dataset.l=l;if(bnStoc(b))break}
       if(bnStoc(b)||noUp||i===T.length-1)break}
+    if(stringi&&bnStoc(b)){var w0=T[i][0],h0=T[i][1],lv=el.dataset.l,best=i;
+      for(var j=i-1;j>=0;j--){if(T[j][0]!==w0||T[j][1]>=h0)continue;var h2=T[j][1];el.style.gridRow='span '+h2;el.style.height=(h2*r+(h2-1)*14)+'px';el.dataset.l=lv;if(bnStoc(b)&&T[j][1]<T[best][1])best=j}
+      var hb=T[best][1];el.style.gridRow='span '+hb;el.style.height=(hb*r+(hb-1)*14)+'px';el.dataset.l=lv;el.dataset.bs=w0+'x'+hb;i=best}
     el.classList.toggle('bncut',!bnStoc(b));return T[i]}
   function bnPrep(cont,el){el.classList.add('bn');el.classList.remove('wm','wh','wt','wcl');bnExtra(el);bnTag(el);
     if(!el.querySelector(':scope>.bnr')){var g=document.createElement('span');g.className='bnr';g.title='Trascina l\'angolo per allargare o rimpicciolire';g.setAttribute('aria-hidden','true');g.innerHTML='<i></i>';el.appendChild(g);bnGrip(cont,el,g)}}
   function bnTutti(cont){var o=bnLoad(),m=bnMob()?'m':'d';[].slice.call(cont.querySelectorAll('.bn')).forEach(function(el){if(!el.offsetParent&&el.style.display!=='')return;
-      var sv=(o[el.dataset.wk]||{})[m],d=bnSpec(el).d,dm=bnSpec(el).m;delete el.dataset.bf;bnApply(el,sv||(bnMob()?(dm||[d[0]<=3?1:2,d[1]]):d))});bnRiempi(cont)}
+      var sv=(o[el.dataset.wk]||{})[m],d=bnSpec(el).d,dm=bnSpec(el).m;delete el.dataset.bf;bnApply(el,sv||(bnMob()?(dm||[d[0]<=3?1:2,d[1]]):d),false,!sv)});bnRiempi(cont)}
   // ---- mai spazi vuoti: si rifà il posizionamento della griglia (come lo fa il browser, "dense") e i blocchi accanto a un buco
   // si allargano a destra o si allungano in giù fino a riempirlo. La misura scelta dall'utente (data-bs) non cambia: è solo riempimento.
   function bnSet(el,w,h){var r=bnRiga(),b=bnBox(el);el.style.gridColumn='span '+w;el.style.gridRow='span '+h;el.style.height=(h*r+(h-1)*14)+'px';
@@ -3151,7 +3183,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // la prossima scadenza si paga da qui: l'F24 con le righe da copiare nella banca, e tutte le date nel calendario del telefono
   EX.s_f24='Tocca <b>Prepara l\'F24</b> nel blocco della prossima scadenza: ti preparo le righe con codici tributo, anni e importi, da ricopiare nell\'F24 della tua banca. Gli importi sono stime sui tuoi numeri: controllali prima di pagare.';
   function pvScad(){var n=$('next');if(!n||!window.TS_C||!(SRV&&SRV.ps)||n.querySelector('.pvsa'))return;var c=encodeURIComponent(window.TS_C);
-    (n.firstElementChild||n).insertAdjacentHTML('beforeend','<div class="pvsa"><button class="go pvsb" id="pvF24">Prepara l\'F24</button><button class="go pvsb pvsl" id="pvCal">Nel calendario</button></div>');
+    n.insertAdjacentHTML('beforeend','<div class="pvsa"><button class="go pvsb" id="pvF24">Prepara l\'F24</button><button class="go pvsb pvsl" id="pvCal">Nel calendario</button></div>');
     $('pvF24').onclick=function(e){e.stopPropagation();tap('pv_f24');window.open('/d/'+c+'/f24?data='+encodeURIComponent(SRV.ps),'_blank','noopener')};
     $('pvCal').onclick=function(e){e.stopPropagation();tap('pv_calendario');window.open('/d/'+c+'/calendario','_blank','noopener')}}
   setTimeout(function(){var b=$('pvpb');if(b)b.onclick=pvPannello;pvTutti();pvScad()},0);

@@ -531,7 +531,7 @@ def preferenze(c: str, dati) -> dict:
     return {"ok": True}
 
 
-_CHIAVI_APP = ("td", "pv", "chat")
+_CHIAVI_APP = ("td", "pv", "chat", "modello")
 
 
 def stato_app(c: str, chiave: str, dati) -> dict:
@@ -566,6 +566,170 @@ def _stato_app_di(c: str) -> dict:
     except Exception as e:
         print(f"prova: stato app non letto: {e}")
     return out
+
+
+def chiudi_account(c: str, passo: str, codice: str = "") -> dict:
+    """Chiusura dell'account dal Profilo. Primo passo: se c'e' un'email, ci mando un codice (solo chi la
+    legge puo' chiudere). Secondo passo: cancello tutto (situazione, scheda, profilo, preferenze, memoria,
+    email) e da quel momento non parte piu' nessuna email."""
+    import auth
+    import azioni
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    dati = db.carica_dashboard(c) if c else None
+    if not dati:
+        return {"ok": False, "errore": "Non trovo il tuo account."}
+    email = ""
+    try:
+        email = azioni.email_di(c) or ""
+    except Exception:
+        pass
+    email = email or dati.get("_email") or ""
+    if passo == "richiedi":
+        if not email:
+            return {"ok": True, "serve_codice": False}
+        try:
+            auth.manda_codice(email)
+        except Exception:
+            return {"ok": False, "errore": "Non riesco a mandarti il codice adesso: riprova tra poco."}
+        n, _, d = email.partition("@")
+        return {"ok": True, "serve_codice": True, "email": n[:2] + "•••@" + d}
+    if passo != "conferma":
+        return {"ok": False}
+    if email:
+        try:
+            auth.verifica_codice(email, re.sub(r"\D", "", codice or ""))
+        except ValueError:
+            return {"ok": False, "errore": "Codice sbagliato o scaduto: controlla anche lo spam, oppure chiedimene uno nuovo."}
+    try:
+        _tabella()
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s) OR path LIKE %s",
+                            (["profili/" + c, "preferenze/" + c], "app/" + c + "/%"))
+                cur.execute("DELETE FROM prova_email WHERE c = %s", (c,))
+            conn.commit()
+        db.cancella_dati(dati.get("_email"), c)
+    except Exception as e:
+        print(f"prova: chiusura account non riuscita: {e}")
+        return {"ok": False, "errore": "Non riesco a chiudere l'account adesso: riprova tra poco."}
+    try:
+        db.registra_evento("account_chiuso", "", {})
+    except Exception:
+        pass
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------- avvisi normativi: pagina per rivederli e approvarli con un clic
+_SYS_AVVISO = ("Sei il revisore di TaxScan, che aiuta chi ha la partita IVA in regime forfettario. Ti do il titolo e parte del testo di un "
+               "atto ufficiale (Gazzetta Ufficiale). Decidi se cambia davvero qualcosa per chi e' in regime forfettario (aliquote, soglie, "
+               "coefficienti, contributi INPS, scadenze, obblighi di fattura). Rispondi SOLO in JSON: {\"rilevante\": true/false, \"perche\": "
+               "\"una frase per il revisore\", \"titolo\": \"titolo per gli utenti, max 70 caratteri, italiano semplice\", \"riassunto\": "
+               "\"2-3 frasi in italiano semplice per chi non sa nulla di tasse: cosa cambia, da quando, chi riguarda; niente promesse, niente "
+               "consigli personalizzati\"}.")
+
+
+def pagina_avvisi() -> str:
+    try:
+        cand = db.candidati_nuovi()
+    except Exception as e:
+        cand = []
+        print(f"prova: candidati non letti: {e}")
+    righe = "".join(
+        "<div class='c' data-id='%d'><div class='m'>%s · %s · <a href='%s' target='_blank' rel='noopener'>apri la fonte</a></div><h3>%s</h3>"
+        "<label>Titolo per gli utenti<input class='t' maxlength='90'></label><label>Riassunto per gli utenti<textarea class='r' rows='4' maxlength='700'></textarea></label>"
+        "<p class='n'></p><div class='b'><button class='p'>Proponi il testo</button><button class='a'>Approva e manda</button><button class='s'>Scarta</button></div></div>" % (
+            int(x["id"]), html.escape(str(x.get("fonte") or "")), html.escape(str(x.get("pubblicato_il") or "")[:10]),
+            html.escape(str(x.get("url") or "")), html.escape(str(x.get("titolo") or "")))
+        for x in cand)
+    return ("<!doctype html><html lang='it'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+            "<title>TaxScan - avvisi da rivedere</title><style>body{font:15px/1.5 system-ui,sans-serif;background:#eef2f8;color:#122452;margin:0;padding:24px 16px}"
+            ".w{max-width:860px;margin:0 auto}.c{background:#fff;border:1px solid #d8e2ed;border-radius:12px;padding:16px;margin:12px 0}.m{font-size:13px;color:#6b7599}"
+            "h3{margin:6px 0 10px;font-size:16px}label{display:block;font-size:13px;font-weight:600;margin:8px 0}input,textarea{display:block;width:100%;box-sizing:border-box;"
+            "font:inherit;padding:8px 10px;border:1px solid #d8e2ed;border-radius:8px;margin-top:4px}.b{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}"
+            "button{font:inherit;font-weight:700;border-radius:8px;padding:8px 12px;cursor:pointer;border:1.5px solid #4355cc;background:#fff;color:#4355cc}"
+            "button.a{background:#4355cc;color:#fff}button.s{border-color:#d8e2ed;color:#9a3b12}.n{font-size:13px;color:#3d4a73;margin:6px 0 0}.ok{opacity:.5}</style></head><body><div class='w'>"
+            "<h1>Avvisi normativi da rivedere</h1><p>Per ognuno: <b>Proponi il testo</b> (lo scrive l'IA leggendo la fonte), controlla e correggi, poi <b>Approva e manda</b> "
+            "(parte l'email a tutti e compare nel blocco «Novità fiscali» dell'app) oppure <b>Scarta</b>.</p>" + (righe or "<p>Niente da rivedere: è tutto in ordine.</p>") +
+            "</div><script>var K=new URLSearchParams(location.search).get('chiave')||'';"
+            "function vai(op,c,ex){var n=c.querySelector('.n');n.textContent='Un attimo…';return fetch('/admin/avvisi/azione',{method:'POST',headers:{'content-type':'application/json'},"
+            "body:JSON.stringify(Object.assign({chiave:K,op:op,id:+c.dataset.id},ex||{}))}).then(function(r){return r.json()}).then(function(j){if(!j||!j.ok){n.textContent=(j&&j.errore)||'Non riuscito.';return null}return j})}"
+            "document.querySelectorAll('.c').forEach(function(c){c.querySelector('.p').onclick=function(){vai('proponi',c).then(function(j){if(!j)return;c.querySelector('.t').value=j.titolo||'';"
+            "c.querySelector('.r').value=j.riassunto||'';c.querySelector('.n').textContent=(j.rilevante?'Secondo l\'IA riguarda il forfettario. ':'Secondo l\'IA NON riguarda il forfettario: valuta di scartarlo. ')+(j.perche||'')})};"
+            "c.querySelector('.a').onclick=function(){var t=c.querySelector('.t').value.trim(),r=c.querySelector('.r').value.trim();if(!t||!r){c.querySelector('.n').textContent='Scrivi titolo e riassunto prima di approvare.';return}"
+            "if(!confirm('Mando questo avviso a tutti gli utenti?'))return;vai('approva',c,{titolo:t,riassunto:r}).then(function(j){if(j){c.classList.add('ok');c.querySelector('.n').textContent='Approvato e mandato a '+j.mandate+' persone.'}})};"
+            "c.querySelector('.s').onclick=function(){vai('scarta',c).then(function(j){if(j){c.classList.add('ok');c.querySelector('.n').textContent='Scartato.'}})}})</script></body></html>")
+
+
+def azione_avviso(dati: dict) -> dict:
+    import avvisi
+    if not avvisi._ammin_ok(str(dati.get("chiave") or "")):
+        return {"ok": False, "errore": "non autorizzato"}
+    try:
+        idc = int(dati.get("id"))
+    except Exception:
+        return {"ok": False}
+    cand = db.dettaglio_candidato(idc)
+    if not cand:
+        return {"ok": False, "errore": "Avviso non trovato."}
+    op = dati.get("op")
+    if op == "scarta":
+        db.scarta_candidato(idc)
+        return {"ok": True}
+    if op == "proponi":
+        testo = ""
+        try:
+            import requests
+            r = requests.get(cand["url"], timeout=20, headers={"User-Agent": "Mozilla/5.0 (compatible; TaxScanBot/1.0)"})
+            testo = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", r.text or ""))[:7000]
+        except Exception:
+            pass
+        u = "TITOLO: %s\nFONTE: %s\nTESTO (estratto): %s" % (cand.get("titolo") or "", cand.get("fonte") or "", testo or "(non disponibile: valuta dal titolo)")
+        try:
+            j = ai.genera_json(_SYS_AVVISO, u, 900)
+        except Exception:
+            j = None
+        if not isinstance(j, dict):
+            return {"ok": False, "errore": "L'IA non ha risposto: scrivi tu titolo e riassunto."}
+        return {"ok": True, "rilevante": bool(j.get("rilevante")), "perche": _pulisci(j.get("perche"), 300),
+                "titolo": _pulisci(j.get("titolo"), 90), "riassunto": _pulisci(j.get("riassunto"), 700)}
+    if op == "approva":
+        tit, ria = _pulisci(dati.get("titolo"), 90), _pulisci(dati.get("riassunto"), 700)
+        if not tit or not ria:
+            return {"ok": False, "errore": "Servono titolo e riassunto."}
+        db.approva_candidato(idc, tit, ria)
+        esito = avvisi.manda_avviso_a_tutti(idc, tit, ria, cand["url"])
+        n = int(esito.get("mandate") or 0)
+        threading.Thread(target=_avviso_utenti_app, args=(idc, tit, ria, cand["url"], set(db.utenti_iscritti_avvisi())), daemon=True).start()
+        return {"ok": True, "mandate": n}
+    return {"ok": False}
+
+
+def _avviso_utenti_app(idc: int, tit: str, ria: str, url: str, gia: set) -> None:
+    """Chi usa l'app riceve l'avviso con il link a «Cosa cambia per me» nella sua Panoramica."""
+    import auth
+    import emailtpl
+    import promemoria
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT c, email FROM prova_email")
+                righe = cur.fetchall()
+    except Exception as e:
+        print(f"prova: utenti app non letti: {e}")
+        return
+    visti = set(x.lower() for x in gia)
+    for c, email in righe:
+        e = (email or "").strip().lower()
+        if not e or e in visti:
+            continue
+        visti.add(e)
+        try:
+            app = f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=p&da=norma"
+            corpo = f"<p>{html.escape(ria)}</p><p><a href='{html.escape(url)}' style='color:#4355cc'>Leggi la fonte ufficiale</a></p>"
+            auth.manda_email(e, f"TaxScan: {tit}", promemoria._cornice(e, tit, corpo, ("Cosa cambia per me", app), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f"))
+            db.registra_invio_avviso(idc, e)
+        except Exception as ex:
+            print(f"prova: avviso non mandato: {ex}")
 
 
 def _preferenze_di(c: str) -> dict:
@@ -1702,8 +1866,15 @@ def template_fattura(d: dict):
             righe.append({"testo": _pulisci(r.get("testo"), 160), "importo": imp})
     cl = d.get("cliente") if isinstance(d.get("cliente"), dict) else {}
     try:
+        em = d.get("emittente") if isinstance(d.get("emittente"), dict) else {}
+        em = {k: _pulisci(em.get(k), 70) for k in ("nome", "indirizzo", "piva", "iban") if _pulisci(em.get(k), 70)}
+        dt = str(d.get("data") or "")[:10]
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", dt):
+            dt = "/".join(reversed(dt.split("-")))
         return report_pdf.genera_fattura({"righe": righe, "diciture": _diciture(cl, sum(r["importo"] for r in righe)),
-                                          "cliente_paese": _pulisci(cl.get("paese"), 40)})
+                                          "cliente_paese": _pulisci(cl.get("paese"), 40), "emittente": em,
+                                          "cliente_nome": _pulisci(d.get("cliente_nome"), 60), "numero": _pulisci(d.get("numero"), 20),
+                                          "data": dt if re.fullmatch(r"\d{2}/\d{2}/\d{4}", dt) else ""})
     except Exception as e:
         print(f"prova: modello fattura non generato: {e}")
         return None
@@ -1768,6 +1939,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(salvadanaio, c.get("c", ""), c.get("totale"), c.get("scadenza", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/chiudi", methods=["POST"])
+    async def prova_chiudi(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(chiudi_account, c.get("c", ""), c.get("passo", ""), c.get("codice", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
@@ -1924,6 +2104,22 @@ def registra(mcp, avvisi):
         if not avvisi._ammin_ok(request.query_params.get("chiave", "")):
             return JSONResponse({"errore": "non autorizzato"}, status_code=403)
         return JSONResponse(await asyncio.to_thread(ai.diagnosi), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+    @mcp.custom_route("/admin/avvisi", methods=["GET"])
+    async def prova_admin_avvisi(request):
+        import avvisi
+        if not avvisi._ammin_ok(request.query_params.get("chiave", "")):
+            return JSONResponse({"errore": "non autorizzato"}, status_code=403)
+        return HTMLResponse(await asyncio.to_thread(pagina_avvisi), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+    @mcp.custom_route("/admin/avvisi/azione", methods=["POST"])
+    async def prova_admin_avvisi_azione(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(azione_avviso, c if isinstance(c, dict) else {})
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito, status_code=403 if esito.get("errore") == "non autorizzato" else 200)
 
     @mcp.custom_route("/admin/prova", methods=["GET"])
     async def prova_admin(request):

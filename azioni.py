@@ -94,7 +94,7 @@ def _recensione(email: str, c: str, euro: int) -> bool:
              "padding:14px 24px;font-weight:700;display:inline-block'>Lascia una recensione</a></p>")
     try:
         auth.manda_email(email, f"Hai risparmiato {_eur(euro)}: ci dai un parere?",
-                         P._cornice(email, "Grazie, ci dai un parere?", corpo, ("Torna a TaxScan", _link(c))))
+                         P._cornice(email, "Grazie, ci dai un parere?", corpo, ("Torna a TaxScan", _link(c)), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f"))
         return True
     except Exception:
         db.annulla_promemoria(email, "az_trustpilot", c)
@@ -108,7 +108,7 @@ def _manda(email: str, c: str, chiave: str, oggetto: str, titolo: str, corpo: st
     if not email or db.email_disattivate(email) or not db.prenota_promemoria(email, chiave, c):
         return False
     try:
-        auth.manda_email(email, oggetto, P._cornice(email, titolo, corpo, (bottone, _link(c))))
+        auth.manda_email(email, oggetto, P._cornice(email, titolo, corpo, (bottone, _link(c)), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f"))
         try:
             db.registra_evento("prova_email", c, {"chiave": chiave})
         except Exception:
