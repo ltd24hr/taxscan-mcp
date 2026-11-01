@@ -1091,6 +1091,7 @@ function mostraNome() {
 async function invia() {
   if (fase === "domanda" && !scheda.nome && !nomeChiesto) { nomeChiesto = true; return mostraNome(); }
   $("scheda").innerHTML = '<p class="hint">Un attimo...</p>'; nav([]);
+  scheda.chiedi_aliquota = true;   // la domanda che decide il 5% o il 15% si fa subito, non si indovina
   try { ultima = await api("POST", {scheda}); } catch (e) { $("scheda").innerHTML = '<div class="errore">Connessione persa: riprova tra un momento.</div>'; return; }
   scheda = ultima.scheda;
   if (ultima.stato === "da_completare_in_chat") return mostraFine(true);

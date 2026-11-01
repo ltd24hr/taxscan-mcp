@@ -170,14 +170,14 @@ CAMPI = [
 
     # --- aliquota: 1 scelta al posto di 4 domande, solo se aperta da meno di 5 anni
     {"chiave": "origine_attivita", "gruppo": "aliquota", "obbligatorio": "se_aliquota_ignota_e_meno_di_5_anni",
-     "domanda": "Prima di aprire la partita IVA, questa attività:",
-     "opzioni": [("mai_fatta", "Non l'avevo mai fatta"),
-                 ("da_dipendente", "La facevo da dipendente, per lo stesso datore di lavoro o gli stessi clienti"),
-                 ("altra_piva_o_simile", "La facevo già con un'altra partita IVA, o facevo qualcosa di molto "
-                                         "simile, negli ultimi 3 anni"),
-                 ("altro", "Altro / non saprei")],
-     "dove_trovarlo": "Decide tra aliquota del 5% (nuove attività, primi 5 anni) e del 15%. Se hai "
-                      "l'ultima dichiarazione, quadro LM rigo LM39, dimmi direttamente l'aliquota."},
+     "domanda": "Prima di aprire la partita IVA, questo lavoro lo facevi già?",
+     "opzioni": [("mai_fatta", "No, è un'attività nuova per me"),
+                 ("praticantato", "Solo come tirocinio o praticantato obbligatorio per la professione"),
+                 ("da_dipendente", "Sì, da dipendente o collaboratore, e ora lo continuo in proprio"),
+                 ("altra_piva_o_simile", "Sì, negli ultimi 3 anni avevo già una partita IVA o un'attività simile"),
+                 ("altro", "Non saprei")],
+     "dove_trovarlo": "Decide l'aliquota: il 5% per i primi 5 anni vale solo per le attività davvero nuove, "
+                      "altrimenti si paga il 15%. Se hai l'ultima dichiarazione, l'aliquota è nel quadro LM, rigo LM39."},
     {"chiave": "aliquota", "gruppo": "aliquota", "obbligatorio": False, "valori": ["5", "15", "incerto"]},
     {"chiave": "req5_prima_attivita", "gruppo": "aliquota", "obbligatorio": False, "tipo": "bool"},
     {"chiave": "req5_no_attivita_simile_3_anni", "gruppo": "aliquota", "obbligatorio": False, "tipo": "bool"},
@@ -336,7 +336,10 @@ _RINVIATE = {"origine_attivita", "situazioni_particolari", "ricavi_anno_preceden
 
 
 def _obbligatorio(campo, scheda):
-    if campo["chiave"] in _RINVIATE and os.environ.get("QUESTIONARIO_BREVE", "1") != "0":
+    # chiedi_aliquota: il questionario web la chiede subito (senza risposta l'aliquota andrebbe indovinata);
+    # le schede vecchie, che non l'hanno, restano complete come prima
+    if campo["chiave"] in _RINVIATE and os.environ.get("QUESTIONARIO_BREVE", "1") != "0" and not (
+            campo["chiave"] == "origine_attivita" and scheda.get("chiedi_aliquota")):
         return False
     o = campo["obbligatorio"]
     if o is True or o is False:
@@ -421,7 +424,7 @@ def _normalizza(scheda: dict) -> dict:
         s["aliquota"] = "15"
     origine = s.get("origine_attivita")
     if origine and s.get("aliquota") is None:
-        if origine == "mai_fatta":
+        if origine in ("mai_fatta", "praticantato"):
             s.update(aliquota="5", req5_prima_attivita=True, req5_no_attivita_simile_3_anni=True,
                      req5_non_prosecuzione_dipendente=True)
         elif origine == "da_dipendente":
@@ -838,13 +841,19 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
     # --- aliquota e requisiti del 5%
     req = [s.get("req5_prima_attivita"), s.get("req5_no_attivita_simile_3_anni"), s.get("req5_non_prosecuzione_dipendente")]
     requisiti_ok = all(r is True for r in req)
+    requisiti_ignoti = not any(r is False for r in req) and not requisiti_ok
     if s.get("aliquota") == "incerto":
-        probabile = "5" if (anni_nel_regime < 5 and requisiti_ok) else "15"
+        probabile = "5" if (anni_nel_regime < 5 and (requisiti_ok or requisiti_ignoti)) else "15"
         s["aliquota"] = probabile
+        s["aliquota_da_confermare"] = True
         avvisi.append({"livello": "informativo", "titolo": f"Aliquota probabile: {probabile}%",
-                       "testo": f"Sei nel forfettario da {anni_nel_regime} anni e "
-                                + ("rispetti" if requisiti_ok else "non rispetti")
-                                + " i requisiti del 5%. Confermalo sull'ultima dichiarazione (quadro LM) o con chi ti segue."})
+                       "testo": (f"Sei nel forfettario da {anni_nel_regime} anni: se l'attività è davvero nuova (non la facevi già "
+                                 "da dipendente né con un'altra partita IVA negli ultimi 3 anni) l'imposta è al 5%. Confermalo "
+                                 "sull'ultima dichiarazione (quadro LM, rigo LM39) o con chi ti segue.")
+                                if requisiti_ignoti and anni_nel_regime < 5 else
+                                (f"Sei nel forfettario da {anni_nel_regime} anni e "
+                                 + ("rispetti" if requisiti_ok else "non rispetti")
+                                 + " i requisiti del 5%. Confermalo sull'ultima dichiarazione (quadro LM) o con chi ti segue.")})
     elif s.get("aliquota") == "5":
         problemi = []
         if req[0] is False: problemi.append("non è la prima volta che eserciti questa attività")
@@ -1012,6 +1021,7 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
             "coefficiente": coeff.get("coefficiente_percentuale"),
             "gruppo_ateco": coeff.get("gruppo"),
             "aliquota": s.get("aliquota") + "%",
+            "aliquota_da_confermare": bool(s.get("aliquota_da_confermare")),
             "gestione_previdenziale": s.get("gestione_previdenziale"),
             "nome_cassa": s.get("nome_cassa"),
             "riduzione_35": s.get("riduzione_35"),

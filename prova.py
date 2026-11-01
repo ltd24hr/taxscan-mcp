@@ -101,7 +101,9 @@ def _per_pagina(d: dict) -> dict:
     return {"pref": d.get("_pref") or {}, "reg": ((ag.get("luogo") or {}).get("regione")) or sch.get("regione") or "",
             "incx": [i for i in (sch.get("incassi_segnati") or []) if isinstance(i, dict)][-200:], "acc": acc,
             "bandi": bandi, "norm": d.get("_norm") or [], "app": d.get("_app") or {},
-            "ps": (d.get("prossima_scadenza") or {}).get("data") or ""}
+            "ps": (d.get("prossima_scadenza") or {}).get("data") or "",
+            "aliq_conf": bool((d.get("profilo") or {}).get("aliquota_da_confermare")) or (
+                not sch.get("origine_attivita") and not sch.get("aliquota") and int((d.get("profilo") or {}).get("anni_nel_regime") or 9) < 5)}
 
 
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
@@ -330,7 +332,8 @@ _ID_PROFILO = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
 
 
 # ---------------------------------------------------------------- correzioni dal Profilo: un dato cambia, si ricalcola tutto
-_CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente", "regione")
+_CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente", "regione",
+                       "origine_attivita")
 
 
 def _gestione_da_testo(t: str):
@@ -399,6 +402,12 @@ def correggi(c: str, campo: str, valore) -> dict:
         if not n:
             return {"ok": False, "errore": "Scrivimi l'importo in cifre, per esempio 18000."}
         sch["ricavi_anno_corrente"] = int(n)
+    elif campo == "origine_attivita":
+        if v not in ("mai_fatta", "praticantato", "da_dipendente", "altra_piva_o_simile", "altro"):
+            return {"ok": False, "errore": "Scegli una delle risposte."}
+        sch["origine_attivita"] = v
+        for k in ("aliquota", "req5_prima_attivita", "req5_no_attivita_simile_3_anni", "req5_non_prosecuzione_dipendente", "aliquota_da_confermare"):
+            sch.pop(k, None)
     elif campo == "regione":
         import agevolazioni
         reg = agevolazioni.regione_da_dati(v, "")

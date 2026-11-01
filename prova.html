@@ -648,6 +648,7 @@ small.pvs{font-size:12.5px;color:var(--mute)}
 @media (max-width:640px){#tview{padding-left:0!important}}
 #td_in{min-width:0;flex:1}
 #next{flex-wrap:wrap}#next .pvsa{flex:1 0 100%;order:9}
+.bpc.bpn{border-left-color:#05c4b8}
 </style><style id="mpcss">.narr,#gnarr,#snarr,#bnarr,#fnarr{display:none!important}
 #sl1,#sl2,#sl2b,#sl3,#sl4,#sl5,#sl6,#sl7{display:none!important}
 #obar{display:none!important}
@@ -1215,7 +1216,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 82</div>
+<div class="ver">Prototipo versione 83</div>
 </div>
 
 <script>
@@ -2402,12 +2403,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function bpFit(){var fit=$('bpfit');if(!fit){fit=document.createElement('p');fit.id='bpfit';fit.className='onote';$('bplist').parentNode.insertBefore(fit,$('bplist'))}
     var l=(OT.sin||[]).filter(function(x){return x.pct>0}).map(function(x){return '<b>'+oEsc(x.nome.toLowerCase())+'</b>'});
     fit.innerHTML=l.length?'Li cerco in base a quello che fai, letto dalle tue fatture: '+l.join(', ')+(OTMAIN.cod?', e al tuo codice ATECO <b>'+oEsc(OTMAIN.cod)+'</b>':'')+'.':(OTMAIN.cod?'Li cerco in base al tuo codice ATECO <b>'+oEsc(OTMAIN.cod)+'</b>. Se mi dai qualche fattura capisco meglio cosa fai davvero.':'')}
-  function renderBandi(){bpFit();var h='';
+  // in cima: le novità fiscali (avvisi della Gazzetta Ufficiale già verificati), con «Cosa cambia per me?»
+  function bpNorme(){var L=window.__norme?window.__norme():[],n=L[0],nu=window.__normaNuova&&window.__normaNuova(),dd=n?String(n.d).split('-'):[];
+    return '<div class="bpc bpn" data-wk="norme"><div class="bpt"><h3>Novità fiscali</h3><span class="bptag">'+(n?(nu?'Nuova':'Ultima novità'):'Controllo ogni giorno')+'</span></div>'+
+      (n?'<p><b>'+oEsc(n.t)+'</b></p><p>'+oEsc(n.x)+'</p><p class="bpu">'+(dd.length===3?dd[2]+'/'+dd[1]+'/'+dd[0]:'')+(n.u?' · <a href="'+oEsc(n.u)+'" target="_blank" rel="noopener">Leggi la fonte ufficiale</a>':'')+'</p><div class="bpa"><button data-norma="1">Cosa cambia per me?</button></div>'
+        :'<p>Ogni giorno leggo la Gazzetta Ufficiale. Quando cambia una regola del forfettario (aliquote, soglie, contributi, scadenze) la faccio verificare e te la spiego qui, insieme a cosa vuol dire per te.</p>')+'</div>'}
+  function renderBandi(){bpFit();var h=bpNorme();
     BD.forEach(function(b){var s=BP.ok[b.id]?'ok':BP.no[b.id]?'no':'';
       h+='<div class="bpc'+(s?' '+s:'')+'" data-wk="'+b.id+'" data-b="'+b.id+'"><div class="bpt"><h3>'+b.t+'</h3><span class="bptag">'+(s==='ok'?'Ci penso io':s==='no'?'Lasciato stare':b.tag)+'</span></div><p>'+b.x+'</p>'+(b.u&&/^https?:/.test(b.u)?'<p class="bpu"><a href="'+oEsc(b.u)+'" target="_blank" rel="noopener">Leggi il bando sul sito ufficiale</a></p>':'')+
         (s?'<div class="bpa"><button class="l" data-b="'+b.id+'" data-a="undo">Cambia idea</button></div>':'<div class="bpa"><button data-b="'+b.id+'" data-a="ok">Mi interessa</button><button class="l" data-b="'+b.id+'" data-a="no">Non fa per me</button></div>')+'</div>'});
     $('bplist').innerHTML=h;wgInit($('bplist'),'b','.bpc');
-    [].slice.call($('bplist').querySelectorAll('.bpc')).forEach(function(c){c.onclick=function(e){if(e.target.closest('button,.wc,a'))return;var id=c.getAttribute('data-b'),b=BD.filter(function(x){return x.id===id})[0];tap('bando_apri_'+id);window.__tieni(c,b.x+' <br>Tocca <b>Mi interessa</b> e ci penso io.',null,function(){window.__chips(XA,XL['bx_'+id])})}});
+    var nb=$('bplist').querySelector('[data-norma]'),n0=(window.__norme?window.__norme():[])[0];if(nb&&n0)nb.onclick=function(e){e.stopPropagation();window.__normaCosa(n0)};
+    if(n0&&window.__normaVista)window.__normaVista(n0.id);
+    [].slice.call($('bplist').querySelectorAll('.bpc')).forEach(function(c){c.onclick=function(e){if(e.target.closest('button,.wc,a'))return;var id=c.getAttribute('data-b'),b=BD.filter(function(x){return x.id===id})[0];if(!b)return;tap('bando_apri_'+id);window.__tieni(c,b.x+' <br>Tocca <b>Mi interessa</b> e ci penso io.',null,function(){window.__chips(XA,XL['bx_'+id])})}});
     [].slice.call($('bplist').querySelectorAll('[data-a]')).forEach(function(bt){bt.onclick=function(){bpSet(bt.getAttribute('data-b'),bt.getAttribute('data-a'))}})}
   function bpSet(id,a){delete BP.ok[id];delete BP.no[id];if(a==='ok')BP.ok[id]=1;if(a==='no')BP.no[id]=1;tap('bando_'+a+'_'+id);renderBandi();
     if(a==='ok'){say('Perfetto: da qui <b>vado avanti io</b>. Controllo i requisiti con i dati che ho e ti scrivo solo se serve un tuo passo o se c\'è una scadenza.');bpChips()}
@@ -2442,7 +2450,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       {k:'ateco',l:'Codice ATECO · coefficiente',v:pfDs('ds_ateco')||OTMAIN.cod,x:'Dal codice dipende il coefficiente, cioè la parte dei tuoi incassi su cui paghi.',q:'Scrivimi il codice nuovo, per esempio 62.01.00.',c:'codice_ateco'});
     if(OT.sin&&OT.sin.length)L.push({k:'fatt',l:'Cosa fai davvero, dalle tue fatture',v:OT.sin.filter(function(x){return x.pct>0}).map(function(x){return x.nome+' '+x.pct+'%'}).join(' · '),x:'L\'ho letto dalle fatture che mi hai dato. Se qualcosa non torna, lo correggiamo in Ottimizzazione fiscale.'});
     L.push({k:'anno',l:'Partita IVA aperta nel',v:pfDs('ds_anno'),x:'Dall\'anno di apertura dipendono l\'aliquota e gli acconti.',q:'Scrivimi l\'anno di apertura, per esempio 2024.',c:'data_apertura'},
-      {k:'aliq',l:'Aliquota dell\'imposta',v:pfDs('ds_aliq'),x:'Il 5% vale per i primi cinque anni di un\'attività nuova, se hai i requisiti; poi il 15%.',q:'Scrivimi 5% o 15%.',c:'aliquota'},
+      {k:'aliq',l:'Aliquota dell\'imposta',v:pfDs('ds_aliq')+(pfAliqConf()?' · da confermare':''),x:'Il 5% vale per i primi cinque anni di un\'attività nuova, se hai i requisiti; poi il 15%.',q:'Scrivimi 5% o 15%.',c:'aliquota'},
       {k:'inps',l:'Contributi',v:pfDs('ds_inps'),x:'È la gestione in cui versi i contributi per la pensione: cambia molto quanto paghi.',q:'Dimmi dove versi: gestione separata, artigiani, commercianti o la tua cassa (per esempio Inarcassa).',c:'gestione_previdenziale'},
       {k:'zona',l:'Dove lavori',v:(window.TS_SRV&&window.TS_SRV.reg)||'',x:'Dalla regione dipendono i bandi e i contributi regionali che cerco per te.',q:'Scrivimi la regione in cui lavori, per esempio Lombardia.',c:'regione'},
       {k:'inc',l:'Incassi di quest\'anno finora',v:pfDs('ds_inc'),x:'Da qui calcolo quanto mettere da parte e quanto spazio ti resta prima della soglia.',q:'Scrivimi quanto hai incassato finora quest\'anno, in tutto.',c:'ricavi_anno_corrente'},
@@ -2453,12 +2461,18 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(window.TS_C)L.push({k:'account',l:'Il tuo account',v:'Attivo',x:'Se non vuoi più usare TaxScan né ricevere le nostre email, puoi chiudere l\'account: cancello la tua situazione, le fatture lette e la memoria delle nostre conversazioni.',q:'Se vuoi chiuderlo, scrivimi «chiudi l\'account».'});
     return L}
   // cosa manca: Marcello lo ricorda tra i suggerimenti
-  function pfMancano(){var m=[];if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
+  // aliquota: se non so se l'attività è davvero nuova, non indovino: lo chiedo
+  function pfAliqConf(){return !!(window.TS_SRV&&window.TS_SRV.aliq_conf)}
+  var PFORIG=[['mai_fatta','No, è nuova (al massimo tirocinio o praticantato)'],['da_dipendente','Sì, da dipendente o collaboratore, e la continuo'],['altra_piva_o_simile','Sì, negli ultimi 3 anni avevo una partita IVA o un\'attività simile'],['altro','Non saprei']];
+  function pfAliqChiedi(){say('Per sapere se hai l\'imposta al <b>5%</b> o al <b>15%</b> mi serve una cosa: prima di aprire la partita IVA, questo lavoro lo facevi già?');
+    var P={},L=[];PFORIG.forEach(function(o){P[o[1]]={a:function(){pfCorreggi('origine_attivita',o[0],o[0]==='mai_fatta'||o[0]==='praticantato'?'Allora l\'attività è nuova: imposta al <b>5%</b> per i primi cinque anni.':o[0]==='altro'?'Va bene: per ora calcolo con il 5%, che è il caso più comune nei primi anni, e lo segno da confermare.':'Allora l\'imposta è al <b>15%</b>: il 5% spetta solo alle attività davvero nuove.')},e:1};L.push(o[1])});window.__chips(P,L)}
+  function pfMancano(){var m=[];if(pfAliqConf())m.push(['aliq','Conferma la tua aliquota']);if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
     if(!PF.av)m.push(['av','Scegli come ti avviso']);if((PF.av==='wa'||PF.av==='tutti')&&!PF.tel)m.push(['tel','Aggiungi il numero WhatsApp']);
     if(window.TS_C&&!(window.TS_SRV&&window.TS_SRV.reg))m.push(['zona','Dimmi in che regione lavori']);if(window.TS_C&&!OT.ficOk)m.push(['fic','Collega Fatture in Cloud']);return m}
   function pfRiga(k){return document.querySelector('#pflist .pfr[data-k="'+k+'"]')}
   // tocca un dato «mancante» dai suggerimenti: lo seleziono e chiedo il valore
   function pfVai(k){var r=pfRiga(k),d=pfRighe().filter(function(x){return x.k===k})[0];if(!r||!d)return;
+    if(k==='aliq'&&pfAliqConf()){if(!r.classList.contains('sel'))window.__tieni(r,d.x,d.l,pfAliqChiedi);pfAliqChiedi();return}
     if(k==='fic'&&window.TS_C){say('Ti porto su Fatture in Cloud per il collegamento: dai l\'ok e torni qui.');setTimeout(oFicCollega,1200);return}
     if(!r.classList.contains('sel'))window.__tieni(r,d.x+(d.q?' '+d.q:''),d.l,pfChips);
     try{r.scrollIntoView({block:'center',behavior:reduce?'auto':'smooth'})}catch(e){}
@@ -2467,7 +2481,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     $('pflist').innerHTML=L.map(function(d){return '<div class="pfr'+(man[d.k]?' pfman':'')+'" data-k="'+d.k+'" tabindex="0" role="button"><span class="pfl">'+d.l+'</span><span class="pfv">'+(d.v?oEsc(d.v):'<i>da aggiungere</i>')+'</span></div>'}).join('');
     wgInit($('pflist'),'f','.pfr');
     [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),d=L.filter(function(x){return x.k===k})[0]||{};
-      tap('profilo_riga_'+k);window.__tieni(r,d.x+(d.q?' <b>'+d.q+'</b>':''),d.l,function(){pfChips(k)})}});
+      tap('profilo_riga_'+k);if(k==='aliq'&&pfAliqConf()){window.__tieni(r,d.x+' Per ora è <b>da confermare</b>.',d.l,pfAliqChiedi);return}window.__tieni(r,d.x+(d.q?' <b>'+d.q+'</b>':''),d.l,function(){pfChips(k)})}});
     $('pfok').hidden=true}
   var PFP={'Perché mi servono questi dati?':{a:'Con il codice e l\'anno di apertura scelgo coefficiente e aliquota, con i contributi calcolo quanto versi, con gli incassi la quota da mettere da parte. Non chiedo niente che non mi serva per farti pagare il giusto.',n:['Chi vede i miei dati?']},
     'Chi vede i miei dati?':{a:'Li vedi tu e <b>nessun altro</b> senza il tuo permesso. Se vuoi, solo un commercialista che scegli tu li controlla insieme a te. Puoi chiedere di cancellarli quando vuoi.',n:['Posso cancellare tutto?']},
@@ -2533,7 +2547,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(k==='att'){window.__tdSet&&window.__tdSet('profilo',[{titolo:'Controlla il codice ATECO per il lavoro che fai adesso',tipo:'verifica_ateco',perche:'Mi hai detto che il tuo lavoro è: «'+t.slice(0,140)+'». Se non è quello del codice attuale, potresti pagare con il coefficiente sbagliato.',come:'Apri Ottimizzazione fiscale: leggo le fatture e ti propongo il codice giusto, poi decidi tu.'}]);
       tap('profilo_lavoro');say('Segnato. Ti ho messo in <b>Da fare</b> il controllo del codice ATECO per questo lavoro: in Ottimizzazione fiscale lo verifichiamo insieme sulle fatture.');return true}
     var d=pfRighe().filter(function(x){return x.k===k})[0];
-    if(d&&d.c){var ok={codice_ateco:'Fatto: ora calcolo con il codice <b>'+oEsc(t)+'</b>.',data_apertura:'Fatto: ho segnato l\'anno di apertura.',aliquota:'Fatto: ho cambiato l\'aliquota.',gestione_previdenziale:'Fatto: ho cambiato la gestione dei contributi.',ricavi_anno_corrente:'Fatto: ho aggiornato gli incassi di quest\'anno.',regione:'Fatto: ora cerco bandi e agevolazioni della tua regione.'}[d.c]||'Fatto.';pfCorreggi(d.c,t,ok);return true}
+    if(d&&d.c){var ok={codice_ateco:'Fatto: ora calcolo con il codice <b>'+oEsc(t)+'</b>.',data_apertura:'Fatto: ho segnato l\'anno di apertura.',aliquota:'Fatto: ho cambiato l\'aliquota.',gestione_previdenziale:'Fatto: ho cambiato la gestione dei contributi.',ricavi_anno_corrente:'Fatto: ho aggiornato gli incassi di quest\'anno.',origine_attivita:'Fatto.',regione:'Fatto: ora cerco bandi e agevolazioni della tua regione.'}[d.c]||'Fatto.';pfCorreggi(d.c,t,ok);return true}
     return false};
   // ================= Blocchi spostabili, spiegazioni con domande suggerite, Scadenze ragionata =================
   function wgLoad(k){try{return JSON.parse(localStorage.getItem('ts_w_'+k)||'[]')}catch(e){return[]}}
@@ -3008,15 +3022,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     {k:'vRis',t:'Risparmio trovato',d:'Quanto puoi risparmiare e a che punto sei.',on:0},
     {k:'vMesi',t:'Incassi mese per mese',d:'Come vanno gli incassi di quest\'anno, dalle tue fatture.',on:0},
     {k:'vNov',t:'Novità per te',d:'Agevolazioni e bandi da verificare per la tua attività.',on:0},
-    {k:'vAnno',t:'Come funziona il tuo anno',d:'Saldo, acconti e anno scorso, spiegati in un blocco.',on:0},
-    {k:'vNorm',t:'Novità fiscali',d:'Quando cambia una regola, cosa vuol dire per te.',on:0}];
+    {k:'vAnno',t:'Come funziona il tuo anno',d:'Saldo, acconti e anno scorso, spiegati in un blocco.',on:0}];
   // blocchi che c'erano già: si possono togliere e rimettere (la prossima scadenza resta sempre)
   var PVV=[{k:'slC_1',t:'Quanto mettere da parte',d:'La quota di ogni incasso per imposta e contributi.'},{k:'slC_2',t:'Ti resta, netto',d:'Quello che resta dopo imposta e contributi.'},
     {k:'slC_3',t:'Prossime scadenze',d:'Tutte le date, con imposta e contributi se lo allarghi.'},{k:'slSo',t:'Quanto spazio ti resta',d:'La soglia degli 85.000 €, con il calcolo «e se…».'},
     {k:'slD',t:'Cosa so di te',d:'I dati da cui parto per i calcoli.'}];
   // crea i blocchi nuovi dentro la Panoramica (la chiama wg.js prima di rendere spostabili i blocchi)
   function pvCrea(){var st=$('stage');if(!st||$('vInc'))return;var h='';
-    [['vInc','pv_inc'],['vSal','pv_sal'],['vPasso','pv_passo'],['vRis','pv_ris'],['vMesi','pv_mesi'],['vNov','pv_nov'],['vAnno','pv_anno'],['vNorm','pv_norm']].forEach(function(b){
+    [['vInc','pv_inc'],['vSal','pv_sal'],['vPasso','pv_passo'],['vRis','pv_ris'],['vMesi','pv_mesi'],['vNov','pv_nov'],['vAnno','pv_anno']].forEach(function(b){
       h+='<div class="tb vivo" id="'+b[0]+'" data-k="'+b[0]+'"><div class="pvc"></div></div>'});
     h+='<div class="pvpiu bn" id="vPiu" data-wk="vPiu"><button type="button" class="pvpb" id="pvpb"><span class="pvpp" aria-hidden="true">+</span><span><b>Aggiungi un blocco</b><small id="pvpn"></small></span></button></div>';
     st.insertAdjacentHTML('beforeend',h);$('vPiu').style.order=9999;
@@ -3105,16 +3118,24 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(!n){h+='<p class="pvt">Nessuna novità per adesso</p><p class="pvs">Controllo ogni giorno la Gazzetta Ufficiale: quando cambia qualcosa per il forfettario, te lo dico qui.</p>'}
       else{var dd=String(n.d).split('-');h+='<p class="pvt">'+pvEsc(n.t)+'</p><p class="pvs">'+pvEsc(String(n.x).slice(0,240))+(String(n.x).length>240?'…':'')+'</p><small class="pvs">'+(dd.length===3?dd[2]+'/'+dd[1]+'/'+dd[0]:'')+(n.u?' · <a href="'+pvEsc(n.u)+'" target="_blank" rel="noopener">fonte</a>':'')+'</small><button class="pvgo" id="pvNorG">Cosa cambia per me?</button>'}
       el.querySelector('.pvc').innerHTML=h;var g=$('pvNorG');
-      if(g)g.onclick=function(){tap('pv_norma');PV.visti=PV.visti||{};PV.visti[n.id]=1;PV.on.vNorm=true;pvPut(PV);var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;
+      if(g)g.onclick=function(){pvNormaCosa(n)}},
+    _norma:function(){}};
+  // Novità fiscali: stanno in Bandi e agevolazioni; qui solo il pallino sul menu quando ne esce una nuova
+  function pvNormBadge(){var nb=document.querySelectorAll('#hdr nav button')[3];if(!nb)return;var b=nb.querySelector('.tdn.nvn');if(!b){b=document.createElement('span');b.className='tdn nvn';b.textContent='1';b.title='Novità fiscale';nb.appendChild(b)}b.hidden=!pvNormNuova()}
+  window.__norme=pvNorm;window.__normaNuova=pvNormNuova;window.__normaCosa=function(n){pvNormaCosa(n)};
+  window.__normaVista=function(id){PV.visti=PV.visti||{};if(!PV.visti[id]){PV.visti[id]=1;pvPut(PV)}pvNormBadge()};
+  function pvNormaCosa(n){tap('pv_norma');PV.visti=PV.visti||{};PV.visti[n.id]=1;pvPut(PV);pvNormBadge();var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;
         var prof=['ds_att','ds_ateco','ds_anno','ds_aliq','ds_inps','ds_inc'].map(function(k){var e=document.querySelector('#slD [data-ex="'+k+'"]');return e?e.textContent.replace(/\s+/g,' ').trim():''}).filter(Boolean).join('; ');
         dire('Ci penso un attimo: guardo cosa cambia con i tuoi dati…');
         ask(PERS+'Novità normativa (già verificata): «'+n.t+'». Riassunto: '+n.x+'\nDati della persona: '+prof+'.\nSpiega in 2-3 frasi semplici cosa cambia per QUESTA persona e se deve fare qualcosa. Se non la riguarda, dillo chiaramente. Niente promesse.').then(function(t){
-          dire(t?pvEsc(t):'Non riesco a rispondere adesso. In breve: '+pvEsc(n.x))})}},
+          dire(t?pvEsc(t):'Non riesco a rispondere adesso. In breve: '+pvEsc(n.x))})}
+  var PVR2={
     vAnno:function(el){var tb=[].slice.call(document.querySelectorAll('#slT .tb'));if(document.documentElement.classList.contains('noprec'))tb=tb.slice(1);
       var nm=tb.map(function(t){var x=(t.querySelector('h3')||{}).textContent||'';return /anno scorso/.test(x)?'Anno scorso':/acconti/i.test(x)?'Acconti':'Quest\'anno'}),sel=Math.min(PV.anno||0,tb.length-1);
       el.querySelector('.pvc').innerHTML='<h3 data-ex="pv_anno" tabindex="0" role="button">Come funziona il tuo anno</h3><div class="pvtabs" role="tablist">'+nm.map(function(n,i){return '<button role="tab" aria-selected="'+(i===sel)+'" data-i="'+i+'">'+n+'</button>'}).join('')+'</div><div class="pvtab"></div>';
       var c=tb[sel]&&tb[sel].cloneNode(true);if(c){var h3=c.querySelector('h3');if(h3)h3.remove();el.querySelector('.pvtab').innerHTML=c.innerHTML}
       [].slice.call(el.querySelectorAll('.pvtabs button')).forEach(function(b){b.onclick=function(){PV.anno=+b.dataset.i;pvPut(PV);pvRender('vAnno')}})}};
+  PVR.vAnno=PVR2.vAnno;
   EX.pv_inc='Ogni volta che incassi una fattura, scrivi qui l\'importo: ti dico subito quanto mettere da parte per imposta e contributi (il <b>'+D.perc+'%</b>) e quanto ti resta davvero. Con il pulsante lo aggiungo al salvadanaio e agli incassi dell\'anno.';
   EX.pv_sal='È la cassa per la prossima scadenza, il <b>'+PVDATA+'</b>. Ogni volta che metti via qualcosa lo aggiungi qui: vedi quanto manca e quanto conviene accantonare a settimana. Quando è pieno, smetto di chiedertelo.';
   EX.pv_passo='È la prima cosa da fare tra quelle che ti ho preparato in <b>Da fare</b>. Tocchi Inizia e ti accompagno io.';
@@ -3151,7 +3172,6 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     m('vMesi',nf>=2?80:30,nf>=2?'Hai '+nf+' fatture di quest\'anno: vedi come vanno gli incassi mese per mese.':'Se carichi le fatture, ti mostro come vanno gli incassi mese per mese.');
     m('vPasso',tdn?65:15,tdn?'Hai '+tdn+(tdn===1?' passo':' passi')+' in Da fare: qui vedi il primo.':'Ti mostra il prossimo passo quando ce n\'è uno.');
     m('vNov',nb?50:10,nb?'Ci sono '+nb+' agevolazioni da verificare per la tua attività.':'Ti segnala le agevolazioni nuove per la tua attività.');
-    var nn=pvNormNuova();m('vNorm',nn?98:15,nn?'È uscita una novità fiscale: «'+nn.t+'».':'Quando cambia una regola per il forfettario, ti dico cosa vuol dire per te.');
     m('vAnno',25,'Se vuoi ripassare come funzionano saldo e acconti del tuo anno.');
     m('slC_3',55,'Tutte le date da segnare, in ordine.');m('slC_1',45,'La quota di ogni incasso da tenere da parte.');m('slC_2',35,'Quello che ti resta davvero.');m('slD',20,'Per ricontrollare i dati da cui parto.');
     return out.sort(function(a,b){return b.s-a.s})}
@@ -3186,7 +3206,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     n.insertAdjacentHTML('beforeend','<div class="pvsa"><button class="go pvsb" id="pvF24">Prepara l\'F24</button><button class="go pvsb pvsl" id="pvCal">Nel calendario</button></div>');
     $('pvF24').onclick=function(e){e.stopPropagation();tap('pv_f24');window.open('/d/'+c+'/f24?data='+encodeURIComponent(SRV.ps),'_blank','noopener')};
     $('pvCal').onclick=function(e){e.stopPropagation();tap('pv_calendario');window.open('/d/'+c+'/calendario','_blank','noopener')}}
-  setTimeout(function(){var b=$('pvpb');if(b)b.onclick=pvPannello;pvTutti();pvScad()},0);
+  setTimeout(function(){var b=$('pvpb');if(b)b.onclick=pvPannello;pvTutti();pvScad();pvNormBadge()},0);
   // incassi segnati prima che il server li ricevesse: li mando adesso, così i calcoli li contano
   setTimeout(function(){if(!window.TS_C)return;var y=String(new Date().getFullYear());PV.incx.filter(function(x){return !x.s&&String(x.d||'').slice(0,4)===y}).reduce(function(pr,x){return pr.then(function(){return pvPost('/api/prova/incasso',{importo:x.e,data:x.d}).then(function(j){if(j&&j.ok){x.s=1;pvPut(PV);pvNumeri(j.numeri);pvSoglia()}})})},Promise.resolve()).catch(function(){})},1500);
   // ================= Marcello-pallino: un solo avatar mobile, con fumetto, barra in basso e volti video =================
