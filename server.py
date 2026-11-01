@@ -28,6 +28,7 @@ import promemoria
 import privacy
 import termini
 import admin_pannello
+import guide
 import cookie_banner
 import db
 import fic
@@ -1657,6 +1658,7 @@ async def fic_callback(request):
 
 prova.registra(mcp, avvisi)
 admin_pannello.registra(mcp, _evento)
+guide.registra(mcp, _evento)
 
 
 DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().lower()
@@ -1665,7 +1667,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
@@ -1675,7 +1677,8 @@ async def robots_txt(request):
 @mcp.custom_route("/sitemap.xml", methods=["GET"])
 async def sitemap_xml(request):
     from starlette.responses import Response
-    pagine = [("/", "1.0"), ("/privacy", "0.3"), ("/termini", "0.3")]
+    pagine = [("/", "1.0"), ("/guide", "0.6")] + [(f"/guide/{s}", "0.8") for s in guide.GUIDE] + \
+             [("/privacy", "0.3"), ("/termini", "0.3")]
     url = "".join(f"<url><loc>https://{DOMINIO_PRINCIPALE}{p}</loc><priority>{pr}</priority></url>" for p, pr in pagine)
     return Response('<?xml version="1.0" encoding="UTF-8"?>'
                     f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{url}</urlset>',
