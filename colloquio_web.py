@@ -600,6 +600,9 @@ PAGINA_HTML = r"""<!doctype html>
   .ill.letto .cifre { fill:#4355cc; } .ill.letto .riga { fill:#b9c4ee; } .ill.letto .ateco { fill:#05d5c8; }
   .ill.letto .timbro { opacity:1; transform:rotate(-8deg); }
   .pronto { display:flex; gap:12px; margin:0 0 16px; }
+  .scheda.centro, .scheda.centro:has(> .ill) { display:block !important; text-align:center; }
+  .scheda.centro > .ill { justify-content:center; margin:0 auto 14px; } .scheda.centro > .ill svg { height:200px; }
+  .letto-ok { color:#087308; font-weight:600; }
   .pronto svg { width:54px; height:54px; padding:9px; border-radius:15px; background:var(--verde-chiaro); }
   @media (prefers-reduced-motion:no-preference) {
     .scheda.entra > *:not(.qi):not(.opzioni):not(.ill):not(.pronto) { animation:entra .3s ease-out both; }
@@ -616,6 +619,12 @@ PAGINA_HTML = r"""<!doctype html>
     .q-luce { animation:q-luce 1.5s ease-in-out .2s both; }
     .ill .raggio { animation:ill-raggio 3.4s linear infinite; }
     .ill.legge .raggio { animation-duration:1.1s; }
+    .ill.legge .lc { animation:luce-st 1.1s ease-in-out infinite; } .ill.legge .ll { animation:luce-fi 1.1s ease-in-out infinite; }
+    .ill.legge .angoli { animation:luce-an 1.1s ease-in-out infinite; }
+    .ill .ok-r { animation:ok-r .35s ease-out both; } .ill .ok-r2 { animation-delay:.3s; } .ill .ok-r3 { animation-delay:.55s; }
+    .ill .ok-b { animation:ok-b .45s cubic-bezier(.2,.9,.3,1.5) .8s both; } .ill .ok-c { animation:ok-c .45s ease-out 1.15s both; }
+    .ill .mo-cade { animation:mo-cade .6s cubic-bezier(.3,.7,.4,1.3) .5s both; } .ill .mo-cade2 { animation-delay:.9s; }
+    .ill .mo-cal { animation:ok-b .45s cubic-bezier(.2,.9,.3,1.5) 1.3s both; }
     .ill.letto .raggio { animation:none; }
     .pronto svg { animation:pronto .45s cubic-bezier(.2,.9,.3,1.4) both; }
     .pronto svg:nth-child(2) { animation-delay:.18s; } .pronto svg:nth-child(3) { animation-delay:.36s; }
@@ -646,6 +655,13 @@ PAGINA_HTML = r"""<!doctype html>
   @keyframes q-lancetta { from { transform:rotate(-300deg); } to { transform:none; } }
   @keyframes q-luce { 0% { transform:translateY(-9px); opacity:0; } 15% { opacity:1; } 50% { transform:translateY(17px); } 85% { opacity:1; } 100% { transform:translateY(-9px); opacity:0; } }
   @keyframes ill-raggio { 0% { transform:translateY(-50px); opacity:0; } 8% { opacity:1; } 80% { opacity:1; } 88%,100% { transform:translateY(166px); opacity:0; } }
+  @keyframes luce-st { 0%,100% { stop-color:#05d5c8; } 50% { stop-color:#4355cc; } }
+  @keyframes luce-fi { 0%,100% { fill:#05d5c8; } 50% { fill:#4355cc; } }
+  @keyframes luce-an { 0%,100% { stroke:#05d5c8; } 50% { stroke:#4355cc; } }
+  @keyframes ok-r { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+  @keyframes ok-b { from { opacity:0; transform:scale(.3); } to { opacity:1; transform:scale(1); } }
+  @keyframes ok-c { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
+  @keyframes mo-cade { from { opacity:0; transform:translateY(-34px); } 60% { opacity:1; } to { opacity:1; transform:none; } }
   @keyframes pronto { from { opacity:0; transform:scale(.6) translateY(6px); } to { opacity:1; transform:none; } }
 </style>
 </head>
@@ -720,7 +736,7 @@ function icoSettore(codice) { return '<svg viewBox="0 0 24 24" aria-hidden="true
 
 // il certificato che viene letto: fermo nell'introduzione, veloce mentre si legge il PDF, timbrato quando i dati sono stati trovati
 const ILL_CERT = '<div class="ill" id="ill"><svg viewBox="0 16 176 204" aria-hidden="true"><defs>' +
-  '<linearGradient id="illLuce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05d5c8" stop-opacity="0"/><stop offset="1" stop-color="#05d5c8" stop-opacity=".5"/></linearGradient>' +
+  '<linearGradient id="illLuce" x1="0" y1="0" x2="0" y2="1"><stop class="lc" offset="0" stop-color="#05d5c8" stop-opacity="0"/><stop class="lc" offset="1" stop-color="#05d5c8" stop-opacity=".5"/></linearGradient>' +
   '<clipPath id="illFoglio"><path d="M0 8a8 8 0 0 1 8-8H94L118 24V152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8Z"/></clipPath></defs>' +
   '<circle cx="87" cy="118" r="86" fill="#e8ebfa"/>' +
   '<g class="angoli" fill="none" stroke="#05d5c8" stroke-width="3" stroke-linecap="round"><path d="M10 39V29a8 8 0 0 1 8-8H28"/><path d="M146 21H156a8 8 0 0 1 8 8V39"/><path d="M164 197V207a8 8 0 0 1-8 8H146"/><path d="M28 215H18a8 8 0 0 1-8-8V197"/></g>' +
@@ -733,15 +749,30 @@ const ILL_CERT = '<div class="ill" id="ill"><svg viewBox="0 16 176 204" aria-hid
   '<rect class="campo ateco" x="14" y="84" width="62" height="16" rx="8"/><circle cx="23" cy="92" r="3" fill="#fff"/><rect x="30" y="89.5" width="36" height="5" rx="2.5" fill="#fff"/>' +
   '<rect class="campo riga" x="14" y="112" width="52" height="5" rx="2.5"/><rect class="campo riga" x="14" y="122" width="38" height="5" rx="2.5"/><rect class="campo riga" x="14" y="132" width="46" height="5" rx="2.5"/>' +
   '<g transform="translate(90 132)"><g class="timbro"><circle r="14" fill="#fff" stroke="#efac35" stroke-width="2.6"/><path d="M-6.5 .5l4.5 4.5 8.5-9.5" fill="none" stroke="#efac35" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g></g>' +
-  '<g clip-path="url(#illFoglio)"><g class="raggio"><rect width="118" height="44" fill="url(#illLuce)"/><rect y="42.5" width="118" height="3" fill="#05d5c8"/></g></g>' +
+  '<g clip-path="url(#illFoglio)"><g class="raggio"><rect width="118" height="44" fill="url(#illLuce)"/><rect class="ll" y="42.5" width="118" height="3" fill="#05d5c8"/></g></g>' +
   '</g></g></svg></div>';
 
-// le tre risposte che compaiono mentre si prepara la situazione (stesse della pagina iniziale)
-const ILL_PRONTO = '<div class="pronto" aria-hidden="true">' +
-  '<svg viewBox="0 0 36 36"><path d="M5 25v4.5a13 5.5 0 0 0 26 0V25Z" fill="#c98a1b"/><ellipse cx="18" cy="25" rx="13" ry="5.5" fill="#efac35"/><path d="M5 18.5v4.5a13 5.5 0 0 0 26 0v-4.5Z" fill="#c98a1b"/><ellipse cx="18" cy="18.5" rx="13" ry="5.5" fill="#efac35"/><path d="M5 12v4.5a13 5.5 0 0 0 26 0V12Z" fill="#c98a1b"/><ellipse cx="18" cy="12" rx="13" ry="5.5" fill="#f6c25a"/></svg>' +
-  '<svg viewBox="0 0 36 36"><rect x="3" y="5" width="30" height="28" rx="6" fill="#e8ebfa"/><path d="M3 11a6 6 0 0 1 6-6h18a6 6 0 0 1 6 6v3H3Z" fill="#4355cc"/><rect x="10" y="2" width="3" height="7" rx="1.5" fill="#122452"/><rect x="23" y="2" width="3" height="7" rx="1.5" fill="#122452"/><text x="18" y="28.5" text-anchor="middle" font-size="12" font-weight="700" fill="#122452">30</text></svg>' +
-  '<svg viewBox="0 0 36 36"><path d="M9 13h18v2c3 1.5 4 4 4 7v8a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-8c0-3 1-5.5 4-7Z" fill="#e8ebfa"/><path d="M5.5 22h25v8a4 4 0 0 1-4 4h-17a4 4 0 0 1-4-4Z" fill="#05d5c8"/><path d="M9 13h18v2c3 1.5 4 4 4 7v8a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-8c0-3 1-5.5 4-7Z" fill="none" stroke="#122452" stroke-width="2"/><rect x="7" y="7" width="22" height="6" rx="2.5" fill="#122452"/><circle cx="14.5" cy="27.5" r="3.4" fill="#efac35"/><circle cx="21.5" cy="29" r="3.4" fill="#f6c25a"/></svg>' +
-  '</div>';
+// stesso stile del certificato: cerchio lilla, foglio bianco inclinato, accenti verde acqua; animazioni brevi
+const FOGLIO = '<path d="M0 8a8 8 0 0 1 8-8H94L118 24V152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8Z" transform="translate(3 5)" fill="rgba(18,36,82,.10)"/>' +
+  '<path d="M0 8a8 8 0 0 1 8-8H94L118 24V152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8Z" fill="#fff" stroke="#d8e2ed"/>' +
+  '<path d="M94 0V16a8 8 0 0 0 8 8H118Z" fill="#c9d6ea"/><rect x="14" y="16" width="46" height="9" rx="4.5" fill="#122452"/>';
+const RIGA_OK = (y, c) => '<g class="ok-r ' + c + '" style="transform-box:fill-box"><circle cx="21" cy="' + (y + 4) + '" r="7" fill="#e6faf8"/><path d="M17.5 ' + (y + 4) + 'l2.5 2.5 4.5-5" fill="none" stroke="#05c4b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<rect x="34" y="' + y + '" width="' + (c === "ok-r2" ? 50 : c === "ok-r3" ? 62 : 70) + '" height="8" rx="4" fill="#dfe5f6"/></g>';
+const ILL_OK = '<div class="ill" aria-hidden="true"><svg viewBox="0 16 176 204"><circle cx="87" cy="118" r="86" fill="#e8ebfa"/>' +
+  '<g transform="rotate(-4 87 118)"><g transform="translate(28 38)">' + FOGLIO +
+  RIGA_OK(44, "ok-r1") + RIGA_OK(70, "ok-r2") + RIGA_OK(96, "ok-r3") + '<rect x="14" y="124" width="52" height="5" rx="2.5" fill="#dfe5f6"/><rect x="14" y="134" width="38" height="5" rx="2.5" fill="#dfe5f6"/>' +
+  '</g></g><g transform="translate(136 178)"><g class="ok-b" style="transform-box:fill-box;transform-origin:center"><circle r="25" fill="#05d5c8"/><circle r="25" fill="none" stroke="#fff" stroke-width="3" opacity=".35"/>' +
+  '<path class="ok-c" pathLength="1" stroke-dasharray="1" d="M-10 1l7 7 13-15" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g></g></svg></div>';
+const MONETA = (x, y, c) => '<g class="' + c + '"><path d="M' + (x - 17) + ' ' + y + 'v6a17 7 0 0 0 34 0v-6Z" fill="#c98a1b"/><ellipse cx="' + x + '" cy="' + y + '" rx="17" ry="7" fill="#efac35"/><ellipse cx="' + x + '" cy="' + y + '" rx="10" ry="3.6" fill="none" stroke="#f6c25a" stroke-width="2"/></g>';
+const ILL_PRONTO = '<div class="ill pronto2" aria-hidden="true"><svg viewBox="0 16 176 204"><circle cx="87" cy="118" r="86" fill="#e8ebfa"/>' +
+  '<g transform="rotate(-6 87 118)"><g transform="translate(22 34)">' + FOGLIO +
+  '<rect x="14" y="40" width="88" height="10" rx="2.5" fill="#4355cc"/><rect x="14" y="60" width="84" height="5" rx="2.5" fill="#b9c4ee"/><rect x="14" y="70" width="60" height="5" rx="2.5" fill="#b9c4ee"/>' +
+  '<rect x="14" y="88" width="62" height="16" rx="8" fill="#05d5c8"/><rect x="14" y="116" width="52" height="5" rx="2.5" fill="#dfe5f6"/><rect x="14" y="126" width="38" height="5" rx="2.5" fill="#dfe5f6"/></g></g>' +
+  '<g class="mo-cal" style="transform-box:fill-box;transform-origin:center"><rect x="16" y="150" width="44" height="42" rx="9" fill="#fff" stroke="#d8e2ed"/><path d="M16 159a9 9 0 0 1 9-9h26a9 9 0 0 1 9 9v4H16Z" fill="#4355cc"/>' +
+  '<rect x="25" y="145" width="4" height="10" rx="2" fill="#122452"/><rect x="47" y="145" width="4" height="10" rx="2" fill="#122452"/><rect x="28" y="172" width="20" height="9" rx="3" fill="#dfe5f6"/></g>' +
+  MONETA(140, 196, "") + MONETA(140, 184, "") + MONETA(140, 172, "mo-cade") + MONETA(140, 160, "mo-cade mo-cade2") + '</svg></div>';
+// (vecchia versione con tre icone piccole: sostituita da ILL_PRONTO qui sopra)
+
 
 function barra(frazione) { $("barra").style.width = Math.round(Math.min(1, frazione) * 100) + "%"; }
 
@@ -770,27 +801,39 @@ function disegnaNav() {
 }
 function allinea() {
   const s = $("scheda"), el = s.querySelector(".indietro-in"), ico = s.querySelector(":scope > .qi, :scope > .ill");
-  if (!el) { if (ico && ico.style.gridRow) ico.style.gridRow = ""; return; }
+  // tolgo lo spazio aggiunto la volta prima
+  s.querySelectorAll("[data-spazio]").forEach(x => { x.style.marginTop = x.dataset.spazio === "-" ? "" : x.dataset.spazio; x.removeAttribute("data-spazio"); });
+  if (!el) return;
   const riga = el._riga && el._riga.isConnected ? el._riga : null;
   if (!(ico && getComputedStyle(s).display === "grid")) {
-    if (ico && ico.style.gridRow) ico.style.gridRow = "";
-    ["gridRow", "gridColumn", "alignSelf", "marginTop"].forEach(k => { if (el.style[k]) el.style[k] = ""; });
+    ["position", "top", "left", "marginTop", "gridColumn", "gridRow"].forEach(k => { if (el.style[k]) el.style[k] = ""; });
     let dove = riga;
     if (!dove) { dove = s.querySelector(":scope > .azioni"); if (!dove) { dove = document.createElement("div"); dove.className = "riga azioni"; s.appendChild(dove); } }
     if (el.parentNode !== dove || dove.firstChild !== el) dove.insertBefore(el, dove.firstChild);
     return;
   }
+  // schermo largo: «Indietro» sta sempre nella colonna di sinistra, sotto l'immagine, alla stessa altezza
+  // del pulsante «Avanti» o, se non c'è, dell'ultima riga di risposte
   if (el.parentNode !== s) s.appendChild(el);
   const vuota = s.querySelector(":scope > .azioni:empty"); if (vuota) vuota.remove();
-  const col = [...s.children].filter(x => x !== el && x !== ico && getComputedStyle(x).display !== "none");
-  // con "Avanti": stessa riga di "Avanti". Senza: una riga sotto tutto, a sinistra
-  let i = riga ? col.indexOf(riga) : -1; if (i < 1) i = col.length;
-  const r = i + 1, gr = "1 / span " + Math.max(1, r - 1);
-  if (ico.style.gridRow !== gr) ico.style.gridRow = gr;
-  el.style.gridColumn = "1"; el.style.gridRow = String(r);
-  el.style.alignSelf = "start";
-  el.style.marginTop = riga && i < col.length ? getComputedStyle(riga).marginTop : "16px";
+  s.style.position = "relative"; el.style.position = "absolute"; el.style.marginTop = "0"; el.style.gridColumn = "auto"; el.style.gridRow = "auto";
+  const col = [...s.children].filter(x => x !== el && x !== ico && getComputedStyle(x).display !== "none" && getComputedStyle(x).position !== "absolute");
+  const target = riga && col.indexOf(riga) >= 0 ? riga : col[col.length - 1];
+  if (!target) return;
+  const ref = riga ? (riga.querySelector("button.primario") || riga) : (target.matches(".opzioni") && target.lastElementChild ? target.lastElementChild : target);
+  const sr = s.getBoundingClientRect(), ir = ico.getBoundingClientRect(), rr = ref.getBoundingClientRect(), h = el.offsetHeight || 48;
+  let top = riga ? rr.top - sr.top + (rr.height - h) / 2 : rr.bottom - sr.top - h;
+  const min = ir.bottom - sr.top + 18;
+  if (top < min) {   // l'immagine è più alta del testo: scendono un poco le risposte, così «Indietro» non la copre
+    const add = Math.ceil(min - top);
+    target.dataset.spazio = target.style.marginTop || "-";
+    target.style.marginTop = (parseFloat(getComputedStyle(target).marginTop) + add) + "px";
+    top += add;
+  }
+  el.style.top = Math.round(top - s.clientTop) + "px";
+  el.style.left = Math.round(ir.left - sr.left - s.clientLeft + (ir.width - el.offsetWidth) / 2) + "px";
 }
+if (window.ResizeObserver) { let rt = null; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(allinea, 60); }).observe(document.getElementById("scheda")); }
 // se la scheda cambia contenuto dopo, i pulsanti restano al loro posto
 new MutationObserver(() => {
   const s = $("scheda"); if (!NAVB.length) return;
@@ -823,10 +866,9 @@ const NAV_INDIETRO = () => nav([{testo: "Indietro", azione: indietroPrima}]);
 let NOME_IP = null, ULTIMO = null;   // ULTIMO: cosa ho capito dell'ultimo caricamento, per ritrovarlo tornando indietro   // nome letto da un documento qualunque: lo si fa confermare invece di chiederlo da zero
 function mostraIntro() {
   nomeChiesto = false; PILA = []; fattFatto = FATT.length > 0;
-  $("passo").textContent = ""; barra(0.04);
+  $("passo").textContent = "Poche domande, si risponde con un tocco."; barra(0.04);
   $("scheda").innerHTML = ILL_CERT + `
     <h1>La tua situazione fiscale in 2 minuti</h1>
-    <p>Poche domande, si risponde con un tocco.</p>
     <p class="hint">Se hai il <b>certificato di attribuzione della partita IVA</b>, caricalo in PDF o anche come foto: leggo io codice ATECO, data di apertura e partita IVA.</p>
     <div class="opzioni">
       <label class="opz" for="pdf"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">${ICO.carica}</svg></span><span>Carico il certificato (PDF o foto)</span></label>
@@ -903,8 +945,13 @@ async function caricaDocumenti(ev) {
     if (fatt.length) { fattFatto = true; segna(mostraIntro); leggiFattureDa(fatt, true); } else dopoCertificato();
   } : null;
   ULTIMO = {html: '<div class="ragiona">' + righe.join("") + "</div>", azione};
+  if (azione) {
+    $("esito").innerHTML = '<p class="hint letto-ok">Fatto, ho capito. Andiamo avanti…</p>'; nav([]);
+    setTimeout(() => { if (fase !== "fine" && $("esito")) azione(); }, 1300);
+    return;
+  }
   $("esito").innerHTML = ULTIMO.html;
-  nav(azione ? [{testo: "Continua", classe: "primario", azione}] : []);
+  nav([]);
 }
 
 
@@ -1092,7 +1139,7 @@ function mostraDomanda(v) {
       const anni = d.anni_nel_regime === 0 ? "primo anno" : d.anni_nel_regime === 1 ? "da un anno" : d.anni_nel_regime != null ? `da ${d.anni_nel_regime} anni` : "";
       const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Attività", scheda.descrizione_attivita_certificato || scheda.descrizione_attivita || d.descrizione_attivita], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
                      ["Previdenza", d.gestione_previdenziale_etichetta], ["Partita IVA aperta nel", d.anno_apertura], ["Nel forfettario", anni]];
-      html = icona(campo) + `<h1>Ecco cosa so di te</h1><p class="hint">L'ho ricavato dai tuoi documenti e dalle tue risposte. Dai un'occhiata: se qualcosa non torna, lo correggi in un attimo.</p><div class="riepilogo">` +
+      html = ILL_OK + `<h1>Ecco cosa so di te</h1><p class="hint">L'ho ricavato dai tuoi documenti e dalle tue risposte. Dai un'occhiata: se qualcosa non torna, lo correggi in un attimo.</p><div class="riepilogo">` +
         righe.filter(r => r[1]).map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join("") + "</div>";
     }
     html += '<div class="opzioni">' + opz.map(o => `<button class="opz" data-v="${esc(o.valore)}"><span class="n">${o.numero}</span><span>${esc(o.etichetta)}</span></button>`).join("") + "</div>";
@@ -1219,6 +1266,7 @@ function mostraFine(inChat) {
   fase = "fine"; barra(1);
   if (!inChat && ultima && ultima.dashboard) {
     $("passo").textContent = "";
+    $("scheda").classList.add("centro");
     $("scheda").innerHTML = ILL_PRONTO + '<h1>Sto preparando la tua situazione…</h1><p class="hint">Un attimo: calcolo quanto hai maturato, le scadenze e quanto mettere da parte.</p>';
     nav([]);
     setTimeout(() => { window.location.href = ultima.dashboard; }, 900);
