@@ -5,8 +5,9 @@
 - Una volta al giorno (dentro /cron/promemoria) partono i promemoria per quello che non e' stato fatto.
 - Ogni email si manda una sola volta per utente e azione, ha il link per disiscriversi, e un link che
   riporta l'utente al punto da cui riprendere.
-- Il link Trustpilot parte SOLO dopo un beneficio quantificato (il primo task completato), e solo se su Render
-  c'e' la variabile TRUSTPILOT_URL.
+- L'invito a recensire su Trustpilot parte a TUTTI allo stesso modo, 7 giorni dopo che hanno lasciato l'email,
+  con parole neutre e senza nominare risparmi: le regole di Trustpilot vietano di invitare solo chi ha avuto
+  un'esperienza positiva o di scegliere il momento in base al risultato. Solo se su Render c'e' TRUSTPILOT_URL.
 """
 import html
 import os
@@ -80,21 +81,25 @@ def _giorni(c: str, azione: str) -> float:
     return float(r[0]) if r else 0.0
 
 
-def _recensione(email: str, c: str, euro: int) -> bool:
+GIORNI_INVITO_RECENSIONE = 7
+
+
+def _recensione(email: str, c: str) -> bool:
     tp = os.environ.get("TRUSTPILOT_URL", "").strip()
-    if not tp or euro <= 0:
+    if not tp:
         return False
     import auth
     import promemoria as P
     if db.email_disattivate(email) or not db.prenota_promemoria(email, "az_trustpilot", c):
         return False
-    corpo = (f"<p><b>Hai già attivato {_e(_eur(euro))} di risparmio l'anno.</b></p>"
-             "<p>Se TaxScan ti è stato utile, ci aiuti a migliorare con una recensione su Trustpilot: bastano 30 secondi.</p>"
+    corpo = ("<p>Usi TaxScan da una settimana: com'è andata?</p>"
+             "<p>Puoi raccontarlo su Trustpilot, il sito di recensioni indipendente. Ogni parere ci serve, anche e soprattutto "
+             "se qualcosa non ha funzionato: bastano un paio di minuti.</p>"
              f"<p style='margin:20px 0'><a href='{_e(tp)}' style='background:#4355cc;color:#ffffff;text-decoration:none;"
-             "padding:14px 24px;font-weight:700;display:inline-block'>Lascia una recensione</a></p>")
+             "padding:14px 24px;font-weight:700;display:inline-block'>Scrivi la tua recensione</a></p>")
     try:
-        auth.manda_email(email, f"Hai risparmiato {_eur(euro)}: ci dai un parere?",
-                         P._cornice(email, "Grazie, ci dai un parere?", corpo, ("Torna a TaxScan", _link(c)), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f"))
+        auth.manda_email(email, "Com'è andata con TaxScan?",
+                         P._cornice(email, "Com'è andata?", corpo, ("Torna a TaxScan", _link(c)), profilo=f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=f"))
         return True
     except Exception:
         db.annulla_promemoria(email, "az_trustpilot", c)
@@ -217,13 +222,13 @@ def promemoria(prova: bool = False, gia: set | None = None) -> dict:
             continue
         az = _azioni_di(c)
         scelta = None
-        if "beneficio_ottenuto" in az and os.environ.get("TRUSTPILOT_URL") and _giorni(c, "beneficio_ottenuto") >= 1:
+        if os.environ.get("TRUSTPILOT_URL") and float(giorni or 0) >= GIORNI_INVITO_RECENSIONE:
             if prova:
                 esito["previsti"].append({"email": email, "tipo": "trustpilot", "chiave": c})
                 esito["email"].add(email)
             else:
                 try:
-                    if _recensione(email, c, az.get("beneficio_ottenuto", 0)):
+                    if _recensione(email, c):
                         esito["mandati"] += 1
                         esito["email"].add(email)
                         continue
