@@ -54,7 +54,9 @@ def cookie_ok(valore: str) -> bool:
 _BOT = ("bot", "crawl", "spider", "slurp", "preview", "monitor", "uptime", "curl", "python-requests", "headless")
 
 
-_ALIAS = {"fb": "meta", "facebook": "meta", "ig": "meta", "instagram": "meta", "msg": "meta", "an": "meta",
+# Solo i codici brevi che Meta mette con {{site_source_name}}: "instagram" e "facebook" scritti a mano (post e bio non a
+# pagamento) restano separati, cosi' si vede quale social organico funziona.
+_ALIAS = {"fb": "meta", "ig": "meta", "msg": "meta", "an": "meta",
           "chatgpt.com": "chatgpt", "chat.openai.com": "chatgpt", "openai": "chatgpt", "tt": "tiktok"}
 
 
@@ -66,8 +68,7 @@ def _pulito(x, n: int = 60) -> str:
 def attribuzione(query: dict, referer: str, user_agent: str) -> dict | None:
     """Canale, mezzo, campagna e annuncio di chi arriva. Ordine: parametri utm_*, poi gli identificativi di clic
     delle piattaforme (fbclid, ttclid, gclid), poi il sito di provenienza, altrimenti 'diretto'. None per i bot.
-    Il canale e' normalizzato (fb, ig, instagram, facebook -> meta; chatgpt.com -> chatgpt) cosi' i conteggi non si
-    spezzano; la piattaforma esatta di Meta resta nel mezzo/annuncio se la si mette lì."""
+    Il canale e' normalizzato (fb, ig -> meta; chatgpt.com -> chatgpt) cosi' i conteggi non si spezzano."""
     ua = (user_agent or "").lower()
     if not ua or any(b in ua for b in _BOT):
         return None
