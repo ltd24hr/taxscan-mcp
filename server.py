@@ -1541,6 +1541,12 @@ async def icona_192(request):
     return _icona("icon-192.png", "image/png")
 
 
+@mcp.custom_route("/og-avatar.jpg", methods=["GET", "HEAD"])
+async def immagine_avatar(request):
+    """Anteprima quadrata dei link (WhatsApp mostra un riquadro piccolo: solo l'avatar)."""
+    return _icona("og-avatar.jpg", "image/jpeg")
+
+
 @mcp.custom_route("/og.jpg", methods=["GET", "HEAD"])
 async def immagine_condivisione(request):
     """Anteprima dei link (WhatsApp, Facebook, LinkedIn, Telegram): avatar + messaggio, 1200x630."""
@@ -1717,7 +1723,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
@@ -1735,6 +1741,23 @@ async def sitemap_xml(request):
                     media_type="application/xml")
 
 
+_TITOLI_STAGIONE = {
+    11: "Quanto paghi il 30 novembre? Scoprilo in 2 minuti",
+    6: "Quanto paghi il 30 giugno? Scoprilo in 2 minuti",
+}
+
+
+def _titolo_di_stagione(pagina: str) -> str:
+    """Titolo dell'anteprima dei link (WhatsApp, Facebook...): nei mesi delle due scadenze grosse parla di quella."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    t = _TITOLI_STAGIONE.get(datetime.now(ZoneInfo("Europe/Rome")).month)
+    if not t:
+        return pagina
+    return pagina.replace('<meta property="og:title" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti">',
+                          f'<meta property="og:title" content="{t}">', 1)
+
+
 @mcp.custom_route("/", methods=["GET", "HEAD"])
 async def home(request):
     from starlette.responses import HTMLResponse, RedirectResponse
@@ -1744,7 +1767,7 @@ async def home(request):
     if DOMINIO_PRINCIPALE and host and host != DOMINIO_PRINCIPALE and not host.startswith(("localhost", "127.", "0.0.0.0")):
         q = request.url.query
         return RedirectResponse(f"https://{DOMINIO_PRINCIPALE}/" + (f"?{q}" if q else ""), status_code=301)
-    pagina = landing.PAGINA_HTML
+    pagina = _titolo_di_stagione(landing.PAGINA_HTML)
     if request.method == "GET":
         # per il pannello /admin: canale, campagna e annuncio di chi arriva (utm_*, fbclid/ttclid/gclid, sito di
         # provenienza), bot esclusi. Gli stessi dati viaggiano sul pulsante che apre il colloquio, cosi' l'iscrizione
