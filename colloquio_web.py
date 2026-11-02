@@ -961,7 +961,7 @@ function dopoCertificato() { if (fattFatto) { fase = "domanda"; segna(mostraIntr
 const eur0 = v => String(Math.round(v || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
 function mostraFatture() {
   segna(mostraFatture);
-  fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.1);
+  fase = "fatture"; $("passo").textContent = "Un aiuto in più (facoltativo)"; barra(0.55);
   $("scheda").innerHTML = ILL_CERT + '<h1>Hai qualche fattura a portata di mano?</h1>' +
     '<p>Non è obbligatorio. Il certificato dice che codice hai, le fatture dicono che lavoro fai davvero: con due o tre capisco da solo la tua attività, ti faccio meno domande e dopo posso cercare dove risparmiare. Leggo le righe del lavoro e che tipo di cliente è: non conservo né il nome del cliente né il file.</p>' +
     '<div class="opzioni"><label class="opz" for="fatt"><span class="n gr"><svg viewBox="0 0 48 48" aria-hidden="true">' + ICO.carica + '</svg></span><span>Carico delle fatture (PDF, XML, foto o Excel)</span></label>' +
@@ -978,7 +978,7 @@ async function leggiFatture(ev) {
   leggiFattureDa(out, false);
 }
 async function leggiFattureDa(out, schermo) {
-  if (schermo) { $("passo").textContent = "Le tue fatture"; barra(0.11); $("scheda").innerHTML = ILL_CERT + '<h1>Leggo le fatture</h1><div id="fesito"></div>'; nav([]); }
+  if (schermo) { $("passo").textContent = "Le tue fatture"; barra(0.56); $("scheda").innerHTML = ILL_CERT + '<h1>Leggo le fatture</h1><div id="fesito"></div>'; nav([]); }
   $("fesito").innerHTML = '<p class="hint">Leggo le fatture, una alla volta…</p>';
   const ill = $("ill"); if (ill) { ill.classList.remove("letto"); ill.classList.add("legge"); }
   let r = null;
@@ -1000,7 +1000,7 @@ function chiediCoerenza(i) {
   if (i >= FATT.length) return chiediFattura(0);
   segna(() => chiediCoerenza(i));
   const v = FATT[i], a = v.anomalie.find(x => x.gravita === "alta"), ric = a.tipo === "ricevuta";
-  $("passo").textContent = "Un controllo sulle fatture"; barra(0.12);
+  $("passo").textContent = "Un controllo sulle fatture"; barra(0.57);
   $("scheda").innerHTML = ico("scudo") + '<h1>' + (ric ? "L\'hai emessa tu?" : "Questa fattura è tua?") + '</h1><p>Nella fattura <b>' + esc(v.nome) + '</b> qualcosa non torna. ' + esc(a.testo) + '</p><div class="opzioni">' +
     '<button class="opz" id="csi"><span class="n">1</span><span>' + (ric ? "Sì, l\'ho emessa io" : "Sì, è mia (per esempio ho più partite IVA)") + '</span></button>' +
     '<button class="opz" id="cno"><span class="n">2</span><span>' + (ric ? "No, l\'ho ricevuta: è una spesa, non usarla" : "No, è di un\'altra persona: non usarla") + '</span></button></div>';
@@ -1019,7 +1019,7 @@ function chiediFattura(i) {
   const v = FATT[i]; v.chiesta = true; v.usa = !v.altra;
   const k = chiaveFatt(v), gruppo = FATT.filter(x => x === v || (!x.altra && !x.chiesta && chiaveFatt(x) === k && (!x.capito || x.daGruppo === v)));
   const tot = gruppo.reduce((a, x) => a + (x.importo || 0), 0);
-  $("passo").textContent = "Una domanda sulle fatture"; barra(0.13);
+  $("passo").textContent = "Una domanda sulle fatture"; barra(0.58);
   $("scheda").innerHTML = ico("lente") + '<h1>Non voglio indovinare</h1><p>' + (gruppo.length > 1
       ? 'Le fatture ' + elenco(gruppo.map(x => '<b>' + esc(x.nome) + '</b>')) + ' (' + eur0(tot) + ') dicono la stessa cosa: te lo chiedo una volta sola. '
       : 'Fattura <b>' + esc(v.nome) + '</b> (' + eur0(v.importo) + '). ') + esc(v.domanda || "Non capisco di che lavoro si tratti.") + '</p>' +
@@ -1040,7 +1040,7 @@ function chiediFattura(i) {
 }
 function chiediNome(em) {
   segna(() => chiediNome(em));
-  $("passo").textContent = "Una conferma"; barra(0.15);
+  $("passo").textContent = "Una conferma"; barra(0.59);
   $("scheda").innerHTML = ico("persone") + '<h1>Ti chiami ' + esc(em.nome + " " + (em.cognome || "")) + '?</h1><p class="hint">Le fatture sono intestate a questo nome: così posso salutarti per nome.</p><div class="opzioni">' +
     '<button class="opz" id="nsi"><span class="n">1</span><span>Sì, sono io</span></button><button class="opz" id="nno"><span class="n">2</span><span>No, scrivo io il mio nome</span></button></div>';
   NAV_INDIETRO();
@@ -1070,7 +1070,7 @@ function fineFatture() {
 let nomeChiesto = false, tornando = false, BARV = 0;
 function mostraNome() {
   segna(mostraNome);
-  fase = "nome"; $("passo").textContent = "Per iniziare"; barra(0.16);
+  fase = "nome"; $("passo").textContent = "Per iniziare"; barra(0.6);
   if (NOME_IP && NOME_IP.nome) {
     // un documento (anche quello sbagliato) mi ha gia' detto un nome: lo propongo invece di chiederlo da zero
     const ip = NOME_IP;
@@ -1126,10 +1126,10 @@ function mostraDomanda(v) {
   v = Object.assign({}, v, {prossima_domanda: W.d || v.prossima_domanda, dove_trovarlo: ("h" in W) ? W.h : v.dove_trovarlo,
     opzioni: (v.opzioni || []).map(o => Object.assign({}, o, {etichetta: ((WEB_OPZ[campo] || {})[o.valore]) || o.etichetta}))});
   // la barra si basa sulle domande che restano davvero (le chiede il server), non su un numero fisso
-  // le domande che restano possono crescere (alcune dipendono dalle risposte): il totale stimato non scende sotto 7 e tiene
-  // un margine di 2, cosi' la barra non salta a meta' dopo la prima risposta
+  // la barra corre subito: dopo la prima scelta e' gia' oltre la meta' (da 0,6), poi sale con le domande che restano;
+  // il totale stimato tiene un margine di 1 perche' alcune domande dipendono dalle risposte; l'ultima e' al 92%
   const restano = Math.max(1, (v.campi_mancanti || []).length),
-        quota = restano === 1 ? 0.92 : 0.18 + 0.72 * passo / Math.max(passo + restano + 2, 7);
+        quota = restano === 1 ? 0.92 : 0.6 + 0.3 * passo / (passo + restano + 1);
   BARV = tornando ? quota : Math.max(BARV, quota); tornando = false;
   $("passo").textContent = restano === 1 ? "Quasi fatto · ultima domanda" : (PARTI[v.gruppo_corrente] || "Il tuo profilo"); barra(BARV);
   const box = $("scheda");
