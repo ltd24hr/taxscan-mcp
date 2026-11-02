@@ -318,12 +318,13 @@ table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:14px;backg
 """
 
 
-def pagina(slug: str) -> str | None:
+def pagina(slug: str, qs_attribuzione: str = "") -> str | None:
     g = GUIDE.get(slug)
     if not g:
         return None
     altre = "".join(f"<li><a href='/guide/{s}'>{_e(x['titolo'])}</a></li>" for s, x in GUIDE.items() if s != slug)
-    cta = f"/colloquio/nuovo?utm_source=guida&utm_campaign={slug}"
+    # chi arriva da un annuncio o da un social mantiene quel canale; chi arriva da Google o diretto conta come "guida"
+    cta = f"/colloquio/nuovo?{qs_attribuzione}" if qs_attribuzione else f"/colloquio/nuovo?src=guida&cmp={slug}"
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{_e(g['titolo'])} - TaxScan</title>
@@ -369,18 +370,21 @@ def registra(mcp, evento=None) -> None:
     @mcp.custom_route("/guide/{slug}", methods=["GET"])
     async def guida(request):
         slug = request.path_params.get("slug", "")
-        p = pagina(slug)
-        if p is not None and evento is not None:
+        qs = ""
+        if slug in GUIDE and evento is not None:
             try:
                 import asyncio
                 import admin_pannello
-                fonte = admin_pannello.fonte_visita(dict(request.query_params), request.headers.get("referer", ""),
-                                                    request.headers.get("user-agent", ""))
-                if fonte:
+                attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
+                                                   request.headers.get("user-agent", ""))
+                if attr:
                     asyncio.get_running_loop().run_in_executor(None, evento, "visita", None,
-                                                               {"fonte": fonte, "pagina": "guide/" + slug})
+                                                               {**attr, "pagina": "guide/" + slug})
+                    if attr.get("fonte") not in ("diretto", "google", "bing"):
+                        qs = admin_pannello.parametri_attribuzione(attr)
             except Exception:
                 pass
+        p = pagina(slug, qs)
         if p is None:
             return HTMLResponse("<p>Guida non trovata. <a href='/guide'>Tutte le guide</a></p>", status_code=404)
         return HTMLResponse(p, headers={"Cache-Control": "public, max-age=3600"})

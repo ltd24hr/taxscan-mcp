@@ -54,15 +54,61 @@ def cookie_ok(valore: str) -> bool:
 _BOT = ("bot", "crawl", "spider", "slurp", "preview", "monitor", "uptime", "curl", "python-requests", "headless")
 
 
-def fonte_visita(query: dict, referer: str, user_agent: str) -> str | None:
-    """Da dove arriva chi apre la home: utm_source se c'è, altrimenti il sito di provenienza, altrimenti 'diretto'.
-    None per i bot (non vanno contati)."""
+_ALIAS = {"fb": "meta", "facebook": "meta", "ig": "meta", "instagram": "meta", "msg": "meta", "an": "meta",
+          "chatgpt.com": "chatgpt", "chat.openai.com": "chatgpt", "openai": "chatgpt", "tt": "tiktok"}
+
+
+def _pulito(x, n: int = 60) -> str:
+    import re
+    return re.sub(r"[^a-z0-9_.\-]+", "-", (x or "").strip().lower())[:n].strip("-")
+
+
+def attribuzione(query: dict, referer: str, user_agent: str) -> dict | None:
+    """Canale, mezzo, campagna e annuncio di chi arriva. Ordine: parametri utm_*, poi gli identificativi di clic
+    delle piattaforme (fbclid, ttclid, gclid), poi il sito di provenienza, altrimenti 'diretto'. None per i bot.
+    Il canale e' normalizzato (fb, ig, instagram, facebook -> meta; chatgpt.com -> chatgpt) cosi' i conteggi non si
+    spezzano; la piattaforma esatta di Meta resta nel mezzo/annuncio se la si mette lì."""
     ua = (user_agent or "").lower()
     if not ua or any(b in ua for b in _BOT):
         return None
-    utm = (query.get("utm_source") or query.get("ref") or "").strip().lower()[:40]
-    if utm:
-        return utm
+    q = {k: (v if isinstance(v, str) else (v[0] if v else "")) for k, v in (query or {}).items()}
+    fonte = _pulito(q.get("utm_source") or q.get("src") or q.get("ref"), 40)
+    out = {"mezzo": _pulito(q.get("utm_medium") or q.get("med"), 40),
+           "campagna": _pulito(q.get("utm_campaign") or q.get("cmp"), 80),
+           "annuncio": _pulito(q.get("utm_content") or q.get("cnt"), 80),
+           "gruppo": _pulito(q.get("utm_term") or q.get("grp"), 80)}
+    if not fonte:
+        if q.get("fbclid"):
+            # Facebook e Instagram aggiungono fbclid a tutti i link, anche ai post non a pagamento: senza utm e' "social".
+            # Gli annunci hanno sempre gli utm (vedi piano), quindi restano distinti.
+            fonte, out["mezzo"] = "meta", out["mezzo"] or "social"
+        elif q.get("ttclid"):
+            fonte, out["mezzo"] = "tiktok", out["mezzo"] or "paid"
+        elif q.get("gclid") or q.get("gbraid") or q.get("wbraid"):
+            fonte, out["mezzo"] = "google-ads", out["mezzo"] or "paid"
+    if not fonte:
+        fonte = fonte_da_referer(referer)
+        out["mezzo"] = out["mezzo"] or ("diretto" if fonte == "diretto" else "referral")
+    out["fonte"] = _ALIAS.get(fonte, fonte)
+    return {k: v for k, v in out.items() if v}
+
+
+def parametri_attribuzione(a: dict | None) -> str:
+    """Query string compatta (src, med, cmp, cnt, grp) da attaccare al pulsante che apre il colloquio."""
+    from urllib.parse import urlencode
+    if not a:
+        return ""
+    m = {"fonte": "src", "mezzo": "med", "campagna": "cmp", "annuncio": "cnt", "gruppo": "grp"}
+    return urlencode({m[k]: v for k, v in a.items() if k in m})
+
+
+def fonte_visita(query: dict, referer: str, user_agent: str) -> str | None:
+    """Solo il canale (compatibilita'): vedi attribuzione()."""
+    a = attribuzione(query, referer, user_agent)
+    return a["fonte"] if a else None
+
+
+def fonte_da_referer(referer: str) -> str:
     ref = (referer or "").strip().lower()
     if ref:
         from urllib.parse import urlparse
@@ -126,13 +172,36 @@ def raccogli(giorni: int = 30) -> dict:
                 GROUP BY 1 ORDER BY 2 DESC LIMIT 12""", (giorni,))
             fonti = [{"fonte": f, "visite": n} for f, n in cur.fetchall()]
 
+            # canali: visite, colloqui avviati e iscrizioni per canale e campagna. L'iscrizione si collega al canale
+            # tramite l'evento 'inizio' del colloquio (stesso id della dashboard). Chi si iscrive da chat/MCP o prima
+            # del tracciamento finisce in 'non tracciato'.
+            cur.execute("""
+                SELECT f, c, sum(vis), sum(col), sum(isc) FROM (
+                    SELECT coalesce(dettaglio->>'fonte', 'sconosciuta') f, coalesce(dettaglio->>'campagna', '') c,
+                           1 vis, 0 col, 0 isc
+                    FROM eventi WHERE tipo = 'visita' AND creato_il > now() - (%s || ' days')::interval
+                    UNION ALL
+                    SELECT coalesce(dettaglio->>'fonte', 'sconosciuta'), coalesce(dettaglio->>'campagna', ''), 0, 1, 0
+                    FROM eventi WHERE tipo = 'inizio' AND creato_il > now() - (%s || ' days')::interval
+                    UNION ALL
+                    SELECT coalesce(e.dettaglio->>'fonte', 'non tracciato'), coalesce(e.dettaglio->>'campagna', ''), 0, 0, 1
+                    FROM utenti u
+                    LEFT JOIN LATERAL (SELECT dettaglio FROM eventi WHERE tipo = 'inizio' AND riferimento = u.dashboard_id
+                                       ORDER BY creato_il LIMIT 1) e ON true
+                    WHERE u.creato_il > now() - (%s || ' days')::interval
+                ) x GROUP BY f, c ORDER BY sum(isc) DESC, sum(vis) DESC LIMIT 40""", (giorni, giorni, giorni))
+            canali = [{"fonte": r[0], "campagna": r[1], "visite": int(r[2]), "colloqui": int(r[3]), "iscritti": int(r[4])}
+                      for r in cur.fetchall()]
+
             cur.execute("""
                 SELECT u.email, u.creato_il, u.scheda, u.dashboard_id,
                        (SELECT max(e.creato_il) FROM eventi e WHERE e.riferimento IN (u.email, u.dashboard_id)),
                        (SELECT count(*) FROM eventi e WHERE e.riferimento IN (u.email, u.dashboard_id)),
                        EXISTS (SELECT 1 FROM fic_collegamenti f WHERE f.email = u.email),
                        EXISTS (SELECT 1 FROM email_opt_out o WHERE o.email = u.email),
-                       (SELECT consiglia FROM feedback fb WHERE fb.email = u.email)
+                       (SELECT consiglia FROM feedback fb WHERE fb.email = u.email),
+                       (SELECT concat_ws(' · ', dettaglio->>'fonte', dettaglio->>'campagna') FROM eventi
+                        WHERE tipo = 'inizio' AND riferimento = u.dashboard_id ORDER BY creato_il LIMIT 1)
                 FROM utenti u ORDER BY u.creato_il DESC LIMIT 500""")
             utenti = []
             for r in cur.fetchall():
@@ -142,7 +211,8 @@ def raccogli(giorni: int = 30) -> dict:
                     "ateco": str(s.get("codice_ateco") or ""), "attivita": str(s.get("descrizione_attivita") or "")[:60],
                     "comune": str(s.get("comune") or ""), "regione": str(s.get("regione") or ""),
                     "dashboard": bool(r[3]), "ultima_attivita": r[4].isoformat() if r[4] else "",
-                    "eventi": r[5] or 0, "fic": bool(r[6]), "email_off": bool(r[7]), "consiglia": r[8] or ""})
+                    "eventi": r[5] or 0, "fic": bool(r[6]), "email_off": bool(r[7]), "consiglia": r[8] or "",
+                    "canale": r[9] or ""})
     stats = db.statistiche_eventi(giorni)
     return {
         "giorni": giorni, "generato_il": datetime.now(timezone.utc).isoformat(),
@@ -150,12 +220,13 @@ def raccogli(giorni: int = 30) -> dict:
                 "con_dashboard": con_dash, "fic": fic_n, "email_off": opt_out},
         "serie": serie,
         "imbuto": [
-            {"fase": "Visite alla home", "n": per_tipo.get("visita", 0)},
+            {"fase": "Visite (home e guide)", "n": per_tipo.get("visita", 0)},
             {"fase": "Colloquio aperto", "n": per_tipo.get("web_aperto", 0) + per_tipo.get("chat_avvio", 0)},
             {"fase": "Colloquio completato", "n": per_tipo.get("web_completato", 0) + per_tipo.get("chat_quadro", 0)},
             {"fase": "Iscritti", "n": iscritti_periodo},
         ],
         "fonti": fonti,
+        "canali": canali,
         "abbandoni": stats.get("colloqui_web_fermi_per_domanda", [])[:8],
         "utenti": utenti,
     }
@@ -180,11 +251,11 @@ def csv_utenti(dati: dict) -> str:
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
     w.writerow(["email", "iscritto_il", "ultima_attivita", "eventi", "ateco", "attivita", "comune", "regione",
-                "dashboard", "fatture_in_cloud", "email_disattivate", "consiglia"])
+                "dashboard", "fatture_in_cloud", "email_disattivate", "consiglia", "canale"])
     for u in dati["utenti"]:
         w.writerow([u["email"], u["iscritto_il"][:16], u["ultima_attivita"][:16], u["eventi"], u["ateco"], u["attivita"],
                     u["comune"], u["regione"], "si" if u["dashboard"] else "no", "si" if u["fic"] else "no",
-                    "si" if u["email_off"] else "no", u["consiglia"]])
+                    "si" if u["email_off"] else "no", u["consiglia"], u.get("canale", "")])
     return "﻿" + buf.getvalue()
 
 
@@ -311,12 +382,19 @@ def pagina(dati: dict, avviso: str = "") -> str:
             f"<td title='{_e(u['iscritto_il'][:16])}'>{_quando(u['iscritto_il'])}</td>"
             f"<td title='{_e(u['ultima_attivita'][:16])}'>{_quando(u['ultima_attivita'])}</td>"
             f"<td>{u['eventi']}</td><td>{_e(u['ateco'])}<div class='sub' style='margin:0'>{_e(u['attivita'])}</div></td>"
-            f"<td>{_e(luogo) or '—'}</td><td>{badge}</td></tr>")
+            f"<td>{_e(luogo) or '—'}</td><td>{_e(u.get('canale', '')) or '—'}</td><td>{badge}</td></tr>")
     tabella = ("<div class='wrap'><table id='t'><thead><tr><th><input type='checkbox' id='tutti' onchange='tutti_(this)' aria-label='Seleziona tutti i visibili'></th><th>Email</th><th>Iscritto</th><th>Ultima attività</th>"
-               "<th>Azioni</th><th>ATECO / attività</th><th>Luogo</th><th></th></tr></thead><tbody>"
+               "<th>Azioni</th><th>ATECO / attività</th><th>Luogo</th><th>Canale</th><th></th></tr></thead><tbody>"
                + "".join(righe) + "</tbody></table></div>") if righe else "<p class='vuoto'>Nessun iscritto ancora.</p>"
     imbuto = _barre([(r["fase"], r["n"]) for r in dati["imbuto"]], con_quota=True)
-    fonti = _barre([(r["fonte"], r["visite"]) for r in dati["fonti"]])
+    righe_c = "".join(
+        f"<tr><td><b>{_e(c['fonte'])}</b></td><td>{_e(c['campagna']) or '—'}</td><td>{c['visite']}</td>"
+        f"<td>{c['colloqui']}</td><td><b>{c['iscritti']}</b></td>"
+        f"<td>{(str(round(100 * c['iscritti'] / c['visite'], 1)).replace('.', ',') + '%') if c['visite'] else '—'}</td></tr>"
+        for c in dati.get("canali", []))
+    fonti = ("<div class='wrap' style='max-height:420px'><table><thead><tr><th>Canale</th><th>Campagna</th><th>Visite</th>"
+             "<th>Colloqui</th><th>Iscritti</th><th>Visite → iscritti</th></tr></thead><tbody>" + righe_c +
+             "</tbody></table></div>") if righe_c else "<p class='vuoto'>Ancora nessun dato in questo periodo.</p>"
     abbandoni = _barre([(r["ultima_domanda_vista"] or "?", r["colloqui"]) for r in dati["abbandoni"]])
     g = dati["giorni"]
     scelte = "".join(f"<option value='{d}'{' selected' if d == g else ''}>Ultimi {d} giorni</option>" for d in (7, 30, 90, 365))
@@ -333,7 +411,7 @@ def pagina(dati: dict, avviso: str = "") -> str:
 <span><i style="background:var(--acc3);border-radius:50%"></i>Iscrizioni</span></div>{_grafico(dati['serie'])}</div>
 <div class="due"><div class="card"><h2>Imbuto · ultimi {g} giorni</h2>{imbuto}
 <p class="sub" style="margin:10px 0 0">La percentuale è rispetto alla prima fase.</p></div>
-<div class="card"><h2>Da dove arrivano · ultimi {g} giorni</h2>{fonti}
+<div class="card"><h2>Canali · ultimi {g} giorni</h2>{fonti}
 <p class="sub" style="margin:10px 0 0">Usa link con <code>?utm_source=nome</code> per ogni canale.</p></div></div>
 <div class="card"><h2>Dove si fermano nel colloquio</h2>{abbandoni}</div>
 <div class="card"><div class="tool"><h2 style="margin:0;flex:1">Iscritti ({len(dati['utenti'])})</h2>
@@ -374,7 +452,7 @@ def registra(mcp, evento) -> None:
     from starlette.responses import HTMLResponse, RedirectResponse, Response
 
     intest = {"Cache-Control": "no-store", "X-Robots-Tag": "noindex", "X-Frame-Options": "DENY",
-              "Referrer-Policy": "no-referrer"}
+              "Referrer-Policy": "same-origin"}
 
     def _autorizzato(request) -> bool:
         return cookie_ok(request.cookies.get(COOKIE, "")) or chiave_ok(request.query_params.get("chiave", ""))
@@ -427,9 +505,16 @@ def registra(mcp, evento) -> None:
         from urllib.parse import parse_qs, urlparse
         if not cookie_ok(request.cookies.get(COOKIE, "")):
             return Response("non autorizzato", status_code=403)
-        origine = request.headers.get("origin") or request.headers.get("referer") or ""
-        if origine and urlparse(origine).netloc != request.headers.get("host", ""):
+        # Il cookie e' SameSite=Strict, quindi un altro sito non puo' inviarlo. In piu' si rifiutano le richieste che il
+        # browser segna come provenienti da un altro sito. (Con Referrer-Policy no-referrer i browser mandano
+        # Origin: null e il controllo sul nome host bloccava anche le richieste legittime.)
+        if request.headers.get("sec-fetch-site", "") in ("cross-site", "same-site"):
             return Response("origine non valida", status_code=403)
+        origine = request.headers.get("origin", "")
+        if origine and origine != "null":
+            host_ok = {request.headers.get("host", ""), request.headers.get("x-forwarded-host", "")} - {""}
+            if urlparse(origine).netloc not in host_ok:
+                return Response("origine non valida", status_code=403)
         corpo = parse_qs((await request.body()).decode("utf-8", "ignore"))
         if (corpo.get("conferma") or [""])[0].strip() != "ELIMINA":
             return RedirectResponse("/admin", status_code=303)
