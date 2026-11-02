@@ -1082,8 +1082,11 @@ async def colloquio_nuovo(request):
     # canale di provenienza: dal pulsante della home/guide (src, med, cmp...) o direttamente dagli utm_* di un annuncio
     attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
                                        request.headers.get("user-agent", ""))
-    if attr:
-        import asyncio
+    import asyncio
+    if admin_pannello.interno(request):
+        # i tuoi test: il colloquio esiste ma non entra in imbuto e canali (vedi 'interno' nel pannello)
+        asyncio.get_running_loop().run_in_executor(None, _evento, "interno", web["id_colloquio"], None)
+    elif attr:
         asyncio.get_running_loop().run_in_executor(None, _evento, "inizio", web["id_colloquio"], attr)
     return RedirectResponse(url=f"/colloquio/{web['id_colloquio']}", status_code=302)
 
@@ -1742,9 +1745,10 @@ async def home(request):
         # finale si attribuisce al canale giusto senza cookie.
         attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
                                            request.headers.get("user-agent", ""))
-        if attr:
+        if attr and not admin_pannello.interno(request):
             import asyncio
             asyncio.get_running_loop().run_in_executor(None, _evento, "visita", None, attr)
+        if attr:
             qs = admin_pannello.parametri_attribuzione(attr)
             if qs:
                 pagina = pagina.replace('href="/colloquio/nuovo"', f'href="/colloquio/nuovo?{qs}"')

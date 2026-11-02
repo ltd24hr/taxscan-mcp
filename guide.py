@@ -377,7 +377,7 @@ def registra(mcp, evento=None) -> None:
                 import admin_pannello
                 attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
                                                    request.headers.get("user-agent", ""))
-                if attr:
+                if attr and not admin_pannello.interno(request):
                     asyncio.get_running_loop().run_in_executor(None, evento, "visita", None,
                                                                {**attr, "pagina": "guide/" + slug})
                     if attr.get("fonte") not in ("diretto", "google", "bing"):

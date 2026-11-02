@@ -94,6 +94,17 @@ def attribuzione(query: dict, referer: str, user_agent: str) -> dict | None:
     return {k: v for k, v in out.items() if v}
 
 
+COOKIE_INTERNO = "ts_interno"
+
+
+def interno(request) -> bool:
+    """True se il browser e' stato escluso dal pannello (i tuoi test): visite non contate, colloqui segnati 'interno'."""
+    try:
+        return request.cookies.get(COOKIE_INTERNO, "") == "1"
+    except Exception:
+        return False
+
+
 def parametri_attribuzione(a: dict | None) -> str:
     """Query string compatta (src, med, cmp, cnt, grp) da attaccare al pulsante che apre il colloquio."""
     from urllib.parse import urlencode
@@ -151,7 +162,8 @@ def raccogli(giorni: int = 30) -> dict:
             cur.execute("""
                 SELECT d::date,
                        (SELECT count(*) FROM eventi WHERE tipo = 'visita' AND creato_il::date = d::date),
-                       (SELECT count(*) FROM eventi WHERE tipo IN ('web_aperto', 'chat_avvio') AND creato_il::date = d::date),
+                       (SELECT count(*) FROM eventi WHERE tipo IN ('web_aperto', 'chat_avvio') AND creato_il::date = d::date
+                        AND (riferimento IS NULL OR riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL))),
                        (SELECT count(*) FROM utenti WHERE creato_il::date = d::date)
                 FROM generate_series(current_date - (%s - 1), current_date, interval '1 day') d
                 ORDER BY d""", (giorni,))
@@ -162,6 +174,7 @@ def raccogli(giorni: int = 30) -> dict:
                 SELECT tipo, count(DISTINCT coalesce(riferimento, id::text)) FROM eventi
                 WHERE creato_il > now() - (%s || ' days')::interval
                   AND tipo IN ('visita', 'web_aperto', 'chat_avvio', 'web_completato', 'chat_quadro')
+                  AND (riferimento IS NULL OR riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL))
                 GROUP BY tipo""", (giorni,))
             per_tipo = dict(cur.fetchall())
             cur.execute("SELECT count(*) FROM utenti WHERE creato_il > now() - (%s || ' days')::interval", (giorni,))
@@ -184,6 +197,7 @@ def raccogli(giorni: int = 30) -> dict:
                     UNION ALL
                     SELECT coalesce(dettaglio->>'fonte', 'sconosciuta'), coalesce(dettaglio->>'campagna', ''), 0, 1, 0
                     FROM eventi WHERE tipo = 'inizio' AND creato_il > now() - (%s || ' days')::interval
+                      AND riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL)
                     UNION ALL
                     SELECT coalesce(e.dettaglio->>'fonte', 'non tracciato'), coalesce(e.dettaglio->>'campagna', ''), 0, 0, 1
                     FROM utenti u
@@ -466,7 +480,7 @@ def pagina(dati: dict, avviso: str = "") -> str:
 <title>TaxScan · Pannello</title><style>{_CSS}</style></head><body><main>
 <h1>TaxScan · Pannello amministratore</h1>
 <p class="sub">Aggiornato {datetime.now(timezone.utc).astimezone().strftime('%d/%m/%Y %H:%M')} ·
-<a href="/admin/esci">Esci</a></p>
+<a href="/admin/esci">Esci</a> · {('Questo browser <b>non</b> viene contato (test) · <a href="/admin/interno?no=1">Torna a contarlo</a>' if dati.get("interno") else '<a href="/admin/interno">Non contare questo browser (i miei test)</a>')}</p>
 {('<p class="avviso">' + _e(avviso) + '</p>') if avviso else ''}<div class="kpi">{kpi}</div>
 <div class="card"><div class="tool"><h2 style="margin:0;flex:1">Andamento giornaliero</h2>
 <form method="get" action="/admin"><select name="giorni" onchange="this.form.submit()">{scelte}</select></form></div>
@@ -547,6 +561,7 @@ def registra(mcp, evento) -> None:
             return HTMLResponse(f"<p>Non riesco a leggere i dati: {_e(e)}</p>", status_code=500, headers=intest)
         n_el = request.query_params.get("eliminati", "")
         avviso = (f"Eliminati {n_el} iscritti." if n_el.isdigit() else "")
+        dati["interno"] = interno(request)
         resp = HTMLResponse(pagina(dati, avviso), headers=intest)
         # chi entra con ?chiave= riceve il cookie e la volta dopo non serve più la chiave nell'indirizzo
         return _con_cookie(resp) if request.query_params.get("chiave") else resp
@@ -587,6 +602,19 @@ def registra(mcp, evento) -> None:
             return HTMLResponse(f"<p>Eliminazione non riuscita: {_e(e)}</p>", status_code=500, headers=intest)
         evento("admin_eliminati", None, {"n": n})
         return RedirectResponse(f"/admin?eliminati={n}", status_code=303)
+
+    @mcp.custom_route("/admin/interno", methods=["GET"])
+    async def admin_interno(request):
+        """Esclude (o riammette) questo browser dalle statistiche: per i test di chi sviluppa TaxScan.
+        Cookie su tutto il sito, un anno; da rifare su ogni browser e telefono usato per provare."""
+        if not _autorizzato(request):
+            return Response("non autorizzato", status_code=403)
+        resp = RedirectResponse("/admin", status_code=303)
+        if request.query_params.get("no"):
+            resp.delete_cookie(COOKIE_INTERNO, path="/")
+        else:
+            resp.set_cookie(COOKIE_INTERNO, "1", max_age=365 * 86400, httponly=True, secure=True, samesite="lax", path="/")
+        return resp
 
     @mcp.custom_route("/admin/esci", methods=["GET"])
     async def admin_esci(request):
