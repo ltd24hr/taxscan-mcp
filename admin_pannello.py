@@ -136,9 +136,42 @@ def fonte_da_referer(referer: str) -> str:
 
 # --------------------------------------------------------------------- Dati
 
+_IMPOSTAZIONI = """CREATE TABLE IF NOT EXISTS impostazioni (
+    chiave TEXT PRIMARY KEY, valore TEXT NOT NULL, aggiornato_il TIMESTAMPTZ NOT NULL DEFAULT now())"""
+
+
+def statistiche_dal() -> str:
+    """Da quando contano le statistiche del pannello (dopo un azzeramento). '1970-01-01' se mai azzerate."""
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute(_IMPOSTAZIONI)
+                cur.execute("SELECT valore FROM impostazioni WHERE chiave = 'statistiche_dal'")
+                r = cur.fetchone()
+            conn.commit()
+        return r[0] if r else "1970-01-01T00:00:00+00:00"
+    except Exception:
+        return "1970-01-01T00:00:00+00:00"
+
+
+def azzera_statistiche(annulla: bool = False) -> None:
+    """Non cancella niente: da adesso il pannello conta solo visite, colloqui, canali e iscrizioni successivi.
+    Gli iscritti restano nell'elenco (quelli di prova si eliminano a mano). annulla=True torna a contare tutto."""
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute(_IMPOSTAZIONI)
+            if annulla:
+                cur.execute("DELETE FROM impostazioni WHERE chiave = 'statistiche_dal'")
+            else:
+                cur.execute("INSERT INTO impostazioni (chiave, valore) VALUES ('statistiche_dal', now()::text) "
+                            "ON CONFLICT (chiave) DO UPDATE SET valore = now()::text, aggiornato_il = now()")
+        conn.commit()
+
+
 def raccogli(giorni: int = 30) -> dict:
     """Tutto quello che serve alla pagina, in poche query."""
     giorni = max(1, min(int(giorni or 30), 365))
+    dal = statistiche_dal()
     with db._connetti() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -165,25 +198,25 @@ def raccogli(giorni: int = 30) -> dict:
                        (SELECT count(*) FROM eventi WHERE tipo IN ('web_aperto', 'chat_avvio') AND creato_il::date = d::date
                         AND (riferimento IS NULL OR riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL))),
                        (SELECT count(*) FROM utenti WHERE creato_il::date = d::date)
-                FROM generate_series(current_date - (%s - 1), current_date, interval '1 day') d
-                ORDER BY d""", (giorni,))
+                FROM generate_series(greatest(current_date - (%s - 1), %s::date), current_date, interval '1 day') d
+                ORDER BY d""", (giorni, dal))
             serie = [{"giorno": r[0].isoformat(), "visite": r[1], "colloqui": r[2], "iscritti": r[3]}
                      for r in cur.fetchall()]
 
             cur.execute("""
                 SELECT tipo, count(DISTINCT coalesce(riferimento, id::text)) FROM eventi
-                WHERE creato_il > now() - (%s || ' days')::interval
+                WHERE creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)
                   AND tipo IN ('visita', 'web_aperto', 'chat_avvio', 'web_completato', 'chat_quadro')
                   AND (riferimento IS NULL OR riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL))
-                GROUP BY tipo""", (giorni,))
+                GROUP BY tipo""", (giorni, dal))
             per_tipo = dict(cur.fetchall())
-            cur.execute("SELECT count(*) FROM utenti WHERE creato_il > now() - (%s || ' days')::interval", (giorni,))
+            cur.execute("SELECT count(*) FROM utenti WHERE creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)", (giorni, dal))
             iscritti_periodo = cur.fetchone()[0]
 
             cur.execute("""
                 SELECT coalesce(dettaglio->>'fonte', 'sconosciuta'), count(*) FROM eventi
-                WHERE tipo = 'visita' AND creato_il > now() - (%s || ' days')::interval
-                GROUP BY 1 ORDER BY 2 DESC LIMIT 12""", (giorni,))
+                WHERE tipo = 'visita' AND creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)
+                GROUP BY 1 ORDER BY 2 DESC LIMIT 12""", (giorni, dal))
             fonti = [{"fonte": f, "visite": n} for f, n in cur.fetchall()]
 
             # canali: visite, colloqui avviati e iscrizioni per canale e campagna. L'iscrizione si collega al canale
@@ -193,18 +226,18 @@ def raccogli(giorni: int = 30) -> dict:
                 SELECT f, c, sum(vis), sum(col), sum(isc) FROM (
                     SELECT coalesce(dettaglio->>'fonte', 'sconosciuta') f, coalesce(dettaglio->>'campagna', '') c,
                            1 vis, 0 col, 0 isc
-                    FROM eventi WHERE tipo = 'visita' AND creato_il > now() - (%s || ' days')::interval
+                    FROM eventi WHERE tipo = 'visita' AND creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)
                     UNION ALL
                     SELECT coalesce(dettaglio->>'fonte', 'sconosciuta'), coalesce(dettaglio->>'campagna', ''), 0, 1, 0
-                    FROM eventi WHERE tipo = 'inizio' AND creato_il > now() - (%s || ' days')::interval
+                    FROM eventi WHERE tipo = 'inizio' AND creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)
                       AND riferimento NOT IN (SELECT riferimento FROM eventi WHERE tipo = 'interno' AND riferimento IS NOT NULL)
                     UNION ALL
                     SELECT coalesce(e.dettaglio->>'fonte', 'non tracciato'), coalesce(e.dettaglio->>'campagna', ''), 0, 0, 1
                     FROM utenti u
                     LEFT JOIN LATERAL (SELECT dettaglio FROM eventi WHERE tipo = 'inizio' AND riferimento = u.dashboard_id
                                        ORDER BY creato_il LIMIT 1) e ON true
-                    WHERE u.creato_il > now() - (%s || ' days')::interval
-                ) x GROUP BY f, c ORDER BY sum(isc) DESC, sum(vis) DESC LIMIT 40""", (giorni, giorni, giorni))
+                    WHERE u.creato_il > greatest(now() - (%s || ' days')::interval, %s::timestamptz)
+                ) x GROUP BY f, c ORDER BY sum(isc) DESC, sum(vis) DESC LIMIT 40""", (giorni, dal, giorni, dal, giorni, dal))
             canali = [{"fonte": r[0], "campagna": r[1], "visite": int(r[2]), "colloqui": int(r[3]), "iscritti": int(r[4])}
                       for r in cur.fetchall()]
 
@@ -260,6 +293,7 @@ def raccogli(giorni: int = 30) -> dict:
     stats = db.statistiche_eventi(giorni)
     return {
         "giorni": giorni, "generato_il": datetime.now(timezone.utc).isoformat(),
+        "statistiche_dal": "" if dal.startswith("1970") else dal,
         "kpi": {"iscritti": tot, "app_da_confermare": app_n, "nuovi7": nuovi7, "nuovi30": nuovi30, "attivi7": attivi7,
                 "con_dashboard": con_dash, "fic": fic_n, "email_off": opt_out},
         "serie": serie,
@@ -480,7 +514,7 @@ def pagina(dati: dict, avviso: str = "") -> str:
 <title>TaxScan · Pannello</title><style>{_CSS}</style></head><body><main>
 <h1>TaxScan · Pannello amministratore</h1>
 <p class="sub">Aggiornato {datetime.now(timezone.utc).astimezone().strftime('%d/%m/%Y %H:%M')} ·
-<a href="/admin/esci">Esci</a> · {('Questo browser <b>non</b> viene contato (test) · <a href="/admin/interno?no=1">Torna a contarlo</a>' if dati.get("interno") else '<a href="/admin/interno">Non contare questo browser (i miei test)</a>')}</p>
+<a href="/admin/esci">Esci</a> · {('Statistiche dal ' + _e(dati["statistiche_dal"][:16].replace("T", " ")) + ' · <a href="/admin/azzera?annulla=1">Torna a contare tutto</a> · ') if dati.get("statistiche_dal") else ''}<a href="/admin/azzera" onclick="return confirm('Azzerare le statistiche? Non si cancella nessun dato: da adesso il pannello conta solo quello che succede dopo.')">Azzera statistiche</a> · {('Questo browser <b>non</b> viene contato (test) · <a href="/admin/interno?no=1">Torna a contarlo</a>' if dati.get("interno") else '<a href="/admin/interno">Non contare questo browser (i miei test)</a>')}</p>
 {('<p class="avviso">' + _e(avviso) + '</p>') if avviso else ''}<div class="kpi">{kpi}</div>
 <div class="card"><div class="tool"><h2 style="margin:0;flex:1">Andamento giornaliero</h2>
 <form method="get" action="/admin"><select name="giorni" onchange="this.form.submit()">{scelte}</select></form></div>
@@ -602,6 +636,14 @@ def registra(mcp, evento) -> None:
             return HTMLResponse(f"<p>Eliminazione non riuscita: {_e(e)}</p>", status_code=500, headers=intest)
         evento("admin_eliminati", None, {"n": n})
         return RedirectResponse(f"/admin?eliminati={n}", status_code=303)
+
+    @mcp.custom_route("/admin/azzera", methods=["GET"])
+    async def admin_azzera(request):
+        import asyncio
+        if not cookie_ok(request.cookies.get(COOKIE, "")):
+            return Response("non autorizzato", status_code=403)
+        await asyncio.to_thread(azzera_statistiche, bool(request.query_params.get("annulla")))
+        return RedirectResponse("/admin", status_code=303)
 
     @mcp.custom_route("/admin/interno", methods=["GET"])
     async def admin_interno(request):

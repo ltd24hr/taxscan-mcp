@@ -8,6 +8,7 @@ PAGINA_HTML = r"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="canonical" href="https://taxscan.it/">
+<meta property="og:title" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta property="og:description" content="Per partite IVA in regime forfettario: scadenze, acconti e quanto mettere da parte su ogni fattura. Gratis."><meta property="og:url" content="https://taxscan.it/"><meta property="og:type" content="website"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://taxscan.it/og.jpg">
 <meta name="description" content="TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse. Per partite IVA in regime forfettario. Scopri quanto puoi risparmiare.">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}

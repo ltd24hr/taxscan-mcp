@@ -1541,6 +1541,12 @@ async def icona_192(request):
     return _icona("icon-192.png", "image/png")
 
 
+@mcp.custom_route("/og.jpg", methods=["GET", "HEAD"])
+async def immagine_condivisione(request):
+    """Anteprima dei link (WhatsApp, Facebook, LinkedIn, Telegram): avatar + messaggio, 1200x630."""
+    return _icona("og.jpg", "image/jpeg")
+
+
 @mcp.custom_route("/icon-512.png", methods=["GET", "HEAD"])
 async def icona_512(request):
     return _icona("icon-512.png", "image/png")
@@ -1711,7 +1717,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]

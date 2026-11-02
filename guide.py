@@ -331,7 +331,7 @@ def pagina(slug: str, qs_attribuzione: str = "") -> str | None:
 <meta name="description" content="{_e(g['descrizione'])}">
 <link rel="canonical" href="{BASE}/guide/{slug}">
 <meta property="og:title" content="{_e(g['titolo'])}"><meta property="og:description" content="{_e(g['descrizione'])}">
-<meta property="og:type" content="article"><meta property="og:url" content="{BASE}/guide/{slug}">
+<meta property="og:type" content="article"><meta property="og:url" content="{BASE}/guide/{slug}"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://taxscan.it/og.jpg">
 <style>{_CSS}</style></head><body><main>
 <a class="logo" href="/?utm_source=guida">Tax<span>Scan</span></a>
 <h1>{_e(g['titolo'])}</h1>
