@@ -601,6 +601,17 @@ PAGINA_HTML = r"""<!doctype html>
   .ill.letto .timbro { opacity:1; transform:rotate(-8deg); }
   .pronto { display:flex; gap:12px; margin:0 0 16px; }
   .scheda.centro, .scheda.centro:has(> .ill) { display:block !important; text-align:center; }
+  .scheda > .attesa { grid-column:1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; min-height:240px; text-align:center; }
+  .scheda > .attesa p { margin:0; font-size:18px; font-weight:600; color:var(--testo,#122452); }
+  .attesa .at-p i { font-style:normal; opacity:.25; }
+  @media (prefers-reduced-motion: no-preference) {
+    .attesa .at-luce { animation:at-luce 1.2s ease-in-out infinite; }
+    .attesa .at-p i { animation:at-p 1.2s infinite; } .attesa .at-p i:nth-child(2) { animation-delay:.2s; } .attesa .at-p i:nth-child(3) { animation-delay:.4s; }
+    .scheda > .attesa { animation:at-in .25s ease-out both; }
+  }
+  @keyframes at-luce { 0%,100% { transform:translateY(0); fill:#05c4b8; } 50% { transform:translateY(24px); fill:#4355cc; } }
+  @keyframes at-p { 0%,100% { opacity:.25; } 40% { opacity:1; } }
+  @keyframes at-in { from { opacity:0; } to { opacity:1; } }
   .scheda.centro > .ill { justify-content:center; margin:0 auto 14px; } .scheda.centro > .ill svg { height:200px; }
   .letto-ok { color:#087308; font-weight:600; }
   .pronto svg { width:54px; height:54px; padding:9px; border-radius:15px; background:var(--verde-chiaro); }
@@ -669,7 +680,7 @@ PAGINA_HTML = r"""<!doctype html>
 <div class="pagina">
   <header><div class="logo">Tax<span>Scan</span></div><div class="passo" id="passo"></div></header>
   <div class="barra"><div id="barra"></div></div>
-  <div class="scheda" id="scheda"><p class="hint">Un attimo...</p></div>
+  <div class="scheda" id="scheda"><div class="attesa" role="status" aria-live="polite"><svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true"><path d="M19 7.5H40L50.5 18V51a5.5 5.5 0 0 1-5.5 5.5H19A5.5 5.5 0 0 1 13.5 51V13A5.5 5.5 0 0 1 19 7.5Z" fill="#fff" stroke="#122452" stroke-width="3.2" stroke-linejoin="round"/><path d="M40 7.5V14.5A3.5 3.5 0 0 0 43.5 18H50.5" fill="none" stroke="#122452" stroke-width="3.2" stroke-linejoin="round"/><path d="M20.5 22H33M20.5 29H40M20.5 36H37M20.5 43H31" stroke="#c5cdea" stroke-width="3" stroke-linecap="round"/><rect class="at-luce" x="9" y="20" width="46" height="3.6" rx="1.8" fill="#05c4b8"/></svg><p>Un attimo<span class="at-p"><i>.</i><i>.</i><i>.</i></span></p></div></div>
   <footer>TaxScan prepara e spiega: le cifre sono stime e la responsabilità è tua; se vuoi, le fai controllare a un professionista. Niente di quello che scrivi qui è una dichiarazione fiscale. <a href="/termini" style="color:inherit">Termini e condizioni</a> · <a href="/privacy" style="color:inherit">Privacy policy</a> · <a href="#" class="tsck-open" style="color:inherit">Cookie</a></footer>
   <p class="by" style="font-size:12px;color:#7c7a74;margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">TaxScan è un servizio offerto da <a href="https://ltd24.co.uk" target="_blank" rel="noopener" style="display:inline-flex;font-weight:700;color:inherit;text-decoration:none"><img src="/logo-ltd24.png" alt="LTD24" style="height:20px;width:auto" onerror="this.replaceWith(document.createTextNode('LTD24'))"></a></p>
 </div>
@@ -704,6 +715,8 @@ const ICO = {
   tocco: '<rect class="q-t q-c" x="8" y="11" width="32" height="10" rx="5"/><rect class="q-t q-c" x="8" y="27" width="32" height="10" rx="5"/><circle class="q-p" cx="14" cy="16" r="2.4" fill="#05d5c8"/><circle cx="14" cy="32" r="2.4" class="q-s"/><path class="q-r" d="M20 16h13M20 32h9"/>',
   fatto: '<circle class="q-t q-c" cx="24" cy="24" r="17"/><path class="q-a q-d" pathLength="1" d="M15.5 24.5l6 6 11.5-12.5" style="stroke-width:3.4"/>'
 };
+// mentre aspetto il server: al centro, un foglio che si legge (come «Sto preparando la tua situazione»)
+const ATTESA = '<div class="attesa" role="status" aria-live="polite"><svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true"><path d="M19 7.5H40L50.5 18V51a5.5 5.5 0 0 1-5.5 5.5H19A5.5 5.5 0 0 1 13.5 51V13A5.5 5.5 0 0 1 19 7.5Z" fill="#fff" stroke="#122452" stroke-width="3.2" stroke-linejoin="round"/><path d="M40 7.5V14.5A3.5 3.5 0 0 0 43.5 18H50.5" fill="none" stroke="#122452" stroke-width="3.2" stroke-linejoin="round"/><path d="M20.5 22H33M20.5 29H40M20.5 36H37M20.5 43H31" stroke="#c5cdea" stroke-width="3" stroke-linecap="round"/><rect class="at-luce" x="9" y="20" width="46" height="3.6" rx="1.8" fill="#05c4b8"/></svg><p>Un attimo<span class="at-p"><i>.</i><i>.</i><i>.</i></span></p></div>';
 function selAnni(id, sel) {
   let o = '<option value=""' + (sel ? "" : " selected") + ">Scegli l'anno</option>";
   for (let a = new Date().getFullYear(); a >= 1980; a--) o += '<option value="' + a + '"' + (String(a) === String(sel) ? " selected" : "") + ">" + a + "</option>";
@@ -821,17 +834,21 @@ function allinea() {
   const target = riga && col.indexOf(riga) >= 0 ? riga : col[col.length - 1];
   if (!target) return;
   const ref = riga ? (riga.querySelector("button.primario") || riga) : (target.matches(".opzioni") && target.lastElementChild ? target.lastElementChild : target);
-  const sr = s.getBoundingClientRect(), ir = ico.getBoundingClientRect(), rr = ref.getBoundingClientRect(), h = el.offsetHeight || 48;
-  let top = riga ? rr.top - sr.top + (rr.height - h) / 2 : rr.bottom - sr.top - h;
-  const min = ir.bottom - sr.top + 18;
+  // posizioni di layout (offsetTop), non quelle a schermo: i pulsanti entrano con un'animazione dal basso e,
+  // misurati a meta' animazione, «Indietro» finiva qualche pixel piu' giu' di «Avanti»
+  const off = n => { let y = 0, x = 0, k = n; while (k && k !== s) { y += k.offsetTop; x += k.offsetLeft; k = k.offsetParent; }
+                     return {top: y, left: x, height: n.offsetHeight, width: n.offsetWidth}; };
+  const ir = off(ico), rr = off(ref), h = el.offsetHeight || 48;
+  let top = riga ? rr.top + (rr.height - h) / 2 : rr.top + rr.height - h;
+  const min = ir.top + ir.height + 18;
   if (top < min) {   // l'immagine è più alta del testo: scendono un poco le risposte, così «Indietro» non la copre
     const add = Math.ceil(min - top);
     target.dataset.spazio = target.style.marginTop || "-";
     target.style.marginTop = (parseFloat(getComputedStyle(target).marginTop) + add) + "px";
     top += add;
   }
-  el.style.top = Math.round(top - s.clientTop) + "px";
-  el.style.left = Math.round(ir.left - sr.left - s.clientLeft + (ir.width - el.offsetWidth) / 2) + "px";
+  el.style.top = Math.round(top) + "px";
+  el.style.left = Math.round(ir.left + (ir.width - el.offsetWidth) / 2) + "px";
 }
 if (window.ResizeObserver) { let rt = null; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(allinea, 60); }).observe(document.getElementById("scheda")); }
 // se la scheda cambia contenuto dopo, i pulsanti restano al loro posto
@@ -1090,9 +1107,12 @@ function mostraNome() {
 
 async function invia() {
   if (fase === "domanda" && !scheda.nome && !nomeChiesto) { nomeChiesto = true; return mostraNome(); }
-  $("scheda").innerHTML = '<p class="hint">Un attimo...</p>'; nav([]);
+  // l'attesa compare solo se il server ci mette un po': risposte veloci, niente lampeggio
+  const sc = $("scheda"); sc.style.pointerEvents = "none";
+  const tAtt = setTimeout(() => { sc.innerHTML = ATTESA; nav([]); }, 300);
   scheda.chiedi_aliquota = true;   // la domanda che decide il 5% o il 15% si fa subito, non si indovina
-  try { ultima = await api("POST", {scheda}); } catch (e) { $("scheda").innerHTML = '<div class="errore">Connessione persa: riprova tra un momento.</div>'; return; }
+  try { ultima = await api("POST", {scheda}); } catch (e) { clearTimeout(tAtt); sc.style.pointerEvents = ""; sc.innerHTML = '<div class="errore">Connessione persa: riprova tra un momento.</div>'; return; }
+  clearTimeout(tAtt); sc.style.pointerEvents = "";
   scheda = ultima.scheda;
   if (ultima.stato === "da_completare_in_chat") return mostraFine(true);
   if (ultima.verifica.completa) return mostraFine(false);

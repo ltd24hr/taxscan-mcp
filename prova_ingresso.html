@@ -156,8 +156,8 @@ h1{margin:0;font-family:var(--display);font-weight:700;line-height:1.15;text-wra
   function tab(w){$('home').hidden=w!=='home';$('quest').hidden=w!=='q';scrollTo(0,0);
     if(w==='home')homeSay();else introSay()}
   $('go-q').onclick=function(){tab('q')};
-  function homeSay(){say('h-bub','Ciao, sono l\'<b>agente IA di TaxScan</b>. Mettiamo in ordine la tua partita IVA: bastano 2 minuti.')}
-  function introSay(){showScr('intro');say('b-intro','Ciao, sono l\'<b>agente IA di TaxScan</b>. Voglio analizzare la tua situazione fiscale in 2 minuti.')}
+  function homeSay(){say('h-bub','Ciao, sono il tuo <b>agente IA</b>. Mettiamo in ordine la tua partita IVA: bastano 2 minuti.')}
+  function introSay(){showScr('intro');say('b-intro','Ciao, sono il tuo <b>agente IA</b>. Voglio analizzare la tua situazione fiscale in 2 minuti.')}
   function showScr(w){$('s-intro').hidden=w!=='intro';$('s-ask').hidden=w!=='ask';$('s-res').hidden=w!=='res'}
 
   /* domande */
