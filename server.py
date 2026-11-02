@@ -1079,6 +1079,12 @@ async def colloquio_nuovo(request):
         web = colloquio_web.crea_colloquio()
     except Exception as e:
         return PlainTextResponse(f"Servizio momentaneamente non disponibile: {e}", status_code=503)
+    # canale di provenienza: dal pulsante della home/guide (src, med, cmp...) o direttamente dagli utm_* di un annuncio
+    attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
+                                       request.headers.get("user-agent", ""))
+    if attr:
+        import asyncio
+        asyncio.get_running_loop().run_in_executor(None, _evento, "inizio", web["id_colloquio"], attr)
     return RedirectResponse(url=f"/colloquio/{web['id_colloquio']}", status_code=302)
 
 
@@ -1694,14 +1700,20 @@ async def home(request):
     if DOMINIO_PRINCIPALE and host and host != DOMINIO_PRINCIPALE and not host.startswith(("localhost", "127.", "0.0.0.0")):
         q = request.url.query
         return RedirectResponse(f"https://{DOMINIO_PRINCIPALE}/" + (f"?{q}" if q else ""), status_code=301)
+    pagina = landing.PAGINA_HTML
     if request.method == "GET":
-        # per il pannello /admin: da dove arrivano le visite (utm_source o sito di provenienza), bot esclusi
-        fonte = admin_pannello.fonte_visita(dict(request.query_params), request.headers.get("referer", ""),
-                                            request.headers.get("user-agent", ""))
-        if fonte:
+        # per il pannello /admin: canale, campagna e annuncio di chi arriva (utm_*, fbclid/ttclid/gclid, sito di
+        # provenienza), bot esclusi. Gli stessi dati viaggiano sul pulsante che apre il colloquio, cosi' l'iscrizione
+        # finale si attribuisce al canale giusto senza cookie.
+        attr = admin_pannello.attribuzione(dict(request.query_params), request.headers.get("referer", ""),
+                                           request.headers.get("user-agent", ""))
+        if attr:
             import asyncio
-            asyncio.get_running_loop().run_in_executor(None, _evento, "visita", None, {"fonte": fonte})
-    return HTMLResponse(cookie_banner.inietta(landing.PAGINA_HTML))
+            asyncio.get_running_loop().run_in_executor(None, _evento, "visita", None, attr)
+            qs = admin_pannello.parametri_attribuzione(attr)
+            if qs:
+                pagina = pagina.replace('href="/colloquio/nuovo"', f'href="/colloquio/nuovo?{qs}"')
+    return HTMLResponse(cookie_banner.inietta(pagina))
 
 
 if __name__ == "__main__":
