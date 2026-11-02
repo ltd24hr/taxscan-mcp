@@ -1955,6 +1955,11 @@ def _report_v2(c, uid, d, email, num):
         "task": [{"titolo": _pulisci(t.get("titolo"), 120), "perche": _pulisci(t.get("perche"), 300), "come": _pulisci(t.get("come"), 400)}
                  for t in (d.get("task") or [])[:12] if isinstance(t, dict)],
     }
+    sit, nome_srv = _situazione_report(c)
+    if sit:
+        pulito["situazione"] = sit
+    if not pulito["nome"] and nome_srv:
+        pulito["nome"] = nome_srv
     try:
         pdf = report_pdf.genera_v2(pulito)
     except Exception as e:
@@ -1971,11 +1976,63 @@ def _report_v2(c, uid, d, email, num):
     except Exception:
         pass
     # il report contiene dati fiscali: parte via email solo verso un indirizzo confermato con il codice
-    inviato = _manda_report(email, pdf, pulito["nome"], pulito["risparmio"]) if attiva and attiva == str(email or "").strip().lower() else False
+    inviato = (_manda_report(email, pdf, pulito["nome"], pulito["risparmio"], pulito["principale"]["nome"], sit, c)
+               if attiva and attiva == str(email or "").strip().lower() else False)
     return (pdf, inviato), None
 
 
-def _manda_report(email: str, pdf: bytes, nome: str, risparmio: float) -> bool:
+def _situazione_report(c: str) -> tuple[dict, str]:
+    """I fatti che TaxScan conosce di questa persona, scritti per lei: il report parla della sua situazione, non di un caso generico."""
+    import datetime
+    if not c:
+        return {}, ""
+    try:
+        import scheda as S
+        d = db.carica_dashboard(c) or {}
+        sch = d.get("_scheda") or {}
+        prof = d.get("profilo") or {}
+        anno = datetime.date.today().year
+        righe = []
+        ini = S._inizio(sch.get("data_apertura"))
+        anni = prof.get("anni_nel_regime")
+        if ini:
+            quando = (f"a {_MESI_IT[ini[1] - 1]} " if ini[1] else "nel ") + str(ini[0])
+            if ini[1] and _MESI_IT[ini[1] - 1][0] in "aeiou":
+                quando = "ad " + quando[2:]
+            righe.append(f"Hai aperto la partita IVA {quando}" + (f": il {anno} è il tuo {int(anni) + 1}° anno nel forfettario." if isinstance(anni, int) else "."))
+        aliq = str(prof.get("aliquota") or "")
+        if aliq.startswith("5"):
+            dal15 = prof.get("dal_anno_15")
+            righe.append("Paghi l'imposta sostitutiva al 5%" + (f", fino al {dal15 - 1}: dal {dal15} passerà al 15%." if isinstance(dal15, int) else "."))
+        elif aliq:
+            righe.append(f"Paghi l'imposta sostitutiva al {aliq}.")
+        gest = prof.get("gestione") or sch.get("gestione_previdenziale")
+        nomi = {"separata": "in gestione separata INPS", "artigiani": "come artigiano all'INPS", "commercianti": "come commerciante all'INPS"}
+        if gest == "cassa":
+            righe.append(f"Versi i contributi alla tua cassa professionale{(' (' + str(prof.get('nome_cassa')) + ')') if prof.get('nome_cassa') else ''}.")
+        elif gest in nomi:
+            righe.append(f"Versi i contributi {nomi[gest]}.")
+        if "dipendente_o_pensione" in (sch.get("situazioni_particolari") or []):
+            righe.append("Oltre alla partita IVA hai un lavoro da dipendente o una pensione: ne ho tenuto conto per i contributi e per i limiti del regime.")
+        if d.get("quota_per_fattura"):
+            righe.append(f"Oggi, da ogni fattura incassata, conviene mettere da parte circa il {str(d['quota_per_fattura']).replace('.0%', '%').replace('.', ',')} per imposta e contributi.")
+        ps = d.get("prossima_scadenza") or {}
+        prossima = ""
+        if ps.get("data") and ps.get("importo"):
+            try:
+                dt = datetime.date.fromisoformat(str(ps["data"])[:10])
+                prossima = (f"La tua prossima scadenza è il {dt.day} {_MESI_IT[dt.month - 1]} {dt.year}: circa "
+                            f"{int(round(float(ps['importo']))):,} € ({str(ps.get('etichetta') or '').strip()}). Te la ricordo io qualche giorno prima.").replace(",", ".")
+            except Exception:
+                prossima = ""
+        nome = S.pulisci_nome(str(sch.get("nome") or d.get("nome") or "").split(" ")[0]) if (sch.get("nome") or d.get("nome")) else ""
+        return {"righe": righe, "prossima": prossima.replace(" ()", "")}, nome or ""
+    except Exception as e:
+        print(f"prova: situazione per il report non letta: {e}")
+        return {}, ""
+
+
+def _manda_report(email: str, pdf: bytes, nome: str, risparmio: float, lavoro: str = "", sit: dict | None = None, c: str = "") -> bool:
     """Manda il report PDF come allegato (Resend). Se la chiave non c'e' o l'invio fallisce, ritorna False: il PDF si scarica comunque."""
     import base64
     try:
@@ -1985,15 +2042,26 @@ def _manda_report(email: str, pdf: bytes, nome: str, risparmio: float) -> bool:
         if not auth.RESEND_API_KEY:
             return False
         eur = f"{int(round(risparmio)):,}".replace(",", ".") + " €"
+        mese = f"{int(round(risparmio / 12)):,}".replace(",", ".") + " €"
+        lav = (lavoro or "").strip().rstrip(".")
+        lav = (lav[0].lower() + lav[1:]) if len(lav) > 1 and not lav[:2].isupper() else lav
+        link = f"{emailtpl.PUBLIC_URL}/prova?c={c}&vai=t" if c else ""
+        prossima = (sit or {}).get("prossima") or ""
         html = emailtpl.cornice(
             "Il tuo report di risparmio fiscale",
-            f"<p>Ciao{(' ' + emailtpl._e(nome.split(' ')[0])) if nome else ''},</p>"
-            f"<p>in allegato trovi il report con l'analisi della tua prestazione: le micro-attività individuate, come rifare la fattura "
-            f"e il calcolo passo per passo. Il risparmio stimato è di circa <b>{eur} l'anno</b>.</p>"
-            "<p>Nella sezione <b>Da fare</b> di TaxScan trovi i passi in ordine di priorità, con il pulsante <b>Inizia</b> per farti guidare.</p>"
-            "<p style='color:#5b6475;font-size:13px'>È una stima, non una promessa di risultato. Se vuoi, un commercialista può verificarla con te.</p>")
+            f"<p>Ciao{(' ' + emailtpl._e(nome.split(' ')[0].capitalize())) if nome else ''},</p>"
+            + (f"<p>ho finito di analizzare il tuo lavoro{(' di ' + emailtpl._e(lav)) if lav else ''}: con le fatture divise come ti propongo, "
+               f"puoi pagare circa <b>{eur} in meno l'anno</b>, cioè {mese} in più ogni mese nel tuo netto.</p>"
+               if risparmio > 0 else
+               f"<p>ho finito di analizzare il tuo lavoro{(' di ' + emailtpl._e(lav)) if lav else ''}. Con le prestazioni che svolgi oggi non ho "
+               "trovato un risparmio significativo, e preferisco dirtelo chiaramente: nel report trovi comunque il calcolo completo.</p>")
+            + "<p>Nel report in allegato ti spiego cosa ho visto, come rifare la fattura e il calcolo passo per passo.</p>"
+            + (f"<p>{emailtpl._e(prossima)}</p>" if prossima else "")
+            + "<p>Non devi fare tutto subito: in <b>Da fare</b> trovi i passi in ordine, con il pulsante <b>Inizia</b> ti accompagno io.</p>"
+            + (f"<p><a href='{link}' style='color:#4355cc;font-weight:600'>Apri i tuoi passi in TaxScan</a></p>" if link else "")
+            + "<p style='color:#5b6475;font-size:13px'>È una stima, non una promessa di risultato. Se vuoi, un commercialista può verificarla con te.</p>")
         r = requests.post(auth.RESEND_URL, headers={"Authorization": f"Bearer {auth.RESEND_API_KEY}"}, timeout=20,
-                          json={"from": auth.MITTENTE, "to": email, "subject": "Il tuo report di risparmio fiscale · TaxScan", "html": html,
+                          json={"from": auth.MITTENTE, "to": email, "subject": ((nome.split(' ')[0].capitalize() + ", il tuo report") if nome else "Il tuo report") + " di risparmio fiscale · TaxScan", "html": html,
                                 "attachments": [{"filename": "report-risparmio-taxscan.pdf", "content": base64.b64encode(pdf).decode("ascii")}]})
         r.raise_for_status()
         return True

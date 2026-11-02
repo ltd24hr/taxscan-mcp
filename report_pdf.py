@@ -324,24 +324,57 @@ def _barre(p, voci, col_a=GRIGIO, col_b=VERDE):
         p.y -= 50
 
 
+def _minuscola(t: str) -> str:
+    """«Consulenza di marketing» -> «consulenza di marketing», ma lascia le sigle (SEO, IT) come sono."""
+    t = (t or "").strip().rstrip(".")
+    return (t[0].lower() + t[1:]) if len(t) > 1 and not t[:2].isupper() else t
+
+
 def genera_v2(d: dict) -> bytes:
     p = _Pdf()
+    nome = (_t(d.get("nome"), 60) or "").split(" ")[0].strip().capitalize()
     _intestazione(p, "Report di risparmio fiscale", "Preparato per %s · %s" % (_t(d.get("nome"), 60) or "te", datetime.date.today().strftime("%d/%m/%Y")))
     ris = _n(d.get("risparmio"))
     oggi, dopo = d.get("oggi") or {}, d.get("dopo") or {}
     cp, cd = _n(d.get("coef_prima")), _n(d.get("coef_dopo"))
+    pr = d.get("principale") or {}
+    lavoro = _minuscola(_t(pr.get("nome"), 90))
+    nf = len(d.get("fatture") or [])
+    sit = d.get("situazione") if isinstance(d.get("situazione"), dict) else {}
+
+    # due righe da persona a persona, prima dei numeri
+    p.par(("Ciao %s," % nome) if nome else "Ciao,", 12.5, True, SCURO, dopo=4)
+    if ris > 0:
+        p.par("ho guardato con attenzione %s del tuo lavoro%s e ho trovato un modo concreto per pagare meno, restando nelle regole: "
+              "circa %s l'anno, cioè %s in più ogni mese nel tuo netto. In queste pagine ti spiego cosa ho visto, come rifare la fattura "
+              "e cosa fare, un passo alla volta." % (
+                  "la fattura" if nf == 1 else "le %d fatture" % nf if nf else "i dati", (" di " + lavoro) if lavoro else "",
+                  _eur(ris), _eur(ris / 12)), 10.5, False, SCURO, dopo=10)
+    else:
+        p.par("ho guardato con attenzione %s del tuo lavoro%s. Con le prestazioni che svolgi oggi non ho trovato un risparmio "
+              "significativo, e preferisco dirtelo chiaramente piuttosto che gonfiare i numeri. Qui sotto trovi comunque il calcolo "
+              "completo e i punti da tenere d'occhio." % ("la fattura" if nf == 1 else "le fatture", (" di " + lavoro) if lavoro else ""),
+              10.5, False, SCURO, dopo=10)
+
     p.titolo("In sintesi")
     p.kpi([("Risparmio annuo", _eur(ris), "tasse e contributi in meno"), ("Ogni mese", _eur(ris / 12), "in più nel tuo netto"),
            ("Coefficiente medio", _pc(cd), "invece del %s" % _pc(cp))])
-    p.par("Abbiamo analizzato %s e individuato %d micro-attività che svolgi (o puoi svolgere) insieme al tuo lavoro principale e che, per il fisco, "
+    p.par("Ho analizzato %s e individuato %d micro-attività che svolgi (o puoi svolgere) insieme al tuo lavoro principale e che, per il fisco, "
           "rientrano in categorie con un coefficiente di redditività più basso. Dividendo la fattura in righe separate, ognuna con il suo importo e il suo "
           "coefficiente, il reddito su cui paghi scende da %s a %s. Su incassi annui di %s il risparmio stimato è di circa %s l'anno. È una stima, non una promessa di risultato." % (
               "la tua fattura" if len(d.get("fatture") or []) == 1 else "le tue fatture", len(d.get("micro") or []),
               _eur(oggi.get("red")), _eur(dopo.get("red")), _eur(d.get("incassi")), _eur(ris)))
     _barre(p, [("Reddito su cui paghi", oggi.get("red"), dopo.get("red")), ("Totale tasse e contributi", oggi.get("tot"), dopo.get("tot"))])
 
+    # la sua situazione: i fatti che TaxScan conosce di questa persona, cosi' il report parla di lei e non di un caso generico
+    righe_sit = [x for x in (sit.get("righe") or []) if str(x or "").strip()][:6]
+    if righe_sit:
+        p.titolo("La tua situazione, in breve")
+        for t in righe_sit:
+            p.par("• " + _t(t, 260), 10, False, SCURO, dopo=3, x=MARG + 4, w=PAGE_W - 2 * MARG - 4)
+        p.y -= 4
+
     p.titolo("I dati di partenza")
-    pr = d.get("principale") or {}
     p.tabella([("Dato", 3, "l"), ("Valore", 4, "l")], [
         ["Attività principale", _t(pr.get("nome"), 90) or "—"],
         ["Codice ATECO attuale", _t(pr.get("cod"), 12) or "—"],
@@ -357,10 +390,10 @@ def genera_v2(d: dict) -> bytes:
         p.tabella([("Righe della fattura originale", 6, "l"), ("Importo", 1.6, "r")],
                   [[_t(r.get("testo"), 160), _eur(r.get("importo"))] for r in (f.get("righe_orig") or [])[:12]] or [["—", ""]])
         if _t(f.get("dettagli"), 10):
-            p.par("Cosa ci hai raccontato del lavoro svolto: «%s»" % _t(f.get("dettagli"), 700), 9.5, False, GRIGIO, dopo=6)
+            p.par("Quello che mi hai raccontato del lavoro: «%s»" % _t(f.get("dettagli"), 700), 9.5, False, GRIGIO, dopo=6)
 
     p.titolo("Le micro-attività individuate")
-    p.par("Per ognuna: perché è collegata al tuo lavoro, in quale categoria la mette il fisco, quanto pesa nella fattura e quanto contribuisce al risparmio.", 9.5, False, GRIGIO, dopo=6)
+    p.par("Per ognuna ti dico perché è collegata al tuo lavoro, in quale categoria la mette il fisco, quanto pesa nella fattura e quanto contribuisce al risparmio.", 9.5, False, GRIGIO, dopo=6)
     for i, m in enumerate(d.get("micro") or [], 1):
         p.serve(110)
         p.y -= 4
@@ -417,6 +450,17 @@ def genera_v2(d: dict) -> bytes:
             if t.get("come"):
                 p.par("Come: " + _t(t.get("come"), 400), 9.5, False, GRIGIO, dopo=6, x=MARG + 8, w=PAGE_W - 2 * MARG - 8)
         p.par("Trovi tutti i compiti nella sezione «Da fare» di TaxScan, con il pulsante Inizia per farti guidare.", 9.5, False, BLU, dopo=4)
+
+    # la chiusura: il primo passo, detto semplice, e dove trovarmi
+    p.titolo(("Un'ultima cosa, %s" % nome) if nome else "Un'ultima cosa")
+    primo = _t((tk[0] or {}).get("titolo"), 120) if tk else ""
+    if ris > 0 and primo:
+        p.par("Non devi fare tutto subito. Il primo passo è questo: %s. Lo trovi in «Da fare», con il pulsante Inizia: ti accompagno io, "
+              "un passaggio alla volta." % _minuscola(primo), 10.5, False, SCURO, dopo=4)
+    if sit.get("prossima"):
+        p.par(_t(sit.get("prossima"), 300), 10.5, False, SCURO, dopo=4)
+    p.par("Se qualcosa non ti torna, o il tuo lavoro cambia, scrivimelo in TaxScan: ti rispondo e, se serve, rifaccio i conti.", 10.5, False, SCURO, dopo=6)
+    p.par("L'agente IA di TaxScan", 10.5, True, BLU, dopo=10)
 
     p.titolo("Limiti e avvertenze")
     for t in [
