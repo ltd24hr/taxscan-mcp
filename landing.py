@@ -6,9 +6,9 @@ PAGINA_HTML = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title><link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <link rel="canonical" href="https://taxscan.it/">
-<meta property="og:title" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta property="og:description" content="Per partite IVA in regime forfettario: scadenze, acconti e quanto mettere da parte su ogni fattura. Gratis."><meta property="og:url" content="https://taxscan.it/"><meta property="og:type" content="website"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://taxscan.it/og.jpg">
+<meta property="og:title" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta property="og:description" content="TaxScan, il primo agente IA specializzato nel risparmio fiscale per partite IVA in regime forfettario: quanto pagare, quando e quanto mettere da parte su ogni fattura. Gratis."><meta property="og:url" content="https://taxscan.it/"><meta property="og:type" content="website"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og-avatar.jpg?v=2"><meta property="og:image:width" content="600"><meta property="og:image:height" content="600"><meta property="og:image:alt" content="Avatar di TaxScan"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://taxscan.it/og-avatar.jpg?v=2">
 <meta name="description" content="TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse. Per partite IVA in regime forfettario. Scopri quanto puoi risparmiare.">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
@@ -248,7 +248,7 @@ ACCEDI_HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Accedi - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Accedi - TaxScan</title><link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
 @font-face{font-family:"Poppins";font-weight:500;font-display:swap;src:url(/font/Poppins-Medium.ttf) format("truetype")}

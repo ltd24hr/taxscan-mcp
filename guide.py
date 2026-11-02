@@ -327,11 +327,11 @@ def pagina(slug: str, qs_attribuzione: str = "") -> str | None:
     cta = f"/colloquio/nuovo?{qs_attribuzione}" if qs_attribuzione else f"/colloquio/nuovo?src=guida&cmp={slug}"
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{_e(g['titolo'])} - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>{_e(g['titolo'])} - TaxScan</title><link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <meta name="description" content="{_e(g['descrizione'])}">
 <link rel="canonical" href="{BASE}/guide/{slug}">
 <meta property="og:title" content="{_e(g['titolo'])}"><meta property="og:description" content="{_e(g['descrizione'])}">
-<meta property="og:type" content="article"><meta property="og:url" content="{BASE}/guide/{slug}"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="TaxScan: quanto paghi di tasse? Scoprilo in 2 minuti"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://taxscan.it/og.jpg">
+<meta property="og:type" content="article"><meta property="og:url" content="{BASE}/guide/{slug}"><meta property="og:site_name" content="TaxScan"><meta property="og:image" content="https://taxscan.it/og-avatar.jpg?v=2"><meta property="og:image:width" content="600"><meta property="og:image:height" content="600"><meta property="og:image:alt" content="Avatar di TaxScan"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://taxscan.it/og-avatar.jpg?v=2">
 <style>{_CSS}</style></head><body><main>
 <a class="logo" href="/?utm_source=guida">Tax<span>Scan</span></a>
 <h1>{_e(g['titolo'])}</h1>
@@ -351,7 +351,7 @@ def elenco() -> str:
     voci = "".join(f"<li><a href='/guide/{s}'>{_e(g['titolo'])}</a><br><span class='meta'>{_e(g['descrizione'])}</span></li>"
                    for s, g in GUIDE.items())
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide per forfettari - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide per forfettari - TaxScan</title><link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <meta name="description" content="Guide brevi per partite IVA in regime forfettario: acconti, saldo, calcolo delle tasse.">
 <link rel="canonical" href="{BASE}/guide"><style>{_CSS}</style></head><body><main>
 <a class="logo" href="/?utm_source=guida">Tax<span>Scan</span></a><h1>Guide per forfettari</h1>

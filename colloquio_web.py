@@ -501,7 +501,7 @@ PAGINA_HTML = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TaxScan - la tua situazione in 2 minuti</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>TaxScan - la tua situazione in 2 minuti</title><link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <style>
   :root { --verde:#4355cc; --verde-chiaro:#e8ebfa; --grigio:#3d4a73; --bordo:#d8e2ed; --testo:#122452; --fondo:#eef2f8; --f-tit:"Rethink Sans","Poppins",system-ui,sans-serif; --f-txt:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
   @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
