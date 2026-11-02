@@ -6,7 +6,7 @@ PAGINA_HTML = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title>
+<title>TaxScan - Il primo agente IA per pagare meno tasse (forfettari)</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="canonical" href="https://taxscan.it/">
 <meta name="description" content="TaxScan, il primo agente IA specializzato nel risparmio fiscale: paghi meno tasse. Per partite IVA in regime forfettario. Scopri quanto puoi risparmiare.">
 <style>
@@ -247,7 +247,7 @@ ACCEDI_HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Accedi - TaxScan</title>
+<title>Accedi - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
 @font-face{font-family:"Poppins";font-weight:500;font-display:swap;src:url(/font/Poppins-Medium.ttf) format("truetype")}

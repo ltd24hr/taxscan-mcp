@@ -327,7 +327,7 @@ def pagina(slug: str, qs_attribuzione: str = "") -> str | None:
     cta = f"/colloquio/nuovo?{qs_attribuzione}" if qs_attribuzione else f"/colloquio/nuovo?src=guida&cmp={slug}"
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{_e(g['titolo'])} - TaxScan</title>
+<title>{_e(g['titolo'])} - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="{_e(g['descrizione'])}">
 <link rel="canonical" href="{BASE}/guide/{slug}">
 <meta property="og:title" content="{_e(g['titolo'])}"><meta property="og:description" content="{_e(g['descrizione'])}">
@@ -351,7 +351,7 @@ def elenco() -> str:
     voci = "".join(f"<li><a href='/guide/{s}'>{_e(g['titolo'])}</a><br><span class='meta'>{_e(g['descrizione'])}</span></li>"
                    for s, g in GUIDE.items())
     return f"""<!doctype html><html lang="it"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide per forfettari - TaxScan</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide per forfettari - TaxScan</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="Guide brevi per partite IVA in regime forfettario: acconti, saldo, calcolo delle tasse.">
 <link rel="canonical" href="{BASE}/guide"><style>{_CSS}</style></head><body><main>
 <a class="logo" href="/?utm_source=guida">Tax<span>Scan</span></a><h1>Guide per forfettari</h1>

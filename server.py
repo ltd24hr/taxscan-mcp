@@ -1508,6 +1508,41 @@ async def dashboard_chat(request):
     return JSONResponse(esito, status_code=200 if esito.get("ok") or esito.get("limite") else 400)
 
 
+def _icona(nome_file: str, tipo: str):
+    from starlette.responses import Response
+    percorso = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", nome_file)
+    try:
+        with open(percorso, "rb") as f:
+            return Response(f.read(), media_type=tipo, headers={"Cache-Control": "public, max-age=604800"})
+    except OSError:
+        return Response("", status_code=404)
+
+
+@mcp.custom_route("/favicon.ico", methods=["GET", "HEAD"])
+async def favicon_ico(request):
+    return _icona("favicon.ico", "image/x-icon")
+
+
+@mcp.custom_route("/favicon-48.png", methods=["GET", "HEAD"])
+async def favicon_48(request):
+    return _icona("favicon-48.png", "image/png")
+
+
+@mcp.custom_route("/apple-touch-icon.png", methods=["GET", "HEAD"])
+async def apple_touch_icon(request):
+    return _icona("apple-touch-icon.png", "image/png")
+
+
+@mcp.custom_route("/icon-192.png", methods=["GET", "HEAD"])
+async def icona_192(request):
+    return _icona("icon-192.png", "image/png")
+
+
+@mcp.custom_route("/icon-512.png", methods=["GET", "HEAD"])
+async def icona_512(request):
+    return _icona("icon-512.png", "image/png")
+
+
 @mcp.custom_route("/logo-ltd24.png", methods=["GET"])
 async def logo_ltd24(request):
     """Logo LTD24 per il pie' di pagina (file static/ltd24-logo.png nel repository)."""
@@ -1673,7 +1708,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
