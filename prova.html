@@ -1226,7 +1226,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 87</div>
+<div class="ver">Prototipo versione 88</div>
 </div>
 
 <script>
@@ -1884,7 +1884,12 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function sxMail(){if(!window.TS_C||SX.mail||$('sxmail'))return;var b=document.createElement('div');b.className='kbox';b.id='sxmail';
     b.innerHTML='<div class="sxq">Vuoi il piano anche via email?</div><p class="sxn" style="margin:0 0 8px">Ti scrivo quando fai un passo avanti e ti ricordo cosa resta da fare, con un link per riprendere da qui. Una sola email al giorno, al massimo.</p><div class="sxsend"><input id="sxmi" type="email" placeholder="La tua email" autocomplete="email"><button class="cta s" id="sxmb">Sì, mandamelo</button></div>';
     $('sxout').appendChild(b);$('sxmb').onclick=function(){var v=($('sxmi').value||'').trim();if(!/^\S+@\S+\.\S+$/.test(v)){$('sxmi').focus();return}
-      fetch('/api/prova/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,email:v})}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok){SX.mail=1;tap('email_lasciata');b.innerHTML='<div class="sxok">✓ Fatto. Ti ho scritto una conferma.</div>'}else{$('sxmi').focus()}}).catch(function(){})}}
+      // l'email si conferma con un codice di 6 cifre
+      window.__mailCodice(v).then(function(j){if(!j||!j.ok){$('sxmi').focus();return}
+        if(j.gia){SX.mail=1;b.innerHTML='<div class="sxok">✓ Fatto: la tua email è già confermata.</div>';return}
+        b.innerHTML='<div class="sxq">Ti ho mandato un codice a '+v.replace(/[<>&]/g,'')+'</div><p class="sxn" style="margin:0 0 8px">Scrivilo qui per confermare l\'email (guarda anche nello spam).</p><div class="sxsend"><input id="sxmc" inputmode="numeric" maxlength="7" placeholder="Codice di 6 cifre" autocomplete="one-time-code"><button class="cta s" id="sxmcb">Conferma</button></div>';
+        $('sxmcb').onclick=function(){var k=($('sxmc').value||'').replace(/\D/g,'');if(k.length!==6){$('sxmc').focus();return}
+          window.__mailConferma(v,k).then(function(r){if(r&&r.ok){SX.mail=1;tap('email_lasciata');b.innerHTML='<div class="sxok">✓ Fatto: email confermata. Ti ho scritto un benvenuto.</div>'}else{$('sxmc').select()}})}})}}
   function sxBuild(r,d){var prev={};SX.tasks.forEach(function(t){prev[t.id]=t.done});var ts=[],ids=r.ids.filter(function(i){return SVm[i]&&SVm[i].coef<CCOEF&&i!=='rivendita'});
     var nc=Math.max(1,ids.length);
     ids.forEach(function(i){var s=SVm[i];ts.push({id:'cod_'+i,t:'Aggiungi il codice '+s.cod+' alla partita IVA',p:s.nome+': coefficiente '+pc(s.coef)+' invece di '+pc(CCOEF)+'. Si fa con una comunicazione di variazione dati (modello AA9/12), di norma gratuita.',b:'Prepara la comunicazione',e:d*.4/nc,k:'cod',cod:s.cod,nome:s.nome})});
@@ -2270,9 +2275,26 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].slice.call(b.querySelectorAll('[data-p]')).forEach(function(c){c.onclick=function(){OT.peso[c.getAttribute('data-p')]=c.getAttribute('data-l');OT.repVecchio=true;tap('ott_peso');oSaveSoon();var y=scrollY;oRender();scrollTo(0,y);oP3Msg(true)}});
     var g=$('o_gotd');if(g)g.onclick=function(){tap('ott_apri_dafare');showView('t')};
     $('o_pdf').onclick=function(){oReport2(null,true)};var rv=$('o_rinv');if(rv)rv.onclick=function(){oReport2(oMail(),false)};
-    var ov0=$('o3ovl');if(ov0)ov0.remove();if(lock){var ov=document.createElement('div');ov.id='o3ovl';ov.innerHTML=oMailBox(d);document.body.appendChild(ov.firstChild.id?ov:ov);var f=$('o3mf');f.onsubmit=function(e){e.preventDefault();var em=$('o3m').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(em)){$('o3ms').textContent='Scrivi un indirizzo email valido, per esempio nome@email.it.';$('o3m').focus();return}oReport2(em,false)};
+    var ov0=$('o3ovl');if(ov0)ov0.remove();if(lock){var ov=document.createElement('div');ov.id='o3ovl';ov.innerHTML=oMailBox(d);document.body.appendChild(ov.firstChild.id?ov:ov);var f=$('o3mf');f.onsubmit=function(e){e.preventDefault();var em=$('o3m').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(em)){$('o3ms').textContent='Scrivi un indirizzo email valido, per esempio nome@email.it.';$('o3m').focus();return}oMailVerifica(em)};
       setTimeout(function(){var i=$('o3m');if(i)try{i.focus({preventScroll:true})}catch(e){}},300)}
     srv('risparmio_calcolato',Math.max(0,d));oSaveSoon()}
+  // l'email del report si conferma con un codice: il report (con i dati fiscali) parte solo verso un indirizzo verificato
+  function oMailVerifica(em){var st=$('o3ms'),bt=$('o3mb');
+    if(!window.TS_C||!window.__mailCodice){oReport2(em,false);return}
+    if(bt){bt.disabled=true;bt.textContent='Ti mando il codice…'}if(st)st.textContent='';
+    window.__mailCodice(em).then(function(j){if(bt){bt.disabled=false;bt.textContent='Ricevi il report'}
+      if(!j||!j.ok){if(st)st.textContent=(j&&j.errore)||'Non riesco a mandarti il codice adesso: riprova tra poco.';return}
+      if(j.gia){oReport2(em,false);return}
+      tap('ott_codice_chiesto');var f=$('o3mf');if(!f)return;
+      f.outerHTML='<form id="o3cf" class="o3mf"><input id="o3c" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="Codice di 6 cifre" aria-label="Codice di conferma" required><button type="submit" class="cta s o2" id="o3cb">Conferma e ricevi</button></form>';
+      st.innerHTML='Ti ho mandato un <b>codice di 6 cifre</b> a <b>'+oEsc(em)+'</b>: guarda anche nello spam. <button type="button" class="lnk2" id="o3cr">Rimandalo</button> · <button type="button" class="lnk2" id="o3ce">Cambia email</button>';
+      var c=$('o3c');try{c.focus({preventScroll:true})}catch(e){}
+      $('o3cr').onclick=function(){window.__mailCodice(em).then(function(k){var p=$('o3ce');if(p&&k&&k.ok)p.insertAdjacentHTML('afterend',' · <b>rimandato</b>')})};
+      $('o3ce').onclick=function(){var y=scrollY;oRender();scrollTo(0,y)};
+      $('o3cf').onsubmit=function(e){e.preventDefault();var v=($('o3c').value||'').replace(/\D/g,'');if(v.length!==6){$('o3c').focus();return}
+        var b=$('o3cb');b.disabled=true;b.textContent='Controllo…';
+        window.__mailConferma(em,v).then(function(k){if(k&&k.ok){tap('ott_email_confermata');try{localStorage.setItem('ts_ott_mail',em)}catch(x){}if(window.TS_SRV)window.TS_SRV.mailv=true;oReport2(em,false);return}
+          b.disabled=false;b.textContent='Conferma e ricevi';var m=$('o3cs');if(!m){$('o3cf').insertAdjacentHTML('afterend','<p class="onote" id="o3cs" role="alert"></p>');m=$('o3cs')}m.textContent=(k&&k.errore)||'Codice sbagliato o scaduto: riprova.';$('o3c').select()})}})}
   function oMail(){try{return localStorage.getItem('ts_ott_mail')||''}catch(e){return ''}}
   function oMailBox(d){return '<div class="o3ov" role="dialog" aria-modal="true" aria-labelledby="o3mt"><div class="o3mod"><div class="o3ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity=".0"/><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></div>'+
     '<h3 id="o3mt">Il tuo report di risparmio è pronto</h3><p>'+(d>0?'Ho calcolato il risparmio fiscale e preparato un <b>report dettagliato</b>: le micro-attività, quanto incide ognuna, la fattura rifatta e i passi per ottenerlo.':'Ho completato il calcolo e preparato il report dettagliato.')+' Scrivi la tua email: te lo invio in PDF e sblocco la dashboard.</p>'+
@@ -2454,7 +2476,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // i dati del profilo: etichetta, valore, perché serve, cosa chiedere per cambiarlo, campo da ricalcolare sul server
   function pfRighe(){var nome=PF.nome||D.nome,wa=PF.av==='wa'||PF.av==='tutti',L=[
       {k:'nome',l:'Come ti chiamo',v:nome,x:'È il nome con cui ti saluto.',q:'Scrivimi qui sotto il nome giusto.',c:'nome'},
-      {k:'email',l:'Email per gli avvisi',v:pfMail(),x:'Serve per avvisarti prima delle scadenze e mandarti il report, solo se vuoi.',q:'Scrivimi qui sotto la tua email.'},
+      {k:'email',l:'Email per gli avvisi',v:pfMail()+(pfMail()&&window.TS_SRV&&!window.TS_SRV.mailv?' · da confermare':''),x:'Serve per avvisarti prima delle scadenze e mandarti il report, solo se vuoi.',q:'Scrivimi qui sotto la tua email.'},
       {k:'av',l:'Come ti avviso',v:PF.av==='wa'?'WhatsApp':PF.av==='tutti'?'Email e WhatsApp':PF.av==='email'?'Email':'',x:'È il canale con cui ti ricordo le scadenze.',q:'Dimmi: email, WhatsApp o tutti e due?'}];
     if(wa)L.push({k:'tel',l:'Numero WhatsApp',v:PF.tel,x:'Mi serve per scriverti su WhatsApp. Nel prototipo i messaggi non partono ancora.',q:'Scrivimi il numero, con il prefisso se non è italiano.'});
     L.push({k:'att',l:'Il tuo lavoro principale',v:OTMAIN.nome,x:'È il lavoro da cui parto per scegliere codice e coefficiente.',q:'Raccontami in una riga cosa fai adesso: preparo il controllo del codice.'},
@@ -2489,7 +2511,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(SV.ap&&/^\d{4}$/.test(SV.ap)&&+SV.ap>=new Date().getFullYear()-1)m.push(['anno','Dimmi il mese di apertura']);
     if((SV.gest==='artigiani'||SV.gest==='commercianti')&&!SV.rid)m.push(['rid','Hai uno sconto INPS?']);
     if(window.TS_SRV&&(SV.prec==null||SV.prec==='')&&!(SV.ap&&+String(SV.ap).slice(-4)>=new Date().getFullYear()))m.unshift(['prec','Dimmi gli incassi dell\'anno scorso']);
-    if(window.TS_SRV&&!SV.altri)m.push(['altri','Hai un lavoro o una pensione?']);if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
+    if(window.TS_SRV&&!SV.altri)m.push(['altri','Hai un lavoro o una pensione?']);
+    if(window.TS_C&&pfMail()&&window.TS_SRV&&!SV.mailv)m.unshift(['email','Conferma la tua email']);if(!(PF.nome||D.nome))m.push(['nome','Dimmi come ti chiami']);if(!pfMail())m.push(['email','Aggiungi la tua email']);
     if(!PF.av)m.push(['av','Scegli come ti avviso']);if((PF.av==='wa'||PF.av==='tutti')&&!PF.tel)m.push(['tel','Aggiungi il numero WhatsApp']);
     if(window.TS_C&&!(window.TS_SRV&&window.TS_SRV.reg))m.push(['zona','Dimmi in che regione lavori']);if(window.TS_C&&!OT.ficOk)m.push(['fic','Collega Fatture in Cloud']);return m}
   function pfRiga(k){return document.querySelector('#pflist .pfr[data-k="'+k+'"]')}
@@ -2539,6 +2562,20 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       say('Fatto: ho chiuso il tuo account e cancellato i tuoi dati. Non riceverai più email da TaxScan. Grazie di averci provato.');setTimeout(function(){location.href='/'},3500)}).catch(function(){say('Non ci sono riuscito: riprova tra poco.')})}
   function pfChiediChiusura(){
     say('Vuoi davvero chiudere l\'account? Cancello la tua situazione, le fatture lette e la memoria delle nostre conversazioni, e <b>non riceverai più email</b>. Non si può annullare.');window.__chips({'Sì, chiudi l\'account':{a:function(){if(!window.TS_C){say('Nel prototipo di prova non c\'è un account da chiudere.');return}say('Va bene, procedo…');pfChiudi('richiedi')},e:1},'No, resto':{a:'Bene, resto qui. Se cambi idea, scrivimelo quando vuoi.',e:1}},['Sì, chiudi l\'account','No, resto']);}
+  // email: si conferma con un codice di 6 cifre (solo dopo è un iscritto vero e partono le email)
+  window.__mailCodice=function(e){return fetch('/api/prova/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,email:e})}).then(function(r){return r.json()}).catch(function(){return {ok:false}})};
+  window.__mailConferma=function(e,k){return fetch('/api/prova/email/conferma',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,email:e,codice:k})}).then(function(r){return r.json()}).catch(function(){return {ok:false}})};
+  function pfMailFatta(e){PF.email=e;pfSave();if(window.TS_SRV)window.TS_SRV.mailv=true;renderProfilo();tap('profilo_email_confermata');say('Fatto: email <b>confermata</b>. Da ora gli avvisi li mando a <b>'+oEsc(e)+'</b>.');pfChips()}
+  function pfMailAttendi(e){window.__attesa={t:Date.now(),f:function(v){var m=String(v).match(/[\w.+-]+@[\w-]+\.[\w.-]{2,}/);if(m&&m[0].toLowerCase()!==e){pfMailInvia(m[0]);return}
+      if(/annull|lascia stare|non importa/i.test(v)){say('Va bene, lasciamo stare. Quando vuoi, scrivimi di nuovo la tua email.');pfChips();return}
+      var k=String(v).replace(/\D/g,'');if(k.length!==6){say('Mi serve il <b>codice di 6 cifre</b> che ti ho mandato a <b>'+oEsc(e)+'</b>. Scrivimelo qui sotto.');pfMailAttendi(e);return}
+      say('Controllo il codice…');window.__mailConferma(e,k).then(function(j){if(j&&j.ok){pfMailFatta(e);return}say(oEsc((j&&j.errore)||'Codice sbagliato o scaduto: riprova.'));pfMailAttendi(e);
+        window.__xchips&&window.__xchips([['Mandamelo di nuovo',function(){pfMailInvia(e)}]])})}}}
+  function pfMailInvia(e){e=e.toLowerCase();if(!window.TS_C){PF.email=e;pfSave();renderProfilo();say('Segnato: gli avvisi li mando a <b>'+oEsc(e)+'</b>.');pfChips();return}
+    say('Ti mando un codice per confermare l\'email…');window.__mailCodice(e).then(function(j){if(!j||!j.ok){say(oEsc((j&&j.errore)||'Non riesco a mandarti il codice adesso: riprova tra poco.'));return}
+      if(j.gia){pfMailFatta(e);return}tap('profilo_codice_chiesto');
+      say('Ti ho mandato un <b>codice di 6 cifre</b> a <b>'+oEsc(e)+'</b> (guarda anche nello spam): scrivimelo qui sotto e la confermo.');pfMailAttendi(e);
+      window.__xchips&&window.__xchips([['Mandamelo di nuovo',function(){pfMailInvia(e)}],['Annulla',function(){window.__attesa=null;say('Va bene, lasciamo stare.');pfChips()}]])})}
   window.__pfWrite=function(t){t=String(t||'').trim();var r=document.querySelector('#pflist .pfr.sel'),k=r&&r.getAttribute('data-k');
     if(PF.codice&&/^\s*\d[\d\s]{3,9}$/.test(t)){pfChiudi('conferma',t);return true}
     if(/chiud\w*\s+(l'|il\s+)?(mio\s+)?account|cancell\w*\s+(l'|il\s+)?(mio\s+)?account|elimin\w*\s+(l'|il\s+)?(mio\s+)?account|non\s+voglio\s+più\s+(ricevere\s+)?(le\s+)?email/i.test(t)||(k==='account'&&/chiud|cancell|elimin/i.test(t))){pfChiediChiusura();return true}
@@ -2546,9 +2583,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function setNome(n){n=n.charAt(0).toUpperCase()+n.slice(1).toLowerCase();PF.nome=n;D.nome=n;pfSave();var h1=$('nome');if(h1)h1.textContent='Ciao '+n+', benvenuto su TaxScan';renderProfilo();
       if(window.TS_C)fetch('/api/prova/correggi',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,campo:'nome',valore:n})}).catch(function(){});
       tap('profilo_scrive_nome');say('Ok, da ora ti chiamo <b>'+oEsc(n)+'</b>.');pfChips()}
-    function setMail(e){PF.email=e;pfSave();renderProfilo();tap('profilo_scrive_email');
-      if(window.TS_C)fetch('/api/prova/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,email:e})}).catch(function(){});
-      say('Segnato: gli avvisi li mando a <b>'+oEsc(e)+'</b>.');pfChips()}
+    function setMail(e){tap('profilo_scrive_email');pfMailInvia(e)}
     if(mail&&(!k||k==='email')){setMail(mail[0]);return true}
     if(nm&&!k){setNome(nm[1]);return true}
     if(!k)return false;

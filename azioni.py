@@ -43,6 +43,8 @@ def _tabelle():
                             "PRIMARY KEY (c, azione))")
                 cur.execute("CREATE TABLE IF NOT EXISTS prova_email (c TEXT PRIMARY KEY, email TEXT NOT NULL, "
                             "creato TIMESTAMPTZ NOT NULL DEFAULT now())")
+                # email confermata con il codice: solo allora la persona e' un iscritto a tutti gli effetti
+                cur.execute("ALTER TABLE prova_email ADD COLUMN IF NOT EXISTS verificata BOOLEAN NOT NULL DEFAULT false")
             conn.commit()
         _ok = True
 
@@ -124,8 +126,18 @@ def _manda(email: str, c: str, chiave: str, oggetto: str, titolo: str, corpo: st
         raise
 
 
+def email_attiva(c: str) -> str:
+    """L'email a cui si possono mandare messaggi: confermata con il codice (o lasciata prima che la verifica esistesse)."""
+    _tabelle()
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email FROM prova_email WHERE c = %s AND (verificata OR creato < timestamptz '2026-11-02 14:00:00+00')", (c,))
+            r = cur.fetchone()
+    return (r[0] if r else "") or ""
+
+
 def _conferma(c: str, azione: str, euro: int) -> bool:
-    email = email_di(c)
+    email = email_attiva(c)
     if not email:
         return False
     tp = os.environ.get("TRUSTPILOT_URL", "").strip()
@@ -185,6 +197,8 @@ def registra(c: str, azione: str, euro=0) -> dict:
 
 
 def salva_email(c: str, email: str) -> dict:
+    """Ricorda l'email scritta nell'app (per esempio per ricevere il report), ancora NON confermata.
+    Un'email gia' confermata per questa situazione non viene sostituita da una non confermata."""
     c = (c or "").strip()
     email = (email or "").strip().lower()
     if not _ID.match(c) or not _EMAIL.match(email):
@@ -195,15 +209,95 @@ def salva_email(c: str, email: str) -> dict:
     with db._connetti() as conn:
         with conn.cursor() as cur:
             cur.execute("INSERT INTO prova_email (c, email) VALUES (%s, %s) "
-                        "ON CONFLICT (c) DO UPDATE SET email = EXCLUDED.email", (c, email))
+                        "ON CONFLICT (c) DO UPDATE SET email = EXCLUDED.email WHERE NOT prova_email.verificata", (c, email))
         conn.commit()
+    return {"ok": True}
+
+
+def verificata(c: str) -> tuple[str, bool]:
+    """(email, confermata) di questa situazione."""
+    _tabelle()
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT email, verificata FROM prova_email WHERE c = %s", (c,))
+            r = cur.fetchone()
+    return (r[0], bool(r[1])) if r else ("", False)
+
+
+_RICHIESTE: dict = {}   # c -> [istanti delle ultime richieste di codice]
+
+
+def richiedi_codice(c: str, email: str) -> dict:
+    """Primo passo: la persona scrive l'email nell'app e le mando un codice a 6 cifre per confermarla."""
+    import time
+    import auth
+    c = (c or "").strip()
+    email = (email or "").strip().lower()
+    if not _ID.match(c) or not _EMAIL.match(email):
+        return {"ok": False, "errore": "Non mi sembra un'email: scrivila così, nome@esempio.it."}
+    if db.carica_dashboard(c) is None:
+        return {"ok": False, "errore": "Non trovo la tua situazione: ricarica la pagina."}
+    mia, ok = verificata(c)
+    if ok and mia == email:
+        return {"ok": True, "gia": True, "email": email}
+    adesso = time.time()
+    ultime = [t for t in _RICHIESTE.get(c, []) if adesso - t < 1800]
+    if len(ultime) >= 5:
+        return {"ok": False, "errore": "Ti ho già mandato diversi codici: aspetta qualche minuto e riprova."}
+    _RICHIESTE[c] = ultime + [adesso]
+    try:
+        auth.manda_codice(email)
+    except Exception as e:
+        print(f"azioni: codice non mandato: {e}")
+        return {"ok": False, "errore": "Non riesco a mandarti il codice adesso: riprova tra poco."}
+    try:
+        db.registra_evento("email_codice_chiesto", c)
+    except Exception:
+        pass
+    return {"ok": True, "codice": True, "email": email}
+
+
+def conferma_email(c: str, email: str, codice: str) -> dict:
+    """Secondo passo: il codice e' giusto, quindi l'email e' della persona. Diventa un iscritto a tutti gli effetti
+    (come chi entra con il codice dalla sua pagina): la situazione si salva sotto quell'email e partono le email."""
+    import auth
+    c = (c or "").strip()
+    email = (email or "").strip().lower()
+    codice = re.sub(r"\D", "", str(codice or ""))
+    if not _ID.match(c) or not _EMAIL.match(email):
+        return {"ok": False, "errore": "Email non valida."}
+    dati = db.carica_dashboard(c)
+    if dati is None:
+        return {"ok": False, "errore": "Non trovo la tua situazione: ricarica la pagina."}
+    try:
+        auth.verifica_codice(email, codice)
+    except ValueError:
+        return {"ok": False, "errore": "Codice sbagliato o scaduto: controlla anche lo spam, oppure chiedimene uno nuovo."}
+    _tabelle()
+    with db._connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO prova_email (c, email, verificata) VALUES (%s, %s, true) "
+                        "ON CONFLICT (c) DO UPDATE SET email = EXCLUDED.email, verificata = true", (c, email))
+        conn.commit()
+    nuovo = False
+    try:
+        nuovo = db.salva_scheda(email, dati.get("_scheda") or {})
+        db.imposta_dashboard_utente(email, c)
+        dati["_email"] = email
+        db.salva_dashboard(c, dati)
+    except Exception as e:
+        print(f"azioni: iscrizione non salvata: {e}")
+    try:
+        db.registra_evento("iscritto_app", c, {"nuovo": bool(nuovo)})
+    except Exception:
+        pass
     # benvenuto: una cosa vera sui suoi dati, non un elenco di funzioni (parte in un filo a parte)
     try:
         import email_ispira
         email_ispira.benvenuto(c, email)
     except Exception as e:
         print(f"azioni: benvenuto non mandato: {e}")
-    return {"ok": True}
+    return {"ok": True, "email": email, "nuovo": bool(nuovo)}
 
 
 # ------------------------------------------------------------------ promemoria per le azioni non fatte
@@ -215,7 +309,9 @@ def promemoria(prova: bool = False, gia: set | None = None) -> dict:
     _tabelle()
     with db._connetti() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT c, email, extract(epoch FROM now() - creato) / 86400 FROM prova_email")
+            # solo email confermate con il codice (quelle lasciate prima della verifica restano come prima)
+            cur.execute("SELECT c, email, extract(epoch FROM now() - creato) / 86400 FROM prova_email "
+                        "WHERE verificata OR creato < timestamptz '2026-11-02 14:00:00+00'")
             utenti = cur.fetchall()
     for c, email, giorni in utenti:
         if email in gia:

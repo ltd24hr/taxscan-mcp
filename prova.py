@@ -111,6 +111,7 @@ def _per_pagina(d: dict, c: str = "") -> dict:
             "altri": ("Sì" if "dipendente_o_pensione" in (sch.get("situazioni_particolari") or []) else
                       "No" if sch.get("situazioni_particolari") else ""),
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
+            "mailv": _mail_verificata(c),
             "fatti": _fatti(d, sch)}
 
 
@@ -154,6 +155,14 @@ def _fatti(d: dict, sch: dict) -> str:
     except Exception as e:
         print(f"prova: fatti {e}")
         return ""
+
+
+def _mail_verificata(c: str) -> bool:
+    try:
+        import azioni
+        return bool(c) and azioni.verificata(c)[1]
+    except Exception:
+        return False
 
 
 def _documenti(sch: dict) -> str:
@@ -866,7 +875,9 @@ def _avviso_utenti_app(idc: int, tit: str, ria: str, url: str, gia: set) -> None
     try:
         with db._connetti() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT c, email FROM prova_email")
+                # solo email confermate con il codice (o lasciate prima che la verifica esistesse)
+                cur.execute("SELECT c, email FROM prova_email WHERE coalesce((to_jsonb(prova_email)->>'verificata')::boolean, false) "
+                            "OR creato < timestamptz '2026-11-02 14:00:00+00'")
                 righe = cur.fetchall()
     except Exception as e:
         print(f"prova: utenti app non letti: {e}")
@@ -1950,14 +1961,17 @@ def _report_v2(c, uid, d, email, num):
         print(f"prova: report v2 non generato: {e}")
         return None, "Non sono riuscito a preparare il report. Riprova tra poco."
     chiave = re.sub(r"[^A-Za-z0-9_-]", "", str(c or uid or ""))[:64]
+    attiva = ""
     try:
         if c:
             import azioni
             azioni.salva_email(c, email)
+            attiva = azioni.email_attiva(c)
         db.registra_evento("report_pdf_v2", chiave or "anonimo")
     except Exception:
         pass
-    inviato = _manda_report(email, pdf, pulito["nome"], pulito["risparmio"])
+    # il report contiene dati fiscali: parte via email solo verso un indirizzo confermato con il codice
+    inviato = _manda_report(email, pdf, pulito["nome"], pulito["risparmio"]) if attiva and attiva == str(email or "").strip().lower() else False
     return (pdf, inviato), None
 
 
@@ -2174,9 +2188,20 @@ def registra(mcp, avvisi):
         try:
             import azioni
             c = await request.json()
-            esito = await asyncio.to_thread(azioni.salva_email, c.get("c", ""), c.get("email", ""))
+            # l'email scritta nell'app si conferma con un codice: qui lo mando (la conferma e' /api/prova/email/conferma)
+            esito = await asyncio.to_thread(azioni.richiedi_codice, c.get("c", ""), c.get("email", ""))
         except Exception:
-            return JSONResponse({"ok": False}, status_code=500)
+            return JSONResponse({"ok": False, "errore": "Non riesco a mandarti il codice adesso: riprova tra poco."}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/email/conferma", methods=["POST"])
+    async def prova_email_conferma(request):
+        try:
+            import azioni
+            c = await request.json()
+            esito = await asyncio.to_thread(azioni.conferma_email, c.get("c", ""), c.get("email", ""), c.get("codice", ""))
+        except Exception:
+            return JSONResponse({"ok": False, "errore": "Non riesco a confermarla adesso: riprova tra poco."}, status_code=500)
         return JSONResponse(esito)
 
     @mcp.custom_route("/api/prova/fatture", methods=["POST"])

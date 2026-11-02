@@ -213,11 +213,40 @@ def raccogli(giorni: int = 30) -> dict:
                     "comune": str(s.get("comune") or ""), "regione": str(s.get("regione") or ""),
                     "dashboard": bool(r[3]), "ultima_attivita": r[4].isoformat() if r[4] else "",
                     "eventi": r[5] or 0, "fic": bool(r[6]), "email_off": bool(r[7]), "consiglia": r[8] or "",
-                    "canale": r[9] or ""})
+                    "canale": r[9] or "", "verificata": True})
+            # chi usa l'app e ha lasciato l'email (per il report o nel Profilo) ma non e' tra gli iscritti:
+            # di solito perche' non l'ha ancora confermata con il codice. Si vede lo stesso, segnato come «da confermare».
+            app_n = 0
+            try:
+                cur.execute("""
+                    SELECT p.email, p.creato, d.dati->'_scheda', p.c,
+                           (SELECT max(e.creato_il) FROM eventi e WHERE e.riferimento IN (p.email, p.c)),
+                           (SELECT count(*) FROM eventi e WHERE e.riferimento IN (p.email, p.c)),
+                           EXISTS (SELECT 1 FROM email_opt_out o WHERE o.email = p.email),
+                           coalesce((to_jsonb(p)->>'verificata')::boolean, false),
+                           (SELECT concat_ws(' · ', dettaglio->>'fonte', dettaglio->>'campagna') FROM eventi
+                            WHERE tipo = 'inizio' AND riferimento = p.c ORDER BY creato_il LIMIT 1)
+                    FROM prova_email p LEFT JOIN dashboard d ON d.id = p.c
+                    WHERE NOT EXISTS (SELECT 1 FROM utenti u WHERE u.email = p.email)
+                    ORDER BY p.creato DESC LIMIT 500""")
+                for r in cur.fetchall():
+                    s = r[2] or {}
+                    app_n += 1
+                    utenti.append({
+                        "email": r[0], "iscritto_il": r[1].isoformat() if r[1] else "",
+                        "ateco": str(s.get("codice_ateco") or ""), "attivita": str(s.get("descrizione_attivita") or "")[:60],
+                        "comune": str(s.get("comune") or ""), "regione": str(s.get("regione") or ""),
+                        "dashboard": bool(r[3]), "ultima_attivita": r[4].isoformat() if r[4] else "",
+                        "eventi": r[5] or 0, "fic": False, "email_off": bool(r[6]), "consiglia": "",
+                        "canale": "App" + (" · " + r[8] if r[8] else ""), "verificata": bool(r[7]), "app": r[3]})
+                utenti.sort(key=lambda u: u["iscritto_il"], reverse=True)
+            except Exception as e:
+                conn.rollback()
+                print(f"admin: utenti dell'app non letti: {e}")
     stats = db.statistiche_eventi(giorni)
     return {
         "giorni": giorni, "generato_il": datetime.now(timezone.utc).isoformat(),
-        "kpi": {"iscritti": tot, "nuovi7": nuovi7, "nuovi30": nuovi30, "attivi7": attivi7,
+        "kpi": {"iscritti": tot, "app_da_confermare": app_n, "nuovi7": nuovi7, "nuovi30": nuovi30, "attivi7": attivi7,
                 "con_dashboard": con_dash, "fic": fic_n, "email_off": opt_out},
         "serie": serie,
         "imbuto": [
@@ -245,18 +274,49 @@ def elimina_iscritti(emails: list[str]) -> int:
             trovati = cur.fetchall()
     for email, id_dashboard in trovati:
         db.cancella_dati(email, id_dashboard or "")
-    return len(trovati)
+        if id_dashboard:
+            _cancella_app(id_dashboard)
+    # chi ha solo l'email lasciata nell'app (non ancora tra gli iscritti)
+    n_app = 0
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT c, email FROM prova_email WHERE email = ANY(%s)", (puliti,))
+                app = cur.fetchall()
+    except Exception:
+        app = []
+    gia = {e for e, _ in trovati}
+    for c, email in app:
+        _cancella_app(c)
+        if email not in gia:
+            db.cancella_dati("", c)
+            n_app += 1
+    return len(trovati) + n_app
+
+
+def _cancella_app(c: str) -> None:
+    """I dati dell'app di quella situazione: profilo, preferenze, memoria, controlli, email."""
+    try:
+        with db._connetti() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s) OR path LIKE %s",
+                            (["profili/" + c, "preferenze/" + c], "app/" + c + "/%"))
+                cur.execute("DELETE FROM prova_email WHERE c = %s", (c,))
+            conn.commit()
+    except Exception as e:
+        print(f"admin: dati app di {c} non cancellati: {e}")
 
 
 def csv_utenti(dati: dict) -> str:
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
     w.writerow(["email", "iscritto_il", "ultima_attivita", "eventi", "ateco", "attivita", "comune", "regione",
-                "dashboard", "fatture_in_cloud", "email_disattivate", "consiglia", "canale"])
+                "dashboard", "fatture_in_cloud", "email_disattivate", "consiglia", "canale", "email_verificata"])
     for u in dati["utenti"]:
         w.writerow([u["email"], u["iscritto_il"][:16], u["ultima_attivita"][:16], u["eventi"], u["ateco"], u["attivita"],
                     u["comune"], u["regione"], "si" if u["dashboard"] else "no", "si" if u["fic"] else "no",
-                    "si" if u["email_off"] else "no", u["consiglia"], u.get("canale", "")])
+                    "si" if u["email_off"] else "no", u["consiglia"], u.get("canale", ""),
+                    "si" if u.get("verificata", True) else "no"])
     return "﻿" + buf.getvalue()
 
 
@@ -363,7 +423,7 @@ def _barre(righe: list[tuple[str, int]], massimo: int | None = None, con_quota: 
 def pagina(dati: dict, avviso: str = "") -> str:
     k = dati["kpi"]
     kpi = "".join(f"<div class='k'><b>{v}</b><span>{_e(t)}</span></div>" for t, v in (
-        ("Iscritti totali", k["iscritti"]), ("Nuovi ultimi 7 giorni", k["nuovi7"]), ("Nuovi ultimi 30 giorni", k["nuovi30"]),
+        ("Iscritti totali", k["iscritti"]), ("Email dall'app da confermare", k.get("app_da_confermare", 0)), ("Nuovi ultimi 7 giorni", k["nuovi7"]), ("Nuovi ultimi 30 giorni", k["nuovi30"]),
         ("Attivi ultimi 7 giorni", k["attivi7"]), ("Fatture in Cloud collegati", k["fic"]), ("Email disattivate", k["email_off"])))
     righe = []
     for u in dati["utenti"]:
@@ -375,6 +435,8 @@ def pagina(dati: dict, avviso: str = "") -> str:
             badge += "<span class='pill ko'>no email</span> "
         if u["consiglia"]:
             badge += f"<span class='pill'>consiglia: {_e(u['consiglia'])}</span>"
+        if not u.get("verificata", True):
+            badge += "<span class='pill ko' title='Email lasciata nell\'app ma non confermata con il codice'>da confermare</span> "
         righe.append(
             f"<tr data-q='{_e((u['email'] + ' ' + u['ateco'] + ' ' + u['attivita'] + ' ' + luogo).lower())}'>"
             f"<td><input type='checkbox' name='email' value='{_e(u['email'])}' form='elimina' onchange='conta()' "
