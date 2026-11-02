@@ -84,7 +84,7 @@ def ingresso() -> str:
     return _cache["ingresso"]
 
 
-def _per_pagina(d: dict) -> dict:
+def _per_pagina(d: dict, c: str = "") -> dict:
     """Quello che il server sa e la pagina usa: preferenze, regione, incassi segnati, salvadanaio, bandi veri, novita' normative."""
     import datetime
     sch = d.get("_scheda") or {}
@@ -109,7 +109,29 @@ def _per_pagina(d: dict) -> dict:
                     "non_so": "Non lo so"}.get(str(sch.get("riduzione_35") if sch.get("riduzione_35") is not None else "")
                                                .lower().replace("true", "si").replace("false", "no"), ""),
             "altri": ("Sì" if "dipendente_o_pensione" in (sch.get("situazioni_particolari") or []) else
-                      "No" if sch.get("situazioni_particolari") else "")}
+                      "No" if sch.get("situazioni_particolari") else ""),
+            "rev": _revisione(c, d), "docs": _documenti(sch)}
+
+
+def _documenti(sch: dict) -> str:
+    try:
+        import documenti
+        return documenti.riassunto(sch)
+    except Exception as e:
+        print(f"prova: documenti {e}")
+        return ""
+
+
+def _revisione(c: str, d: dict) -> dict:
+    """Il controllo di Marcello: cosa non torna nei dati di questa persona (vedi revisione.py)."""
+    if not c:
+        return {"voci": [], "in_corso": False}
+    try:
+        import revisione
+        return revisione.per_pagina(c, d)
+    except Exception as e:
+        print(f"prova: revisione {e}")
+        return {"voci": [], "in_corso": False}
 
 
 _MESI_IT = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre",
@@ -279,7 +301,7 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
         rx = re.compile("|".join(re.escape(k) for k in sorted(mp, key=len, reverse=True)))
         t = rx.sub(lambda m: mp[m.group(0)], t)
         extra = "<script>" + extra_real + "if(!window.TS_PREC)document.documentElement.classList.add('noprec');window.TS_C=%s;window.TS_TRUSTPILOT=%s;window.TS_VAI=%s;window.TS_MAIL=%s;window.TS_SRV=%s;</script>" % (
-            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]), json.dumps(d.get("_mail") or ""), json.dumps(_per_pagina(d)))
+            json.dumps(idc), json.dumps(os.environ.get("TRUSTPILOT_URL", "").strip()), json.dumps(vai[:2]), json.dumps(d.get("_mail") or ""), json.dumps(_per_pagina(d, idc)))
         t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + extra, t, count=1)
     except Exception as e:
         print(f"personalizza prova: {e}")
@@ -2062,6 +2084,30 @@ def registra(mcp, avvisi):
             esito = await asyncio.to_thread(correggi, c.get("c", ""), c.get("campo", ""), c.get("valore", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/revisione", methods=["POST"])
+    async def prova_revisione(request):
+        try:
+            import revisione
+            c = await request.json()
+            esito = await asyncio.to_thread(revisione.azione, c.get("c", ""), c.get("azione", ""), c.get("id", ""), c.get("testo", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/documento", methods=["POST"])
+    async def prova_documento(request):
+        # documenti ufficiali (F24, dichiarazione, estratto INPS): letti, confrontati con la scheda, conti rifatti
+        try:
+            import documenti
+            if int(request.headers.get("content-length") or 0) > 40_000_000:
+                return JSONResponse({"ok": False, "errore": "File troppo grandi: caricane uno alla volta."}, status_code=413)
+            c = await request.json()
+            esito = await asyncio.to_thread(documenti.carica, c.get("c", ""), c.get("files") or [])
+        except Exception as e:
+            print(f"prova: documento {e}")
+            return JSONResponse({"ok": False, "errore": "Non sono riuscito a leggerlo: riprova tra poco."}, status_code=500)
         return JSONResponse(esito)
 
     @mcp.custom_route("/api/prova/azione", methods=["POST"])

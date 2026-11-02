@@ -945,6 +945,7 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
                                 "→ Posizione assicurativa, o sul sito della tua cassa."})
     if s.get("gestione_previdenziale") in ("artigiani", "commercianti") and s.get("riduzione_35_incerta"):
         avvisi.append({"livello": "informativo", "titolo": "Riduzione INPS del 35%: da verificare",
+                       "domanda": "Su inps.it, nel cassetto previdenziale, risulta uno sconto sui tuoi contributi (35% o 50%)?", "campo": "riduzione_inps",
                        "testo": "Non sai se hai chiesto lo sconto del 35% sui contributi: ho calcolato senza. "
                                 "Controlla su inps.it (Cassetto previdenziale artigiani e commercianti) o chiedi a chi "
                                 "ti segue: se è attivo i contributi sono più bassi di quanto stimo."})
@@ -1023,6 +1024,16 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
                                  f"{_eur(imposta_prec)} €: la differenza, circa {_eur(acconti_impliciti)} €, dovrebbe corrispondere agli "
                                  f"acconti già pagati nel {anno - 1}. Se nel {anno - 1} non hai versato acconti, qualcosa non torna.")
         confronto.extend(letti["spiegazione"])
+        # i problemi veri del confronto entrano anche negli avvisi (cosi' finiscono nel controllo di Marcello)
+        for t in confronto[:len(confronto) - len(letti["spiegazione"])]:
+            tit = ("Non trovo il primo acconto pagato" if t.startswith("Non risulta") else
+                   "Il saldo pagato è più alto della stima" if "supera" in t else "Il saldo pagato non torna con gli acconti")
+            avvisi.append({"livello": "attenzione", "titolo": tit, "testo": t,
+                           "domanda": "Hai pagato altri F24 che non mi hai ancora dato, o c'è qualcosa di particolare (compensazioni, rate)?",
+                           "campo": ""})
+        for r in letti["righe"]:
+            if r.get("allarme"):
+                avvisi.append({"livello": "importante", "titolo": f"Un F24 con il codice {r['codice_tributo']}", "testo": r["allarme"]})
 
     # --- anno in corso e soglia
     mese = data_oggi.month
@@ -1158,6 +1169,7 @@ def _ragiona_contributi(s: dict, anno: int, data_oggi: date, calc_prec: dict | N
                                      "conviene metterlo in conto da subito."})
         else:
             out.append({"livello": "informativo", "titolo": "In che mese hai aperto?",
+                        "domanda": "In che mese hai aperto la partita IVA?", "campo": "data_apertura",
                         "testo": f"Nel primo anno i contributi fissi INPS si pagano solo per i mesi di attività. So che hai aperto nel {anno} "
                                  "ma non il mese: per ora ho contato l'anno intero, quindi la stima dei contributi può essere più alta del vero. "
                                  "Dimmi la data di apertura e la sistemo."})
@@ -1172,6 +1184,7 @@ def _ragiona_contributi(s: dict, anno: int, data_oggi: date, calc_prec: dict | N
         con50 = _calcolo(prova, base, None, anno)["contributi_previdenziali"]["totale_contributi"] if base else None
         diff = (attuale - con50) if (attuale is not None and con50 is not None) else None
         out.append({"livello": "attenzione", "titolo": "Potresti pagare la metà dei contributi INPS",
+                    "domanda": "Che sconto hai oggi sui contributi INPS: il 35%, il 50% o nessuno?", "campo": "riduzione_inps",
                     "testo": f"Hai aperto nel {r50['anno_iscrizione']}: se è stata la prima volta che ti iscrivi alla gestione {gest}, la legge "
                              f"ti dà il 50% in meno sulla quota per la pensione per {r50['mesi']} mesi dall'avvio. "
                              + (f"Rispetto a come sei messo oggi vuol dire circa {_eur(diff)} € in meno quest'anno. " if diff and diff > 1 else "")
@@ -1185,6 +1198,7 @@ def _ragiona_contributi(s: dict, anno: int, data_oggi: date, calc_prec: dict | N
     if gest in ("artigiani", "commercianti") and altro_reddito:
         fisso = p[gest]["fisso_annuo"]
         out.append({"livello": "attenzione", "titolo": "Hai anche un lavoro o una pensione: controlla i contributi INPS",
+                    "domanda": "Sei in pensione con più di 65 anni, oppure il lavoro da dipendente è quello che ti occupa di più?", "campo": "",
                     "testo": f"Due casi in cui si paga meno. Se sei in pensione e hai più di 65 anni, puoi chiedere all'INPS il 50% in meno "
                              f"sui contributi {gest} (non si somma al 35%). Se invece hai un lavoro da dipendente che ti impegna più "
                              "dell'attività, l'iscrizione alla gestione commercianti spesso non è dovuta, perché manca la «prevalenza»: "
