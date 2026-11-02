@@ -1107,7 +1107,7 @@ function rispondi(aggiornamenti) {
 
 // testi della pagina web: niente rimandi a cose gia' rifiutate (il certificato), niente gergo da dichiarazione, niente promesse che qui non si mantengono
 const WEB = {
-  data_apertura: {d: "In che anno hai aperto la partita IVA?", h: "Basta l'anno. Se hai una fattura dei primi mesi, è lì."},
+  data_apertura: {d: "Quando hai aperto la partita IVA?", h: "Il mese serve per i contributi del primo anno. Se non lo ricordi, basta l'anno."},
   codice_ateco: {d: "Qual è il tuo codice ATECO?", h: ""},
   origine_attivita: {h: "Serve a capire se puoi avere l'imposta al 5% (attività nuove, primi 5 anni) invece del 15%."},
   situazioni_particolari: {d: "Qualcuna di queste ti riguarda? Puoi sceglierne più d'una."},
@@ -1222,12 +1222,18 @@ function mostraDomanda(v) {
       const s = ultima.settori[parseInt(b.dataset.i, 10)];
       rispondi({codice_ateco: s.codice, codice_ateco_stimato: true, descrizione_attivita: s.etichetta}); });
   } else if (campo === "data_apertura") {
-    html += selAnni("val", "");
+    // anno e, se lo ricorda, mese: nel primo anno i contributi fissi si pagano solo per i mesi di attivita'
+    const MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"];
+    html += '<div class="riga" style="gap:10px;flex-wrap:wrap">' + selAnni("val", "") +
+      '<select class="testo" id="mese" aria-label="Mese di apertura"><option value="">Non ricordo il mese</option>' +
+      MESI.map((m, i) => '<option value="' + String(i + 1).padStart(2, "0") + '">' + m.charAt(0).toUpperCase() + m.slice(1) + '</option>').join("") + '</select></div>';
     html += '<div class="riga"><button class="primario" id="ok" disabled>Avanti</button></div>';
-    box.innerHTML = html; $("val").focus();
+    box.innerHTML = html; ["val", "mese"].forEach(id => Object.assign($(id).style, {flex: "1 1 200px", width: "auto", margin: "0"})); $("val").focus();
     $("val").onchange = () => { $("ok").disabled = !$("val").value; };
-    $("ok").onclick = () => { const a = parseInt($("val").value, 10);
-      if (!(a >= 1980 && a <= new Date().getFullYear())) return; rispondi({data_apertura: String(a)}); };
+    $("ok").onclick = () => { const a = parseInt($("val").value, 10), m = $("mese").value, oggi = new Date();
+      if (!(a >= 1980 && a <= oggi.getFullYear())) return;
+      if (m && a === oggi.getFullYear() && parseInt(m, 10) > oggi.getMonth() + 1) { errore("Quel mese non è ancora arrivato: scegli il mese in cui hai aperto."); return; }
+      rispondi({data_apertura: m ? a + "-" + m : String(a)}); };
   } else {
     // importo
     html += '<input class="testo" id="val" placeholder="es. 18000" inputmode="numeric">';
@@ -1282,7 +1288,7 @@ function mostraFine(inChat) {
   const et = (campo, val) => {
     if (val === null || val === undefined || val === "" || (Array.isArray(val) && !val.length)) return null;
     if (campo === "riduzione_35" && scheda.riduzione_35_incerta) return "non lo so";
-    if (campo === "data_apertura") { const s = String(val); return s.length === 10 ? s.split("-").reverse().join("/") : s; }
+    if (campo === "data_apertura") { const s = String(val); return s.length >= 7 ? s.split("-").reverse().join("/") : s; }
     if (typeof val === "number") return val.toLocaleString("it-IT") + (campo.startsWith("ricavi") ? " €" : "");
     if (Array.isArray(val)) return val.map(x => (E[campo] || {})[x] || x).join(", ");
     if (val === true) return "sì"; if (val === false) return "no";

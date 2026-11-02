@@ -1226,7 +1226,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 88</div>
+<div class="ver">Prototipo versione 89</div>
 </div>
 
 <script>
@@ -3344,12 +3344,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(fb){MP.fbShow=false;i.placeholder='Scrivi all\'agente IA…'}
       mpSend(v)}})();
   // ---- se per piu' di un minuto l'utente non fa nulla, e' Marcello a dire che si puo' lasciare un feedback
-  (function(){var last=Date.now(),lastFb=0;
+  // una volta sola: detta la prima volta non si ripete (ne' in questa visita ne' nelle prossime)
+  (function(){var last=Date.now(),lastFb=0,detto=false;try{detto=localStorage.getItem('ts_fb_detto')==='1'}catch(e){}
     ['pointerdown','keydown','wheel','touchstart','mousemove'].forEach(function(ev){addEventListener(ev,function(){last=Date.now()},{passive:true})});
-    setInterval(function(){var now=Date.now();if(now-last<60000||now-lastFb<240000||MP.typing||document.hidden)return;
+    setInterval(function(){var now=Date.now();if(detto||now-last<60000||now-lastFb<240000||MP.typing||document.hidden)return;
       var i=$('mp_in');if(i&&(i.value||document.activeElement===i))return;
       if(mpView()==='p'&&!SETTLED)return;
-      lastFb=now;var msg='Se qualcosa non ti è chiaro o non funziona come ti aspetti, <b>scrivilo qui sotto</b>: è un feedback e lo leggiamo davvero. Mi aiuta a migliorare, e intanto ti rispondo io.';
+      lastFb=now;detto=true;try{localStorage.setItem('ts_fb_detto','1')}catch(e){}var msg='Se qualcosa non ti è chiaro o non funziona come ti aspetti, <b>scrivilo qui sotto</b>: è un feedback e lo leggiamo davvero. Mi aiuta a migliorare, e intanto ti rispondo io.';
       var b=mpFrame();
       if(b.hidden||!b.querySelector('.mpt').textContent.trim()){MP.qa=false;showBub(msg)}
       else{var t=b.querySelector('.mpt'),p=document.createElement('p');p.className='mpfbn';p.innerHTML=msg;t.appendChild(p);t.scrollTop=t.scrollHeight;placeBub()}

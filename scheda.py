@@ -383,7 +383,7 @@ def _obbligatorio(campo, scheda):
     # chiedi_aliquota segna il questionario web: li' si chiedono subito anche gli incassi dell'anno scorso, perche' senza
     # non si possono calcolare gli acconti di novembre (la prossima scadenza salterebbe a giugno)
     if campo["chiave"] in _RINVIATE and os.environ.get("QUESTIONARIO_BREVE", "1") != "0" and not (
-            campo["chiave"] in ("origine_attivita", "ricavi_anno_precedente") and scheda.get("chiedi_aliquota")):
+            campo["chiave"] in ("origine_attivita", "ricavi_anno_precedente", "situazioni_particolari") and scheda.get("chiedi_aliquota")):
         return False
     o = campo["obbligatorio"]
     if o is True or o is False:
