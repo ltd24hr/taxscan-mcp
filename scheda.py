@@ -380,8 +380,10 @@ _RINVIATE = {"origine_attivita", "situazioni_particolari", "ricavi_anno_preceden
 def _obbligatorio(campo, scheda):
     # chiedi_aliquota: il questionario web la chiede subito (senza risposta l'aliquota andrebbe indovinata);
     # le schede vecchie, che non l'hanno, restano complete come prima
+    # chiedi_aliquota segna il questionario web: li' si chiedono subito anche gli incassi dell'anno scorso, perche' senza
+    # non si possono calcolare gli acconti di novembre (la prossima scadenza salterebbe a giugno)
     if campo["chiave"] in _RINVIATE and os.environ.get("QUESTIONARIO_BREVE", "1") != "0" and not (
-            campo["chiave"] == "origine_attivita" and scheda.get("chiedi_aliquota")):
+            campo["chiave"] in ("origine_attivita", "ricavi_anno_precedente") and scheda.get("chiedi_aliquota")):
         return False
     o = campo["obbligatorio"]
     if o is True or o is False:
@@ -989,6 +991,11 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
             storia.append(f"Con i {_eur(ricavi_corr)} € incassati finora, a giugno {anno + 1} pagheresti circa {_eur(imp)} € di "
                           f"saldo imposta più {_eur(imp * 0.5 if imp > 206 else 0)} € di primo acconto, e circa {_eur(contr)} € di "
                           f"contributi per l'anno {anno} (più gli acconti INPS, se dovuti). Se incassi altro, la cifra cresce in proporzione.")
+    elif s.get("ricavi_anno_precedente") is None:
+        # senza gli incassi dell'anno scorso non si puo' dire nulla degli acconti: meglio dirlo che scrivere "nessun acconto"
+        storia.append(f"Non so ancora quanto hai incassato nel {anno - 1}: senza questo dato non posso calcolare il saldo di giugno "
+                      f"né gli acconti del {anno}. Se nel {anno - 1} hai incassato qualcosa, entro il 30 novembre c'è quasi sicuramente "
+                      "un acconto da pagare: dimmi la cifra e rifaccio i conti.")
     else:
         if calc_prec:
             storia.append(f"Per il {anno - 1} hai incassato {_eur(ricavi_prec)} €: reddito forfettario "

@@ -59,7 +59,7 @@ a{{color:var(--accent-ink)}}
 <ul>
 <li>TaxScan <b>prepara e spiega</b>: ti aiuta a capire tasse, scadenze e possibili risparmi con delle <b>stime</b>.</li>
 <li>Non è una consulenza fiscale personalizzata e non sostituisce un commercialista. Le decisioni e le dichiarazioni restano tue.</li>
-<li>L'assistente (Marcello) è un sistema di intelligenza artificiale, non una persona.</li>
+<li>L'assistente (l'agente IA di TaxScan) è un sistema di intelligenza artificiale, non una persona.</li>
 </ul>
 
 <h2>1. Chi offre il servizio</h2>
@@ -79,7 +79,7 @@ a{{color:var(--accent-ink)}}
 <p>Puoi usare TaxScan da solo, assumendoti la responsabilità di ciò che dichiari e paghi. Sei tenuto a inserire dati corretti e aggiornati e a verificare le cifre prima di agire. Se vuoi, puoi far controllare i risultati a un professionista: è facoltativo, mai obbligatorio.</p>
 
 <h2>5. L'assistente virtuale</h2>
-<p>Le risposte di Marcello sono generate automaticamente, possono contenere errori o essere incomplete e non vanno considerate un parere professionale. Non scrivere dati personali sensibili (salute, opinioni, ecc.) nella chat.</p>
+<p>Le risposte dell'agente IA sono generate automaticamente, possono contenere errori o essere incomplete e non vanno considerate un parere professionale. Non scrivere dati personali sensibili (salute, opinioni, ecc.) nella chat.</p>
 
 <h2>6. Uso corretto</h2>
 <p>Ti chiediamo di usare TaxScan per i tuoi scopi personali o professionali, di non tentare di accedere ai dati di altre persone, di non sovraccaricare il servizio e di non caricare materiale illecito o di cui non hai diritto. Possiamo sospendere l'accesso in caso di uso scorretto.</p>
@@ -94,7 +94,7 @@ a{{color:var(--accent-ink)}}
 <p>Nei limiti consentiti dalla legge, non rispondiamo di danni indiretti o di decisioni prese basandosi solo sulle stime di TaxScan, né di interruzioni o errori del servizio, che è offerto <b>«così com'è»</b> e può cambiare. Restano ferme le tutele che la legge ti riconosce come consumatore e che non possono essere escluse.</p>
 
 <h2>10. Proprietà intellettuale</h2>
-<p>Il servizio, il marchio, i testi, le grafiche e il personaggio di Marcello sono di {_e(nome)} o dei suoi licenzianti. Puoi usarli solo per utilizzare TaxScan; non puoi copiarli o rivenderli senza autorizzazione. I dati e i documenti che carichi restano tuoi.</p>
+<p>Il servizio, il marchio, i testi, le grafiche e il personaggio dell'agente IA (l'avatar) sono di {_e(nome)} o dei suoi licenzianti. Puoi usarli solo per utilizzare TaxScan; non puoi copiarli o rivenderli senza autorizzazione. I dati e i documenti che carichi restano tuoi.</p>
 
 <h2>11. Modifiche e fine del servizio</h2>
 <p>Possiamo aggiornare il servizio e questi termini, per esempio quando cambiano le norme. Se la modifica è importante aggiorniamo questa pagina e la data in alto. Puoi smettere di usare TaxScan e cancellare i tuoi dati quando vuoi.</p>

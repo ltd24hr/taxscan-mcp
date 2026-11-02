@@ -1126,7 +1126,10 @@ function mostraDomanda(v) {
   v = Object.assign({}, v, {prossima_domanda: W.d || v.prossima_domanda, dove_trovarlo: ("h" in W) ? W.h : v.dove_trovarlo,
     opzioni: (v.opzioni || []).map(o => Object.assign({}, o, {etichetta: ((WEB_OPZ[campo] || {})[o.valore]) || o.etichetta}))});
   // la barra si basa sulle domande che restano davvero (le chiede il server), non su un numero fisso
-  const restano = Math.max(1, (v.campi_mancanti || []).length), quota = restano === 1 ? 0.92 : 0.18 + 0.72 * passo / (passo + restano);
+  // le domande che restano possono crescere (alcune dipendono dalle risposte): il totale stimato non scende sotto 7 e tiene
+  // un margine di 2, cosi' la barra non salta a meta' dopo la prima risposta
+  const restano = Math.max(1, (v.campi_mancanti || []).length),
+        quota = restano === 1 ? 0.92 : 0.18 + 0.72 * passo / Math.max(passo + restano + 2, 7);
   BARV = tornando ? quota : Math.max(BARV, quota); tornando = false;
   $("passo").textContent = restano === 1 ? "Quasi fatto · ultima domanda" : (PARTI[v.gruppo_corrente] || "Il tuo profilo"); barra(BARV);
   const box = $("scheda");
