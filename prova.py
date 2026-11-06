@@ -2119,6 +2119,11 @@ def template_fattura(d: dict):
 
 
 def registra(mcp, avvisi):
+    try:
+        import acquista   # pagina di acquisto /acquista (47 EUR per 12 mesi)
+        acquista.registra(mcp)
+    except Exception as e:
+        print(f"prova: pagina acquista non registrata: {e}")
     from starlette.responses import HTMLResponse, JSONResponse
     import asyncio
 
