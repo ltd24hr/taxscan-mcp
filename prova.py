@@ -111,7 +111,7 @@ def _per_pagina(d: dict, c: str = "") -> dict:
             "altri": ("Sì" if "dipendente_o_pensione" in (sch.get("situazioni_particolari") or []) else
                       "No" if sch.get("situazioni_particolari") else ""),
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
-            "mailv": _mail_verificata(c),
+            "mailv": _mail_verificata(c), "pag": _pagamento(c),
             "fatti": _fatti(d, sch)}
 
 
@@ -155,6 +155,15 @@ def _fatti(d: dict, sch: dict) -> str:
     except Exception as e:
         print(f"prova: fatti {e}")
         return ""
+
+
+def _pagamento(c: str) -> dict:
+    try:
+        import pagamenti
+        return pagamenti.per_pagina(c)
+    except Exception as e:
+        print(f"prova: stato del pagamento non letto: {e}")
+        return {"on": False, "ok": True, "link": ""}
 
 
 def _mail_verificata(c: str) -> bool:
@@ -1960,6 +1969,21 @@ def _report_v2(c, uid, d, email, num):
         pulito["situazione"] = sit
     if not pulito["nome"] and nome_srv:
         pulito["nome"] = nome_srv
+    # il report completo e' per chi ha attivato TaxScan: chi non ha ancora pagato riceve l'email con il link di acquisto
+    try:
+        import pagamenti
+        pagamenti.salva_dati_report(c, pulito)
+        if pagamenti.attivo() and not pagamenti.pagato(c):
+            import azioni
+            if c:
+                azioni.salva_email(c, email)
+            attiva = azioni.email_attiva(c) if c else ""
+            inviata = pagamenti.email_acquisto(c, attiva, pulito) if attiva and attiva == email else False
+            db.registra_evento("report_bloccato", c or "anonimo", {"risparmio": int(pulito["risparmio"] or 0)})
+            return {"bloccato": True, "checkout": pagamenti.link_checkout(c, email, "app_report"), "inviato": bool(inviata),
+                    "offerta": pagamenti.OFFERTA, "garanzia": pagamenti.GARANZIA}, None
+    except Exception as e:
+        print(f"prova: controllo del pagamento non riuscito: {e}")
     try:
         pdf = report_pdf.genera_v2(pulito)
     except Exception as e:
@@ -2122,8 +2146,10 @@ def registra(mcp, avvisi):
     try:
         import acquista   # pagina di acquisto /acquista (47 EUR per 12 mesi)
         acquista.registra(mcp)
+        import pagamenti   # chi ha attivato TaxScan, webhook Stripe, attivazione a mano
+        pagamenti.registra(mcp)
     except Exception as e:
-        print(f"prova: pagina acquista non registrata: {e}")
+        print(f"prova: pagina acquista o pagamenti non registrati: {e}")
     from starlette.responses import HTMLResponse, JSONResponse
     import asyncio
 
@@ -2323,6 +2349,8 @@ def registra(mcp, avvisi):
             return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
         if not pdf:
             return JSONResponse({"ok": False, "errore": err}, status_code=400)
+        if isinstance(pdf, dict):   # report riservato a chi ha attivato TaxScan: partita l'email con il link di acquisto
+            return JSONResponse({"ok": True, **pdf})
         inviato = "0"
         if isinstance(pdf, tuple):
             pdf, inv = pdf

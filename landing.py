@@ -36,6 +36,9 @@ h1{font-size:32px;line-height:1.12;letter-spacing:-.02em;margin-bottom:12px}
 .cta:focus-visible,.sub a:focus-visible,.by a:focus-visible{outline:3px solid #05d5c8;outline-offset:3px}
 .sub{font-size:13px;color:var(--ink2);text-align:center;margin-top:10px}
 .sub a{color:var(--accent-ink);font-weight:700}
+.offerta{display:block;margin:16px auto 0;max-width:420px;padding:10px 14px;border-radius:12px;background:#e6faf7;color:#0b5e4f;font-size:13.5px;line-height:1.4;text-align:center;text-decoration:none;border:1px solid #bfeee7}
+.offerta b{color:#087a63;margin-right:4px}.offerta s{color:#5f7d78}
+.offerta:hover{background:#d8f6f1}.offerta:focus-visible{outline:3px solid #05d5c8;outline-offset:3px}
 
 /* ---- scena animata: il certificato viene letto e diventa tre risposte ---- */
 .scena{margin-bottom:18px}
@@ -133,6 +136,7 @@ li span{font-size:14px;color:var(--ink2)}
   .lead{font-size:19px;margin-bottom:26px;max-width:30em}
   .cta{display:inline-block;padding:16px 44px}
   .sub{text-align:left}
+  .offerta{margin-left:0;text-align:left;display:inline-block}
   ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:56px}
   li{flex-direction:column;gap:16px;padding:22px;margin-bottom:0}
   li b{font-size:17px;margin-bottom:4px}
@@ -217,6 +221,7 @@ li span{font-size:14px;color:var(--ink2)}
 <a class="cta" href="/colloquio/nuovo">Scopri quanto puoi risparmiare</a>
 <p class="sub">Basta il certificato della partita IVA, oppure qualche tocco sul telefono.</p>
 <p class="sub">Hai già un profilo? <a href="/accedi">Accedi</a></p>
+<a class="offerta" href="/acquista?utm_source=home"><b>Offerta di lancio</b> 12 mesi a 47&nbsp;€ invece di <s>589&nbsp;€</s> · soddisfatto o rimborsato <span aria-hidden="true">→</span></a>
 </div>
 </div>
 <ul>
@@ -225,7 +230,7 @@ li span{font-size:14px;color:var(--ink2)}
 <li><div class="ico"><i>3</i><svg viewBox="0 0 48 48" aria-hidden="true"><rect class="ic-t ic-c" x="9" y="12" width="30" height="27" rx="5"/><path class="ic-t" d="M9 20h30M17 8v7M31 8v7"/><path class="ic-spunta" d="M17 29l5 5 9-9.5" fill="none" stroke="#05d5c8" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle class="ic-punto" cx="39.5" cy="11.5" r="4.8" fill="#efac35" style="stroke:var(--soft)" stroke-width="2.4"/></svg></div><div><b>Non perdi più nulla</b><span>Scadenze nel calendario del telefono e spunti su bandi e agevolazioni per la tua zona.</span></div></li>
 </ul>
 <p class="foot">TaxScan prepara e spiega: sono stime a scopo informativo, calcolate sui dati che inserisci tu. Puoi gestire tutto da solo, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare le cifre a un professionista quando vuoi. Non è una consulenza.</p>
-<p class="legal"><a href="/termini">Termini e condizioni</a> · <a href="/privacy">Privacy policy</a> · <a href="#" class="tsck-open">Cookie</a></p>
+<p class="legal"><a href="/acquista?utm_source=home_piede">Prezzi</a> · <a href="/termini">Termini e condizioni</a> · <a href="/privacy">Privacy policy</a> · <a href="#" class="tsck-open">Cookie</a></p>
 <p class="by">TaxScan è un servizio offerto da <a href="https://ltd24.co.uk" target="_blank" rel="noopener"><picture><source srcset="/logo-ltd24-scuro.png" media="(prefers-color-scheme: dark)"><img src="/logo-ltd24.png" alt="LTD24" onerror="this.replaceWith(document.createTextNode('LTD24'))"></picture></a> · <a href="/privacy">Privacy</a></p>
 </div>
 <script>

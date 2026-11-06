@@ -129,7 +129,7 @@ PAGINA_HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TaxScan · Paga meno tasse con il tuo agente IA · 47 € per 12 mesi</title>
-<meta name="description" content="Per partite IVA in regime forfettario: l'agente IA di TaxScan legge le tue fatture e trova dove puoi pagare meno, in regola. 47 € per 12 mesi, con garanzia risparmio doppio.">
+<meta name="description" content="Per partite IVA in regime forfettario: l'agente IA di TaxScan legge le tue fatture e trova dove puoi pagare meno, in regola. Offerta di lancio: 12 mesi a 47 € invece di 589 €, soddisfatto o rimborsato.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=2"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 <style>
 @font-face{font-family:"Poppins";font-weight:400;font-display:swap;src:url(/font/Poppins-Regular.ttf) format("truetype")}
@@ -163,6 +163,8 @@ h1 em{font-style:normal;color:var(--accent-ink)}
 .cifra{display:flex;align-items:baseline;gap:8px;margin:6px 0 2px}
 .cifra b{font-family:var(--f-tit);font-size:56px;line-height:1;letter-spacing:-.03em}
 .cifra span{font-size:16px;color:var(--ink2)}
+.cifra s{font-size:22px;color:#8a93ad;font-weight:600}
+.lancio{display:inline-block;margin:0 0 8px;padding:4px 10px;border-radius:99px;background:#e6faf7;color:#087a63;font-size:12.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
 .mese{font-size:14px;color:var(--ink2);margin-bottom:18px}
 .cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:18px;padding:16px 18px;border-radius:14px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
 @media (max-width:420px){.cta{font-size:17px;padding:15px 14px}}
@@ -222,7 +224,7 @@ details p{color:var(--ink2);padding:0 0 16px}
 <main>
 <section class="hero" aria-labelledby="t-hero">
   <div>
-    <span class="eye">Per partite IVA in regime forfettario</span>
+    <span class="eye">Per partite IVA in regime forfettario · Offerta di lancio: 12 mesi a 47 € invece di 589 €</span>
     <h1 id="t-hero">Paga meno tasse, <em>in regola</em>. Te lo trova il tuo agente IA.</h1>
     <p class="lead">TaxScan legge le tue fatture, capisce che lavoro fai davvero e ti mostra dove puoi pagare meno: attività con coefficienti diversi, riduzioni dei contributi, acconti giusti. In euro, non in teoria.</p>
     <ul class="punti">
@@ -233,16 +235,17 @@ details p{color:var(--ink2);padding:0 0 16px}
     {{VAI_VIDEO}}
   </div>
   <aside class="prezzo" aria-label="Prezzo">
+    <p class="lancio">Offerta di lancio</p>
     <p class="cosa">Ottimizzazione fiscale + report · 12 mesi</p>
-    <p class="cifra"><b>47 €</b><span>per 12 mesi</span></p>
-    <p class="mese">Meno di 4 € al mese. Un solo pagamento.</p>
+    <p class="cifra"><b>47 €</b><s aria-label="invece di 589 euro">589 €</s><span>per 12 mesi</span></p>
+    <p class="mese">12 mesi a 47 € invece di 589 €. Meno di 4 € al mese, un solo pagamento.</p>
     <a class="cta" href="{{LINK}}">{{PULSANTE}}</a>
     <p class="nota">{{NOTA}}</p>
     <div class="gar">
       <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 4.5v9c0 7.6-5.1 13.6-12 16.5C11.1 30.1 6 24.1 6 16.5v-9L18 3z" fill="#e6faf7" stroke="#05c4b8" stroke-width="2.2" stroke-linejoin="round"/><path d="M12.5 18l3.8 3.8 7.2-7.6" fill="none" stroke="#087a63" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <p><b>Garanzia risparmio doppio.</b> Se TaxScan non ti trova un risparmio di almeno 94 € (il doppio del prezzo), ti rimborsiamo tutto.</p>
+      <p><b>Garanzia soddisfatto o rimborsato.</b> Se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi.</p>
     </div>
-    <ul class="incl"><li>Ottimizzazione fiscale con l'agente IA</li><li>Report personale in PDF</li><li>Passi da fare guidati e fatture riscritte</li></ul>
+    <ul class="incl"><li>Ottimizzazione fiscale con l'agente IA</li><li>Report personale in PDF</li><li>Da fare: i passi guidati e le fatture riscritte</li><li>Bandi e agevolazioni per la tua attività</li></ul>
   </aside>
 </section>
 
@@ -264,14 +267,15 @@ details p{color:var(--ink2);padding:0 0 16px}
     <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9" stroke="#4355cc" stroke-width="2.2" stroke-linecap="round"/></svg></div><h3>I passi da fare, guidati</h3><p>In «Da fare» trovi cosa fare in ordine di importanza, con il pulsante Inizia: l'agente ti accompagna in ogni passaggio.</p></div>
     <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v11H4z" fill="none" stroke="#4355cc" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" fill="none" stroke="#05c4b8" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>12 mesi di analisi</h3><p>Ogni nuova fattura, una nuova verifica: se il tuo lavoro cambia, l'agente rifà i conti e te lo dice.</p></div>
   </div>
-  <p class="gratis">Restano gratis per tutti: il questionario, la Panoramica con le scadenze e quanto mettere da parte.</p>
+  <p class="gratis">Restano gratis per tutti: il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo.</p>
 </section>
 
 <section class="sez" aria-labelledby="t-gar">
   <div class="gbox">
     <svg width="72" height="72" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 4.5v9c0 7.6-5.1 13.6-12 16.5C11.1 30.1 6 24.1 6 16.5v-9L18 3z" fill="#e6faf7" stroke="#05c4b8" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 18l3.8 3.8 7.2-7.6" fill="none" stroke="#087a63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <div><h2 id="t-gar">Garanzia «risparmio doppio»</h2>
-      <p>Se entro 12 mesi dall'acquisto l'Ottimizzazione fiscale di TaxScan non ti trova un risparmio di almeno <b>94 €</b>, cioè il doppio di quello che paghi, scrivici: ti rimborsiamo tutti i 47 €.</p>
+    <div><h2 id="t-gar">Garanzia soddisfatto o rimborsato</h2>
+      <p>Se non ottieni un risparmio fiscale <b>almeno doppio rispetto al costo del software</b>, ti rimborsiamo tutto e non paghi.</p>
+      <p>Con l'offerta di lancio il costo è 47 €: se TaxScan non ti fa risparmiare almeno 94 € di tasse e contributi nei 12 mesi, ci scrivi e ti restituiamo l'intero importo.</p>
       <p>Guardiamo insieme il risparmio calcolato nella tua Ottimizzazione fiscale, senza domande complicate.</p></div>
   </div>
 </section>
@@ -282,8 +286,9 @@ details p{color:var(--ink2);padding:0 0 16px}
   <div class="faq">
     <details><summary>Serve ancora il commercialista?</summary><p>TaxScan prepara e spiega: puoi gestire tutto da solo, assumendoti la responsabilità di quello che dichiari, oppure far controllare i numeri a un professionista quando vuoi. Il controllo è facoltativo.</p></details>
     <details><summary>È tutto in regola?</summary><p>Sì: l'agente usa solo quello che la legge prevede per il forfettario, come i coefficienti diversi per attività diverse e le riduzioni dei contributi. Non inventa spese e non ti fa dichiarare lavori che non fai. Le cifre sono stime e ogni passo è spiegato.</p></details>
-    <details><summary>Cosa resta gratis?</summary><p>Il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo. Con i 47 € sblocchi l'Ottimizzazione fiscale, il report e i passi guidati.</p></details>
-    <details><summary>Come funziona la garanzia?</summary><p>Se entro 12 mesi dall'acquisto l'Ottimizzazione fiscale non ti trova un risparmio di almeno 94 €, ci scrivi e ti restituiamo l'intero importo.</p></details>
+    <details><summary>Cosa resta gratis?</summary><p>Il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo. Con i 47 € sblocchi il report dell'Ottimizzazione fiscale, Da fare con i passi guidati e Bandi e agevolazioni.</p></details>
+    <details><summary>Come funziona la garanzia?</summary><p>Garanzia soddisfatto o rimborsato: se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi. Se nei 12 mesi il risparmio trovato è sotto i 94 € (il doppio dei 47 €), ci scrivi e ti restituiamo l'intero importo.</p></details>
+    <details><summary>Perché 47 € invece di 589 €?</summary><p>È l'offerta di lancio per le prime partite IVA: 12 mesi di TaxScan a 47 € invece di 589 €. Il prezzo resta bloccato per tutti i 12 mesi.</p></details>
     <details><summary>E i miei dati?</summary><p>Usiamo i tuoi dati solo per i calcoli. Delle fatture leggiamo le righe del lavoro e il tipo di cliente, non conserviamo il nome dei clienti né i file. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
     <details><summary>Quanto dura?</summary><p>12 mesi dal giorno dell'acquisto. Prima della scadenza ti scriviamo: decidi tu se continuare.</p></details>
   </div>
@@ -291,7 +296,7 @@ details p{color:var(--ink2);padding:0 0 16px}
 
 <section class="fine" aria-labelledby="t-fine">
   <h2 id="t-fine">Scopri quanto puoi pagare in meno</h2>
-  <p>47 € per 12 mesi, con la garanzia del risparmio doppio.</p>
+  <p>Offerta di lancio: 12 mesi a 47 € invece di 589 €. Soddisfatto o rimborsato: se non risparmi almeno il doppio, non paghi.</p>
   <a class="cta" href="{{LINK}}">{{PULSANTE}}</a>
   <p class="nota">{{NOTA}}</p>
 </section>
