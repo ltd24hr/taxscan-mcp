@@ -75,13 +75,9 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .punto::before,.punto::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--scan)}
 .punto::before{animation:ping 1.6s cubic-bezier(0,0,.2,1) infinite;opacity:.6}
 @keyframes ping{75%,100%{transform:scale(2.4);opacity:0}}
-.h1{display:inline-block;text-align:left;font-size:clamp(44px,8.6vw,108px);line-height:.98;letter-spacing:-.04em}
-.h1 .r{display:block;white-space:nowrap}
-.h1 .w{display:inline-block;margin-left:-.1em;will-change:opacity,transform}
-.h1 .w.a{color:var(--accent-ink)}
-.h1 .w.via{animation:via .42s cubic-bezier(.4,0,1,1) both}
-.h1 .w.su{animation:dentro .7s cubic-bezier(.22,1,.36,1) both}
-@keyframes via{to{opacity:0;transform:translateY(-.22em);filter:blur(4px)}}
+.h1{font-size:clamp(46px,9vw,112px);line-height:.95;letter-spacing:-.04em;max-width:980px;margin:0 auto}
+.giro{display:inline-block;text-align:left;white-space:nowrap}
+.giro span{display:inline-block;color:var(--accent-ink);animation:dentro .55s cubic-bezier(.22,1,.36,1) both}
 @keyframes dentro{from{opacity:0;transform:translateY(.35em) rotate(2deg);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
 .h1 .ser{position:relative;display:inline-block;color:var(--ink)}
 @media (max-width:639px){.h1 .ser svg{display:none}.h1 .ser{text-decoration:underline;text-decoration-color:var(--scan);text-decoration-thickness:.07em;text-underline-offset:.14em}.eye{font-size:12px}}
@@ -312,7 +308,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <section class="hero" aria-labelledby="t-hero">
   <div class="griglia" aria-hidden="true"></div>
   <div class="w">
-    <h1 class="h1" id="t-hero" aria-label="Più risparmio. Meno tasse da pagare."><span class="r" aria-hidden="true">Più <span class="w a">risparmio.</span></span><span class="r" aria-hidden="true">Meno <span class="w a">tasse</span></span><span class="r" aria-hidden="true">da <span class="w">pagare.</span></span></h1>
+    <h1 class="h1" id="t-hero">Più <span class="giro"><span id="giro">risparmio.</span></span><br><span class="ser">Meno fisco da capire.<svg viewBox="0 0 500 18" preserveAspectRatio="none" aria-hidden="true"><path d="M4 13C126 1 359 3 496 10" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg></span></h1>
     <p class="lead"><b>Il primo agente IA specializzato nel risparmio fiscale</b>, per chi ha la partita IVA in regime forfettario. Ti dice quanto devi pagare e quando, quanto mettere da parte su ogni fattura e dove puoi pagare meno, in regola. In parole semplici, tutto l'anno.</p>
     <div class="azioni">
       <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -514,15 +510,11 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <script>
 (function(){
   var calma=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // il titolo: Più / Meno / da restano fermi, cambiano solo le parole, a coppie
-  var C=[["risparmio.","tasse","pagare."],["tempo.","scadenze","ricordare."],["controllo.","acconti","indovinare."],["chiarezza.","fisco","capire."]];
-  var h=document.getElementById("t-hero"),W=h?h.querySelectorAll(".w"):[],i=0;
-  function metti(c){for(var k=0;k<3;k++)W[k].textContent=c[k]}
-  function misura(){if(!h)return;h.style.width="";var m=0;C.forEach(function(c){metti(c);m=Math.max(m,h.getBoundingClientRect().width)});metti(C[i]);h.style.width=Math.ceil(m+2)+"px"}
-  if(h&&W.length===3){misura();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(misura);addEventListener("resize",misura);
-    if(!calma)setInterval(function(){i=(i+1)%C.length;var c=C[i];
-      [].forEach.call(W,function(w,k){setTimeout(function(){w.classList.remove("su");w.classList.add("via");
-        setTimeout(function(){w.textContent=c[k];w.classList.remove("via");void w.offsetWidth;w.classList.add("su")},420)},k*140)})},3800)}
+  // la parola che cambia nel titolo: lo spazio e' largo quanto la parola piu' lunga, cosi' "Più" resta fermo
+  var parole=["risparmio.","chiarezza.","controllo.","tempo.","serenità."],i=0,box=document.querySelector(".giro"),g=document.getElementById("giro");
+  function misura(){if(!box||!g)return;box.style.width="";var m=0,t=g.textContent;parole.forEach(function(p){g.textContent=p;m=Math.max(m,g.getBoundingClientRect().width)});g.textContent=t;box.style.width=Math.ceil(m+2)+"px"}
+  if(box&&g){misura();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(misura);addEventListener("resize",misura);
+    if(!calma)setInterval(function(){i=(i+1)%parole.length;var s=document.createElement("span");s.id="giro";s.textContent=parole[i];g.replaceWith(s);g=s},2500)}
   // menu del telefono
   var h=document.getElementById("ham"),m=document.getElementById("menu");
   if(h&&m){h.addEventListener("click",function(){var on=m.classList.toggle("on");h.setAttribute("aria-expanded",on?"true":"false");h.setAttribute("aria-label",on?"Chiudi il menu":"Apri il menu")});
