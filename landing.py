@@ -49,7 +49,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .btn-sm{min-height:40px;padding:9px 16px;font-size:14px}
 
 /* testata */
-.top{position:fixed;inset:0 0 auto;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
 .top.su{border-color:var(--line)}
 .top .w{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
 .nav{display:none;gap:28px;font-size:14px;font-weight:500}
@@ -67,7 +67,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .menu .btn{display:flex;margin-top:10px}
 
 /* hero */
-.hero{position:relative;padding:116px 0 0;text-align:center}
+.hero{position:relative;padding:52px 0 0;text-align:center}
 .griglia{position:absolute;inset:0 0 auto;height:760px;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;-webkit-mask-image:linear-gradient(#000,transparent 88%);mask-image:linear-gradient(#000,transparent 88%);opacity:.55;pointer-events:none}
 .hero .w{position:relative}
 .eye{display:inline-flex;text-align:left;align-items:center;gap:10px;margin-bottom:26px;padding:8px 14px;border:1px solid var(--line2);border-radius:999px;background:color-mix(in srgb,var(--surface) 80%,transparent);font-size:12.5px;font-weight:600;color:var(--ink2);box-shadow:0 4px 14px rgba(18,36,82,.05)}
@@ -86,6 +86,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .lead b{color:var(--ink);font-weight:600}
 .azioni{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin-top:32px;max-width:400px;margin-left:auto;margin-right:auto}
 .nota{margin-top:14px;font-size:12.5px;font-weight:500;color:var(--mute)}
+.lancio{display:block;background:var(--scan-soft);color:var(--scan-ink);text-decoration:none;font-size:14px;border-bottom:1px solid color-mix(in srgb,var(--scan) 30%,transparent)}
+.lancio .w{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;min-height:44px;padding-top:8px;padding-bottom:8px;text-align:center}
+.lancio b{font-weight:700}.lancio s{opacity:.75}.lancio u{font-weight:600;text-underline-offset:3px}
+.lancio:hover u{text-decoration-thickness:2px}
+@media (max-width:639px){.lancio .gr{display:none}.lancio{font-size:13px}}
+#prezzo:target .prezzo{animation:apri 1.4s cubic-bezier(.22,1,.36,1) both}
+@keyframes apri{0%{transform:scale(.97);box-shadow:0 0 0 0 rgba(5,196,184,.0)}35%{transform:none;box-shadow:0 0 0 6px rgba(5,196,184,.35)}100%{box-shadow:0 0 0 0 rgba(5,196,184,0)}}
 .offerta{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px;padding:8px 14px;border-radius:999px;background:var(--scan-soft);color:var(--scan-ink);font-size:13.5px;text-decoration:none;border:1px solid color-mix(in srgb,var(--scan) 35%,transparent)}
 .offerta b{font-weight:700}.offerta s{opacity:.7}
 .offerta:hover{border-color:var(--scan)}
@@ -258,7 +265,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 @media (min-width:860px){
   .w{padding:0 32px}
   .nav,.dx{display:flex}.ham,.menu,.menu.on{display:none}
-  .hero{padding-top:150px}
+  .hero{padding-top:84px}
   .corpo{grid-template-columns:200px 1fr}.lato{display:block}
   .pann{padding:34px}
   .kpi{grid-template-columns:1.35fr .65fr}
@@ -277,6 +284,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 </style>
 </head>
 <body>
+<a class="lancio" href="#prezzo"><span class="w"><b>Offerta di lancio</b><span class="pz">12 mesi a 47&nbsp;€ invece di <s>589&nbsp;€</s></span><span class="gr">· soddisfatto o rimborsato</span><u>Scopri l'offerta <span aria-hidden="true">→</span></u></span></a>
 <header class="top" id="top">
   <div class="w">
     <a class="logo" href="/" aria-label="TaxScan, torna all'inizio">Tax<span>Scan</span></a>
@@ -309,13 +317,12 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   <div class="griglia" aria-hidden="true"></div>
   <div class="w">
     <h1 class="h1" id="t-hero">Più <span class="giro"><span id="giro">risparmio.</span></span><br><span class="ser">Meno fisco da capire.<svg viewBox="0 0 500 18" preserveAspectRatio="none" aria-hidden="true"><path d="M4 13C126 1 359 3 496 10" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg></span></h1>
-    <p class="lead"><b>Il primo agente IA specializzato nel risparmio fiscale</b>, per chi ha la partita IVA in regime forfettario. Ti dice quanto devi pagare e quando, quanto mettere da parte su ogni fattura e dove puoi pagare meno, in regola. In parole semplici, tutto l'anno.</p>
+    <p class="lead"><b>Il primo agente IA specializzato nel risparmio fiscale.</b> Prepara i conti della tua partita IVA forfettaria e ti dice quanto pagare, quando e dove puoi pagare meno, in regola.</p>
     <div class="azioni">
       <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a class="btn btn-light" href="#come-funziona">Guarda come funziona</a>
     </div>
     <p class="nota">Gratis · 2 minuti, anche dal telefono · Basta il certificato della partita IVA</p>
-    <a class="offerta" href="/acquista?utm_source=home"><b>Offerta di lancio</b> 12 mesi a 47&nbsp;€ invece di <s>589&nbsp;€</s> · soddisfatto o rimborsato <span aria-hidden="true">→</span></a>
 
     <div class="mock vedi">
       <div class="freccia ser" aria-hidden="true">Il tuo agente IA ti guida<svg viewBox="0 0 60 44" fill="none"><path d="M3 3c12 5 22 13 28 24M21 25l11 3 2-12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
