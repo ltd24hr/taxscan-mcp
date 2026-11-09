@@ -1240,7 +1240,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 92</div>
+<div class="ver">Prototipo versione 93</div>
 </div>
 
 <script>
@@ -3097,7 +3097,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ================= Panoramica viva (v77): blocchi con una sola azione ciascuno, un "+" che consiglia, Scadenze dentro la Panoramica =================
   // Ogni blocco mostra dati veri; se non li ha, lo dice e propone l'unica azione che lo completa.
   var PVL=[
-    {k:'vRev',t:'Il controllo dell\'agente IA',d:'Rileggo tutta la tua situazione come un commercialista e ti dico cosa non torna.',on:1},
+    {k:'vRev',t:'Cosa non so ancora di te',d:'Le cose che mi mancano o che non tornano, una domanda alla volta.',on:1},
     {k:'vInc',t:'Ho incassato una fattura',d:'Scrivi l\'importo: ti dico quanto mettere da parte e quanto ti resta.',on:1},
     {k:'vSal',t:'Salvadanaio della scadenza',d:'Quanto hai già messo da parte per la prossima scadenza.',on:1},
     {k:'vPasso',t:'Il prossimo passo',d:'La prima cosa da fare, con il pulsante per farla.',on:1},
@@ -3149,13 +3149,13 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function pvEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
   // ---- i blocchi
   var PVR={
-    vRev:function(el){var R=pvRev(),l=R.voci||[],h='<h3 data-ex="pv_rev" tabindex="0" role="button">Il controllo dell\'agente IA</h3>';
+    vRev:function(el){var R=pvRev(),l=R.voci||[],h='<h3 data-ex="pv_rev" tabindex="0" role="button">Cosa non so ancora di te</h3>';
       if(!el.__su&&l.some(function(x){return x.gravita==='alta'})){el.__su=1;el.style.order=-2}
-      if(l.length){h+='<p class="pvs">'+(l.some(function(x){return x.gravita!=='bassa'})?(l.length===1?'Una cosa da guardare insieme':l.length+' cose da guardare insieme')+' nei tuoi dati. Toccane una e chiariamola.':'Un passo per controllare tutto sui documenti veri.')+'</p><div class="pvrv">'+
+      if(l.length){h+='<p class="pvs">'+(l.some(function(x){return x.gravita!=='bassa'})?(l.length===1?'Mi manca una cosa':'Mi mancano '+l.length+' cose')+' per fare i conti giusti. Tocca e rispondimi: rifaccio tutto io.':'Un passo per controllare tutto sui documenti veri.')+'</p><div class="pvrv">'+
           l.slice(0,3).map(function(x){return '<button type="button" class="pvrvi'+(x.gravita==='alta'?' alta':'')+'" data-id="'+pvEsc(x.id)+'"><b>'+pvEsc(x.titolo)+'</b><span aria-hidden="true">›</span></button>'}).join('')+'</div>'+
           (l.length>3?'<small class="pvs">E altre '+(l.length-3)+' dopo queste.</small>':'')}
-      else if(R.in_corso)h+='<p class="pvt">Sto rileggendo tutta la tua situazione…</p><p class="pvs">Come farebbe un commercialista alla prima visita: date, aliquota, contributi, fatture. Tra poco ti dico se qualcosa non torna.</p>';
-      else h+='<p class="pvt">Per ora tutto torna</p><p class="pvs">Ricontrollo da solo ogni volta che cambia qualcosa: un incasso, una fattura, un dato del profilo.</p>'+(window.TS_C?'<button class="pvgo" id="pvRevG">Ricontrolla adesso</button>':'');
+      else if(R.in_corso)h+='<p class="pvt">Sto rileggendo tutta la tua situazione…</p><p class="pvs">Come farebbe un commercialista alla prima visita: date, aliquota, contributi, fatture. Tra poco ti dico se mi manca qualcosa.</p>';
+      else h+='<p class="pvt">Per ora so tutto quello che mi serve</p><p class="pvs">Ricontrollo da solo ogni volta che cambia qualcosa: un incasso, una fattura, un dato del profilo.</p>'+(window.TS_C?'<button class="pvgo" id="pvRevG">Ricontrolla adesso</button>':'');
       if(window.TS_C)h+='<button type="button" class="pvdoc" id="pvDocB">Carica un F24, la dichiarazione o l\'estratto INPS</button>';
       el.querySelector('.pvc').innerHTML=h;
       var db_=$('pvDocB');if(db_)db_.onclick=function(){window.__docCarica()};
@@ -3223,21 +3223,22 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(j.in_corso&&n<8)giro();else PVREVT=0}).catch(function(){PVREVT=0})},n?20000:15000)})()}
   function pvRevChiedi(x){tap('pv_rev_apri');var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;
     // un punto senza domanda è da sapere: lo spiego e basta
-    if(x.azione==='documento'){window.__attesa=null;dire(pvEsc(x.perche));window.__xchips&&window.__xchips([['Carica un documento',function(){window.__docCarica()}],['Non ce l\'ho',function(){pvRevChiudi(x)}],['Più avanti',function(){dire('Va bene: quando vuoi lo trovi qui nel controllo.')}]]);return}
-    if(!x.domanda){window.__attesa=null;dire(pvEsc(x.perche));window.__xchips&&window.__xchips([['Ok, ho capito',function(){pvRevChiudi(x)}],['Ricordamelo più avanti',function(){dire('Va bene: resta qui nel controllo finché non lo chiudi.')}]]);return}
+    if(x.azione==='documento'){window.__attesa=null;dire(pvEsc(x.perche));window.__xchips&&window.__xchips([['Carica un documento',function(){window.__docCarica()}],['Non ce l\'ho',function(){pvRevChiudi(x)}],['Più avanti',function(){dire('Va bene: quando vuoi lo trovi in «Cosa non so ancora di te».')}]]);return}
+    if(!x.domanda){window.__attesa=null;dire(pvEsc(x.perche));window.__xchips&&window.__xchips([['Ok, ho capito',function(){pvRevChiudi(x)}],['Ricordamelo più avanti',function(){dire('Va bene: resta in «Cosa non so ancora di te» finché non lo chiudi.')}]]);return}
     dire(pvEsc(x.perche)+'<br><br><b>'+pvEsc(x.domanda)+'</b><br><small>Rispondimi qui sotto, con parole tue.</small>');
     window.__attesa={id:x.id,t:Date.now(),f:function(v){pvRevRispondi(x,v)}};
-    window.__xchips&&window.__xchips([['Non mi riguarda',function(){pvRevChiudi(x)}],['Te lo dico dopo',function(){window.__attesa=null;dire('Va bene: resta qui nel controllo, quando vuoi lo chiariamo.')}]])}
+    window.__xchips&&window.__xchips([['Non mi riguarda',function(){pvRevChiudi(x)}],['Te lo dico dopo',function(){window.__attesa=null;dire('Va bene: resta in «Cosa non so ancora di te», quando vuoi lo chiariamo.')}]])}
   function pvRevFine(j,dire){PVREV={voci:j.voci||[],in_corso:!!j.in_corso};pvRender('vRev');if(j.in_corso)pvRevAttendi();
     var nx=(j.voci||[])[0];window.__xchips&&window.__xchips(nx?[['Chiariamo: '+nx.titolo.slice(0,40),function(){pvRevChiedi(nx)}]]:[])}
   function pvRevRispondi(x,v){var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;dire('Un attimo, lo segno e rifaccio i conti…');tap('pv_rev_risposta');
-    pvPost('/api/prova/revisione',{azione:'risposta',id:x.id,testo:v}).then(function(j){
+    pvPost('/api/prova/revisione',{azione:'risposta',id:x.id,testo:v,titolo:x.titolo,domanda:x.domanda,campo:x.campo||''}).then(function(j){
+      if(j&&j.gia){window.__attesa=null;dire('Questo l\'ho già segnato: passiamo al resto.');pvRevFine(j,dire);return}
       if(!j||!j.ok){dire(pvEsc((j&&j.errore)||'Non sono riuscito a segnarlo: riprova tra poco.'));if(j&&j.errore)window.__attesa={id:x.id,t:Date.now(),f:function(w){pvRevRispondi(x,w)}};return}
       window.__attesa=null;dire(pvEsc(j.messaggio||'Fatto.')+(j.voci&&j.voci.length?'':' Adesso tutto torna.'));window.__wink&&window.__wink();
       if(x.campo&&window.TS_C)setTimeout(function(){location.reload()},2200);else pvRevFine(j,dire)}).catch(function(){dire('Non sono riuscito a segnarlo: riprova tra poco.')})}
   function pvRevChiudi(x){var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;window.__attesa=null;tap('pv_rev_chiudi');
     if(!window.TS_C){PVREV={voci:pvRev().voci.filter(function(y){return y.id!==x.id})};pvRender('vRev');return}
-    pvPost('/api/prova/revisione',{azione:'chiudi',id:x.id}).then(function(j){if(j&&j.ok){dire('Ok, lo tolgo dal controllo.');pvRevFine(j,dire)}}).catch(function(){})}
+    pvPost('/api/prova/revisione',{azione:'chiudi',id:x.id,titolo:x.titolo,domanda:x.domanda}).then(function(j){if(j&&(j.ok||j.gia)){dire('Ok, lo tolgo dall\'elenco.');pvRevFine(j,dire)}}).catch(function(){})}
   // documenti ufficiali (documenti.py): F24 pagati, dichiarazione dei redditi, estratto INPS. Si tengono solo i numeri.
   var PVDOCF=null;
   window.__docCarica=function(){var dire=(typeof mpView==='function'&&mpView()==='p')?showBub:say;
@@ -3269,7 +3270,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       var c=tb[sel]&&tb[sel].cloneNode(true);if(c){var h3=c.querySelector('h3');if(h3)h3.remove();el.querySelector('.pvtab').innerHTML=c.innerHTML}
       [].slice.call(el.querySelectorAll('.pvtabs button')).forEach(function(b){b.onclick=function(){PV.anno=+b.dataset.i;pvPut(PV);pvRender('vAnno')}})}};
   PVR.vAnno=PVR2.vAnno;
-  EX.pv_rev='Ogni volta che cambia qualcosa rileggo <b>tutta</b> la tua situazione, come un commercialista alla prima visita: date, aliquota, contributi, codice, fatture e incassi. Se qualcosa non torna te lo segnalo qui con una domanda precisa: rispondi a me e, se serve, rifaccio i conti.';
+  EX.pv_rev='Qui trovi quello che <b>non so ancora</b> di te, o che non torna nei dati: ogni volta che cambia qualcosa rileggo tutta la tua situazione, come un commercialista alla prima visita. Ogni punto è una domanda precisa: rispondi a me, aggiorno il dato e rifaccio i conti. Quando hai risposto, il punto sparisce.';
   EX.pv_inc='Ogni volta che incassi una fattura, scrivi qui l\'importo: ti dico subito quanto mettere da parte per imposta e contributi (il <b>'+D.perc+'%</b>) e quanto ti resta davvero. Con il pulsante lo aggiungo al salvadanaio e agli incassi dell\'anno.';
   EX.pv_sal='È la cassa per la prossima scadenza, il <b>'+PVDATA+'</b>. Ogni volta che metti via qualcosa lo aggiungi qui: vedi quanto manca e quanto conviene accantonare a settimana. Quando è pieno, smetto di chiedertelo.';
   EX.pv_passo='È la prima cosa da fare tra quelle che ti ho preparato in <b>Da fare</b>. Tocchi Inizia e ti accompagno io.';

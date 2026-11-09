@@ -95,8 +95,8 @@ def leggi(contenuto: bytes, nome: str = "", dichiarato: str = "") -> dict:
         r, _ = ai.genera_json_ottimizza(_SYS, testo[:30000], 3000)
         if isinstance(r, dict) and r.get("tipo"):
             return r
-    import assistente
-    if not assistente.attiva():
+    import ai
+    if not ai.attiva():
         raise ValueError("la lettura dei documenti non è disponibile in questo momento")
     b64 = base64.b64encode(contenuto).decode("ascii")
     blocco = ({"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}

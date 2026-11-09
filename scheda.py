@@ -868,6 +868,8 @@ def _calcolo(s: dict, ricavi: float, contributi_versati: float | None = None, an
         mesi_riduzione_50=mesi_riduzione_50(s, anno) if anno else 0)
     if misto is not None and "errore" not in esito:
         esito["gruppo_ateco"] = "Più attività: coefficiente medio dei tuoi servizi"
+    if anno and isinstance(esito, dict) and "errore" not in esito:
+        esito["anno"] = anno      # l'anno a cui si riferisce QUESTO calcolo (non sempre l'anno in corso)
     return esito
 
 
@@ -1089,6 +1091,9 @@ def genera_quadro(scheda: dict, oggi: str = "") -> dict:
             "apertura": s.get("data_apertura"),
             "anno_ingresso_forfettario": anno_ingresso,
             "anni_nel_regime": anni_nel_regime,
+            # in parole, per non confondere chi legge (anche l'IA): 0 anni compiuti = primo anno, 1 = secondo...
+            "anno_nel_regime": (["primo", "secondo", "terzo", "quarto", "quinto"][anni_nel_regime] + " anno"
+                                if 0 <= anni_nel_regime < 5 else f"{anni_nel_regime + 1}° anno"),
             "codice_ateco": s.get("codice_ateco"),
             "coefficiente": coeff.get("coefficiente_percentuale"),
             "gruppo_ateco": coeff.get("gruppo"),

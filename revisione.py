@@ -219,7 +219,7 @@ _SYS = (
     "Cerca: 1) INCOERENZE tra i dati (date, aliquota 5%/15% e requisiti, gestione previdenziale e tipo di lavoro, codice ATECO e prestazioni "
     "delle fatture, incassi e fatture, clienti esteri, prevalenza di un solo cliente o di un ex datore di lavoro); 2) DATI MANCANTI che "
     "cambierebbero davvero i calcoli (mese di apertura, altri redditi, sconti INPS, cassa) e DOCUMENTI UFFICIALI utili che non ho ancora letto "
-    "(F24 pagati, dichiarazione dell'anno scorso, estratto INPS: la persona li carica dal controllo); 3) RISCHI concreti (uscita dal regime, cause "
+    "(F24 pagati, dichiarazione dell'anno scorso, estratto INPS: la persona li carica dal blocco «Cosa non so ancora di te»); 3) RISCHI concreti (uscita dal regime, cause "
     "ostative, contributi sbagliati, adempimenti dimenticati come bollo, Intrastat, VIES); 4) RISPARMI non ancora sfruttati, soprattutto "
     "sui contributi. Ragiona sulla persona SPECIFICA collegando i dati tra loro, non elencare regole generali. "
     "Non ripetere i punti gia' segnalati (te li do) ne' le note gia' chiarite dalla persona. Se tutto torna, lista vuota: "
@@ -247,6 +247,7 @@ def _prompt(sch: dict, d: dict, fatt: list, gia: list) -> str:
 
 
 def _rileggi(c: str, sch: dict, d: dict, fatt: list, impronta: str) -> None:
+    t0 = int(time.time())   # conta quando e' partita la rilettura: una risposta data dopo non viene "scavalcata"
     try:
         gia = controlli(sch, d, fatt)
         r, _ = ai.genera_json_ottimizza(_SYS, _prompt(sch, d, fatt, gia), 2500)
@@ -255,12 +256,12 @@ def _rileggi(c: str, sch: dict, d: dict, fatt: list, impronta: str) -> None:
             if not isinstance(x, dict) or not x.get("titolo") or not x.get("domanda"):
                 continue
             campo = x.get("campo") if x.get("campo") in _CAMPI else ""
-            voci.append({"id": "ia_" + impronta[:6] + "_" + str(i), "titolo": str(x["titolo"])[:80],
+            voci.append({"id": "ia_" + hashlib.sha1(str(x["titolo"]).strip().lower().encode()).hexdigest()[:8], "titolo": str(x["titolo"])[:80],
                          "perche": str(x.get("perche") or "")[:400], "domanda": str(x["domanda"])[:240], "campo": campo,
                          "gravita": x.get("gravita") if x.get("gravita") in ("alta", "media", "bassa") else "media",
                          "fonte": "ia"})
         st = _doc("app/" + c + "/revisione") or {}
-        st.update({"h": impronta, "t": int(time.time()), "voci": voci[:4]})
+        st.update({"h": impronta, "t": t0, "voci": voci[:4]})
         _salva_doc("app/" + c + "/revisione", st)
         try:
             db.registra_evento("revisione_ia", c, {"punti": len(voci)})
@@ -301,13 +302,23 @@ def per_pagina(c: str, d: dict) -> dict:
         fatt = _fatture(c) if c else []
         st = (_doc("app/" + c + "/revisione") or {}) if c else {}
         chiusi = set(st.get("chiusi") or [])
+        titoli_chiusi = set(st.get("titoli_chiusi") or [])
+        campi_chiariti = {k: v for k, v in (st.get("campi_chiariti") or {}).items()}
         fissi = controlli(sch, d, fatt)
         fissi += [x for x in dal_calcolo(sch) if x["titolo"] not in {f["titolo"] for f in fissi}]
         # quello che i documenti ufficiali hanno fatto emergere (documenti.py)
         fissi += [x for x in (sch.get("doc_differenze") or []) if isinstance(x, dict) and x.get("id") and x.get("titolo")]
         tutti = fissi + [x for x in (st.get("voci") or []) if x.get("titolo") not in {f["titolo"] for f in fissi}]
         ordine = {"alta": 0, "media": 1, "bassa": 2}
-        tutti = sorted([x for x in tutti if x["id"] not in chiusi], key=lambda x: ordine.get(x.get("gravita"), 1))
+        def aperta(x):
+            if x["id"] in chiusi or _chiave_titolo(x.get("titolo")) in titoli_chiusi:
+                return False
+            # un dato appena chiarito dalla persona: l'IA non lo richiede finche' non rilegge con il dato nuovo
+            t = campi_chiariti.get(x.get("campo") or "")
+            if x.get("fonte") == "ia" and t and t >= (st.get("t") or 0):
+                return False
+            return True
+        tutti = sorted([x for x in tutti if aperta(x)], key=lambda x: ordine.get(x.get("gravita"), 1))
         in_corso = avvia_se_serve(c, d) if c else False
         return {"voci": tutti[:8], "in_corso": bool(in_corso), "quando": st.get("t") or 0}
     except Exception as e:
@@ -315,7 +326,11 @@ def per_pagina(c: str, d: dict) -> dict:
         return {"voci": [], "in_corso": False, "quando": 0}
 
 
-def azione(c: str, azione_: str, id_: str = "", testo: str = "") -> dict:
+def _chiave_titolo(t) -> str:
+    return hashlib.sha1(str(t or "").strip().lower().encode()).hexdigest()[:10]
+
+
+def azione(c: str, azione_: str, id_: str = "", testo: str = "", titolo: str = "", domanda: str = "", campo: str = "") -> dict:
     """La persona risponde a un punto, lo dice non pertinente, o chiede di rileggere."""
     import prova
     c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
@@ -331,9 +346,16 @@ def azione(c: str, azione_: str, id_: str = "", testo: str = "") -> dict:
     if azione_ == "rileggi":
         partita = avvia_se_serve(c, dati, forza=True)
         return {"ok": True, "in_corso": partita}
-    voce = next((x for x in per_pagina(c, dati)["voci"] if x["id"] == id_), None)
+    aperte = per_pagina(c, dati)["voci"]
+    voce = (next((x for x in aperte if x["id"] == id_), None)
+            or next((x for x in aperte if titolo and x.get("titolo") == titolo), None)
+            or next((x for x in aperte if domanda and x.get("domanda") == domanda), None))
+    if not voce and azione_ in ("risposta", "chiudi") and (titolo or domanda):
+        # il punto non c'e' piu' nella lista (l'IA ha appena riletto e l'ha riscritto): la risposta vale lo stesso
+        voce = {"id": id_, "titolo": str(titolo)[:80], "domanda": str(domanda)[:240],
+                "campo": campo if campo in _CAMPI else "", "fonte": "ia"}
     if not voce:
-        return {"ok": False, "errore": "Questo punto è già chiarito."}
+        return {"ok": False, "gia": True, "errore": "Questo punto è già chiarito.", **per_pagina(c, dati)}
     msg = ""
     if azione_ == "risposta":
         testo = str(testo or "").strip()[:500]
@@ -357,7 +379,10 @@ def azione(c: str, azione_: str, id_: str = "", testo: str = "") -> dict:
     elif azione_ != "chiudi":
         return {"ok": False}
     st = _doc(path) or {}
-    st["chiusi"] = (list(st.get("chiusi") or []) + [id_])[-80:]
+    st["chiusi"] = (list(st.get("chiusi") or []) + [id_, voce.get("id") or id_])[-80:]
+    st["titoli_chiusi"] = (list(st.get("titoli_chiusi") or []) + [_chiave_titolo(voce.get("titolo"))])[-80:]
+    if azione_ == "risposta" and voce.get("campo"):
+        st["campi_chiariti"] = dict(st.get("campi_chiariti") or {}, **{voce["campo"]: int(time.time())})
     _salva_doc(path, st)
     try:
         db.registra_evento("revisione_" + azione_, c, {"id": id_[:40], "fonte": voce.get("fonte")})

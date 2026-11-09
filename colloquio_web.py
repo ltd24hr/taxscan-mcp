@@ -328,7 +328,7 @@ def _ai_documento(testo: str = "", contenuto: bytes = b"", media: str = ""):
             r, _ = ai.genera_json_ottimizza(_SYS_DOCUMENTO, testo[:12000], 900)
             return r if isinstance(r, dict) else None
         import json, assistente, fatture_file
-        if not assistente.attiva() or not contenuto:
+        if not __import__("ai").attiva() or not contenuto:
             return None
         b64 = base64.b64encode(contenuto).decode("ascii")
         blocco = ({"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}

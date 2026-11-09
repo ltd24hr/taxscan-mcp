@@ -130,7 +130,7 @@ def _fatti(d: dict, sch: dict) -> str:
         if ini:
             f.append("Partita IVA aperta " + (f"a {_MESI_IT[ini[1] - 1]} " if ini[1] else "nel ") + str(ini[0]) + ".")
         if prof.get("anni_nel_regime") is not None:
-            f.append(f"Anni nel forfettario prima di quest'anno: {prof['anni_nel_regime']}.")
+            f.append(f"Anni nel forfettario prima di quest'anno: {prof['anni_nel_regime']} (quest'anno è il suo {prof['anni_nel_regime'] + 1}° anno nel regime).")
         f.append(f"Aliquota imposta: {prof.get('aliquota') or '?'}; coefficiente {prof.get('coefficiente') or '?'}; "
                  f"contributi: {prof.get('gestione') or sch.get('gestione_previdenziale') or '?'}.")
         f.append(f"Incassi {anno} finora: {num.get('ricavi_anno_corrente') if num.get('ricavi_anno_corrente') is not None else 'non indicati'} €; "
@@ -291,8 +291,9 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
             mp["78%"] = str(pr["coefficiente"])
         anno_ap = str(pv.get("data_apertura") or "")[:4]
         n_anno = pr.get("anni_nel_regime")
-        if anno_ap.isdigit() and n_anno:
-            mp["<b>2025 · 2° anno</b>"] = "<b>%s · %s° anno</b>" % (anno_ap, n_anno)
+        if anno_ap.isdigit() and isinstance(n_anno, int) and n_anno >= 0:
+            # anni_nel_regime conta gli anni gia' compiuti: 0 = primo anno, 1 = secondo...
+            mp["<b>2025 · 2° anno</b>"] = "<b>%s · %s° anno</b>" % (anno_ap, n_anno + 1)
         if pr.get("aliquota"):
             mp["<span>Aliquota</span><b>5%</b>"] = "<span>Aliquota</span><b>%s</b>" % pr["aliquota"]
             if not str(pr["aliquota"]).startswith("5"):
@@ -1781,6 +1782,21 @@ def fic_fatture(c: str, company_id=None) -> dict:
     return {"ok": True, "fatture": out}
 
 
+def _perche_non_letta(motivi: list) -> str:
+    """Il motivo vero, detto in modo semplice: cosi' la persona sa cosa fare invece di riprovare a vuoto."""
+    m = " ".join(motivi).lower()
+    if "non è una fattura" in m:
+        return "Il file che hai caricato non sembra una fattura emessa da te: " + next(x for x in motivi if "non è una fattura" in x.lower()).split(":", 1)[-1].strip() + ". Carica una tua fattura."
+    if "troppo grande" in m:
+        return "Il file è troppo grande: il massimo è 5 MB per fattura."
+    if "formato" in m:
+        return "Questo tipo di file non lo leggo: usa PDF, XML, Excel o una foto (JPG, PNG, HEIC)."
+    if "non sono riuscito a leggerla" in m or "non disponibile" in m:
+        return ("In questo momento il servizio che legge i PDF non ha risposto: riprova tra qualche minuto. "
+                "Se hai fretta, carica il file XML della stessa fattura (lo trovi nel programma di fatturazione o nel cassetto fiscale): quello lo leggo sempre.")
+    return "Nella fattura non ho trovato righe con il lavoro fatto e un importo. Se è una fattura scansionata storta o tagliata, prova con il PDF originale o con il file XML."
+
+
 def fatture_lettura(c: str, files, prof=None) -> dict:
     """Legge ogni fattura da sola e dice, per ognuna, se si capisce cosa e' stato fatto. Se non si capisce, lo dice
     e propone una domanda: non indovina. Restano solo descrizione e importo delle righe; nulla viene salvato."""
@@ -1827,7 +1843,12 @@ def fatture_lettura(c: str, files, prof=None) -> dict:
                     "capito": False, "attivita": "", "motivo": "", "domanda": "", "opzioni": []})
     leggibili = [x for x in out if x["ok"]]
     if not leggibili:
-        return {"ok": True, "fatture": out, "vuoto": "Non sono riuscito a leggere righe di prestazioni dai file caricati."}
+        motivi = [x.get("motivo_non_letta") or "" for x in out]
+        try:
+            db.registra_evento("fattura_non_letta", c, {"motivi": [m[:80] for m in motivi][:6]})
+        except Exception:
+            pass
+        return {"ok": True, "fatture": out, "vuoto": _perche_non_letta(motivi)}
     _capisci_fatture(c, leggibili)
     # coerenza con il certificato dell'utente e con le regole del forfettario; i dati identificativi non escono dal server
     cert = _profilo_certificato(c if c != "demo" else "", prof)
@@ -2253,7 +2274,8 @@ def registra(mcp, avvisi):
         try:
             import revisione
             c = await request.json()
-            esito = await asyncio.to_thread(revisione.azione, c.get("c", ""), c.get("azione", ""), c.get("id", ""), c.get("testo", ""))
+            esito = await asyncio.to_thread(revisione.azione, c.get("c", ""), c.get("azione", ""), c.get("id", ""), c.get("testo", ""),
+                                            str(c.get("titolo") or "")[:120], str(c.get("domanda") or "")[:300], str(c.get("campo") or "")[:40])
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)

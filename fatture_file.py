@@ -250,40 +250,59 @@ _ISTRUZIONI_AI = (
 MODELLO_LETTURA = os.environ.get("LETTURA_MODELLO", "claude-opus-5-5")
 
 
+def _openrouter_blocco(blocco: dict) -> dict:
+    """Lo stesso PDF o la stessa foto nel formato di OpenRouter."""
+    src = blocco.get("source") or {}
+    dati = "data:%s;base64,%s" % (src.get("media_type", ""), src.get("data", ""))
+    if blocco.get("type") == "document":
+        return {"type": "file", "file": {"filename": "fattura.pdf", "file_data": dati}}
+    return {"type": "image_url", "image_url": {"url": dati}}
+
+
+MODELLO_LETTURA_OR = os.environ.get("LETTURA_MODELLO_OPENROUTER", "anthropic/claude-opus-5.5")
+
+
 def guarda(blocco: dict, istruzioni: str, max_token: int = 1500, sistema: str = "") -> str:
-    """L'IA guarda un PDF o una foto. Prima Claude Opus (legge meglio scansioni, foto storte e impaginazioni strane),
-    se non risponde il modello normale. Ritorna il testo della risposta."""
+    """L'IA guarda un PDF o una foto. Prima Claude Opus su Anthropic (legge meglio scansioni, foto storte e impaginazioni
+    strane), poi il modello normale; se Anthropic non risponde (chiave, credito, rete) si prova con OpenRouter.
+    Ritorna il testo della risposta."""
+    import ai
     import assistente
     import requests
     ultimo = None
-    for modello in dict.fromkeys([MODELLO_LETTURA, assistente.MODELLO]):
-        corpo = {"model": modello, "max_tokens": max_token,
-                 "messages": [{"role": "user", "content": [blocco, {"type": "text", "text": istruzioni}]}]}
-        if sistema:
-            corpo["system"] = sistema
+    if ai._anthropic():
+        for modello in dict.fromkeys([MODELLO_LETTURA, assistente.MODELLO]):
+            corpo = {"model": modello, "max_tokens": max_token,
+                     "messages": [{"role": "user", "content": [blocco, {"type": "text", "text": istruzioni}]}]}
+            if sistema:
+                corpo["system"] = sistema
+            try:
+                r = requests.post(assistente.API_URL, headers=assistente.intestazioni(), json=corpo, timeout=120)
+                if r.status_code >= 400:
+                    raise RuntimeError(f"api {r.status_code}: {r.text[:200]}")
+                return "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
+            except Exception as e:
+                print(f"fatture: lettura con {modello} non riuscita: {e}")
+                ultimo = e
+    if ai._openrouter():
+        msgs = ([{"role": "system", "content": sistema}] if sistema else []) + [
+            {"role": "user", "content": [{"type": "text", "text": istruzioni}, _openrouter_blocco(blocco)]}]
         try:
-            r = requests.post(assistente.API_URL, headers=assistente.intestazioni(), json=corpo, timeout=150)
+            r = requests.post(ai.OPENROUTER_URL, timeout=150,
+                              headers={"Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"].strip(),
+                                       "content-type": "application/json", "X-Title": "TaxScan"},
+                              json={"model": MODELLO_LETTURA_OR, "max_tokens": max_token, "messages": msgs})
             if r.status_code >= 400:
-                raise RuntimeError(f"api {r.status_code}: {r.text[:200]}")
-            return "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
+                raise RuntimeError(f"openrouter {r.status_code}: {r.text[:200]}")
+            return (r.json()["choices"][0]["message"]["content"] or "")
         except Exception as e:
-            print(f"fatture: lettura con {modello} non riuscita: {e}")
+            print(f"fatture: lettura con openrouter non riuscita: {e}")
             ultimo = e
-    raise ultimo or RuntimeError("lettura non riuscita")
+    raise ultimo or RuntimeError("lettura non riuscita: nessuna chiave AI configurata")
 
 
-def da_pdf_o_immagine(contenuto: bytes, tipo: str) -> dict:
-    import assistente
-    if not assistente.attiva():
-        raise ValueError("lettura di PDF e foto non disponibile al momento: carica il file XML della fattura")
-    b64 = base64.b64encode(contenuto).decode("ascii")
-    if tipo == "application/pdf":
-        blocco = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}
-    else:
-        blocco = {"type": "image", "source": {"type": "base64", "media_type": tipo, "data": b64}}
-    testo = guarda(blocco, _ISTRUZIONI_AI, 1500)
-    m = re.search(r"\{.*\}", testo, re.S)
-    j = json.loads(m.group(0)) if m else {}
+def _da_json(j) -> dict:
+    j = j if isinstance(j, dict) else {}
     righe = []
     for r in (j.get("righe") or [])[:60]:
         if isinstance(r, dict):
@@ -292,6 +311,43 @@ def da_pdf_o_immagine(contenuto: bytes, tipo: str) -> dict:
                 righe.append((t, i))
     anno = j.get("anno") if isinstance(j.get("anno"), int) else None
     return {"anno": anno, "righe": righe, "emittente": _emittente(j), "cliente": _cliente(j), "controlli": _controlli(j)}
+
+
+def _testo_pdf(contenuto: bytes) -> str:
+    """Il testo di un PDF fatto al computer (quasi tutte le fatture). Vuoto se e' una scansione o non si legge."""
+    try:
+        from pypdf import PdfReader
+        pagine = PdfReader(io.BytesIO(contenuto)).pages[:4]
+        return "\n".join((p.extract_text() or "") for p in pagine).strip()
+    except Exception as e:
+        print(f"fatture: testo del PDF non estratto: {e}")
+        return ""
+
+
+def da_pdf_o_immagine(contenuto: bytes, tipo: str) -> dict:
+    """Prima, se il PDF ha il testo, l'IA legge il testo (veloce, funziona con Anthropic o con OpenRouter);
+    se non basta, l'IA guarda il file come una persona (scansioni, foto, impaginazioni strane)."""
+    import ai
+    if not ai.attiva():
+        raise ValueError("lettura di PDF e foto non disponibile al momento: carica il file XML della fattura")
+    if tipo == "application/pdf":
+        testo = _testo_pdf(contenuto)
+        if len(re.sub(r"\s", "", testo)) >= 60:
+            try:
+                j = ai.genera_json(_ISTRUZIONI_AI, "Testo della fattura, estratto dal PDF:\n\n" + testo[:15000], 1500)
+                esito = _da_json(j)
+                if esito["righe"] or (esito["controlli"].get("tipo_documento") not in (None, "", "fattura", "nota_di_credito")):
+                    return esito
+            except Exception as e:
+                print(f"fatture: lettura del testo del PDF non riuscita, provo a guardare il file: {e}")
+    b64 = base64.b64encode(contenuto).decode("ascii")
+    if tipo == "application/pdf":
+        blocco = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}
+    else:
+        blocco = {"type": "image", "source": {"type": "base64", "media_type": tipo, "data": b64}}
+    testo = guarda(blocco, _ISTRUZIONI_AI, 1500)
+    m = re.search(r"\{.*\}", testo, re.S)
+    return _da_json(json.loads(m.group(0)) if m else {})
 
 
 def _testo_xlsx(contenuto: bytes) -> str:
