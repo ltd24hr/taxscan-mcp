@@ -76,8 +76,8 @@ def pagina(c: str = "", email: str = "") -> str:
     video = _video_html(os.environ.get("ACQUISTA_VIDEO", ""))
     t = _testimonianze()
     sez_video = ("" if not video else
-                 '<section class="sez" id="video" aria-labelledby="t-video"><h2 id="t-video">Guarda come funziona, dall\'inizio alla fine</h2>'
-                 '<p class="lead2">In 20 minuti vedi l\'agente IA al lavoro su una situazione vera: cosa legge, come ragiona e dove trova il risparmio.</p>'
+                 '<section class="sez" id="video" aria-labelledby="t-video"><div class="w"><h2 id="t-video">Guarda come funziona, dall\'inizio alla fine</h2>'
+                 '<p class="sotto">In 20 minuti vedi l\'agente IA al lavoro su una situazione vera: cosa legge, come ragiona e dove trova il risparmio.</p>'
                  f'<div class="vid">{video}</div>'
                  '<ol class="cap"><li><b>Cos\'è un agente IA</b> e cosa fa per una partita IVA forfettaria</li>'
                  '<li><b>Il questionario</b>: due minuti, o il certificato della partita IVA</li>'
@@ -85,18 +85,18 @@ def pagina(c: str = "", email: str = "") -> str:
                  '<li><b>Il risparmio</b>: attività con coefficienti diversi, fatture divise bene</li>'
                  '<li><b>I contributi INPS</b>: le riduzioni che spesso nessuno ti dice</li>'
                  '<li><b>Scadenze e acconti</b>: quanto mettere da parte, mese per mese</li>'
-                 '<li><b>Il report e i passi da fare</b>, uno alla volta</li></ol></section>')
+                 '<li><b>Il report e i passi da fare</b>, uno alla volta</li></ol></div></section>')
     sez_t = ("" if not t else
-             '<section class="sez" id="dicono" aria-labelledby="t-dicono"><h2 id="t-dicono">Cosa ci scrivono le prime partite IVA</h2>'
-             '<p class="lead2">Messaggi veri, pubblicati con il permesso di chi li ha scritti.</p><div class="tst">'
+             '<section class="sez" id="dicono" aria-labelledby="t-dicono"><div class="w"><h2 id="t-dicono">Cosa ci scrivono le prime partite IVA</h2>'
+             '<p class="sotto">Messaggi veri, pubblicati con il permesso di chi li ha scritti.</p><div class="tst">'
              + "".join(f'<figure><img src="/acquista/t/{_e(n)}" alt="Messaggio di una persona che usa TaxScan" loading="lazy"></figure>' for n in t)
-             + '</div></section>')
-    pulsante = ('Sblocca il tuo risparmio a 47 €' if attivo else 'Inizia gratis e scopri il tuo risparmio')
-    nota = ('Pagamento sicuro · un solo pagamento per 12 mesi' if attivo else
+             + '</div></div></section>')
+    pulsante = ('Attiva TaxScan a 47 €' if attivo else 'Inizia gratis e scopri il tuo risparmio')
+    nota = ('Pagamento sicuro con Stripe · ricevuta via email' if attivo else
             'Il pagamento online arriva a breve: intanto puoi iniziare gratis')
     return (PAGINA_HTML.replace("{{LINK}}", _e(link)).replace("{{PULSANTE}}", pulsante).replace("{{NOTA}}", nota)
             .replace("{{VIDEO}}", sez_video).replace("{{TESTIMONIANZE}}", sez_t)
-            .replace("{{VAI_VIDEO}}", '<a class="sec" href="#video">Guarda il video (20 min)</a>' if video else "")
+            .replace("{{VAI_VIDEO}}", '<a class="video-link" href="#video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>Guarda il video (20 min)</a>' if video else "")
             .replace(" €", "\u00a0€"))   # «47 €» non va mai a capo tra numero e simbolo
 
 
@@ -145,175 +145,265 @@ PAGINA_HTML = r"""<!doctype html>
 @font-face{font-family:"Poppins";font-weight:500;font-display:swap;src:url(/font/Poppins-Medium.ttf) format("truetype")}
 @font-face{font-family:"Poppins";font-weight:700;font-display:swap;src:url(/font/Poppins-Bold.ttf) format("truetype")}
 @font-face{font-family:"Rethink Sans";font-weight:400 800;font-display:swap;src:url(/font/RethinkSans-VariableFont_wght.ttf) format("truetype")}
-:root{color-scheme:light;--f-tit:"Rethink Sans","Poppins",system-ui,sans-serif;--f-txt:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --bg:#eef2f8;--surface:#fff;--line:#d8e2ed;--ink:#122452;--ink2:#3d4a73;--accent:#4355cc;--accent-ink:#4355cc;--soft:#e8ebfa;--scan:#05c4b8;--ok:#087a63}
-@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0a1330;--surface:#122452;--line:#25397a;--ink:#fff;--ink2:#c9d3ec;--accent:#5566dd;--accent-ink:#a6b4ff;--soft:#1c3070;--scan:#05d5c8;--ok:#5fe0c5}}
-*{box-sizing:border-box;margin:0}
+:root{color-scheme:light;
+  --f-tit:"Rethink Sans","Poppins",system-ui,sans-serif;--f-txt:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --bg:#f7f8fb;--surface:#fff;--ink:#122452;--ink2:#465275;--mute:#5d6787;--line:rgba(18,36,82,.11);--line2:rgba(18,36,82,.2);
+  --accent:#4355cc;--accent-h:#3646bd;--accent-ink:#4355cc;--scan:#05c4b8;--scan-ink:#076b57;--scan-soft:#e3f8f5;--lav:#e8ebfa;--navy:#122452;--carta:#fffdf8}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0a1330;--surface:#101d47;--ink:#fff;--ink2:#cdd6ee;--mute:#a3afd2;--line:rgba(255,255,255,.11);--line2:rgba(255,255,255,.22);
+  --accent:#4355cc;--accent-h:#3a4bc0;--accent-ink:#b3bfff;--scan-ink:#6fe8db;--scan-soft:#0d3a45;--lav:#1c3070;--navy:#0d1a42;--carta:#fffdf8}}
+*{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-txt);padding:0 16px 48px}
-h1,h2,h3,.logo{font-family:var(--f-tit);letter-spacing:-.02em}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-txt);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--accent);color:#fff}
 a{color:var(--accent-ink)}
-.pg{max-width:1040px;margin:0 auto}
-.top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 8px}
-.logo{font-family:"Poppins",sans-serif;font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)}.logo span{color:#4355cc}
-@media (prefers-color-scheme:dark){.logo span{color:#a6b4ff}}
-.top a.ent{font-size:14px;font-weight:600;text-decoration:none}
-.hero{display:grid;gap:28px;padding:28px 0 12px;align-items:start}
-@media (min-width:880px){.hero{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);padding-top:44px}}
-.eye{display:inline-block;font-size:13px;font-weight:600;color:var(--accent-ink);background:var(--soft);border-radius:99px;padding:4px 12px;margin-bottom:14px}
-h1{font-size:clamp(30px,5.2vw,46px);line-height:1.08;margin-bottom:16px}
-h1 em{font-style:normal;color:var(--accent-ink)}
-.lead{font-size:clamp(16px,2.2vw,18px);color:var(--ink2);margin-bottom:18px;max-width:34em}
-.punti{list-style:none;padding:0;display:grid;gap:10px;margin-bottom:22px}
-.punti li{display:flex;gap:10px;align-items:flex-start}
-.punti svg{flex:none;margin-top:3px}
-.prezzo{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px 24px;box-shadow:0 18px 40px rgba(18,36,82,.08)}
-.prezzo .cosa{font-size:14px;font-weight:600;color:var(--ink2)}
-.cifra{display:flex;align-items:baseline;gap:8px;margin:6px 0 2px}
-.cifra b{font-family:var(--f-tit);font-size:56px;line-height:1;letter-spacing:-.03em}
-.cifra span{font-size:16px;color:var(--ink2)}
-.cifra s{font-size:22px;color:#8a93ad;font-weight:600}
-.lancio{display:inline-block;margin:0 0 8px;padding:4px 10px;border-radius:99px;background:#e6faf7;color:#087a63;font-size:12.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
-.mese{font-size:14px;color:var(--ink2);margin-bottom:18px}
-.cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:18px;padding:16px 18px;border-radius:14px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
-@media (max-width:420px){.cta{font-size:17px;padding:15px 14px}}
-.cta:hover{background:#3646bd;transform:translateY(-1px);box-shadow:0 8px 20px rgba(67,85,204,.28)}
-.cta:active{background:#2b3aa6;transform:none;box-shadow:none}
-.cta:focus-visible,.sec:focus-visible,details summary:focus-visible{outline:3px solid #05d5c8;outline-offset:3px}
-.nota{font-size:13px;color:var(--ink2);text-align:center;margin-top:10px}
-.gar{display:flex;gap:12px;align-items:flex-start;margin-top:18px;padding:14px;border-radius:14px;background:var(--soft)}
-.gar svg{flex:none}
-.gar p{font-size:14px}
-.sec{display:inline-block;margin-top:14px;font-weight:600;font-size:15px}
-.incl{border-top:1px solid var(--line);margin-top:18px;padding-top:14px;font-size:14px;color:var(--ink2)}
-.incl li{margin:4px 0 0 18px}
-.sez{padding:44px 0 0}
-.sez h2{font-size:clamp(24px,3.6vw,32px);line-height:1.15;margin-bottom:10px}
-.lead2{color:var(--ink2);font-size:16px;max-width:40em;margin-bottom:22px}
-.vid{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#0a1330;box-shadow:0 18px 40px rgba(18,36,82,.12)}
+:focus-visible{outline:3px solid var(--scan);outline-offset:3px;border-radius:6px}
+.w{max-width:1160px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.025em;line-height:1.06;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+.logo{font-family:"Poppins",var(--f-tit);font-weight:700;font-size:22px;line-height:1;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--accent-ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:14px 24px;border-radius:12px;font-weight:700;font-size:17px;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-acc{background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--navy)}
+.btn-acc:hover{background:var(--accent-h);transform:translateY(-2px);box-shadow:0 6px 0 var(--navy)}
+.btn-acc:active{transform:none;box-shadow:0 2px 0 var(--navy)}
+.btn-light{background:var(--surface);color:var(--ink);border:1px solid var(--line2);min-height:50px;font-size:16px}
+.btn-light:hover{box-shadow:0 8px 20px rgba(18,36,82,.08)}
+
+.top .w{display:flex;align-items:center;justify-content:space-between;height:68px}
+.top nav{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.top nav a{color:var(--ink2);text-decoration:none;padding:8px 12px;border-radius:9px}
+.top nav a:hover{background:var(--lav);color:var(--ink)}
+
+/* apertura: messaggio a sinistra, scontrino a destra */
+.hero .w{display:grid;grid-template-areas:"t" "s" "p";gap:32px;padding-top:28px;padding-bottom:20px;align-items:start}
+.hero .testo{grid-area:t}.hero .punti{grid-area:p;margin-top:0}
+.hero h1{font-size:clamp(38px,6.4vw,76px);letter-spacing:-.035em;line-height:1}
+.hero h1 b{color:var(--accent-ink);font-weight:inherit}
+.lead{margin-top:20px;max-width:34em;font-size:clamp(16.5px,1.8vw,19px);color:var(--ink2)}
+.punti{list-style:none;display:grid;gap:12px;margin-top:26px;max-width:34em}
+.punti li{display:flex;gap:12px;align-items:flex-start;color:var(--ink2)}
+.punti li b{color:var(--ink);font-weight:600}
+.punti svg{flex:none;width:22px;height:22px;margin-top:2px;color:var(--scan)}
+.video-link{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-weight:600;text-decoration:none}
+.video-link svg{width:22px;height:22px}
+
+.scontrino{grid-area:s;position:relative;max-width:440px;width:100%;justify-self:center;margin-bottom:10px;color:#122452;filter:drop-shadow(0 24px 40px rgba(18,36,82,.14)) drop-shadow(0 2px 3px rgba(18,36,82,.08))}
+.foglio{position:relative;overflow:hidden;background:var(--carta);padding:28px 26px 26px;border-radius:6px 6px 0 0}
+.scontrino::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:linear-gradient(135deg,var(--carta) 50%,transparent 50%) 0 0/16px 10px repeat-x,linear-gradient(-135deg,var(--carta) 50%,transparent 50%) 0 0/16px 10px repeat-x}
+.testa{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:16px;border-bottom:1.5px dashed rgba(18,36,82,.25)}
+.testa .logo{font-size:20px;color:#122452}.testa .logo span{color:#4355cc}
+.testa small{font-size:12.5px;font-weight:600;color:#076b57;background:#e3f8f5;border-radius:99px;padding:3px 10px}
+.voci{list-style:none;display:grid;gap:11px;padding:18px 0;border-bottom:1.5px dashed rgba(18,36,82,.25);font-size:15px}
+.voci li{display:flex;justify-content:space-between;gap:12px}
+.voci li span:last-child{color:#076b57;font-weight:700;white-space:nowrap}
+.conti{display:grid;gap:6px;padding:16px 0 4px;font-size:15px;color:#465275}
+.conti p{display:flex;justify-content:space-between;gap:12px}
+.conti s{color:#5d6787}
+.conti .sconto span:last-child{color:#076b57;font-weight:700}
+.totale{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:10px;padding-top:14px;border-top:2px solid #122452}
+.totale span{font-weight:700;font-size:15px;padding-bottom:8px}
+.totale b{font-family:var(--f-tit);font-size:64px;font-weight:800;letter-spacing:-.035em;line-height:.9}
+.mese{margin-top:8px;font-size:13.5px;color:#465275}
+.scontrino .btn{display:flex;width:100%;margin-top:22px}
+.nota{margin-top:12px;text-align:center;font-size:13px;color:#465275}
+.firma{display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding-top:16px;border-top:1.5px dashed rgba(18,36,82,.25);font-size:13.5px;color:#2d3a63}
+.firma svg{flex:none;width:26px;height:26px}
+/* la scansione: una sola volta, all'apertura */
+.raggio{position:absolute;left:0;right:0;top:-20%;height:18%;pointer-events:none;background:linear-gradient(rgba(5,196,184,0),rgba(5,196,184,.22));border-bottom:2px solid #05c4b8;animation:scan 1.6s cubic-bezier(.22,1,.36,1) .35s both}
+@keyframes scan{from{transform:translateY(0);opacity:1}85%{opacity:1}to{transform:translateY(640%);opacity:0}}
+
+/* sezioni */
+.sez{padding:clamp(72px,9vw,120px) 0 0}
+.sez h2{font-size:clamp(32px,4.6vw,56px);letter-spacing:-.03em;max-width:16em}
+.sez .sotto{margin-top:16px;max-width:38em;font-size:18px;color:var(--ink2)}
+
+.cosa{display:grid;gap:0;margin-top:44px;border-top:1px solid var(--line)}
+.cosa article{display:grid;gap:8px;padding:26px 0;border-bottom:1px solid var(--line)}
+.cosa h3{font-size:clamp(21px,2.2vw,26px);letter-spacing:-.02em}
+.cosa p{color:var(--ink2);max-width:36em}
+.gratis{margin-top:22px;font-size:15px;color:var(--mute)}
+
+.passi{list-style:none;display:grid;gap:28px;margin-top:44px;counter-reset:p}
+.passi li{counter-increment:p;position:relative;padding-top:58px}
+.passi li::before{content:counter(p);position:absolute;top:0;left:0;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--f-tit);font-weight:800;font-size:18px}
+.passi h3{font-size:22px;letter-spacing:-.02em}
+.passi p{margin-top:8px;color:var(--ink2)}
+
+.garanzia{margin-top:clamp(72px,9vw,120px);background:var(--navy);color:#fff}
+.garanzia .w{display:grid;gap:36px;padding-top:clamp(56px,7vw,96px);padding-bottom:clamp(56px,7vw,96px);align-items:center}
+.garanzia h2{font-size:clamp(34px,4.8vw,60px);letter-spacing:-.03em;max-width:13em}
+.garanzia p{margin-top:16px;max-width:34em;font-size:18px;color:#d3dbf2}
+.conto{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;align-items:baseline;background:#1b2f66;border-radius:22px;padding:28px}
+.conto b{font-family:var(--f-tit);font-size:clamp(38px,5vw,54px);font-weight:800;letter-spacing:-.03em;line-height:1;text-align:right}
+.conto span{color:#d3dbf2}
+.conto b.oro{color:#f6c25a}
+.conto .ver{grid-column:1/-1;margin-top:8px;padding-top:16px;border-top:1px solid rgba(255,255,255,.16);color:#fff;font-weight:600}
+
+.vid{position:relative;aspect-ratio:16/9;margin-top:36px;border-radius:20px;overflow:hidden;background:#0a1330;box-shadow:0 24px 50px rgba(18,36,82,.16)}
 .vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
-.cap{display:grid;gap:8px;margin:18px 0 0;padding-left:22px;color:var(--ink2)}
-@media (min-width:760px){.cap{grid-template-columns:1fr 1fr;column-gap:28px}}
-.passi{display:grid;gap:14px;counter-reset:p}
-@media (min-width:760px){.passi{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.passo,.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
-.passo h3,.card h3{font-size:18px;margin-bottom:6px}
-.passo p,.card p{color:var(--ink2);font-size:14.5px}
-.passo .n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;margin-bottom:10px}
-.griglia{display:grid;gap:14px}
-@media (min-width:760px){.griglia{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.card .ic{width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;margin-bottom:10px}
-.gratis{margin-top:14px;font-size:14px;color:var(--ink2)}
-.gbox{display:grid;gap:18px;align-items:center;background:var(--surface);border:2px solid var(--scan);border-radius:22px;padding:24px}
-@media (min-width:760px){.gbox{grid-template-columns:auto 1fr}}
-.gbox h2{margin-bottom:8px}
-.gbox p{color:var(--ink2);margin-top:6px}
-.tst{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
-.tst figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px}
-.tst img{display:block;width:100%;height:auto;border-radius:10px}
-.faq{display:grid;gap:10px}
-details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 18px}
-summary{cursor:pointer;font-weight:600;padding:16px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";font-size:20px;line-height:1;color:var(--accent-ink)}
-details[open] summary::after{content:"–"}
-details p{color:var(--ink2);padding:0 0 16px}
-.fine{margin-top:48px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:32px 20px}
-.fine h2{font-size:clamp(24px,3.6vw,32px);margin-bottom:8px}
-.fine p{color:var(--ink2);margin-bottom:18px}
-.fine .cta{max-width:420px;margin:0 auto}
-.legal{font-size:12.5px;color:var(--ink2);text-align:center;margin-top:28px;line-height:1.6}
-.legal a{color:inherit;font-weight:600}
+.cap{display:grid;gap:10px;margin-top:22px;padding-left:22px;color:var(--ink2)}
+.tst{display:grid;gap:16px;margin-top:36px}
+.tst figure{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.tst img{display:block;width:100%;height:auto}
+
+.faq{margin-top:36px;border-top:1px solid var(--line);max-width:820px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 0;font-family:var(--f-tit);font-size:19px;font-weight:700;letter-spacing:-.015em;cursor:pointer;list-style:none}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary svg{width:20px;height:20px;flex:none;transition:transform .25s}
+.faq details[open] summary svg{transform:rotate(180deg)}
+.faq p{padding:0 0 20px;max-width:40em;color:var(--ink2)}
+
+.fine{text-align:center;padding:clamp(72px,9vw,120px) 0 clamp(56px,7vw,88px)}
+.fine h2{font-size:clamp(34px,5vw,62px);letter-spacing:-.03em;max-width:14em;margin:0 auto}
+.fine p{margin:16px auto 0;max-width:34em;font-size:18px;color:var(--ink2)}
+.fine .btn{margin-top:30px}
+.fine .nota{color:var(--mute);font-size:13.5px;margin-top:14px}
+
+.piede{border-top:1px solid var(--line);background:var(--surface)}
+.piede .w{display:grid;gap:12px;padding-top:28px;padding-bottom:32px;font-size:13px;color:var(--mute)}
+.piede a{color:var(--ink2)}
+
+@media (min-width:720px){
+  .passi{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}
+  .cosa{grid-template-columns:1fr 1fr;column-gap:48px}
+  .tst{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cap{grid-template-columns:1fr 1fr;column-gap:32px}
+}
+@media (min-width:940px){
+  .w{padding:0 32px}
+  .hero .w{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"t s" "p s";grid-template-rows:auto 1fr;gap:28px 56px;padding-top:56px}
+  .scontrino{justify-self:end;margin-top:8px}
+  .garanzia .w{grid-template-columns:1.1fr .9fr;gap:64px}
+}
+@media (max-width:420px){.foglio{padding:24px 20px 28px}.totale b{font-size:56px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.raggio{display:none}*{transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
-<div class="pg">
-<header class="top"><a class="logo" href="/">Tax<span>Scan</span></a><a class="ent" href="/prova">Entra</a></header>
+<header class="top">
+  <div class="w">
+    <a class="logo" href="/">Tax<span>Scan</span></a>
+    <nav aria-label="Navigazione"><a href="/">Home</a><a href="/accedi">Accedi</a></nav>
+  </div>
+</header>
 
 <main>
 <section class="hero" aria-labelledby="t-hero">
-  <div>
-    <span class="eye">Per partite IVA in regime forfettario · Offerta di lancio: 12 mesi a 47 € invece di 589 €</span>
-    <h1 id="t-hero">Paga meno tasse, <em>in regola</em>. Te lo trova il tuo agente IA.</h1>
-    <p class="lead">TaxScan legge le tue fatture, capisce che lavoro fai davvero e ti mostra dove puoi pagare meno: attività con coefficienti diversi, riduzioni dei contributi, acconti giusti. In euro, non in teoria.</p>
-    <ul class="punti">
-      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#05c4b8"/><path d="M5.5 10.3l3 3 6-6.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Il tuo risparmio, calcolato sulle tue fatture</b>, con il ragionamento spiegato passo per passo.</span></li>
-      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#05c4b8"/><path d="M5.5 10.3l3 3 6-6.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Un report con il tuo nome</b>, da tenere o da mostrare al commercialista.</span></li>
-      <li><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#05c4b8"/><path d="M5.5 10.3l3 3 6-6.3" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>I passi da fare, uno alla volta</b>: ti accompagna l'agente, senza gergo.</span></li>
-    </ul>
-    {{VAI_VIDEO}}
-  </div>
-  <aside class="prezzo" aria-label="Prezzo">
-    <p class="lancio">Offerta di lancio</p>
-    <p class="cosa">Ottimizzazione fiscale + report · 12 mesi</p>
-    <p class="cifra"><b>47 €</b><s aria-label="invece di 589 euro">589 €</s><span>per 12 mesi</span></p>
-    <p class="mese">12 mesi a 47 € invece di 589 €. Meno di 4 € al mese, un solo pagamento.</p>
-    <a class="cta" href="{{LINK}}">{{PULSANTE}}</a>
-    <p class="nota">{{NOTA}}</p>
-    <div class="gar">
-      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 4.5v9c0 7.6-5.1 13.6-12 16.5C11.1 30.1 6 24.1 6 16.5v-9L18 3z" fill="#e6faf7" stroke="#05c4b8" stroke-width="2.2" stroke-linejoin="round"/><path d="M12.5 18l3.8 3.8 7.2-7.6" fill="none" stroke="#087a63" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <p><b>Garanzia soddisfatto o rimborsato.</b> Se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi.</p>
+  <div class="w">
+    <div class="testo">
+      <h1 id="t-hero">Paga meno tasse, in regola. <b>Te lo trova il tuo agente IA.</b></h1>
+      <p class="lead">Per chi ha la partita IVA in regime forfettario. TaxScan legge le tue fatture, capisce che lavoro fai davvero e ti mostra dove puoi pagare meno: attività con coefficienti diversi, riduzioni dei contributi, acconti giusti. In euro, non in teoria.</p>
+      {{VAI_VIDEO}}
     </div>
-    <ul class="incl"><li>Ottimizzazione fiscale con l'agente IA</li><li>Report personale in PDF</li><li>Da fare: i passi guidati e le fatture riscritte</li><li>Bandi e agevolazioni per la tua attività</li></ul>
-  </aside>
+      <ul class="punti">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.3 3 3 6-6.3"/></svg><span><b>Il risparmio calcolato sulle tue fatture</b>, con il ragionamento spiegato passo per passo.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.3 3 3 6-6.3"/></svg><span><b>Un report con il tuo nome</b>, da tenere o da mostrare al commercialista.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-width="2"/><path d="m7.5 12.3 3 3 6-6.3"/></svg><span><b>I passi da fare, uno alla volta</b>, con l'agente che ti accompagna senza gergo.</span></li>
+      </ul>
+
+    <aside class="scontrino" aria-label="Riepilogo dell'acquisto">
+      <div class="foglio">
+        <div class="raggio" aria-hidden="true"></div>
+        <div class="testa"><span class="logo">Tax<span>Scan</span></span><small>Offerta di lancio</small></div>
+        <ul class="voci">
+          <li><span>Ottimizzazione fiscale con l'agente IA</span><span>incluso</span></li>
+          <li><span>Report personale in PDF</span><span>incluso</span></li>
+          <li><span>Da fare: passi guidati e fatture riscritte</span><span>incluso</span></li>
+          <li><span>Bandi e agevolazioni</span><span>incluso</span></li>
+          <li><span>Durata</span><span class="num">12 mesi</span></li>
+        </ul>
+        <div class="conti num">
+          <p><span>Prezzo pieno</span><s>589,00 €</s></p>
+          <p class="sconto"><span>Offerta di lancio</span><span>−542,00 €</span></p>
+        </div>
+        <div class="totale"><span>Totale, una volta sola</span><b class="num">47 €</b></div>
+        <p class="mese">Meno di 4 € al mese · nessun rinnovo automatico</p>
+        <a class="btn btn-acc" href="{{LINK}}">{{PULSANTE}} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <p class="nota">{{NOTA}}</p>
+        <p class="firma"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 4.5v9c0 7.6-5.1 13.6-12 16.5C11.1 30.1 6 24.1 6 16.5v-9L18 3z" fill="#e3f8f5" stroke="#05c4b8" stroke-width="2.2" stroke-linejoin="round"/><path d="M12.5 18l3.8 3.8 7.2-7.6" fill="none" stroke="#076b57" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Soddisfatto o rimborsato.</b> Se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi.</span></p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="sez" aria-labelledby="t-cosa">
+  <div class="w">
+    <h2 id="t-cosa">Cosa sblocchi con 47 €</h2>
+    <p class="sotto">Le domande e la Panoramica restano gratis. Con TaxScan attivo l'agente guarda le tue fatture una per una e trova dove puoi pagare meno, poi ti accompagna a ottenerlo.</p>
+    <div class="cosa">
+      <article><h3>Ottimizzazione fiscale</h3><p>L'agente analizza le tue fatture, riconosce le attività con un coefficiente più basso e ti mostra il risparmio in euro, con il calcolo completo.</p></article>
+      <article><h3>Il tuo report in PDF</h3><p>Con il tuo nome e la tua situazione: cosa ha visto l'agente, come rifare la fattura, quanto cambia. Lo ricevi anche via email.</p></article>
+      <article><h3>Da fare, in ordine</h3><p>I passi per ottenere il risparmio, dal più importante, con il pulsante Inizia: l'agente ti accompagna in ogni passaggio.</p></article>
+      <article><h3>Bandi e agevolazioni</h3><p>Gli incentivi adatti alla tua attività e alla tua regione, con requisiti e scadenze spiegati in chiaro.</p></article>
+    </div>
+    <p class="gratis">Sempre gratis per tutti: il questionario, la Panoramica con le scadenze, quanto mettere da parte e il profilo.</p>
+  </div>
+</section>
+
+<section class="sez" aria-labelledby="t-come">
+  <div class="w">
+    <h2 id="t-come">Non devi sapere niente di tasse</h2>
+    <p class="sotto">Le domande sono poche e si risponde con un tocco. Il resto lo legge l'agente.</p>
+    <ol class="passi">
+      <li><h3>Due minuti di domande</h3><p>Oppure carica il certificato della partita IVA: codice ATECO e data di apertura li legge l'agente.</p></li>
+      <li><h3>Carica 2 o 3 fatture</h3><p>L'agente capisce che lavoro fai davvero e quali parti il fisco tassa meno. Non conserva i file né il nome dei clienti.</p></li>
+      <li><h3>Risparmio, report, passi</h3><p>Vedi quanto paghi oggi e quanto puoi pagare, ricevi il report e segui i passi in ordine.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="garanzia" aria-labelledby="t-gar">
+  <div class="w">
+    <div>
+      <h2 id="t-gar">Se non risparmi almeno il doppio, non paghi.</h2>
+      <p>Garanzia soddisfatto o rimborsato: se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto. Guardiamo insieme il risparmio calcolato nella tua Ottimizzazione fiscale, senza domande complicate.</p>
+    </div>
+    <div class="conto num" aria-label="Come funziona la garanzia, in numeri">
+      <b>47 €</b><span>quello che paghi, una volta sola</span>
+      <b class="oro">94 €</b><span>il risparmio minimo in 12 mesi</span>
+      <p class="ver">Sotto i 94 €? Ci scrivi e ti restituiamo tutti i 47 €.</p>
+    </div>
+  </div>
 </section>
 
 {{VIDEO}}
 
-<section class="sez" aria-labelledby="t-come"><h2 id="t-come">Come funziona</h2>
-  <p class="lead2">Non devi sapere niente di tasse: le domande sono poche e si risponde con un tocco.</p>
-  <div class="passi">
-    <div class="passo"><span class="n">1</span><h3>Due minuti di domande</h3><p>Oppure carica il certificato della partita IVA: codice ATECO e data di apertura li legge l'agente.</p></div>
-    <div class="passo"><span class="n">2</span><h3>Carica 2 o 3 fatture</h3><p>L'agente capisce che lavoro fai davvero e quali parti il fisco tassa meno. Del cliente non conserva il nome.</p></div>
-    <div class="passo"><span class="n">3</span><h3>Il risparmio, il report, i passi</h3><p>Vedi quanto paghi oggi e quanto puoi pagare, scarichi il report e segui i passi in ordine.</p></div>
-  </div>
-</section>
-
-<section class="sez" aria-labelledby="t-cosa"><h2 id="t-cosa">Cosa sblocchi con 47 €</h2>
-  <div class="griglia">
-    <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-5 4 4 7-8" fill="none" stroke="#4355cc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Ottimizzazione fiscale</h3><p>L'agente IA analizza le tue fatture, trova le attività con un coefficiente più basso e ti mostra il risparmio in euro, con il calcolo completo.</p></div>
-    <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z" fill="none" stroke="#4355cc" stroke-width="2" stroke-linejoin="round"/><path d="M10 13h6M10 17h4" stroke="#05c4b8" stroke-width="2" stroke-linecap="round"/></svg></div><h3>Il tuo report in PDF</h3><p>Con il tuo nome e la tua situazione: cosa ha visto l'agente, come rifare la fattura, quanto cambia. Lo ricevi anche via email.</p></div>
-    <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9" stroke="#4355cc" stroke-width="2.2" stroke-linecap="round"/></svg></div><h3>I passi da fare, guidati</h3><p>In «Da fare» trovi cosa fare in ordine di importanza, con il pulsante Inizia: l'agente ti accompagna in ogni passaggio.</p></div>
-    <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v11H4z" fill="none" stroke="#4355cc" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" fill="none" stroke="#05c4b8" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>12 mesi di analisi</h3><p>Ogni nuova fattura, una nuova verifica: se il tuo lavoro cambia, l'agente rifà i conti e te lo dice.</p></div>
-  </div>
-  <p class="gratis">Restano gratis per tutti: il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo.</p>
-</section>
-
-<section class="sez" aria-labelledby="t-gar">
-  <div class="gbox">
-    <svg width="72" height="72" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3l12 4.5v9c0 7.6-5.1 13.6-12 16.5C11.1 30.1 6 24.1 6 16.5v-9L18 3z" fill="#e6faf7" stroke="#05c4b8" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 18l3.8 3.8 7.2-7.6" fill="none" stroke="#087a63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <div><h2 id="t-gar">Garanzia soddisfatto o rimborsato</h2>
-      <p>Se non ottieni un risparmio fiscale <b>almeno doppio rispetto al costo del software</b>, ti rimborsiamo tutto e non paghi.</p>
-      <p>Con l'offerta di lancio il costo è 47 €: se TaxScan non ti fa risparmiare almeno 94 € di tasse e contributi nei 12 mesi, ci scrivi e ti restituiamo l'intero importo.</p>
-      <p>Guardiamo insieme il risparmio calcolato nella tua Ottimizzazione fiscale, senza domande complicate.</p></div>
-  </div>
-</section>
-
 {{TESTIMONIANZE}}
 
-<section class="sez" aria-labelledby="t-faq"><h2 id="t-faq">Domande frequenti</h2>
-  <div class="faq">
-    <details><summary>Serve ancora il commercialista?</summary><p>TaxScan prepara e spiega: puoi gestire tutto da solo, assumendoti la responsabilità di quello che dichiari, oppure far controllare i numeri a un professionista quando vuoi. Il controllo è facoltativo.</p></details>
-    <details><summary>È tutto in regola?</summary><p>Sì: l'agente usa solo quello che la legge prevede per il forfettario, come i coefficienti diversi per attività diverse e le riduzioni dei contributi. Non inventa spese e non ti fa dichiarare lavori che non fai. Le cifre sono stime e ogni passo è spiegato.</p></details>
-    <details><summary>Cosa resta gratis?</summary><p>Il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo. Con i 47 € sblocchi il report dell'Ottimizzazione fiscale, Da fare con i passi guidati e Bandi e agevolazioni.</p></details>
-    <details><summary>Come funziona la garanzia?</summary><p>Garanzia soddisfatto o rimborsato: se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi. Se nei 12 mesi il risparmio trovato è sotto i 94 € (il doppio dei 47 €), ci scrivi e ti restituiamo l'intero importo.</p></details>
-    <details><summary>Perché 47 € invece di 589 €?</summary><p>È l'offerta di lancio per le prime partite IVA: 12 mesi di TaxScan a 47 € invece di 589 €. Il prezzo resta bloccato per tutti i 12 mesi.</p></details>
-    <details><summary>E i miei dati?</summary><p>Usiamo i tuoi dati solo per i calcoli. Delle fatture leggiamo le righe del lavoro e il tipo di cliente, non conserviamo il nome dei clienti né i file. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
-    <details><summary>Quanto dura?</summary><p>12 mesi dal giorno dell'acquisto. Prima della scadenza ti scriviamo: decidi tu se continuare.</p></details>
+<section class="sez" aria-labelledby="t-faq">
+  <div class="w">
+    <h2 id="t-faq">Domande frequenti</h2>
+    <div class="faq">
+      <details><summary>Serve ancora il commercialista?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>TaxScan prepara e spiega: puoi gestire tutto da solo, assumendoti la responsabilità di quello che dichiari, oppure far controllare i numeri a un professionista quando vuoi. Il controllo è facoltativo.</p></details>
+      <details><summary>È tutto in regola?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì: l'agente usa solo quello che la legge prevede per il forfettario, come i coefficienti diversi per attività diverse e le riduzioni dei contributi. Non inventa spese e non ti fa dichiarare lavori che non fai. Le cifre sono stime e ogni passo è spiegato.</p></details>
+      <details><summary>Cosa resta gratis?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Il questionario, la Panoramica con le scadenze, quanto mettere da parte e il tuo profilo. Con i 47 € sblocchi il report dell'Ottimizzazione fiscale, Da fare con i passi guidati e Bandi e agevolazioni.</p></details>
+      <details><summary>Come funziona la garanzia?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Garanzia soddisfatto o rimborsato: se non ottieni un risparmio fiscale almeno doppio rispetto al costo del software, ti rimborsiamo tutto e non paghi. Se nei 12 mesi il risparmio trovato è sotto i 94 € (il doppio dei 47 €), ci scrivi e ti restituiamo l'intero importo.</p></details>
+      <details><summary>Perché 47 € invece di 589 €?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>È l'offerta di lancio per le prime partite IVA: 12 mesi di TaxScan a 47 € invece di 589 €. Il prezzo resta bloccato per tutti i 12 mesi.</p></details>
+      <details><summary>Si rinnova da solo?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. È un solo pagamento che vale 12 mesi dal giorno dell'acquisto. Prima della scadenza ti scriviamo: decidi tu se continuare.</p></details>
+      <details><summary>E i miei dati?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Usiamo i tuoi dati solo per i calcoli. Delle fatture leggiamo le righe del lavoro e il tipo di cliente, non conserviamo il nome dei clienti né i file. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
+    </div>
   </div>
 </section>
 
 <section class="fine" aria-labelledby="t-fine">
-  <h2 id="t-fine">Scopri quanto puoi pagare in meno</h2>
-  <p>Offerta di lancio: 12 mesi a 47 € invece di 589 €. Soddisfatto o rimborsato: se non risparmi almeno il doppio, non paghi.</p>
-  <a class="cta" href="{{LINK}}">{{PULSANTE}}</a>
-  <p class="nota">{{NOTA}}</p>
+  <div class="w">
+    <h2 id="t-fine">Scopri quanto puoi pagare in meno</h2>
+    <p>12 mesi a 47 € invece di 589 €. Se non risparmi almeno il doppio, ti rimborsiamo tutto.</p>
+    <a class="btn btn-acc" href="{{LINK}}">{{PULSANTE}} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <p class="nota">{{NOTA}}</p>
+  </div>
 </section>
 </main>
 
-<p class="legal">TaxScan prepara e spiega: le cifre sono stime e la responsabilità di ciò che dichiari è tua; se vuoi, le fai controllare a un professionista.<br>
-<a href="/termini">Termini e condizioni</a> · <a href="/privacy">Privacy policy</a> · TaxScan è un servizio offerto da LTD24</p>
-</div>
+<footer class="piede">
+  <div class="w">
+    <p>TaxScan prepara e spiega: le cifre sono stime e la responsabilità di ciò che dichiari è tua; se vuoi, le fai controllare a un professionista.</p>
+    <p><a href="/termini">Termini e condizioni</a> · <a href="/privacy">Privacy policy</a> · TaxScan è un servizio offerto da LTD24</p>
+  </div>
+</footer>
 </body>
 </html>
 """

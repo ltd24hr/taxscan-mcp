@@ -16,14 +16,13 @@ PAGINA_HTML = r"""<!doctype html>
 @font-face{font-family:"Poppins";font-weight:500;font-display:swap;src:url(/font/Poppins-Medium.ttf) format("truetype")}
 @font-face{font-family:"Poppins";font-weight:700;font-display:swap;src:url(/font/Poppins-Bold.ttf) format("truetype")}
 @font-face{font-family:"Rethink Sans";font-weight:400 800;font-display:swap;src:url(/font/RethinkSans-VariableFont_wght.ttf) format("truetype")}
-@font-face{font-family:"Lora";font-style:italic;font-weight:400 600;font-display:swap;src:url(/font-s/Lora-Italic.woff) format("woff")}
 :root{color-scheme:light;
-  --f-tit:"Rethink Sans","Poppins",system-ui,sans-serif;--f-txt:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-ser:"Lora",Georgia,"Times New Roman",serif;
-  --bg:#f7f8fb;--surface:#fff;--ink:#122452;--ink2:#4a5578;--mute:#7a84a3;--line:rgba(18,36,82,.10);--line2:rgba(18,36,82,.18);
+  --f-tit:"Rethink Sans","Poppins",system-ui,sans-serif;--f-txt:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --bg:#f7f8fb;--surface:#fff;--ink:#122452;--ink2:#4a5578;--mute:#5d6787;--line:rgba(18,36,82,.10);--line2:rgba(18,36,82,.18);
   --accent:#4355cc;--accent-h:#3646bd;--accent-ink:#4355cc;--scan:#05c4b8;--scan-ink:#087a63;--scan-soft:#e6faf7;
   --gold:#f6c25a;--gold-soft:#fde9bd;--lav:#e8ebfa;--navy:#122452;--navy2:#1b2f66;--ombra:#c9d2e8}
 @media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0a1330;--surface:#101d47;--ink:#fff;--ink2:#c9d3ec;--mute:#94a1c8;--line:rgba(255,255,255,.10);--line2:rgba(255,255,255,.2);
-  --accent:#5566dd;--accent-h:#6676e6;--accent-ink:#a6b4ff;--scan-ink:#5fe3d6;--scan-soft:#0d3a45;--lav:#1c3070;--navy:#0d1a42;--navy2:#162a63;--ombra:#050b20}}
+  --accent:#4355cc;--accent-h:#3a4bc0;--accent-ink:#a6b4ff;--scan-ink:#5fe3d6;--scan-soft:#0d3a45;--lav:#1c3070;--navy:#0d1a42;--navy2:#162a63;--ombra:#050b20}}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;scroll-padding-top:80px}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-txt);-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -31,7 +30,7 @@ a{color:inherit}
 ::selection{background:var(--accent);color:#fff}
 .w{max-width:1200px;margin:0 auto;padding:0 20px}
 h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-height:1.06}
-.ser{font-family:var(--f-ser);font-style:italic;font-weight:500;letter-spacing:-.02em}
+.ser{color:var(--accent-ink)}
 .logo{font-family:"Poppins",var(--f-tit);font-weight:700;font-size:22px;line-height:1;text-decoration:none;color:var(--ink);white-space:nowrap}
 .logo span{color:var(--accent-ink)}
 :focus-visible{outline:3px solid var(--scan);outline-offset:3px;border-radius:6px}
@@ -80,8 +79,8 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .giro{display:inline-grid;text-align:left;min-width:6.4ch}
 .giro span{grid-area:1/1;color:var(--accent-ink);animation:dentro .55s cubic-bezier(.22,1,.36,1) both}
 @keyframes dentro{from{opacity:0;transform:translateY(.35em) rotate(2deg);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
-.h1 .ser{position:relative;display:inline-block;font-size:.9em;font-weight:500;letter-spacing:-.03em}
-@media (max-width:639px){.h1 .ser svg{display:none}.h1 .ser{text-decoration:underline;text-decoration-color:var(--scan);text-decoration-thickness:.07em;text-underline-offset:.14em}.eye{font-size:11.5px}}
+.h1 .ser{position:relative;display:inline-block;color:var(--ink)}
+@media (max-width:639px){.h1 .ser svg{display:none}.h1 .ser{text-decoration:underline;text-decoration-color:var(--scan);text-decoration-thickness:.07em;text-underline-offset:.14em}.eye{font-size:12px}}
 .h1 .ser svg{position:absolute;left:4%;right:-1%;bottom:-.1em;width:96%;height:.16em;color:var(--scan)}
 .lead{max-width:640px;margin:30px auto 0;font-size:clamp(17px,2vw,20px);color:var(--ink2)}
 .azioni{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin-top:32px;max-width:400px;margin-left:auto;margin-right:auto}
@@ -92,42 +91,42 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 
 /* mockup dell'app */
 .mock{position:relative;max-width:1060px;margin:64px auto 0}
-.freccia{display:none;position:absolute;left:-6px;top:-58px;transform:rotate(-7deg);font-size:19px;color:var(--ink2);text-align:left}
+.freccia{display:none;position:absolute;left:-6px;top:-58px;transform:rotate(-5deg);font-size:15px;font-weight:600;color:var(--ink2);text-align:left}
 .freccia svg{display:block;width:56px;height:40px;margin-left:120px;color:var(--ink2)}
 .app{overflow:hidden;text-align:left;border:1px solid var(--line2);border-bottom:0;border-radius:22px 22px 0 0;background:#fff;color:#122452;box-shadow:0 30px 80px rgba(18,36,82,.14),0 4px 0 var(--navy)}
 .barra{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(18,36,82,.08)}
 .barra i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:#dfe4ef}
-.barra .url{font-size:11px;font-weight:600;color:#7a84a3;background:#f1f4f9;border-radius:999px;padding:4px 14px}
-.barra .es{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#087a63;background:#e6faf7;border-radius:999px;padding:4px 10px}
+.barra .url{font-size:12px;font-weight:600;color:#5d6787;background:#f1f4f9;border-radius:999px;padding:4px 14px}
+.barra .es{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#087a63;background:#e6faf7;border-radius:999px;padding:4px 10px}
 .corpo{display:grid}
 .lato{display:none;border-right:1px solid rgba(18,36,82,.08);padding:20px 16px}
-.lato .logo{font-size:18px}
-.lato ul{list-style:none;margin-top:30px;display:grid;gap:4px;font-size:12.5px;font-weight:600;color:#6b7596}
+.lato .logo{font-size:18px;color:#122452}.lato .logo span{color:#4355cc}
+.lato ul{list-style:none;margin-top:30px;display:grid;gap:4px;font-size:13px;font-weight:600;color:#5d6787}
 .lato li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px}
 .lato li::before{content:"";width:8px;height:8px;border-radius:2px;background:rgba(18,36,82,.15)}
 .lato li.on{background:#e8ebfa;color:#122452}.lato li.on::before{background:#4355cc}
 .pann{background:#f4f6fb;padding:18px}
-.ciao{font-size:11px;font-weight:700;letter-spacing:.08em;color:#7a84a3}
+.ciao{font-size:12px;font-weight:700;letter-spacing:.06em;color:#5d6787}
 .pann h2{font-size:24px;margin-top:2px;letter-spacing:-.03em}
 .ag{display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px;border-radius:16px;background:#fff;border:1px solid #cfd6f5}
 .ag img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;background:#e8ebfa}
 .ag p{font-size:13.5px;line-height:1.5}
 .kpi{display:grid;gap:14px;margin-top:14px}
 .box{border-radius:16px;background:#fff;border:1px solid rgba(18,36,82,.08);padding:18px;box-shadow:0 4px 14px rgba(18,36,82,.03)}
-.lbl{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:#7a84a3}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;color:#5d6787}
 .num{font-family:var(--f-tit);font-size:32px;font-weight:750;letter-spacing:-.025em;margin-top:6px;line-height:1.1}
-.sotto{font-size:12px;color:#7a84a3}
+.sotto{font-size:12.5px;color:#5d6787}
 .bars{display:flex;align-items:flex-end;gap:7px;height:110px;margin-top:22px}
 .bars i{flex:1;border-radius:4px 4px 0 0;background:#e3e8f4}
 .bars i.on{background:#4355cc}
-.mesi{display:flex;justify-content:space-between;margin-top:8px;font-size:9.5px;font-weight:700;color:#97a0bc}
+.mesi{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;font-weight:700;color:#6b7596}
 .lati{display:grid;gap:14px}
 .box.scura{background:#122452;color:#fff;border:0}
-.box.scura .lbl{color:rgba(255,255,255,.6)}
+.box.scura .lbl{color:rgba(255,255,255,.78)}
 .prog{height:6px;border-radius:99px;background:rgba(255,255,255,.15);margin-top:16px;overflow:hidden}
 .prog i{display:block;height:100%;width:68%;border-radius:99px;background:#05c4b8}
 .box.oro{background:#fde9bd;border-color:#f3d48e}
-.data{font-family:var(--f-ser);font-style:italic;font-size:30px;margin-top:12px;line-height:1.1}
+.data{font-family:var(--f-tit);font-weight:750;font-size:28px;letter-spacing:-.02em;margin-top:12px;line-height:1.1}
 
 /* fascia sezioni */
 .fascia{border-block:1px solid var(--line);background:var(--surface);padding:34px 0;text-align:center}
@@ -138,13 +137,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 /* sezioni */
 .sez{padding:clamp(76px,10vw,132px) 0}
 .etic{display:inline-block;padding-bottom:7px;border-bottom:1px solid var(--line2);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--mute)}
-.tit{font-size:clamp(38px,5.6vw,78px);line-height:1;letter-spacing:-.035em;margin-top:20px}
+.tit{font-size:clamp(38px,5.6vw,78px);line-height:1;letter-spacing:-.035em}
 .due{display:grid;gap:40px}
 .testo{margin-top:22px;max-width:28em;font-size:18px;color:var(--ink2)}
 .passi{border-block:1px solid var(--line)}
 .passo{display:grid;gap:16px;padding:32px 0;border-top:1px solid var(--line)}
 .passo:first-child{border-top:0}
-.passo .n{font-family:var(--f-ser);font-style:italic;font-size:19px;color:var(--mute)}
+.passo .n{font-family:var(--f-tit);font-weight:750;font-size:18px;color:var(--mute)}
 .ico{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:var(--lav);color:var(--accent-ink);margin-bottom:16px;transition:transform .2s ease}
 .ico svg{width:22px;height:22px}
 .passo:hover .ico{transform:rotate(-4deg) scale(1.05)}
@@ -158,12 +157,12 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .scuro .tit .ser{color:#7fe6dc}
 .carte{display:grid;gap:18px;margin-top:56px}
 .carta{border-radius:24px;padding:clamp(24px,4vw,40px);background:var(--navy2);border:1px solid rgba(255,255,255,.08);overflow:hidden}
-.kick{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.kick{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.72)}
 .carta h3{font-size:clamp(25px,2.8vw,34px);margin-top:12px;letter-spacing:-.025em;line-height:1.08}
-.carta p{margin-top:12px;max-width:30em;color:rgba(255,255,255,.66)}
+.carta p{margin-top:12px;max-width:30em;color:rgba(255,255,255,.78)}
 .vetrina{position:relative;margin-top:44px;min-height:280px}
 .vetrina>div{position:absolute;inset:auto 0 0;margin:0 auto;max-width:380px;border-radius:28px 28px 0 0;border:1px solid rgba(255,255,255,.12);border-bottom:0;background:#0d1a42;padding:26px 26px 0}
-.riga2{display:flex;justify-content:space-between;font-size:12.5px;color:rgba(255,255,255,.55)}
+.riga2{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.75)}
 .linea{height:8px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:10px;overflow:hidden}
 .linea i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#4355cc,#05c4b8);border-radius:99px}
 .vetrina .grande{font-family:var(--f-tit);font-size:44px;font-weight:750;letter-spacing:-.03em;margin-top:4px;color:#fff}
@@ -171,13 +170,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .ok b{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#05c4b8;color:#0d1a42;flex:none}
 .ok svg{width:16px;height:16px}
 .carta.oro{background:#f6c25a;color:#122452;border:0}
-.carta.oro .kick{color:rgba(18,36,82,.55)}.carta.oro p{color:rgba(18,36,82,.72)}
+.carta.oro .kick{color:rgba(18,36,82,.82)}.carta.oro p{color:rgba(18,36,82,.72)}
 .dist{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:30px;padding:18px 20px;border-radius:18px;background:#fde9bd}
-.dist .lbl{color:rgba(18,36,82,.55)}
+.dist .lbl{color:rgba(18,36,82,.8)}
 .dist b{font-family:var(--f-tit);font-size:26px;letter-spacing:-.03em}
 .dist span{border-radius:99px;background:rgba(255,255,255,.75);padding:6px 12px;font-size:12px;font-weight:700}
 .carta.lav{background:#e8ebfa;color:#122452;border:0}
-.carta.lav .kick{color:rgba(18,36,82,.5)}.carta.lav p{color:rgba(18,36,82,.7)}
+.carta.lav .kick{color:rgba(18,36,82,.8)}.carta.lav p{color:rgba(18,36,82,.7)}
 .bolle{display:flex;margin-top:24px}
 .bolle span{display:grid;place-items:center;width:50px;height:50px;border-radius:50%;border:3px solid #e8ebfa;margin-left:-10px;font-weight:700;font-size:15px;color:#122452}
 .bolle span:first-child{margin-left:0;background:#9fb0f2}.bolle span:nth-child(2){background:#8fe3da}.bolle span:nth-child(3){background:#f6c25a}
@@ -213,13 +212,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .invito{position:relative;overflow:hidden;border-radius:32px;background:var(--accent);color:#fff;text-align:center;padding:clamp(64px,9vw,104px) 24px}
 .puntini{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1px);background-size:18px 18px;-webkit-mask-image:radial-gradient(circle at center,#000,transparent 70%);mask-image:radial-gradient(circle at center,#000,transparent 70%);opacity:.35}
 .invito>*{position:relative}
-.invito .sopra{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.invito .sopra{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .invito h2{font-size:clamp(40px,6.6vw,88px);line-height:1;letter-spacing:-.035em;margin-top:18px}
-.invito h2 .ser{color:#bff5ef}
-.invito p.l{max-width:36em;margin:22px auto 0;font-size:18px;opacity:.88}
+.invito h2 .ser{color:#fff;text-decoration:underline;text-decoration-color:#7fe6dc;text-decoration-thickness:.06em;text-underline-offset:.12em}
+.invito p.l{max-width:36em;margin:22px auto 0;font-size:18px}
 .invito .btn{margin-top:34px;background:#fff;color:#122452;box-shadow:0 4px 0 var(--navy)}
 .invito .btn:hover{box-shadow:0 6px 0 var(--navy)}
-.invito small{display:block;margin-top:14px;font-size:12.5px;font-weight:600;opacity:.8}
+.invito small{display:block;margin-top:14px;font-size:13px;font-weight:600}
 
 /* domande */
 .faq{border-block:1px solid var(--line)}
@@ -340,8 +339,8 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
                 <div class="mesi"><span>GEN</span><span>APR</span><span>LUG</span><span>DIC</span></div>
               </div>
               <div class="lati">
-                <div class="box scura"><p class="lbl">DA METTERE DA PARTE</p><p class="num" style="font-size:24px">24% di ogni incasso</p><div class="prog"><i></i></div><p class="sotto" style="color:rgba(255,255,255,.55);margin-top:8px">Imposta e contributi stimati</p></div>
-                <div class="box oro"><p class="lbl" style="color:#5b5130">PROSSIMA SCADENZA</p><p class="data">30 novembre</p><p class="sotto" style="color:#5b5130">Secondo acconto · 2.140&nbsp;€</p></div>
+                <div class="box scura"><p class="lbl">DA METTERE DA PARTE</p><p class="num" style="font-size:24px">24% di ogni incasso</p><div class="prog"><i></i></div><p class="sotto" style="color:rgba(255,255,255,.75);margin-top:8px">Imposta e contributi stimati</p></div>
+                <div class="box oro"><p class="lbl" style="color:#4a4128">PROSSIMA SCADENZA</p><p class="data">30 novembre</p><p class="sotto" style="color:#4a4128">Secondo acconto · 2.140&nbsp;€</p></div>
               </div>
             </div>
           </div>
@@ -361,29 +360,25 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <section class="sez" id="come-funziona" aria-labelledby="t-come">
   <div class="w due">
     <div class="vedi">
-      <p class="etic">Come funziona</p>
       <h2 class="tit" id="t-come">Non devi capire il fisco da solo.</h2>
       <p class="testo">Il tuo agente IA legge, deduce e poi ti chiede conferma. Ti propone sempre il passo successivo, senza gergo e senza interrogatori.</p>
     </div>
     <div class="passi">
       <article class="passo vedi">
         <span class="n">01</span>
-        <div><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10Z"/></svg></div>
-          <h3>Rispondi a poche domande. O carica il certificato.</h3>
+        <div><h3>Rispondi a poche domande. O carica il certificato.</h3>
           <p>L'agente legge il certificato della partita IVA, riconosce il codice ATECO e la data di apertura e ti chiede solo quello che non può capire da solo. Si risponde con un tocco.</p></div>
         <span class="tag">2 minuti</span>
       </article>
       <article class="passo vedi">
         <span class="n">02</span>
-        <div><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg></div>
-          <h3>Carica 2 o 3 fatture. Al resto pensa l'agente.</h3>
+        <div><h3>Carica 2 o 3 fatture. Al resto pensa l'agente.</h3>
           <p>Le legge in XML, PDF o foto per capire che lavoro fai davvero. Usa le descrizioni e gli importi: non conserva i file né i nomi dei tuoi clienti.</p></div>
         <span class="tag">Privacy prima di tutto</span>
       </article>
       <article class="passo vedi">
         <span class="n">03</span>
-        <div><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v16H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 7h15M15 12h6v4h-6a2 2 0 0 1 0-4Z"/></svg></div>
-          <h3>Scopri se puoi pagare meno, in regola.</h3>
+        <div><h3>Scopri se puoi pagare meno, in regola.</h3>
           <p>Confronta la tua situazione con i coefficienti delle attività che svolgi davvero, le riduzioni dei contributi INPS e gli acconti. Se non c'è risparmio, te lo dice chiaramente.</p></div>
         <span class="tag">Stima trasparente</span>
       </article>
@@ -394,7 +389,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <section class="sez scuro" id="cosa-fa" aria-labelledby="t-cosa">
   <div class="w">
     <div class="vedi" style="max-width:780px">
-      <p class="etic">Ottimizzazione fiscale</p>
       <h2 class="tit" id="t-cosa">Trova il risparmio.<br><span class="ser">Solo se esiste davvero.</span></h2>
     </div>
     <div class="carte">
@@ -420,7 +414,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
         <p class="kick">Bandi e agevolazioni</p>
         <h3>Non perdere un'opportunità.</h3>
         <p>Ti segnala gli incentivi adatti alla tua attività e alla tua regione, con requisiti e scadenze spiegati in chiaro.</p>
-        <div class="bolle" aria-hidden="true"><span>€</span><span>%</span><span>✓</span></div>
       </article>
     </div>
   </div>
@@ -429,7 +422,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <section class="sez" id="esempio" aria-labelledby="t-es">
   <div class="w due centro">
     <div class="vedi">
-      <p class="etic">Un esempio</p>
       <h2 class="tit" id="t-es" style="font-size:clamp(34px,4.2vw,56px)">Da «consulenza» a un quadro chiaro.</h2>
       <p class="testo">La storia è un esempio, ma il percorso è quello vero di TaxScan.</p>
     </div>
@@ -486,7 +478,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 <section class="sez" id="domande" aria-labelledby="t-faq">
   <div class="w due">
     <div class="vedi">
-      <p class="etic">Domande frequenti</p>
       <h2 class="tit" id="t-faq" style="font-size:clamp(36px,5vw,60px)">Dubbi? Facciamo chiarezza.</h2>
       <p class="testo">Hai un'altra domanda? Chiedila al tuo agente IA: <a href="/colloquio/nuovo" style="color:var(--accent-ink);font-weight:600">inizia da qui</a>.</p>
     </div>
