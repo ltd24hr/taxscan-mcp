@@ -114,6 +114,15 @@ def registra(mcp) -> None:
             pass
         return HTMLResponse(pagina(qp.get("c", ""), qp.get("email", "")), headers={"Cache-Control": "no-store"})
 
+    @mcp.custom_route("/font-s/{nome}", methods=["GET"])
+    async def font_serif(request):
+        """Il corsivo elegante della home (Lora Italic, licenza OFL), servito dal nostro sito: niente Google Fonts."""
+        nome = request.path_params.get("nome", "")
+        p = Path(__file__).resolve().parent / "static" / "fonts" / "Lora-Italic.woff"
+        if nome != "Lora-Italic.woff" or not p.is_file():
+            return Response(status_code=404)
+        return FileResponse(p, media_type="font/woff", headers={"Cache-Control": "public, max-age=2592000"})
+
     @mcp.custom_route("/acquista/t/{nome}", methods=["GET"])
     async def acquista_testimonianza(request):
         nome = request.path_params.get("nome", "")
