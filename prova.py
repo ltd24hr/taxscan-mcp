@@ -1627,7 +1627,11 @@ def _coerenza(x: dict, cert: dict) -> list:
     ct = x.get("controlli") or {}
     em = x.get("emittente") or {}
     pv, cf = ct.get("emittente_piva") or "", ct.get("emittente_cf") or ""
-    if cert.get("piva") and ct.get("cliente_piva") and ct["cliente_piva"] == cert["piva"] and pv != cert["piva"]:
+    if cert.get("piva") and ct.get("cliente_piva") == cert["piva"] and not pv:
+        # la tua partita IVA c'e', ma non si e' trovata quella di nessun altro che emetta: e' tua (succede con i clienti esteri,
+        # quando il testo del PDF mescola le etichette). Una fattura ricevuta ha SEMPRE la partita IVA di chi la emette.
+        ct["emittente_piva"], ct["cliente_piva"], pv = cert["piva"], "", cert["piva"]
+    if cert.get("piva") and ct.get("cliente_piva") and ct["cliente_piva"] == cert["piva"] and pv and pv != cert["piva"]:
         out.append({"tipo": "ricevuta", "gravita": "alta",
                     "testo": "Sembra una fattura che hai ricevuto: il cliente sei tu. È una spesa, non un incasso, e nel forfettario le spese non si deducono."})
     elif cert.get("piva") and pv and pv != cert["piva"]:
