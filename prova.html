@@ -753,6 +753,54 @@ button.astab.pulsa::after{animation:mppulsa .8s ease-out 1}
 @media (prefers-reduced-motion:reduce){button.astab.pulsa::after{animation:none}}
 .bpc.sel,.pfr.sel{box-shadow:0 0 0 3px var(--accent-soft);border-color:var(--accent)}
 </style>
+<script>
+/* v95: dove finisce la barra in alto (0 se il menu e' laterale) e quanto occupa il menu a sinistra */
+window.__hdrB=function(){var h=document.getElementById('hdr');if(!h)return 0;if(getComputedStyle(h).position==='fixed')return 0;return Math.max(0,h.getBoundingClientRect().bottom)};
+window.__sbW=function(){var h=document.getElementById('hdr');if(!h||getComputedStyle(h).position!=='fixed')return 0;return Math.max(0,Math.round(h.getBoundingClientRect().right))};
+</script>
+<style id="sbcss">
+/* v95: menu laterale che scorre e si chiude (computer), barra in basso (telefono) */
+#hdr .sbx,#sbopen{display:none}
+#hdr nav button .nvs{display:none}
+@media (min-width:901px){
+  html body{padding-left:var(--sbw,0px);transition:padding-left .32s cubic-bezier(.22,1,.36,1)}
+  html.sbon{--sbw:264px}html.sboff{--sbw:68px}
+  html body #hdr{position:fixed!important;left:0;top:0;bottom:0;width:264px;margin:0!important;z-index:48;box-sizing:border-box;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;justify-content:flex-start!important;gap:6px!important;padding:22px 14px 18px!important;background:var(--surface,#fff);border:0!important;border-right:1px solid var(--line)!important;overflow-y:auto;transform:translateX(0);transition:transform .32s cubic-bezier(.22,1,.36,1)}
+  html.sboff body #hdr{transform:translateX(-100%)}
+  html body #hdr:has(nav.spotlit){z-index:52}
+  html body #hdr .brand{position:relative;flex:none!important;display:flex;flex-direction:column;align-items:flex-start;gap:5px!important;padding:2px 44px 20px 8px!important}
+  html body #hdr .logo{font-size:24px!important;line-height:1;padding:0!important}
+  html body #hdr .sxtag{margin:0!important;white-space:normal!important;font-size:12.5px!important;line-height:1.35!important;max-width:190px}
+  html body #hdr .sxtag b{font-weight:600;color:var(--ink2)}
+  #hdr .sbx{display:flex;position:absolute;right:0;top:0;width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);color:var(--ink2);align-items:center;justify-content:center;cursor:pointer;padding:0}
+  html body #hdr nav{position:static!important;display:flex!important;flex-direction:column!important;flex:none!important;width:auto!important;gap:4px!important;overflow:visible!important;margin:0!important;padding:0!important;background:none!important;align-self:stretch!important;justify-content:flex-start!important}
+  html body #hdr nav button{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;box-sizing:border-box;text-align:left;white-space:normal!important;font-size:15px!important;font-weight:600!important;line-height:1.25;padding:10px 12px!important;border:0!important;border-radius:12px;color:var(--ink2)!important;background:transparent!important;box-shadow:none!important}
+  html body #hdr nav button:hover{background:#f2f4fb!important;color:var(--ink)!important}
+  html body #hdr nav button[aria-current]{background:var(--accent-soft)!important;color:var(--accent)!important}
+  html body #hdr nav button .nvi{margin:0!important;width:20px!important;height:20px!important}
+  html body #hdr nav button .nvl{flex:1}
+  html body #hdr nav button .tdn{margin-left:auto}
+  #sbopen{display:flex;position:fixed;left:12px;top:14px;z-index:47;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff);color:var(--ink);align-items:center;justify-content:center;cursor:pointer;padding:0;opacity:0;pointer-events:none;transition:opacity .2s .15s}
+  html.sboff #sbopen{opacity:1;pointer-events:auto}
+  html body button.astab:not(.drag){margin-left:0}
+  html body .wrap{box-sizing:border-box;padding-left:24px!important;padding-right:24px!important}
+}
+@media (max-width:900px){
+  html body{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
+  html body #hdr{position:static!important;display:block!important;padding:12px 0 10px!important;margin-bottom:10px!important}
+  html body #hdr .brand{padding:0!important}
+  html body #hdr .sxtag{white-space:normal!important;font-size:12px!important;margin:3px 0 0!important}
+  html body #hdr nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;height:auto!important;max-height:none!important;z-index:48;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:space-around!important;gap:0!important;width:auto!important;margin:0!important;padding:6px 4px calc(8px + env(safe-area-inset-bottom,0px))!important;background:var(--surface,#fff)!important;border-top:1px solid var(--line);overflow:visible!important;box-shadow:0 -6px 18px -12px rgba(18,36,82,.3)}
+  html body #hdr nav button{position:relative;flex:1 1 0!important;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;padding:4px 2px!important;font-size:11.5px!important;font-weight:600!important;line-height:1.1;white-space:nowrap!important;border:0!important;border-radius:12px;color:var(--ink2)!important;background:none!important;box-shadow:none!important}
+  html body #hdr nav button[aria-current]{color:var(--accent)!important;font-weight:700!important}
+  html body #hdr nav button .nvi{margin:0!important;width:22px!important;height:22px!important}
+  html body #hdr nav button .nvl{display:none}
+  html body #hdr nav button .nvs{display:block;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  html body #hdr nav button .tdn{position:absolute;top:2px;left:calc(50% + 6px);margin:0!important}
+  html body #schint{bottom:96px}
+}
+@media (prefers-reduced-motion:reduce){html body,html body #hdr,#sbopen{transition:none!important}}
+</style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1249,7 +1297,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 94</div>
+<div class="ver">Prototipo versione 95</div>
 </div>
 
 <script>
@@ -1478,8 +1526,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 
   // ---- pallino trascinabile
   (function(){var d=$('astab'),sx,sy,ox,oy,mv=false,down=false,just=false;
-    function lim(){var hd=document.getElementById('hdr'),bb=document.getElementById('mpbar');return [hd?hd.getBoundingClientRect().bottom+8:6,innerHeight-6]}
-    function clamp(x,y){var l=lim();return [Math.max(6,Math.min(innerWidth-d.offsetWidth-6,x)),Math.max(l[0],Math.min(l[1]-d.offsetHeight,y))]}
+    function lim(){return [window.__hdrB()+8,innerHeight-6]}
+    function clamp(x,y){var l=lim();return [Math.max(window.__sbW()+6,Math.min(innerWidth-d.offsetWidth-6,x)),Math.max(l[0],Math.min(l[1]-d.offsetHeight,y))]}
     function put(x,y,save){var c=clamp(x,y);if(window.__pb)setTimeout(window.__pb,0);d.style.left=c[0]+'px';d.style.top=c[1]+'px';d.classList.toggle('flip',c[0]+d.offsetWidth/2>innerWidth/2);
       if(save){try{sessionStorage.setItem('astpos',c[0]+','+c[1])}catch(e){}}}
     var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}
@@ -1968,7 +2016,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // le tre schede (E se, Dove potresti inciampare, Il futuro) in riga, da sinistra a destra
   (function(){var a=document.querySelectorAll('#gview > .gacc');if(a.length){var w=document.createElement('div');w.id='gaccs';a[0].parentNode.insertBefore(w,a[0]);[].forEach.call(a,function(x){w.appendChild(x)})}})();
   // l'altezza della barra delle sezioni, per tenere Marcello visibile sotto di essa
-  function navH(){document.documentElement.style.setProperty('--navh',(document.getElementById('hdr').offsetHeight)+'px')}
+  function navH(){var h=document.getElementById('hdr'),cs=h?getComputedStyle(h):null;document.documentElement.style.setProperty('--navh',(!h||cs.position==='fixed'||cs.position==='static'?0:h.offsetHeight)+'px')}
   navH();addEventListener('resize',navH);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(navH);
   // ================= Ottimizzazione fiscale (v57, ricostruita da zero) =================
   // Passo 1 Fattura: si carica (o si ritrova quella dell'onboarding), si capisce cliente e prestazione, dettagli facoltativi.
@@ -3489,11 +3537,11 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var _mpdraw=draw;draw=function(el,segs,n){_mpdraw(el,segs,n);if(el.id!=='dbub'&&el.classList.contains('bub')&&!el.closest('[hidden]'))mpNarr(el)};
   placeBub=function(){var b=$('dbub'),d=$('astab');if(b.hidden)return;var r=d.getBoundingClientRect(),fl=r.left+r.width/2>innerWidth/2;
     d.classList.toggle('vl',fl);d.classList.toggle('vr',!fl);if(d.classList.contains('talk'))mpTalk(true);
-    var hb0=($('hdr')?Math.max(0,$('hdr').getBoundingClientRect().bottom):0)+10;
+    var hb0=window.__hdrB()+10;
     if(innerWidth<=640){var bv=Math.max(80,innerHeight-r.top+8);b.style.setProperty('bottom',bv+'px','important');b.style.maxHeight=Math.max(160,innerHeight-bv-Math.min(hb0,90)-8)+'px';return}
     b.style.maxHeight=Math.max(200,innerHeight-hb0-24)+'px';
     var av=fl?r.left-14-12:innerWidth-r.right-14-12;b.style.width=Math.max(320,Math.min(av,1500))+'px';var w=b.offsetWidth||440,x=fl?r.left-14-w:r.right+14;
-    x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+10,bt=innerHeight-10,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
+    x=Math.max(10,Math.min(innerWidth-w-10,x));var hb=window.__hdrB()+10,bt=innerHeight-10,h=b.offsetHeight,y=Math.max(hb,Math.min(r.top-16,bt-h-14));
     b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('fl',fl);b.style.setProperty('--ty',Math.max(14,Math.min(h-30,r.top+r.height/2-y-7))+'px')};
   var _pbRaw=placeBub;placeBub=function(){_pbRaw();var b=$('dbub');if(b.hidden)return;var t=b.querySelector('.mpt');
     if(t&&!t.querySelector('.mpg')&&mpFit(b))_pbRaw();else if(t&&t.querySelector('.mpg')&&t.scrollHeight>t.clientHeight+1&&mpFit(b))_pbRaw();mpSegui(t)};
@@ -3571,12 +3619,12 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function mpBtns(){return [].slice.call(document.querySelectorAll('.cta,.kb,.oarrow,.go2,.onode,#o_solo,.bpa button,.pfe,.pfs,#pfok,.pfv input')).filter(function(x){
     if(x.closest('#mpbar,#obar,#dbub,[hidden]')||x.disabled||!x.offsetParent)return false;var r=x.getBoundingClientRect();return r.width>0&&r.bottom>0&&r.top<innerHeight})
     .map(function(x){return x.getBoundingClientRect()})}
-  function mpBar(){return ['hdr'].map($).filter(function(e){return e&&e.offsetParent}).map(function(e){return e.getBoundingClientRect()})}
+  function mpBar(){var h=$('hdr');if(!h||!h.offsetParent)return [];if(getComputedStyle(h).position==='fixed'){var r=h.getBoundingClientRect();return r.right>0?[r]:[]}if(innerWidth<=900){var n=h.querySelector('nav');return [h.getBoundingClientRect()].concat(n?[n.getBoundingClientRect()]:[])}return [h.getBoundingClientRect()]}
   function mpClash(btns){var d=$('astab'),b=$('dbub'),ra=d.getBoundingClientRect(),rb=b.hidden?null:b.getBoundingClientRect();
     return btns.some(function(r){return mpHit(ra,r,10)||(rb&&mpHit(rb,r,10))})}
   function mpAvoid(){var d=$('astab'),b=$('dbub');if(!d||d.classList.contains('drag'))return;var btns=mpBtns().concat(mpBar());if(!btns.length||!mpClash(btns))return;
     if(innerWidth<=640){if(!b.hidden)hideBub();return}
-    var hbm=($('hdr')?$('hdr').getBoundingClientRect().bottom:0)+14,hs=[innerHeight-84-176,hbm,Math.round(innerHeight/2)],xs=[14,innerWidth-98],c=[];hs.forEach(function(y){xs.forEach(function(x){c.push([x,y])})});
+    var hbm=window.__hdrB()+14,hs=[innerHeight-84-176,hbm,Math.round(innerHeight/2)],xs=[window.__sbW()+14,innerWidth-98],c=[];hs.forEach(function(y){xs.forEach(function(x){c.push([x,y])})});
     for(var i=0;i<c.length;i++){d.style.left=c[i][0]+'px';d.style.top=c[i][1]+'px';_pbCore();if(!mpClash(btns))return}
     d.style.left=c[0][0]+'px';d.style.top=c[0][1]+'px';_pbCore()}
   placeBub=function(){_pbCore();clearTimeout(MPA.t);MPA.t=setTimeout(mpAvoid,80)};window.__pb=placeBub;
@@ -3611,6 +3659,32 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var nota=$('nota'),nt;
   document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){
     var ix=navb.indexOf(b);if(tourClick(ix))return;if(b.getAttribute('aria-current'))return;if(ix===2){showView('g');return}if(ix===1){showView('s');return}if(ix===3){showView('b');return}if(ix===4){showView('f');return}if(ix===5){showView('t');return}if(ix===0){showView('p');return}nota.textContent='';clearTimeout(nt);nt=setTimeout(function(){nota.textContent=''},3000)}});
+})();
+</script>
+<script>
+/* v95: menu laterale che scorre e si chiude; sul telefono barra in basso con nomi corti */
+(function(){
+  var H=document.documentElement,h=document.getElementById('hdr');if(!h)return;var nav=h.querySelector('nav'),br=h.querySelector('.brand');
+  var CORTI={'Panoramica':'Panoramica','Ottimizzazione fiscale':'Risparmio','Da fare':'Da fare','Bandi e agevolazioni':'Bandi','Profilo':'Profilo','Scadenze':'Scadenze'};
+  [].forEach.call(nav.querySelectorAll('button'),function(b){if(b.querySelector('.nvl'))return;
+    [].slice.call(b.childNodes).forEach(function(n){if(n.nodeType===3&&n.textContent.trim()){var t=n.textContent.trim(),l=document.createElement('span');l.className='nvl';l.textContent=t;
+      var s=document.createElement('span');s.className='nvs';s.setAttribute('aria-hidden','true');s.textContent=CORTI[t]||t;b.replaceChild(l,n);b.insertBefore(s,l.nextSibling)}})});
+  var x=document.createElement('button');x.type='button';x.className='sbx';x.setAttribute('aria-label','Chiudi il menu');x.title='Chiudi il menu';
+  x.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+  if(br)br.appendChild(x);
+  var o=document.createElement('button');o.type='button';o.id='sbopen';o.setAttribute('aria-label','Apri il menu');o.title='Apri il menu';
+  o.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  document.body.appendChild(o);
+  function set(on,salva){H.classList.toggle('sbon',on);H.classList.toggle('sboff',!on);x.setAttribute('aria-expanded',on?'true':'false');o.setAttribute('aria-expanded',on?'true':'false');
+    if(innerWidth>900)h.setAttribute('aria-hidden',on?'false':'true');else h.removeAttribute('aria-hidden');
+    if(salva){try{localStorage.setItem('ts_menu',on?'1':'0')}catch(e){}if(typeof tap==='function')try{tap('menu_'+(on?'apri':'chiudi'))}catch(e){}}
+    setTimeout(function(){window.dispatchEvent(new Event('resize'))},360)}
+  var on=true;try{on=localStorage.getItem('ts_menu')!=='0'}catch(e){}
+  set(on,false);
+  x.onclick=function(){set(false,true);o.focus()};o.onclick=function(){set(true,true);x.focus()};
+  // se una spiegazione guidata indica una voce del menu, il menu si apre da solo
+  new MutationObserver(function(){if(nav.classList.contains('spotlit')&&H.classList.contains('sboff'))set(true,false)}).observe(nav,{attributes:true,attributeFilter:['class']});
+  addEventListener('resize',function(){if(innerWidth<=900)h.removeAttribute('aria-hidden');else h.setAttribute('aria-hidden',H.classList.contains('sboff')?'true':'false')});
 })();
 </script>
 </body></html>
