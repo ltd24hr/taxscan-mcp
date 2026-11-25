@@ -859,6 +859,26 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
   #pvHero .phA .phB{grid-column:1/-1}
 }
 @media (prefers-reduced-motion:reduce){#pvHero .phBar i{transition:none}}
+/* v97: una sola grafica per tutte le sezioni: titoli di pagina, riquadri arrotondati, pulsanti e campi uguali */
+.vhd{margin:4px 0 20px}
+.vhd h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(24px,2.6vw,32px);line-height:1.15;letter-spacing:-.02em;color:var(--ink)}
+.vhd p{margin:6px 0 0;color:var(--ink2);font-size:15px;line-height:1.45;max-width:70ch}
+html body #gview h2.gt{display:none}
+/* riquadri */
+html body .wgt,html body .kbox,html body .tb,html body .card,html body .opanel,html body .oag,html body .bpc,html body .pfr,html body .next,html body .gc,html body .gacc,html body .pvlock,html body .tdk{border-radius:20px!important}
+html body .wgt,html body .kbox,html body .tb,html body .card,html body .bpc,html body .pfr,html body .gc,html body .gacc{border:1px solid var(--line)!important;box-shadow:none}
+html body .bpc,html body .gc,html body .o3act{border-left-width:1px!important}
+html body .bpc{border-left-color:var(--line)!important}
+html body .tdc{border-radius:20px!important}
+html body .tdc .tdk,html body .tdcl>*{border-radius:14px}
+/* pulsanti */
+html body .pvgo,html body .kb,html body .go,html body .go2,html body .cta,html body .bpa button,html body #pfok,html body .oags,html body .pvsb,html body .gc .ga button,html body .esq button,html body .pf24,html body .lnk2.btn{border-radius:12px!important}
+html body .pvgo,html body .kb,html body .go,html body .go2,html body .cta,html body .bpa button,html body #pfok{min-height:44px;font-weight:600}
+/* campi */
+html body .pvin,html body #td_in,html body .esq input,html body #oag_in,html body textarea,html body input[type=text],html body input[type=email],html body input:not([type]){border-radius:12px}
+html body .pfr{border-radius:14px!important}
+html body .cta{background:var(--accent)!important;background-image:none!important;box-shadow:none!important;border-color:var(--accent)!important}
+@media (max-width:900px){html body .wgt,html body .kbox,html body .tb,html body .card,html body .opanel,html body .oag,html body .bpc,html body .pfr,html body .next,html body .gc,html body .gacc,html body .tdc{border-radius:16px!important}.vhd{margin:2px 0 14px}}
 </style>
 </head><body>
 <title>TaxScan, il primo agente IA per il risparmio fiscale</title>
@@ -1356,7 +1376,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     <p class="sm" style="font-size:12px;color:var(--mute);margin:8px 0">Sono passi consigliati sulla base di una stima, non obblighi. Se vuoi, un commercialista può verificarli con te.</p>
   </div>
 
-<div class="ver">Prototipo versione 96</div>
+<div class="ver">Prototipo versione 97</div>
 </div>
 
 <script>
@@ -3797,6 +3817,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // se una spiegazione guidata indica una voce del menu, il menu si apre da solo
   new MutationObserver(function(){if(nav.classList.contains('spotlit')&&H.classList.contains('sboff'))set(true,false)}).observe(nav,{attributes:true,attributeFilter:['class']});
   addEventListener('resize',function(){if(innerWidth<=900)h.removeAttribute('aria-hidden');else h.setAttribute('aria-hidden',H.classList.contains('sboff')?'true':'false')});
+})();
+</script>
+<script>
+/* v97: ogni sezione si apre con lo stesso titolo della Panoramica */
+(function(){
+  var T={gview:['Ottimizzazione fiscale','Partiamo dalle tue fatture e troviamo quanto puoi pagare in meno, in regola.'],
+         tview:['Da fare','I passi per ottenere il risparmio, in ordine di importanza.'],
+         bview:['Bandi e agevolazioni','Contributi e agevolazioni adatti alla tua attività e alla tua regione.'],
+         pview:['Profilo','I dati da cui parto per fare i tuoi conti. Tocca una riga per correggerla.']};
+  function metti(id){var v=document.getElementById(id);if(!v)return;var h=v.querySelector(':scope > .vhd');
+    if(!h){h=document.createElement('header');h.className='vhd';h.innerHTML='<h1>'+T[id][0]+'</h1><p>'+T[id][1]+'</p>'}
+    if(v.firstElementChild!==h)v.insertBefore(h,v.firstChild)}
+  Object.keys(T).forEach(function(id){metti(id);var v=document.getElementById(id);if(v)new MutationObserver(function(){if(!v.hidden)setTimeout(function(){metti(id)},0)}).observe(v,{attributes:true,attributeFilter:['hidden']})});
 })();
 </script>
 </body></html>
