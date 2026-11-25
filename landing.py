@@ -252,6 +252,52 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .by img{height:16px;vertical-align:-3px}
 
 /* comparsa al passaggio */
+/* calcolatore con la linea dell'anno */
+.calc{padding:clamp(64px,8vw,110px) 0}
+.calc .tit{font-size:clamp(34px,4.6vw,60px)}
+.cbox{margin-top:36px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:stretch}
+.cin,.cout{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px}
+.cin{display:flex;flex-direction:column;gap:22px}
+.cin .lbl2{font-weight:700;font-size:15px;margin-bottom:10px;display:block}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:5px}
+.seg button{font:inherit;font-size:14px;font-weight:600;min-height:44px;border:0;border-radius:10px;background:none;color:var(--ink2);cursor:pointer;padding:6px 8px;line-height:1.2}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 0 var(--line2),0 4px 12px rgba(18,36,82,.08)}
+.seg button:focus-visible,.cin input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cval{font:700 clamp(30px,3.4vw,40px)/1.1 var(--f-tit);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.cin input[type=range]{width:100%;accent-color:var(--accent);height:28px;margin-top:6px;cursor:pointer}
+.crange{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink2);cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--accent);margin-top:2px;flex:none}
+.cout{display:flex;flex-direction:column;gap:18px}
+.ctre{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ctre div{border-radius:16px;padding:14px;background:var(--bg)}
+.ctre div.forte{background:var(--navy);color:#fff}
+.ctre small{display:block;font-size:13px;color:var(--ink2);line-height:1.3}
+.ctre div.forte small{color:rgba(255,255,255,.78)}
+.ctre b{display:block;font:700 clamp(20px,2.2vw,26px)/1.15 var(--f-tit);margin-top:6px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.anno h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.anno p.sott{font-size:14px;color:var(--ink2)}
+.cline{position:relative;margin:54px 6px 0;height:52px}
+.cline .traccia{position:absolute;left:0;right:0;top:9px;height:6px;border-radius:3px;background:var(--lav)}
+.cline .pieno{position:absolute;left:0;top:9px;height:6px;border-radius:3px;background:var(--scan);width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.cline.on .pieno{width:100%}
+.cline .mm{position:absolute;top:34px;transform:translateX(-50%);font-size:11.5px;font-weight:600;color:var(--mute)}
+.cline .pg{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.cline .pg i{width:24px;height:24px;border-radius:50%;background:var(--gold);border:4px solid var(--surface);box-shadow:0 0 0 1px var(--line2)}
+.cline .pg.inps i{background:var(--accent)}
+.cline .pg span{position:absolute;bottom:30px;white-space:nowrap;font-size:12.5px;font-weight:700;background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:3px 7px;font-variant-numeric:tabular-nums;opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease}
+.cline.on .pg span{opacity:1;transform:none}
+.lista{list-style:none;display:none;flex-direction:column;gap:8px;margin-top:14px}
+.lista li{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:14px}
+.lista b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.cleg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:8px}
+.cleg span{display:inline-flex;align-items:center;gap:6px}.cleg i{width:10px;height:10px;border-radius:50%;background:var(--gold)}.cleg i.inps{background:var(--accent)}
+.cpie{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:16px}
+.cpie p{font-size:13px;color:var(--mute);max-width:36em}
+@media (max-width:900px){.cbox{grid-template-columns:minmax(0,1fr)}.cline{display:none}.lista{display:flex}.cleg{display:none}.ctre b{font-size:20px}}
+@media (max-width:520px){.seg{grid-template-columns:minmax(0,1fr)}.ctre{grid-template-columns:minmax(0,1fr)}.ctre div{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.ctre b{margin:0}.cin,.cout{padding:20px}}
+@media (prefers-reduced-motion:reduce){.cline .pieno{transition:none}.cline .pg span{transition:none}}
+
 .vedi{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
 .vedi.on{opacity:1;transform:none}
 
@@ -363,6 +409,83 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <div class="chips"><span>Panoramica</span><span>Ottimizzazione fiscale</span><span>Da fare</span><span>Bandi e agevolazioni</span><span>Profilo</span></div>
   </div>
 </section>
+
+<section class="calc" id="calcola" aria-labelledby="t-calc">
+  <div class="w">
+    <div class="vedi">
+      <h2 class="tit" id="t-calc">Quanto pagherai quest'anno?</h2>
+      <p class="testo">Provalo qui: una stima in pochi secondi, con le regole del 2026. Poi TaxScan la rifà sui tuoi numeri veri e cerca dove puoi pagare meno.</p>
+    </div>
+    <div class="cbox vedi">
+      <div class="cin">
+        <div><span class="lbl2" id="c-tipo-l">Che lavoro fai?</span>
+          <div class="seg" role="group" aria-labelledby="c-tipo-l">
+            <button type="button" data-t="pro" aria-pressed="true">Libero professionista</button>
+            <button type="button" data-t="art" aria-pressed="false">Artigiano</button>
+            <button type="button" data-t="com" aria-pressed="false">Commerciante</button>
+          </div></div>
+        <div><label class="lbl2" for="c-inc">Quanto incassi in un anno?</label>
+          <div class="cval" id="c-incv" aria-hidden="true">30.000 €</div>
+          <input type="range" id="c-inc" min="5000" max="85000" step="1000" value="30000" aria-valuetext="30.000 euro">
+          <div class="crange" aria-hidden="true"><span>5.000 €</span><span>85.000 €</span></div></div>
+        <label class="chk"><input type="checkbox" id="c-cinque"><span>Ho aperto la partita IVA da meno di 5 anni e l'attività è nuova: imposta al 5% invece del 15%</span></label>
+      </div>
+      <div class="cout" aria-live="polite">
+        <div class="ctre">
+          <div><small>Tasse e contributi in un anno</small><b id="c-tot">–</b></div>
+          <div class="forte"><small>Mettine da parte ogni mese</small><b id="c-mese">–</b></div>
+          <div><small>Ti restano netti</small><b id="c-netto">–</b></div>
+        </div>
+        <div class="anno">
+          <h3>Il tuo anno fiscale, senza sorprese</h3>
+          <p class="sott">Quando paghi, se incassi così ogni anno.</p>
+          <div class="cline" id="c-linea" aria-hidden="true"><div class="traccia"></div><div class="pieno"></div></div>
+          <div class="cleg" aria-hidden="true"><span><i></i>Imposta e contributi</span><span id="c-leg-fissi"><i class="inps"></i><span id="c-fissi-t">Contributi fissi INPS</span></span></div>
+          <ul class="lista" id="c-lista"></ul>
+        </div>
+        <div class="cpie">
+          <p id="c-nota">Stima con il coefficiente tipico della categoria, senza la riduzione del 35% dei contributi. TaxScan usa il tuo codice ATECO, le tue fatture e le tue riduzioni.</p>
+          <a class="btn btn-acc btn-sm" href="/colloquio/nuovo">Fai il calcolo sui tuoi numeri</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script type="application/json" id="c-dati">__CALC_DATI__</script>
+<script>
+(function(){
+  var K={gs:.2607,gsMax:122295,min:18808,sog:56224,max:122295,art:{f:4521.36,a:.24,b:.25},com:{f:4611.64,a:.2448,b:.2548},ord:.15,st:.05,anno:2026};
+  try{var j=JSON.parse(document.getElementById("c-dati").textContent);for(var k in j)K[k]=j[k]}catch(e){}
+  var T={pro:{c:.78,nome:"Libero professionista"},art:{c:.67,nome:"Artigiano"},com:{c:.40,nome:"Commerciante"}};
+  var tipo="pro",r=document.getElementById("c-inc"),cb=document.getElementById("c-cinque"),lin=document.getElementById("c-linea"),lis=document.getElementById("c-lista");
+  var eur=function(v){return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" €"};
+  var MES=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+  function conti(inc){var red=inc*T[tipo].c,fis=0,va;
+    if(tipo==="pro"){va=Math.min(red,K.gsMax)*K.gs}
+    else{var p=tipo==="art"?K.art:K.com,rr=Math.min(red,K.max),ecc=Math.max(0,rr-K.min),fino=Math.min(ecc,Math.max(0,K.sog-K.min));fis=p.f;va=fino*p.a+(ecc-fino)*p.b}
+    var imp=Math.max(0,red-fis-va)*(cb.checked?K.st:K.ord);return {fis:fis,va:va,imp:imp,tot:fis+va+imp}}
+  function rata(m,g,imp,cls,cosa){return {m:m,g:g,imp:imp,cls:cls,cosa:cosa}}
+  function disegna(){var inc=+r.value,c=conti(inc);
+    document.getElementById("c-incv").textContent=eur(inc);r.setAttribute("aria-valuetext",eur(inc).replace("€","euro"));
+    document.getElementById("c-tot").textContent=eur(c.tot);document.getElementById("c-mese").textContent=eur(c.tot/12);document.getElementById("c-netto").textContent=eur(inc-c.tot);
+    // in un anno a regime: giugno saldo + 1° acconto (50% imposta, 60% contributi a percentuale), novembre 2° acconto (50% e 40%); fissi INPS in 4 rate
+    var R=[rata(5,30,c.imp*.5+c.va*.6,"","Saldo e 1° acconto"),rata(10,30,c.imp*.5+c.va*.4,"","2° acconto")];
+    if(c.fis){R.push(rata(1,16,c.fis/4,"inps","Contributi fissi INPS"),rata(4,18,c.fis/4,"inps","Contributi fissi INPS"),rata(7,20,c.fis/4,"inps","Contributi fissi INPS"),rata(10,16,c.fis/4,"inps","Contributi fissi INPS"))}
+    R.sort(function(a,b){return a.m-b.m||a.g-b.g});
+    var h='<div class="traccia"></div><div class="pieno"></div>';
+    MES.forEach(function(n,i){h+='<span class="mm" style="left:'+((i+.5)/12*100)+'%">'+n+'</span>'});
+    var visti={};R.forEach(function(x){var k=x.m;var left=(x.m+.5)/12*100;if(visti[k])left+=2.4;visti[k]=1;
+      h+='<div class="pg '+x.cls+'" style="left:'+left+'%" title="'+x.g+' '+MES[x.m].toLowerCase()+': '+x.cosa+', '+eur(x.imp)+'"><i></i>'+(x.cls?'':'<span>'+eur(x.imp)+'</span>')+'</div>'});
+    var on=lin.classList.contains("on");lin.innerHTML=h;if(on)lin.classList.add("on");
+    lis.innerHTML=R.map(function(x){return '<li><span>'+x.g+' '+MES[x.m].toLowerCase()+' · '+x.cosa+'</span><b>'+eur(x.imp)+'</b></li>'}).join("");
+    document.getElementById("c-leg-fissi").style.display=c.fis?"":"none";document.getElementById("c-fissi-t").textContent="Contributi fissi INPS: 4 rate da "+eur(c.fis/4);
+    var no=document.getElementById("c-nota");no.textContent="Stima con il coefficiente tipico per "+T[tipo].nome.toLowerCase()+" ("+Math.round(T[tipo].c*100)+"%)"+(tipo==="pro"?", gestione separata INPS":", senza la riduzione del 35% dei contributi")+". TaxScan usa il tuo codice ATECO, le tue fatture e le riduzioni che ti spettano."}
+  [].forEach.call(document.querySelectorAll(".seg button"),function(b){b.addEventListener("click",function(){tipo=b.getAttribute("data-t");[].forEach.call(document.querySelectorAll(".seg button"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});disegna()})});
+  r.addEventListener("input",disegna);cb.addEventListener("change",disegna);disegna();
+  var calma=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(calma||!("IntersectionObserver" in window)){lin.classList.add("on")}else{var o=new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting){setTimeout(function(){lin.classList.add("on")},250);o.disconnect()}})},{threshold:.4});o.observe(lin)}
+})();
+</script>
 
 <section class="sez" id="come-funziona" aria-labelledby="t-come">
   <div class="w due">
@@ -609,3 +732,18 @@ $("cod").onkeydown=e=>{if(e.key==="Enter")$("ok2").click()};
 </body>
 </html>
 """
+
+
+# Il calcolatore della home usa le stesse regole dell'app: i numeri arrivano da dati_fisco (unico file da aggiornare ogni anno).
+try:
+    import json as _json
+    import dati_fisco as _D
+    _AC = _D.ARTIGIANI_COMMERCIANTI
+    _CALC = {"gs": _D.GESTIONE_SEPARATA["aliquota_senza_altra_copertura"], "gsMax": _D.GESTIONE_SEPARATA["massimale"],
+             "min": _AC["minimale_reddito"], "sog": _AC["soglia_aliquota_maggiorata"], "max": _AC["massimale_post_1996"],
+             "art": {"f": _AC["artigiani"]["fisso_annuo"], "a": _AC["artigiani"]["aliquota"], "b": _AC["artigiani"]["aliquota_oltre_soglia"]},
+             "com": {"f": _AC["commercianti"]["fisso_annuo"], "a": _AC["commercianti"]["aliquota"], "b": _AC["commercianti"]["aliquota_oltre_soglia"]},
+             "ord": _D.ALIQUOTA_ORDINARIA, "st": _D.ALIQUOTA_STARTUP, "anno": _D.ANNO}
+    PAGINA_HTML = PAGINA_HTML.replace("__CALC_DATI__", _json.dumps(_CALC))
+except Exception:
+    PAGINA_HTML = PAGINA_HTML.replace("__CALC_DATI__", "{}")
