@@ -104,7 +104,8 @@ def _per_pagina(d: dict, c: str = "") -> dict:
             "ps": (d.get("prossima_scadenza") or {}).get("data") or "",
             "aliq_conf": bool((d.get("profilo") or {}).get("aliquota_da_confermare")) and sch.get("origine_attivita") == "altro",
             # contributi: cosa il server sa, per il Profilo
-            "ap": _apertura_txt(sch.get("data_apertura")), "gest": sch.get("gestione_previdenziale") or "",
+            "ap": _apertura_txt(sch.get("data_apertura")),
+            "piva": re.sub(r"\D", "", str(sch.get("partita_iva") or ""))[:11], "gest": sch.get("gestione_previdenziale") or "",
             "rid": {"si": "35% per i forfettari", "si_50": "50% per i nuovi iscritti 2025", "no": "Nessuno",
                     "non_so": "Non lo so"}.get(str(sch.get("riduzione_35") if sch.get("riduzione_35") is not None else "")
                                                .lower().replace("true", "si").replace("false", "no"), ""),
@@ -204,7 +205,9 @@ def _apertura_txt(v) -> str:
     ini = S._inizio(v)
     if not ini:
         return ""
-    return (_MESI_IT[ini[1] - 1] + " " if ini[1] else "") + str(ini[0])
+    g = re.match(r"^\d{4}-\d{2}-(\d{2})$", str(v or ""))
+    giorno = (str(int(g.group(1))) + " ") if (g and ini[1]) else ""
+    return giorno + (_MESI_IT[ini[1] - 1] + " " if ini[1] else "") + str(ini[0])
 
 
 def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
@@ -435,7 +438,20 @@ _ID_PROFILO = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
 
 # ---------------------------------------------------------------- correzioni dal Profilo: un dato cambia, si ricalcola tutto
 _CAMPI_CORREGGIBILI = ("nome", "aliquota", "gestione_previdenziale", "data_apertura", "codice_ateco", "ricavi_anno_corrente", "regione",
-                       "origine_attivita", "riduzione_inps", "altri_redditi", "ricavi_anno_precedente")
+                       "origine_attivita", "riduzione_inps", "altri_redditi", "ricavi_anno_precedente", "partita_iva")
+
+
+def _piva_valida(p: str) -> bool:
+    """Cifra di controllo della partita IVA italiana (11 cifre)."""
+    if not re.fullmatch(r"\d{11}", p or ""):
+        return False
+    t = 0
+    for i, ch in enumerate(p[:10]):
+        n = int(ch)
+        if i % 2:
+            n = n * 2 - 9 if n * 2 > 9 else n * 2
+        t += n
+    return (10 - t % 10) % 10 == int(p[10])
 
 
 def _gestione_da_testo(t: str):
@@ -509,9 +525,22 @@ def correggi(c: str, campo: str, valore) -> dict:
             mese = vecchio[1]   # ha scritto solo l'anno, uguale a prima: tengo il mese che sapevo
         if mese and anno == datetime.date.today().year and mese > datetime.date.today().month:
             return {"ok": False, "errore": "Quel mese non è ancora arrivato: scrivimi il mese in cui hai aperto."}
-        sch["data_apertura"] = f"{anno}-{mese:02d}" if mese else str(anno)
+        gg = re.search(r"\b(\d{1,2})[/.\-](\d{1,2})[/.\-]((?:19|20)\d\d)\b", v) or re.search(r"\b(\d{1,2})\s+[a-z]+\s+((?:19|20)\d\d)\b", low)
+        giorno = int(gg.group(1)) if gg else 0
+        if mese and 1 <= giorno <= 31:
+            try:
+                sch["data_apertura"] = datetime.date(anno, mese, giorno).isoformat()
+            except ValueError:
+                sch["data_apertura"] = f"{anno}-{mese:02d}"
+        else:
+            sch["data_apertura"] = f"{anno}-{mese:02d}" if mese else str(anno)
         if not sch.get("anno_ingresso_forfettario") or vecchio is None or sch.get("anno_ingresso_forfettario") == (vecchio or (0,))[0]:
             sch["anno_ingresso_forfettario"] = anno
+    elif campo == "partita_iva":
+        p = re.sub(r"\D", "", v)
+        if not _piva_valida(p):
+            return {"ok": False, "errore": "Questo numero non sembra una partita IVA: sono 11 cifre, controlla di averle scritte tutte."}
+        sch["partita_iva"] = p
     elif campo == "codice_ateco":
         m = re.search(r"\b(\d{2})[.\s]?(\d{2})(?:[.\s]?(\d{1,2}))?\b", v)
         if not m:

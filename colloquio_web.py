@@ -1314,7 +1314,7 @@ function mostraFine(inChat) {
     if (val === true) return "sì"; if (val === false) return "no";
     return (E[campo] || {})[val] || String(val);
   };
-  const voci = [["codice_ateco","Codice ATECO"],["data_apertura","Apertura"],["tipo_attivita","Attività"],["gestione_previdenziale","Previdenza"],
+  const voci = [["partita_iva","Partita IVA"],["codice_ateco","Codice ATECO"],["data_apertura","Apertura"],["tipo_attivita","Attività"],["gestione_previdenziale","Previdenza"],
                 ["nome_cassa","Cassa"],["aliquota","Aliquota"],["riduzione_35","Riduzione INPS 35%"],["situazioni_particolari","Situazioni"],
                 ["ricavi_anno_precedente","Incassato l'anno scorso"],["ricavi_anno_corrente","Incassato quest'anno"],["descrizione_attivita","Attività descritta"]];
   const righe = voci.map(([k, l]) => { const v = et(k, scheda[k]); return v ? `<div><span>${l}</span><span>${esc(v)}${k === "aliquota" ? "%" : ""}</span></div>` : ""; }).join("");
