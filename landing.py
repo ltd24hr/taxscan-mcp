@@ -295,6 +295,26 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 /* comparsa al passaggio */
 /* calcolatore con la linea dell'anno */
 .calc{padding:clamp(64px,8vw,110px) 0}
+/* come funziona: le chat con Marcello */
+.dlg{display:flex;flex-direction:column;gap:clamp(36px,5vw,64px);margin-top:clamp(32px,4vw,52px)}
+.riga{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+.riga.inv .scena{order:2}
+.scena{position:relative;min-height:320px;max-width:520px;width:100%;margin:0 auto}
+.pers{position:absolute;left:0;top:28px;width:min(46%,220px);aspect-ratio:1;margin:0;border-radius:22px;overflow:hidden}
+.pers img{width:100%;height:100%;object-fit:cover;display:block}
+.pers.oro{background:var(--gold-soft,#fdecc0)}.pers.lil{background:var(--lav,#e8e4fb)}.pers.ver{background:#dff4ee}
+.nuv{position:absolute;margin:0;padding:12px 14px;border-radius:16px;font-size:14.5px;line-height:1.4;max-width:min(62%,300px);box-shadow:0 8px 24px rgba(18,36,82,.10)}
+.nuv.chi{left:30%;top:0;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px;color:var(--ink)}
+.nuv.ia{right:56px;top:120px;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.mav{position:absolute;right:0;top:170px;width:56px;height:56px;border-radius:50%;overflow:hidden;border:3px solid var(--accent);background:var(--surface);box-shadow:0 6px 16px rgba(18,36,82,.2)}
+.mav img{width:100%;height:100%;object-fit:cover;object-position:top}
+.dtx h3{font:700 clamp(22px,2.4vw,30px)/1.2 var(--f-tit);letter-spacing:-.02em;margin:12px 0 10px}
+.dtx p{color:var(--ink2);margin:0 0 14px;max-width:34em}
+.dnum{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:15px}
+.dtx .tag{display:inline-block}
+.dnota{margin-top:28px;font-size:13px;color:var(--mute)}
+@media (max-width:820px){.riga{grid-template-columns:minmax(0,1fr)}.riga.inv .scena{order:0}.scena{min-height:300px}}
+@media (max-width:420px){.nuv{font-size:13.5px;max-width:66%}.nuv.chi{left:34%}.nuv.ia{top:128px}.mav{top:190px}}
 /* simulatore del risparmio */
 .ancora{display:block;position:relative;top:-90px;height:0}
 #simula [hidden]{display:none!important}
@@ -738,31 +758,47 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 </script>
 
 <section class="sez" id="come-funziona" aria-labelledby="t-come">
-  <div class="w due">
-    <div class="vedi">
+  <div class="w">
+    <div class="vedi" style="max-width:760px">
       <h2 class="tit" id="t-come">Non devi capire il fisco da solo.</h2>
-      <p class="testo">Il tuo agente IA legge, deduce e poi ti chiede conferma. Ti propone sempre il passo successivo, senza gergo e senza interrogatori.</p>
+      <p class="testo">Chiedi come chiederesti a una persona. Marcello, il tuo agente IA, legge, deduce e poi ti chiede conferma. Ti propone sempre il passo successivo, senza gergo.</p>
     </div>
-    <div class="passi">
-      <article class="passo vedi">
-        <span class="n">01</span>
-        <div><h3>Rispondi a poche domande. O carica il certificato.</h3>
-          <p>L'agente legge il certificato della partita IVA, riconosce il codice ATECO e la data di apertura e ti chiede solo quello che non può capire da solo. Si risponde con un tocco.</p></div>
-        <span class="tag">2 minuti</span>
+    <div class="dlg">
+      <article class="riga vedi">
+        <div class="scena" aria-hidden="true">
+          <figure class="pers oro"><img src="__P_LUCA__" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">Ho appena aperto la partita IVA. Da dove parto?</p>
+          <p class="nuv ia">Mandami il certificato della partita IVA: leggo io codice ATECO e data di apertura. Ti chiedo solo quello che manca.</p>
+          <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
+        </div>
+        <div class="dtx"><span class="dnum">1</span><h3>Rispondi a poche domande. O carica il certificato.</h3>
+          <p>Marcello legge il certificato della partita IVA, riconosce il codice ATECO e la data di apertura e ti chiede solo quello che non può capire da solo. Si risponde con un tocco.</p>
+          <span class="tag">2 minuti</span></div>
       </article>
-      <article class="passo vedi">
-        <span class="n">02</span>
-        <div><h3>Carica 2 o 3 fatture. Al resto pensa l'agente.</h3>
-          <p>Le legge in XML, PDF o foto per capire che lavoro fai davvero. Usa le descrizioni e gli importi: non conserva i file né i nomi dei tuoi clienti.</p></div>
-        <span class="tag">Privacy prima di tutto</span>
+      <article class="riga inv vedi">
+        <div class="scena" aria-hidden="true">
+          <figure class="pers lil"><img src="__P_PAOLA__" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">Faccio consulenze, ma anche siti web. Cambia qualcosa?</p>
+          <p class="nuv ia">Può cambiare parecchio. Caricami 2 o 3 fatture: guardo che lavori fai davvero e se ognuno ha il codice giusto.</p>
+          <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
+        </div>
+        <div class="dtx"><span class="dnum">2</span><h3>Carica 2 o 3 fatture. Al resto pensa Marcello.</h3>
+          <p>Le legge in XML, PDF o foto per capire che lavoro fai davvero. Usa le descrizioni e gli importi: non conserva i file né i nomi dei tuoi clienti.</p>
+          <span class="tag">Privacy prima di tutto</span></div>
       </article>
-      <article class="passo vedi">
-        <span class="n">03</span>
-        <div><h3>Scopri se puoi pagare meno, in regola.</h3>
-          <p>Confronta la tua situazione con i coefficienti delle attività che svolgi davvero, le riduzioni dei contributi INPS e gli acconti. Se non c'è risparmio, te lo dice chiaramente.</p></div>
-        <span class="tag">Stima trasparente</span>
+      <article class="riga vedi">
+        <div class="scena" aria-hidden="true">
+          <figure class="pers ver"><img src="__P_GIANNI__" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">A giugno ho pagato una botta. Posso pagare meno?</p>
+          <p class="nuv ia">Vediamo. Da artigiano puoi chiedere i contributi ridotti del 35%: ti calcolo quanto risparmi e cosa cambia per la pensione.</p>
+          <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
+        </div>
+        <div class="dtx"><span class="dnum">3</span><h3>Scopri se puoi pagare meno, in regola.</h3>
+          <p>Confronta la tua situazione con i coefficienti delle attività che svolgi davvero, le riduzioni dei contributi INPS e gli acconti. Se non c'è risparmio, te lo dice chiaramente.</p>
+          <span class="tag">Stima trasparente</span></div>
       </article>
     </div>
+    <p class="dnota">Conversazioni di esempio con i personaggi del nostro spot.</p>
   </div>
 </section>
 
@@ -973,6 +1009,16 @@ $("cod").onkeydown=e=>{if(e.key==="Enter")$("ok2").click()};
 </body>
 </html>
 """
+
+
+# I personaggi dello spot (Gianni, Paola, Luca) nelle chat di "Come funziona": immagini piccole, incorporate nella pagina.
+try:
+    import persone_img as _P
+    for _k, _v in (("__P_LUCA__", _P.LUCA), ("__P_PAOLA__", _P.PAOLA), ("__P_GIANNI__", _P.GIANNI)):
+        PAGINA_HTML = PAGINA_HTML.replace(_k, "data:image/webp;base64," + _v)
+except Exception:
+    for _k in ("__P_LUCA__", "__P_PAOLA__", "__P_GIANNI__"):
+        PAGINA_HTML = PAGINA_HTML.replace(_k, "/og-avatar.jpg")
 
 
 # Il calcolatore della home usa le stesse regole dell'app: i numeri arrivano da dati_fisco (unico file da aggiornare ogni anno).
