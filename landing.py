@@ -298,6 +298,17 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 @media (max-width:520px){.seg{grid-template-columns:minmax(0,1fr)}.ctre{grid-template-columns:minmax(0,1fr)}.ctre div{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.ctre b{margin:0}.cin,.cout{padding:20px}}
 @media (prefers-reduced-motion:reduce){.cline .pieno{transition:none}.cline .pg span{transition:none}}
 
+/* lo spot */
+.spot{padding:clamp(56px,7vw,96px) 0 0}
+.spot .tit{font-size:clamp(34px,4.6vw,60px)}
+.spot .testo{max-width:34em}
+.svid{position:relative;max-width:1000px;margin-top:30px;border-radius:24px;overflow:hidden;background:var(--navy);box-shadow:0 24px 60px -24px rgba(18,36,82,.45);aspect-ratio:16/9}
+.svid video{display:block;width:100%;height:100%;object-fit:cover}
+.sbtn{position:absolute;right:16px;bottom:16px;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 16px;border:0;border-radius:999px;background:rgba(255,255,255,.94);color:var(--navy);font:600 14px/1 var(--f-txt);cursor:pointer;box-shadow:0 6px 18px rgba(10,20,50,.25)}
+.sbtn svg{width:18px;height:18px}
+.sbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){.svid{border-radius:16px}.sbtn{right:10px;bottom:10px;font-size:13px}}
+
 .vedi{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
 .vedi.on{opacity:1;transform:none}
 
@@ -409,6 +420,33 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <div class="chips"><span>Panoramica</span><span>Ottimizzazione fiscale</span><span>Da fare</span><span>Bandi e agevolazioni</span><span>Profilo</span></div>
   </div>
 </section>
+
+<section class="spot" id="spot" aria-labelledby="t-spot">
+  <div class="w">
+    <div class="vedi">
+      <h2 class="tit" id="t-spot">Ti riconosci in una di queste storie?</h2>
+      <p class="testo">Gianni, Paola, Sara e Luca hanno la partita IVA. In 27 secondi, perché abbiamo creato TaxScan.</p>
+    </div>
+    <div class="svid vedi">
+      <video id="spotv" muted playsinline loop preload="metadata" poster="https://cdn.creatify.ai/video-composer/footage/4c31435c-0781-40c6-9101-9c1ccc015131.png" aria-label="Lo spot di TaxScan, 27 secondi, con sottotitoli">
+        <source src="https://cdn.creatify.ai/video-composer/d40e4fe8-6c5c-439b-af84-6b8a2027a22f.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="sbtn" id="spota" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg><span>Attiva l'audio</span></button>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var v=document.getElementById("spotv"),b=document.getElementById("spota");if(!v||!b)return;
+  var calma=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg><span>Togli l\'audio</span>';
+  var OFF=b.innerHTML;
+  b.addEventListener("click",function(){var muto=!v.muted;v.muted=muto;if(!muto){v.currentTime=0;v.play().catch(function(){})}
+    b.innerHTML=muto?OFF:ON;b.setAttribute("aria-pressed",muto?"false":"true")});
+  if(calma){v.setAttribute("controls","");return}
+  if("IntersectionObserver" in window){new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting)v.play().catch(function(){});else v.pause()})},{threshold:.5}).observe(v)}
+})();
+</script>
 
 <section class="calc" id="calcola" aria-labelledby="t-calc">
   <div class="w">
