@@ -299,10 +299,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 @media (prefers-reduced-motion:reduce){.cline .pieno{transition:none}.cline .pg span{transition:none}}
 
 /* lo spot */
-.spot{padding:clamp(56px,7vw,96px) 0 0}
-.spot .tit{font-size:clamp(34px,4.6vw,60px)}
-.spot .testo{max-width:34em}
-.svid{position:relative;max-width:1000px;margin-top:30px;border-radius:24px;overflow:hidden;background:var(--navy);box-shadow:0 24px 60px -24px rgba(18,36,82,.45);aspect-ratio:16/9}
+.spot{padding:clamp(56px,7vw,96px) 0}
+.sgr{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,4vw,64px);align-items:center}
+.socchio{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.spot .tit{font-size:clamp(32px,3.6vw,52px)}
+.spot .testo{max-width:30em;margin-bottom:26px}
+@media (max-width:900px){.sgr{grid-template-columns:1fr}}
+.svid{position:relative;border-radius:24px;overflow:hidden;background:var(--navy);box-shadow:0 24px 60px -24px rgba(18,36,82,.45);aspect-ratio:16/9}
 .svid video{display:block;width:100%;height:100%;object-fit:cover}
 .sbtn{position:absolute;right:16px;bottom:16px;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 16px;border:0;border-radius:999px;background:rgba(255,255,255,.94);color:var(--navy);font:600 14px/1 var(--f-txt);cursor:pointer;box-shadow:0 6px 18px rgba(10,20,50,.25)}
 .sbtn svg{width:18px;height:18px}
@@ -377,9 +380,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <p class="lead"><b>Il primo agente IA specializzato nel risparmio fiscale.</b> Prepara i conti della tua partita IVA forfettaria e ti dice quanto pagare, quando e dove puoi pagare meno, in regola.</p>
     <div class="azioni">
       <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <a class="btn btn-light" href="#come-funziona">Guarda come funziona</a>
     </div>
-    <p class="nota">Gratis · 2 minuti, anche dal telefono · Basta il certificato della partita IVA</p>
 
     <div class="mock vedi">
       <div class="freccia ser" aria-hidden="true">Il tuo agente IA ti guida<svg viewBox="0 0 60 44" fill="none"><path d="M3 3c12 5 22 13 28 24M21 25l11 3 2-12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
@@ -414,18 +415,13 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 
-<section class="fascia" aria-label="Le sezioni di TaxScan">
-  <div class="w">
-    <p>Tutta la tua partita IVA in un posto, tutto l'anno</p>
-    <div class="chips"><span>Panoramica</span><span>Ottimizzazione fiscale</span><span>Da fare</span><span>Bandi e agevolazioni</span><span>Profilo</span></div>
-  </div>
-</section>
-
 <section class="spot" id="spot" aria-labelledby="t-spot">
-  <div class="w">
-    <div class="vedi">
+  <div class="w sgr">
+    <div class="stx vedi">
+      <p class="socchio">Lo spot di TaxScan</p>
       <h2 class="tit" id="t-spot">Ti riconosci in una di queste storie?</h2>
-      <p class="testo">Gianni, Paola, Sara e Luca hanno la partita IVA. In 27 secondi, perché abbiamo creato TaxScan.</p>
+      <p class="testo">Gianni, Paola, Sara e Luca hanno la partita IVA. Le tasse che non si aspettavano, l'INPS che arriva anche quando il lavoro si ferma, il commercialista che non richiama. In 27 secondi, perché abbiamo creato TaxScan.</p>
+      <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
     <div class="svid vedi">
       <video id="spotv" muted playsinline loop preload="metadata" poster="https://cdn.creatify.ai/video-composer/footage/4c31435c-0781-40c6-9101-9c1ccc015131.png" aria-label="Lo spot di TaxScan, 27 secondi, con sottotitoli">
@@ -435,6 +431,14 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     </div>
   </div>
 </section>
+
+<section class="fascia" aria-label="Le sezioni di TaxScan">
+  <div class="w">
+    <p>Tutta la tua partita IVA in un posto, tutto l'anno</p>
+    <div class="chips"><span>Panoramica</span><span>Ottimizzazione fiscale</span><span>Da fare</span><span>Bandi e agevolazioni</span><span>Profilo</span></div>
+  </div>
+</section>
+
 <script>
 (function(){
   var v=document.getElementById("spotv"),b=document.getElementById("spota");if(!v||!b)return;
@@ -651,6 +655,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     </div>
     <div class="faq vedi">
       <details open><summary>TaxScan sostituisce il commercialista?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. TaxScan prepara e spiega: puoi gestire tutto da solo, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare numeri e report a un professionista quando vuoi.</p></details>
+      <details><summary>Posso parlare con un consulente vero?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì. TaxScan ti prepara i numeri, ma se la tua situazione è particolare o vuoi una conferma puoi parlare con un consulente in carne e ossa. La prima consulenza è gratuita: <a href="https://calendly.com/ltd24ore?utm_source=taxscan_home" target="_blank" rel="noopener">prenotala qui</a>.</p></details>
       <details><summary>Devo registrarmi per provarlo?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Per iniziare no. L'email te la chiediamo per salvarti la situazione, mandarti le scadenze e, se vuoi, il report.</p></details>
       <details><summary>Le mie fatture vengono salvate?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. TaxScan legge le righe del lavoro e gli importi, non conserva i file né il nome dei tuoi clienti. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
       <details><summary>Quanto posso risparmiare?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Dipende dal lavoro che fai davvero. Se alcune prestazioni rientrano in attività con un coefficiente più basso, o se hai diritto a riduzioni dei contributi, vedi una stima in euro. Altrimenti il risultato è zero, senza promesse forzate.</p></details>
