@@ -295,7 +295,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 /* comparsa al passaggio */
 /* calcolatore con la linea dell'anno */
 .calc{padding:clamp(64px,8vw,110px) 0}
-/* come funziona: le chat con Marcello */
+/* come funziona: le chat con il tuo agente IA */
 .dlg{display:flex;flex-direction:column;gap:clamp(36px,5vw,64px);margin-top:clamp(32px,4vw,52px)}
 .riga{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
 .riga.inv .scena{order:2}
@@ -761,36 +761,36 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   <div class="w">
     <div class="vedi" style="max-width:760px">
       <h2 class="tit" id="t-come">Non devi capire il fisco da solo.</h2>
-      <p class="testo">Chiedi come chiederesti a una persona. Marcello, il tuo agente IA, legge, deduce e poi ti chiede conferma. Ti propone sempre il passo successivo, senza gergo.</p>
+      <p class="testo">Chiedi come chiederesti a una persona. Il tuo agente IA legge, deduce e poi ti chiede conferma. Ti propone sempre il passo successivo, senza gergo.</p>
     </div>
     <div class="dlg">
       <article class="riga vedi">
         <div class="scena" aria-hidden="true">
-          <figure class="pers oro"><img src="__P_LUCA__" alt="" width="200" height="200" loading="lazy"></figure>
-          <p class="nuv chi">Ho appena aperto la partita IVA. Da dove parto?</p>
-          <p class="nuv ia">Mandami il certificato della partita IVA: leggo io codice ATECO e data di apertura. Ti chiedo solo quello che manca.</p>
+          <figure class="pers oro"><img src="https://images.unsplash.com/photo-1753351052363-53ce102830eb?w=400&amp;h=400&amp;fit=crop&amp;crop=faces&amp;auto=format&amp;q=70" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">Scadenze, F24, INPS… ho sempre paura di dimenticarne una.</p>
+          <p class="nuv ia">Mandami il certificato della partita IVA: in 2 minuti ti preparo tutte le scadenze dell'anno e ti avviso prima di ognuna.</p>
           <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
         </div>
         <div class="dtx"><span class="dnum">1</span><h3>Rispondi a poche domande. O carica il certificato.</h3>
-          <p>Marcello legge il certificato della partita IVA, riconosce il codice ATECO e la data di apertura e ti chiede solo quello che non può capire da solo. Si risponde con un tocco.</p>
+          <p>L'agente legge il certificato della partita IVA, riconosce il codice ATECO e la data di apertura e ti chiede solo quello che non può capire da solo. Si risponde con un tocco.</p>
           <span class="tag">2 minuti</span></div>
       </article>
       <article class="riga inv vedi">
         <div class="scena" aria-hidden="true">
-          <figure class="pers lil"><img src="__P_PAOLA__" alt="" width="200" height="200" loading="lazy"></figure>
-          <p class="nuv chi">Faccio consulenze, ma anche siti web. Cambia qualcosa?</p>
-          <p class="nuv ia">Può cambiare parecchio. Caricami 2 o 3 fatture: guardo che lavori fai davvero e se ognuno ha il codice giusto.</p>
+          <figure class="pers lil"><img src="https://images.unsplash.com/photo-1616769402452-267817d74fba?w=400&amp;h=400&amp;fit=crop&amp;crop=faces&amp;auto=format&amp;q=70" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">Pago tantissime tasse e non capisco nemmeno perché.</p>
+          <p class="nuv ia">Caricami 2 o 3 fatture: controllo che ogni lavoro abbia il coefficiente giusto. Spesso si paga più del dovuto.</p>
           <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
         </div>
-        <div class="dtx"><span class="dnum">2</span><h3>Carica 2 o 3 fatture. Al resto pensa Marcello.</h3>
+        <div class="dtx"><span class="dnum">2</span><h3>Carica 2 o 3 fatture. Al resto pensa l'agente.</h3>
           <p>Le legge in XML, PDF o foto per capire che lavoro fai davvero. Usa le descrizioni e gli importi: non conserva i file né i nomi dei tuoi clienti.</p>
           <span class="tag">Privacy prima di tutto</span></div>
       </article>
       <article class="riga vedi">
         <div class="scena" aria-hidden="true">
-          <figure class="pers ver"><img src="__P_GIANNI__" alt="" width="200" height="200" loading="lazy"></figure>
-          <p class="nuv chi">A giugno ho pagato una botta. Posso pagare meno?</p>
-          <p class="nuv ia">Vediamo. Da artigiano puoi chiedere i contributi ridotti del 35%: ti calcolo quanto risparmi e cosa cambia per la pensione.</p>
+          <figure class="pers ver"><img src="https://images.unsplash.com/photo-1713652570657-751151fd113c?w=400&amp;h=400&amp;fit=crop&amp;crop=faces&amp;auto=format&amp;q=70" alt="" width="200" height="200" loading="lazy"></figure>
+          <p class="nuv chi">A giugno mi è arrivato un F24 da 4.000 €. Posso pagare meno?</p>
+          <p class="nuv ia">Vediamo. Da artigiano puoi chiedere i contributi ridotti del 35%, e se quest'anno incassi meno anche gli acconti possono scendere. Ti calcolo tutto.</p>
           <span class="mav"><img src="/og-avatar.jpg" alt="" width="64" height="64" loading="lazy"></span>
         </div>
         <div class="dtx"><span class="dnum">3</span><h3>Scopri se puoi pagare meno, in regola.</h3>
@@ -798,7 +798,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
           <span class="tag">Stima trasparente</span></div>
       </article>
     </div>
-    <p class="dnota">Conversazioni di esempio con i personaggi del nostro spot.</p>
+    <p class="dnota">Conversazioni di esempio. Foto: Unsplash.</p>
   </div>
 </section>
 
@@ -1009,16 +1009,6 @@ $("cod").onkeydown=e=>{if(e.key==="Enter")$("ok2").click()};
 </body>
 </html>
 """
-
-
-# I personaggi dello spot (Gianni, Paola, Luca) nelle chat di "Come funziona": immagini piccole, incorporate nella pagina.
-try:
-    import persone_img as _P
-    for _k, _v in (("__P_LUCA__", _P.LUCA), ("__P_PAOLA__", _P.PAOLA), ("__P_GIANNI__", _P.GIANNI)):
-        PAGINA_HTML = PAGINA_HTML.replace(_k, "data:image/webp;base64," + _v)
-except Exception:
-    for _k in ("__P_LUCA__", "__P_PAOLA__", "__P_GIANNI__"):
-        PAGINA_HTML = PAGINA_HTML.replace(_k, "/og-avatar.jpg")
 
 
 # Il calcolatore della home usa le stesse regole dell'app: i numeri arrivano da dati_fisco (unico file da aggiornare ogni anno).
