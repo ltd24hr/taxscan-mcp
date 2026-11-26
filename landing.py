@@ -136,6 +136,47 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .box.oro{background:#fde9bd;border-color:#f3d48e}
 .data{font-family:var(--f-tit);font-weight:750;font-size:28px;letter-spacing:-.02em;margin-top:12px;line-height:1.1}
 
+/* panoramica di esempio interattiva */
+.corpo{grid-template-columns:minmax(0,1fr)}
+.lato{display:block;min-width:0;padding:10px 12px;border-right:0;border-bottom:1px solid rgba(18,36,82,.08)}
+.lato .logo{display:none}
+.lato ul{display:flex;gap:6px;margin-top:0;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.lato li{flex:none;padding:0}.lato li::before{display:none}
+.lato button{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:9px 12px;border:0;border-radius:9px;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;white-space:nowrap}
+.lato button::before{content:"";width:8px;height:8px;border-radius:2px;background:rgba(18,36,82,.15);flex:none}
+.lato button:hover{background:#f1f4f9}
+.lato button.on{background:#e8ebfa;color:#122452}.lato button.on::before{background:#4355cc}
+.lato button:focus-visible,.dbtn:focus-visible,.bm:focus-visible,.dtodo button:focus-visible{outline:2px solid #4355cc;outline-offset:2px}
+.cnt{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#c62f3a;color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center}
+.cnt.zero{background:#087a63}
+.dv{animation:dvin .35s ease}
+@keyframes dvin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dbtn{margin-top:8px;min-height:36px;padding:8px 14px;border:0;border-radius:10px;background:#4355cc;color:#fff;font:600 13px/1 var(--f-txt);cursor:pointer}
+.dbtn:hover{background:#3646bd}
+.dcalc{margin-top:10px;padding:14px 16px;border-radius:14px;background:#fff;border:1px dashed #b9c3ee;animation:dvin .35s ease}
+.dr{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:13.5px;color:#3d4a73;border-top:1px solid rgba(18,36,82,.07)}
+.dr:first-child{border-top:0}.dr b{color:#122452;text-align:right}
+.dr.tot{font-weight:700;color:#122452}.dr.tot b{color:#4355cc}
+.dnota{font-size:12.5px;color:#5d6787;margin-top:6px}
+.bars .bm{flex:1;border:0;padding:0;border-radius:4px 4px 0 0;background:#e3e8f4;cursor:pointer;transition:background .2s}
+.bars .bm:hover,.bars .bm.sel{background:#9fabe6}.bars .bm.on{background:#4355cc}
+.bars .vuoto{flex:1;border-radius:4px 4px 0 0;border:1.5px dashed #c3cbe6;box-sizing:border-box}
+.dcmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.dris{margin-top:14px}
+.dtodo{list-style:none;display:grid;gap:10px;margin-top:16px}
+.dtodo button{display:flex;gap:12px;align-items:flex-start;width:100%;padding:14px;border-radius:14px;border:1px solid rgba(18,36,82,.1);background:#fff;font:inherit;font-size:13.5px;line-height:1.45;color:#3d4a73;text-align:left;cursor:pointer}
+.dtodo b{color:#122452}
+.ck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #b9c3ee;display:flex;align-items:center;justify-content:center;color:transparent}
+.ck svg{width:14px;height:14px}
+.dtodo .fatto{background:#f4f6fb}.dtodo .fatto b{text-decoration:line-through;color:#6b7596}
+.dtodo .fatto .ck{background:#087a63;border-color:#087a63;color:#fff}
+.dband{position:relative;margin-top:14px}.dband .lbl{padding-right:64px}
+@media (max-width:640px){.barra>span:first-child{display:none}.barra .es{font-size:11px}}.dband h3{font-size:18px;margin:6px 0 4px;letter-spacing:-.02em}
+.dtag{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#e6faf7;color:#087a63}
+.dreq{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.dreq span{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#087a63;background:#e6faf7;border-radius:99px;padding:4px 10px}
+.dreq svg{width:13px;height:13px}
+.dprof{margin-top:14px}
 /* fascia sezioni */
 .fascia{border-block:1px solid var(--line);background:var(--surface);padding:34px 0;text-align:center}
 .fascia p{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
@@ -299,7 +340,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 @media (prefers-reduced-motion:reduce){.cline .pieno{transition:none}.cline .pg span{transition:none}}
 
 /* lo spot */
-.spot{padding:clamp(56px,7vw,96px) 0}
+.hspot{margin:clamp(48px,6vw,80px) auto 0;max-width:1180px;text-align:left}
 .sgr{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,4vw,64px);align-items:center}
 .socchio{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
 .spot .tit{font-size:clamp(32px,3.6vw,52px)}
@@ -326,7 +367,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   .w{padding:0 32px}
   .nav,.dx{display:flex}.ham,.menu,.menu.on{display:none}
   .hero{padding-top:84px}
-  .corpo{grid-template-columns:200px 1fr}.lato{display:block}
+  .corpo{grid-template-columns:200px minmax(0,1fr)}.lato{display:block;padding:20px 16px;border-bottom:0;border-right:1px solid rgba(18,36,82,.08)}.lato .logo{display:inline}.lato ul{display:grid;overflow:visible;margin-top:30px;padding:0}.lato li{flex:none}
   .pann{padding:34px}
   .kpi{grid-template-columns:1.35fr .65fr}
   .lati{grid-template-columns:1fr}
@@ -382,31 +423,95 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
       <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
 
+    <div class="sgr hspot" id="spot">
+      <div class="stx vedi">
+        <h2 class="tit" id="t-spot">Ti riconosci in una di queste storie?</h2>
+        <p class="testo">Gianni, Paola, Sara e Luca hanno la partita IVA. Le tasse che non si aspettavano, l'INPS che arriva anche quando il lavoro si ferma, il commercialista che non richiama. In 27 secondi, perché abbiamo creato TaxScan.</p>
+      </div>
+      <div class="svid vedi">
+        <video id="spotv" muted playsinline loop preload="metadata" poster="https://cdn.creatify.ai/video-composer/footage/4c31435c-0781-40c6-9101-9c1ccc015131.png" aria-label="Lo spot di TaxScan, 27 secondi, con sottotitoli">
+          <source src="https://cdn.creatify.ai/video-composer/d40e4fe8-6c5c-439b-af84-6b8a2027a22f.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="sbtn" id="spota" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg><span>Attiva l'audio</span></button>
+      </div>
+    </div>
+
     <div class="mock vedi">
       <div class="freccia ser" aria-hidden="true">Il tuo agente IA ti guida<svg viewBox="0 0 60 44" fill="none"><path d="M3 3c12 5 22 13 28 24M21 25l11 3 2-12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-      <div class="app" role="img" aria-label="Esempio della Panoramica di TaxScan: incassi rispetto alla soglia di 85.000 euro, quota da mettere da parte su ogni incasso e prossima scadenza.">
-        <div class="barra"><span><i></i><i></i><i></i></span><span class="url">taxscan.it</span><span class="es">Esempio</span></div>
+      <div class="app" id="demo" aria-label="Esempio interattivo di TaxScan: puoi cliccare sul menu e sui pulsanti">
+        <div class="barra"><span><i></i><i></i><i></i></span><span class="url">taxscan.it</span><span class="es">Esempio · prova a cliccare</span></div>
         <div class="corpo">
           <aside class="lato">
             <span class="logo">Tax<span>Scan</span></span>
-            <ul><li class="on">Panoramica</li><li>Ottimizzazione fiscale</li><li>Da fare</li><li>Bandi e agevolazioni</li><li>Profilo</li></ul>
+            <ul role="tablist" aria-label="Sezioni di esempio">
+              <li><button type="button" role="tab" class="on" aria-selected="true" data-v="pan">Panoramica</button></li>
+              <li><button type="button" role="tab" aria-selected="false" data-v="ott">Ottimizzazione fiscale</button></li>
+              <li><button type="button" role="tab" aria-selected="false" data-v="todo">Da fare <b class="cnt" id="dcnt">2</b></button></li>
+              <li><button type="button" role="tab" aria-selected="false" data-v="bandi">Bandi e agevolazioni</button></li>
+              <li><button type="button" role="tab" aria-selected="false" data-v="prof">Profilo</button></li>
+            </ul>
           </aside>
           <div class="pann">
-            <p class="ciao">CIAO, GIULIA</p>
-            <h2>La tua panoramica</h2>
-            <div class="ag"><img src="/og-avatar.jpg?v=2" alt="" width="40" height="40" loading="lazy"><p><b>Sono il tuo agente IA.</b> La prossima scadenza è tra 21 giorni: vuoi vedere come ho calcolato l'importo?</p></div>
-            <div class="kpi">
-              <div class="box">
-                <p class="lbl">INCASSI E SOGLIA DEL FORFETTARIO</p>
-                <p class="num">52.400&nbsp;€</p>
-                <p class="sotto">su 85.000&nbsp;€ l'anno</p>
-                <div class="bars" aria-hidden="true"><i style="height:36%"></i><i style="height:47%"></i><i style="height:42%"></i><i style="height:64%"></i><i style="height:55%"></i><i style="height:72%"></i><i style="height:69%"></i><i style="height:84%"></i><i style="height:76%"></i><i style="height:94%"></i><i class="on" style="height:82%"></i><i style="height:12%"></i></div>
-                <div class="mesi"><span>GEN</span><span>APR</span><span>LUG</span><span>DIC</span></div>
+            <div class="dv on" data-p="pan" role="tabpanel">
+              <p class="ciao">CIAO, GIULIA</p>
+              <h2>La tua panoramica</h2>
+              <div class="ag"><img src="/og-avatar.jpg?v=2" alt="" width="40" height="40" loading="lazy"><div><p><b>Sono il tuo agente IA.</b> La prossima scadenza è tra 21 giorni: vuoi vedere come ho calcolato l'importo?</p><button type="button" class="dbtn" id="dcalc" aria-expanded="false">Sì, mostramelo</button></div></div>
+              <div class="dcalc" id="dcalcbox" hidden>
+                <div class="dr"><span>Imposta sostitutiva · 2° acconto</span><b>1.140&nbsp;€</b></div>
+                <div class="dr"><span>Contributi INPS · 2° acconto</span><b>1.000&nbsp;€</b></div>
+                <div class="dr tot"><span>Da pagare entro il 30 novembre</span><b>2.140&nbsp;€</b></div>
+                <p class="dnota">Calcolato sull'anno scorso, come prevede la legge. Ti preparo anche l'F24 già compilato.</p>
               </div>
-              <div class="lati">
-                <div class="box scura"><p class="lbl">DA METTERE DA PARTE</p><p class="num" style="font-size:24px">24% di ogni incasso</p><div class="prog"><i></i></div><p class="sotto" style="color:rgba(255,255,255,.75);margin-top:8px">Imposta e contributi stimati</p></div>
-                <div class="box oro"><p class="lbl" style="color:#4a4128">PROSSIMA SCADENZA</p><p class="data">30 novembre</p><p class="sotto" style="color:#4a4128">Secondo acconto · 2.140&nbsp;€</p></div>
+              <div class="kpi">
+                <div class="box">
+                  <p class="lbl">INCASSI E SOGLIA DEL FORFETTARIO</p>
+                  <p class="num">52.400&nbsp;€</p>
+                  <p class="sotto" id="dmese">su 85.000&nbsp;€ l'anno · tocca un mese</p>
+                  <div class="bars"><button type="button" class="bm" style="height:47%" data-m="Gennaio: 3.100&nbsp;€" aria-label="Gennaio: 3100 euro"></button><button type="button" class="bm" style="height:55%" data-m="Febbraio: 3.600&nbsp;€" aria-label="Febbraio: 3600 euro"></button><button type="button" class="bm" style="height:52%" data-m="Marzo: 3.400&nbsp;€" aria-label="Marzo: 3400 euro"></button><button type="button" class="bm" style="height:70%" data-m="Aprile: 4.600&nbsp;€" aria-label="Aprile: 4600 euro"></button><button type="button" class="bm" style="height:64%" data-m="Maggio: 4.200&nbsp;€" aria-label="Maggio: 4200 euro"></button><button type="button" class="bm" style="height:76%" data-m="Giugno: 5.000&nbsp;€" aria-label="Giugno: 5000 euro"></button><button type="button" class="bm" style="height:74%" data-m="Luglio: 4.900&nbsp;€" aria-label="Luglio: 4900 euro"></button><button type="button" class="bm" style="height:85%" data-m="Agosto: 5.600&nbsp;€" aria-label="Agosto: 5600 euro"></button><button type="button" class="bm" style="height:80%" data-m="Settembre: 5.300&nbsp;€" aria-label="Settembre: 5300 euro"></button><button type="button" class="bm" style="height:92%" data-m="Ottobre: 6.100&nbsp;€" aria-label="Ottobre: 6100 euro"></button><button type="button" class="bm on" style="height:100%" data-m="Novembre: 6.600&nbsp;€" aria-label="Novembre: 6600 euro"></button><i class="vuoto" style="height:12%"></i></div>
+                  <div class="mesi"><span>GEN</span><span>APR</span><span>LUG</span><span>DIC</span></div>
+                </div>
+                <div class="lati">
+                  <div class="box scura"><p class="lbl">DA METTERE DA PARTE</p><p class="num" style="font-size:24px">24% di ogni incasso</p><div class="prog"><i></i></div><p class="sotto" style="color:rgba(255,255,255,.75);margin-top:8px">Imposta e contributi stimati</p></div>
+                  <div class="box oro"><p class="lbl" style="color:#4a4128">PROSSIMA SCADENZA</p><p class="data">30 novembre</p><p class="sotto" style="color:#4a4128">Secondo acconto · 2.140&nbsp;€</p></div>
+                </div>
               </div>
+            </div>
+            <div class="dv" data-p="ott" role="tabpanel" hidden>
+              <p class="ciao">OTTIMIZZAZIONE FISCALE</p>
+              <h2>Ho letto le tue fatture</h2>
+              <div class="ag"><img src="/og-avatar.jpg?v=2" alt="" width="40" height="40" loading="lazy"><p><b>Hai fatturato 14.000&nbsp;€ di siti web</b> come se fossero consulenza marketing. Hanno un coefficiente più basso: si paga meno, in regola.</p></div>
+              <div class="dcmp">
+                <div class="box"><p class="lbl">COME FAI ORA</p><p class="num">78%</p><p class="sotto">tutto come consulenza</p></div>
+                <div class="box scura"><p class="lbl">CON IL CODICE GIUSTO</p><p class="num">67%</p><p class="sotto" style="color:rgba(255,255,255,.75)">per la parte dei siti web</p></div>
+              </div>
+              <div class="box dris"><p class="lbl">RISPARMIO STIMATO IN UN ANNO</p><p class="num" style="color:#087a63">circa 600&nbsp;€</p><p class="sotto">Tra imposta e contributi. Nel report trovi il calcolo passo per passo.</p></div>
+            </div>
+            <div class="dv" data-p="todo" role="tabpanel" hidden>
+              <p class="ciao">DA FARE</p>
+              <h2>Le tue prossime cose</h2>
+              <ul class="dtodo">
+                <li><button type="button" aria-pressed="false"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span><b>Paga il secondo acconto</b><br>2.140&nbsp;€ entro il 30 novembre, l'F24 è pronto</span></button></li>
+                <li><button type="button" aria-pressed="false"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span><b>Carica le fatture di novembre</b><br>così aggiorno incassi e soglia</span></button></li>
+                <li><button type="button" aria-pressed="true" class="fatto"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span><b>Conferma il codice ATECO</b><br>fatto il 12 novembre</span></button></li>
+              </ul>
+              <p class="sotto" id="dfine" style="margin-top:14px">Tocca una voce per segnarla come fatta.</p>
+            </div>
+            <div class="dv" data-p="bandi" role="tabpanel" hidden>
+              <p class="ciao">BANDI E AGEVOLAZIONI</p>
+              <h2>Adatti a te</h2>
+              <div class="box dband"><span class="dtag">Nuovo</span><p class="lbl">CONTRIBUTO REGIONALE · ESEMPIO</p><h3>Strumenti digitali per professionisti</h3><p class="sotto">Fino al 50% della spesa per computer e software. Domanda entro il 31 gennaio.</p><div class="dreq"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Partita IVA attiva</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> Sede in regione</span></div></div>
+              <div class="box dband"><p class="lbl">RIDUZIONE CONTRIBUTI · ESEMPIO</p><h3>Controllo dei requisiti</h3><p class="sotto">Verifico se puoi pagare meno INPS e ti dico come chiederlo.</p></div>
+            </div>
+            <div class="dv" data-p="prof" role="tabpanel" hidden>
+              <p class="ciao">PROFILO</p>
+              <h2>Quello che so di te</h2>
+              <div class="box dprof">
+                <div class="dr"><span>Attività</span><b>Consulenza marketing e siti web</b></div>
+                <div class="dr"><span>Regime</span><b>Forfettario, imposta al 15%</b></div>
+                <div class="dr"><span>Contributi</span><b>Gestione separata INPS</b></div>
+                <div class="dr"><span>Partita IVA aperta</span><b>2023</b></div>
+              </div>
+              <p class="sotto" style="margin-top:12px">Lo leggo dal certificato della partita IVA: niente moduli da compilare.</p>
             </div>
           </div>
         </div>
@@ -415,29 +520,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 
-<section class="spot" id="spot" aria-labelledby="t-spot">
-  <div class="w sgr">
-    <div class="stx vedi">
-      <p class="socchio">Lo spot di TaxScan</p>
-      <h2 class="tit" id="t-spot">Ti riconosci in una di queste storie?</h2>
-      <p class="testo">Gianni, Paola, Sara e Luca hanno la partita IVA. Le tasse che non si aspettavano, l'INPS che arriva anche quando il lavoro si ferma, il commercialista che non richiama. In 27 secondi, perché abbiamo creato TaxScan.</p>
-      <a class="btn btn-acc" href="/colloquio/nuovo">Scopri quanto puoi risparmiare <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-    <div class="svid vedi">
-      <video id="spotv" muted playsinline loop preload="metadata" poster="https://cdn.creatify.ai/video-composer/footage/4c31435c-0781-40c6-9101-9c1ccc015131.png" aria-label="Lo spot di TaxScan, 27 secondi, con sottotitoli">
-        <source src="https://cdn.creatify.ai/video-composer/d40e4fe8-6c5c-439b-af84-6b8a2027a22f.mp4" type="video/mp4">
-      </video>
-      <button type="button" class="sbtn" id="spota" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg><span>Attiva l'audio</span></button>
-    </div>
-  </div>
-</section>
-
-<section class="fascia" aria-label="Le sezioni di TaxScan">
-  <div class="w">
-    <p>Tutta la tua partita IVA in un posto, tutto l'anno</p>
-    <div class="chips"><span>Panoramica</span><span>Ottimizzazione fiscale</span><span>Da fare</span><span>Bandi e agevolazioni</span><span>Profilo</span></div>
-  </div>
-</section>
 
 <script>
 (function(){
@@ -451,6 +533,40 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   if("IntersectionObserver" in window){new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting)v.play().catch(function(){});else v.pause()})},{threshold:.5}).observe(v)}
 })();
 </script>
+
+<section class="sez scuro" id="cosa-fa" aria-labelledby="t-cosa">
+  <div class="w">
+    <div class="vedi" style="max-width:780px">
+      <h2 class="tit" id="t-cosa">Trova il risparmio.<br><span class="ser">Goditi più tempo libero.</span></h2>
+    </div>
+    <div class="carte">
+      <article class="carta alta vedi">
+        <p class="kick">Attività e coefficienti</p>
+        <h3>Il tuo lavoro non è una voce generica.</h3>
+        <p>Nel forfettario ogni attività ha il suo coefficiente. TaxScan riconosce le prestazioni che fai davvero, verifica quali pagano meno e controlla le riduzioni dei contributi che spesso nessuno ti dice.</p>
+        <div class="vetrina" aria-hidden="true"><div>
+          <div class="riga2"><span>Fatture analizzate</span><span>100%</span></div>
+          <div class="linea"><i></i></div>
+          <p class="riga2" style="margin-top:30px">Risparmio stimato in un anno · esempio</p>
+          <p class="grande">1.240&nbsp;€</p>
+          <div class="ok"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></b>Report con il calcolo passo per passo</div>
+        </div></div>
+      </article>
+      <article class="carta oro vedi">
+        <p class="kick">Soglia 85.000 €</p>
+        <h3>Sai prima quando rallentare.</h3>
+        <p>Segue i tuoi incassi e ti avvisa in tempo, prima che la soglia del forfettario diventi un problema.</p>
+        <div class="dist"><div><p class="lbl">DISTANZA DALLA SOGLIA</p><b>32.600&nbsp;€</b></div><span>61,6%</span></div>
+      </article>
+      <article class="carta lav vedi">
+        <p class="kick">Bandi e agevolazioni</p>
+        <h3>Non perdere un'opportunità.</h3>
+        <p>Ti segnala gli incentivi adatti alla tua attività e alla tua regione, con requisiti e scadenze spiegati in chiaro.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 
 <section class="calc" id="calcola" aria-labelledby="t-calc">
   <div class="w">
@@ -558,39 +674,6 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 
-<section class="sez scuro" id="cosa-fa" aria-labelledby="t-cosa">
-  <div class="w">
-    <div class="vedi" style="max-width:780px">
-      <h2 class="tit" id="t-cosa">Trova il risparmio.<br><span class="ser">Solo se esiste davvero.</span></h2>
-    </div>
-    <div class="carte">
-      <article class="carta alta vedi">
-        <p class="kick">Attività e coefficienti</p>
-        <h3>Il tuo lavoro non è una voce generica.</h3>
-        <p>Nel forfettario ogni attività ha il suo coefficiente. TaxScan riconosce le prestazioni che fai davvero, verifica quali pagano meno e controlla le riduzioni dei contributi che spesso nessuno ti dice.</p>
-        <div class="vetrina" aria-hidden="true"><div>
-          <div class="riga2"><span>Fatture analizzate</span><span>100%</span></div>
-          <div class="linea"><i></i></div>
-          <p class="riga2" style="margin-top:30px">Risparmio stimato in un anno · esempio</p>
-          <p class="grande">1.240&nbsp;€</p>
-          <div class="ok"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></b>Report con il calcolo passo per passo</div>
-        </div></div>
-      </article>
-      <article class="carta oro vedi">
-        <p class="kick">Soglia 85.000 €</p>
-        <h3>Sai prima quando rallentare.</h3>
-        <p>Segue i tuoi incassi e ti avvisa in tempo, prima che la soglia del forfettario diventi un problema.</p>
-        <div class="dist"><div><p class="lbl">DISTANZA DALLA SOGLIA</p><b>32.600&nbsp;€</b></div><span>61,6%</span></div>
-      </article>
-      <article class="carta lav vedi">
-        <p class="kick">Bandi e agevolazioni</p>
-        <h3>Non perdere un'opportunità.</h3>
-        <p>Ti segnala gli incentivi adatti alla tua attività e alla tua regione, con requisiti e scadenze spiegati in chiaro.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
 <section class="sez" id="esempio" aria-labelledby="t-es">
   <div class="w due centro">
     <div class="vedi">
@@ -665,6 +748,29 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 </main>
+<script>
+(function(){
+  var d=document.getElementById("demo");if(!d)return;
+  var tabs=d.querySelectorAll(".lato button"),pans=d.querySelectorAll(".dv");
+  tabs.forEach(function(t){t.addEventListener("click",function(){
+    try{t.scrollIntoView({block:"nearest",inline:"nearest"})}catch(e){}
+    tabs.forEach(function(x){var s=x===t;x.classList.toggle("on",s);x.setAttribute("aria-selected",s?"true":"false")});
+    pans.forEach(function(p){var s=p.getAttribute("data-p")===t.getAttribute("data-v");p.hidden=!s;p.classList.toggle("on",s)});
+  })});
+  var c=document.getElementById("dcalc"),cb=document.getElementById("dcalcbox");
+  if(c)c.addEventListener("click",function(){var o=cb.hidden;cb.hidden=!o;c.setAttribute("aria-expanded",o?"true":"false");c.textContent=o?"Chiudi il calcolo":"Sì, mostramelo"});
+  var m=document.getElementById("dmese"),m0=m?m.innerHTML:"";
+  d.querySelectorAll(".bm").forEach(function(b){
+    function on(){d.querySelectorAll(".bm.sel").forEach(function(x){x.classList.remove("sel")});b.classList.add("sel");m.innerHTML="<b>"+b.getAttribute("data-m")+"</b> incassati"}
+    b.addEventListener("click",on);b.addEventListener("mouseenter",on);b.addEventListener("focus",on);
+  });
+  var bars=d.querySelector(".bars");if(bars)bars.addEventListener("mouseleave",function(){d.querySelectorAll(".bm.sel").forEach(function(x){x.classList.remove("sel")});m.innerHTML=m0});
+  var n=document.getElementById("dcnt"),fine=document.getElementById("dfine");
+  function conta(){var k=d.querySelectorAll(".dtodo button:not(.fatto)").length;n.textContent=k;n.classList.toggle("zero",k===0);if(k===0)fine.textContent="Tutto fatto. Ti avviso io quando arriva la prossima scadenza."}
+  d.querySelectorAll(".dtodo button").forEach(function(b){b.addEventListener("click",function(){var f=!b.classList.contains("fatto");b.classList.toggle("fatto",f);b.setAttribute("aria-pressed",f?"true":"false");conta()})});
+})();
+</script>
+
 
 <footer class="piede">
   <div class="w">
