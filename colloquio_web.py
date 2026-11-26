@@ -1161,8 +1161,13 @@ function mostraDomanda(v) {
     if (campo === "conferma_deduzioni") {
       const d = v.proposta_deduzioni || {};
       const anni = d.anni_nel_regime === 0 ? "primo anno" : d.anni_nel_regime === 1 ? "da un anno" : d.anni_nel_regime != null ? `da ${d.anni_nel_regime} anni` : "";
-      const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Attività", scheda.descrizione_attivita_certificato || scheda.descrizione_attivita || d.descrizione_attivita], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
-                     ["Previdenza", d.gestione_previdenziale_etichetta], ["Partita IVA aperta nel", d.anno_apertura], ["Nel forfettario", anni]];
+      const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+      const inizio = (() => { const m = String(scheda.data_apertura || "").match(/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?/);
+        if (!m) return d.anno_apertura || ""; const me = m[2] ? MESI[+m[2] - 1] : "";
+        return (m[3] && me ? (+m[3]) + " " : "") + (me ? me + " " : "") + m[1]; })();
+      const accenti = t => String(t || "").replace(/([aeiou])'(?=[\s.,;]|$)/gi, (x, v) => ({a:"à",e:"è",i:"ì",o:"ò",u:"ù",A:"À",E:"È",I:"Ì",O:"Ò",U:"Ù"})[v] || x);
+      const righe = [["Nome e cognome", [scheda.nome, scheda.cognome].filter(Boolean).join(" ")], ["Partita IVA", scheda.partita_iva], ["Attività", accenti(scheda.descrizione_attivita_certificato || scheda.descrizione_attivita || d.descrizione_attivita)], ["Codice ATECO", d.codice_ateco], ["Tipo", d.tipo_attivita_etichetta],
+                     ["Previdenza", d.gestione_previdenziale_etichetta], [/^\d{4}-\d{2}-\d{2}/.test(String(scheda.data_apertura || "")) ? "Inizio attività" : "Partita IVA aperta nel", inizio], ["Nel forfettario", anni]];
       html = ILL_OK + `<h1>Ecco cosa so di te</h1><p class="hint">L'ho ricavato dai tuoi documenti e dalle tue risposte. Dai un'occhiata: se qualcosa non torna, lo correggi in un attimo.</p><div class="riepilogo">` +
         righe.filter(r => r[1]).map(r => `<div><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join("") + "</div>";
     }
