@@ -298,6 +298,27 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 /* simulatore del risparmio */
 .ancora{display:block;position:relative;top:-90px;height:0}
 #simula [hidden]{display:none!important}
+.stima{gap:14px}
+.sth{display:flex;align-items:center;gap:10px;margin:0;font:700 19px/1.2 var(--f-tit)}
+.sth svg{width:26px;height:26px;color:var(--accent);flex:none}
+.srow{margin:0;display:flex;flex-direction:column}
+.srow div{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line)}
+.srow dt{font-size:15px;color:var(--ink2)}
+.srow dd{margin:0;font:600 16px/1.2 var(--f-txt);font-variant-numeric:tabular-nums;white-space:nowrap}
+.srow .sfo dt{color:var(--ink);font-weight:700}.srow .sfo dd{font:800 20px/1.1 var(--f-tit)}
+#simula .rsp{padding:14px 16px;gap:6px}
+.rtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rtop .rk{margin:0}
+#simula .rnum b{font:800 22px/1.1 var(--f-tit)}
+.rtit{margin:0;font-size:14.5px;color:var(--ink2)}
+#simula .rlis li{padding:8px 12px}
+.rl1 span{font-weight:600}
+.sq{display:flex!important;flex-direction:column;gap:0;margin:0 0 4px;padding:0;list-style:none}
+.sq li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.sq li.lt{font-weight:700;border-bottom:0;padding-bottom:2px}
+.rok .sq{width:100%;align-self:stretch}.sq li{background:none!important;border-radius:0!important;margin:0!important;padding:8px 0!important}
+.snota{margin:0;font-size:12.5px;color:var(--mute);line-height:1.45}
+
 .seg.s2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .sub{margin-top:12px;padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
 .sub .seg{background:var(--surface)}
@@ -577,8 +598,8 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   <div class="w">
     <div class="vedi">
       <p class="socchio">Simulatore gratuito</p>
-      <h2 class="tit" id="t-sim">Quanto paghi?<br><span class="ser">E quanto puoi risparmiare.</span></h2>
-      <p class="testo">Quattro domande, un minuto. Ti mostriamo subito tasse e contributi con le regole del 2026, e cerchiamo dove puoi pagare meno.</p>
+      <h2 class="tit" id="t-sim">Quante tasse paghi, e quanto puoi risparmiare? <span class="ser">Scoprilo in un minuto.</span></h2>
+      <p class="testo">Rispondi a quattro domande: stimiamo imposta e contributi 2026 e cerchiamo dove puoi pagare meno.</p>
     </div>
     <div class="cbox vedi">
       <div class="cin">
@@ -621,39 +642,35 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
             <button type="button" data-v="ns" aria-pressed="true">Non lo so</button>
           </div></div>
       </div>
-      <div class="cout" aria-live="polite">
-        <div class="ctre">
-          <div><small>Tasse e contributi in un anno</small><b id="s-tot">–</b></div>
-          <div class="forte"><small>Mettine da parte ogni mese</small><b id="s-mese">–</b></div>
-          <div><small>Ti restano netti</small><b id="s-netto">–</b></div>
-        </div>
+      <div class="cout stima" aria-live="polite">
+        <h3 class="sth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg>La tua stima</h3>
+        <dl class="srow">
+          <div><dt>Reddito imponibile</dt><dd id="s-red">–</dd></div>
+          <div><dt>Contributi INPS</dt><dd id="s-inps" class="vela">●.●●● €</dd></div>
+          <div><dt>Imposta sostitutiva</dt><dd id="s-imp" class="vela">●.●●● €</dd></div>
+          <div class="sfo"><dt>Totale da versare</dt><dd id="s-tot" class="vela">●.●●● €</dd></div>
+          <div><dt>Ti resta in tasca all'anno</dt><dd id="s-netto" class="vela">●●.●●● €</dd></div>
+          <div><dt>Al mese</dt><dd id="s-mese" class="vela">●.●●● €</dd></div>
+        </dl>
         <div class="rsp" id="s-rsp">
-          <p class="rk">Il tuo risparmio</p>
-          <h3 id="s-rtit">Abbiamo trovato 1 modo per pagare meno</h3>
-          <p class="rnum"><span class="vela" id="s-rnum">fino a <b>●.●●● €</b> l'anno</span></p>
+          <div class="rtop"><span class="rk">Puoi risparmiare</span><span class="rnum" id="s-rnum"><span class="vela">fino a ●.●●● €</span></span></div>
+          <p class="rtit" id="s-rtit">Abbiamo trovato 1 modo per pagare meno</p>
           <ul class="rlis" id="s-rlis"></ul>
-          <form class="rform" id="s-form" novalidate>
-            <p class="rinv">Lasciaci la tua email: ti mostriamo subito <b>quanto e come</b> e ti mandiamo il riepilogo.</p>
-            <div class="rrow"><label class="sr" for="s-mail">La tua email</label>
-              <input type="email" id="s-mail" name="email" placeholder="La tua email" autocomplete="email" required>
-              <button type="submit" class="btn btn-acc btn-sm" id="s-btn">Mostrami il risparmio</button></div>
-            <label class="chk rchk"><input type="checkbox" id="s-nov"><span>Voglio ricevere ogni tanto consigli per pagare meno tasse. Facoltativo: puoi smettere quando vuoi.</span></label>
-            <p class="rpriv" id="s-err" role="alert"></p>
-            <p class="rpriv">Usiamo l'email per mandarti il riepilogo e, solo se spunti la casella, i consigli. <a href="/privacy">Privacy policy</a>.</p>
-          </form>
-          <div class="rok" id="s-ok" hidden>
-            <p>Fatto: il riepilogo è in arrivo nella tua email. Il calcolo vero, sui tuoi numeri e sulle tue fatture, lo fa TaxScan in 2 minuti.</p>
-            <a class="btn btn-acc btn-sm" href="/colloquio/nuovo?utm_source=simulatore">Calcola sui miei numeri</a>
-          </div>
         </div>
-        <div class="anno">
-          <h3>Il tuo anno fiscale, senza sorprese</h3>
-          <p class="sott">Quando paghi, se incassi così ogni anno.</p>
-          <div class="cline" id="s-linea" aria-hidden="true"><div class="traccia"></div><div class="pieno"></div></div>
-          <div class="cleg" aria-hidden="true"><span><i></i>Imposta e contributi</span><span id="s-leg-fissi"><i class="inps"></i><span id="s-fissi-t">Contributi fissi INPS</span></span></div>
-          <ul class="lista" id="s-lista"></ul>
+        <form class="rform" id="s-form" novalidate>
+          <p class="rinv"><b>Vedi il risultato completo</b><br>Lascia la tua email: ti mostriamo subito tasse, risparmio e netto.</p>
+          <div class="rrow"><label class="sr" for="s-mail">La tua email</label>
+            <input type="email" id="s-mail" name="email" placeholder="nome@email.it" autocomplete="email" required>
+            <button type="submit" class="btn btn-acc btn-sm" id="s-btn">Mostra</button></div>
+          <label class="chk rchk"><input type="checkbox" id="s-nov"><span>Voglio ricevere ogni tanto consigli per pagare meno tasse (facoltativo).</span></label>
+          <p class="rpriv" id="s-err" role="alert"></p>
+          <p class="rpriv">Ti mandiamo anche il riepilogo via email. <a href="/privacy">Privacy policy</a>.</p>
+        </form>
+        <div class="rok" id="s-ok" hidden>
+          <ul class="lista sq" id="s-lista" aria-label="Quando paghi"></ul>
+          <a class="btn btn-acc btn-sm" href="/colloquio/nuovo?utm_source=simulatore">Calcola sui miei numeri veri</a>
         </div>
-        <p class="cpie" id="s-nota"></p>
+        <p class="snota" id="s-nota"></p>
       </div>
     </div>
   </div>
@@ -667,7 +684,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   var COEF_ALT=.67, RID=.35;
   var S={tipo:"pro",ap:"vecchia",ali:"ns",alt:"no",rid:"ns"},sbl=false;
   var $=function(i){return document.getElementById(i)};
-  var r=$("s-inc"),rq=$("s-quota"),lin=$("s-linea"),lis=$("s-lista");
+  var r=$("s-inc"),rq=$("s-quota"),lis=$("s-lista");
   var eur=function(v){return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" €"};
   var MES=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
   // reddito -> contributi e imposta (i contributi pagati si deducono dal reddito)
@@ -684,29 +701,23 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     if(q>0){var red2=inc*(1-q)*c+inc*q*COEF_ALT,b=conti(inc*c,aliqL,ridOra),b2=conti(red2,aliqL,ridOra);if(b.tot-b2.tot>=1)leve.push({t:"Il coefficiente giusto per ogni attività",e:b.tot-b2.tot,d:"Le attività diverse dalla principale possono avere un coefficiente più basso (per esempio 67% invece di 78%): su quella parte si pagano meno tasse e meno contributi, in regola. Serve il codice ATECO giusto."})}
     if(S.tipo!=="pro"&&S.rid!=="si"){var x=conti(inc*c,aliqL,false),y=conti(inc*c,aliqL,true);if(x.tot-y.tot>=1)leve.push({t:"Contributi INPS ridotti del 35%",e:x.tot-y.tot,d:"Chi è nel forfettario come artigiano o commerciante può chiedere all'INPS la riduzione del 35% dei contributi (la domanda si fa di solito entro il 28 febbraio). Attenzione: riduce anche la pensione futura, va scelta con calma."})}
     return {inc:inc,ora:ora,leve:leve,tot:leve.reduce(function(s,l){return s+l.e},0)}}
-  function rata(m,g,imp,cls,cosa){return {m:m,g:g,imp:imp,cls:cls,cosa:cosa}}
-  function disegna(){var st=stato(),c=st.ora,inc=st.inc;
+  function rata(m,g,imp,cosa){return {m:m,g:g,imp:imp,cosa:cosa}}
+  function put(id,txt,fin){var e=$(id);if(sbl){e.textContent=txt;e.classList.remove("vela")}else{e.textContent=fin;e.classList.add("vela")}}
+  function disegna(){var st=stato(),c=st.ora,inc=st.inc,red=inc*T[S.tipo].c;
     $("s-incv").textContent=eur(inc);r.setAttribute("aria-valuetext",eur(inc).replace("€","euro"));
     $("s-quotav").textContent=rq.value+"%";rq.setAttribute("aria-valuetext",rq.value+" per cento");
-    $("s-tot").textContent=eur(c.tot);$("s-mese").textContent=eur(c.tot/12);$("s-netto").textContent=eur(inc-c.tot);
-    // risparmio
+    $("s-red").textContent=eur(red);
+    put("s-inps",eur(c.fis+c.va),"●.●●● €");put("s-imp",eur(c.imp),"●.●●● €");put("s-tot",eur(c.tot),"●.●●● €");
+    put("s-netto",eur(inc-c.tot),"●●.●●● €");put("s-mese",eur((inc-c.tot)/12),"●.●●● €");
     var n=st.leve.length;$("s-rsp").classList.toggle("zero",!n);
-    $("s-rtit").textContent=n?("Abbiamo trovato "+(n===1?"1 modo":n+" modi")+" per pagare meno"):"Dai dati di base non vediamo risparmi immediati";
-    if(sbl){$("s-rnum").innerHTML=n?"fino a <b>"+eur(st.tot)+"</b> l'anno":"Il risparmio vero di solito è nelle fatture e nei codici ATECO: lì guarda TaxScan.";$("s-rnum").classList.remove("vela")}
-    else{$("s-rnum").innerHTML=n?"fino a <b>●.●●● €</b> l'anno":"Spesso il risparmio è nelle fatture e nei codici: lasciaci l'email e ti diciamo dove guardare.";$("s-rnum").classList.toggle("vela",!!n)}
-    $("s-rlis").innerHTML=st.leve.map(function(l){return '<li><div class="rl1"><b>'+l.t+'</b>'+(sbl?'<span class="re">'+eur(l.e)+'</span>':'<span class="re vela">●●● €</span>')+'</div>'+(sbl?'<p>'+l.d+'</p>':'')+'</li>'}).join("");
-    // calendario
-    var R=[rata(5,30,c.imp*.5+c.va*.6,"","Saldo e 1° acconto"),rata(10,30,c.imp*.5+c.va*.4,"","2° acconto")];
-    if(c.fis){R.push(rata(1,16,c.fis/4,"inps","Contributi fissi INPS"),rata(4,18,c.fis/4,"inps","Contributi fissi INPS"),rata(7,20,c.fis/4,"inps","Contributi fissi INPS"),rata(10,16,c.fis/4,"inps","Contributi fissi INPS"))}
-    R.sort(function(a,b){return a.m-b.m||a.g-b.g});
-    var h='<div class="traccia"></div><div class="pieno"></div>';
-    MES.forEach(function(n,i){h+='<span class="mm" style="left:'+((i+.5)/12*100)+'%">'+n+'</span>'});
-    var visti={};R.forEach(function(x){var left=(x.m+.5)/12*100;if(visti[x.m])left+=2.4;visti[x.m]=1;
-      h+='<div class="pg '+x.cls+'" style="left:'+left+'%" title="'+x.g+' '+MES[x.m].toLowerCase()+': '+x.cosa+', '+eur(x.imp)+'"><i></i>'+(x.cls?'':'<span>'+eur(x.imp)+'</span>')+'</div>'});
-    var on=lin.classList.contains("on");lin.innerHTML=h;if(on)lin.classList.add("on");
-    lis.innerHTML=R.map(function(x){return '<li><span>'+x.g+' '+MES[x.m].toLowerCase()+' · '+x.cosa+'</span><b>'+eur(x.imp)+'</b></li>'}).join("");
-    $("s-leg-fissi").style.display=c.fis?"":"none";$("s-fissi-t").textContent="Contributi fissi INPS: 4 rate da "+eur(c.fis/4);
-    $("s-nota").textContent="Stima per "+T[S.tipo].nome+" con il coefficiente tipico ("+Math.round(T[S.tipo].c*100)+"%)"+(S.tipo==="pro"?" e gestione separata INPS":"")+", regole "+K.anno+". Non è una consulenza: TaxScan rifà il conto sul tuo codice ATECO, sulle tue fatture e sulle riduzioni che ti spettano."}
+    $("s-rtit").textContent=n?("Abbiamo trovato "+(n===1?"1 modo":n+" modi")+" per pagare meno"):"Dai dati di base non vediamo risparmi immediati: spesso sono nelle fatture.";
+    $("s-rnum").innerHTML=!n?"":(sbl?"fino a <b>"+eur(st.tot)+"</b> l'anno":'<span class="vela">fino a ●.●●● €</span>');
+    $("s-rlis").innerHTML=st.leve.map(function(l){return '<li><div class="rl1"><span>'+l.t+'</span>'+(sbl?'<b class="re">'+eur(l.e)+'</b>':'<b class="re vela">●●● €</b>')+'</div>'+(sbl?'<p>'+l.d+'</p>':'')+'</li>'}).join("");
+    if(sbl){var R=[rata(5,30,c.imp*.5+c.va*.6,"saldo e 1° acconto"),rata(10,30,c.imp*.5+c.va*.4,"2° acconto")];
+      if(c.fis){R.push(rata(1,16,c.fis/4,"contributi fissi INPS"),rata(4,18,c.fis/4,"contributi fissi INPS"),rata(7,20,c.fis/4,"contributi fissi INPS"),rata(10,16,c.fis/4,"contributi fissi INPS"))}
+      R.sort(function(a,b){return a.m-b.m||a.g-b.g});
+      lis.innerHTML='<li class="lt"><span>Quando paghi, se incassi così ogni anno</span></li>'+R.map(function(x){return '<li><span>'+x.g+' '+MES[x.m].toLowerCase()+' · '+x.cosa+'</span><b>'+eur(x.imp)+'</b></li>'}).join("")}
+    $("s-nota").textContent="Stima indicativa "+K.anno+" per "+T[S.tipo].nome+" con il coefficiente tipico ("+Math.round(T[S.tipo].c*100)+"%)"+(S.tipo==="pro"?" e gestione separata INPS":"")+"; i contributi pagati si deducono dal reddito. Non include acconti già versati e non è una consulenza."}
   [].forEach.call(document.querySelectorAll("#simula .seg"),function(g){var q=g.getAttribute("data-q");
     [].forEach.call(g.querySelectorAll("button"),function(b){b.addEventListener("click",function(){S[q]=b.getAttribute("data-v");
       [].forEach.call(g.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
@@ -721,10 +732,8 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
       risultato:{totale:Math.round(st.ora.tot),netto:Math.round(st.inc-st.ora.tot),risparmio:Math.round(st.tot),leve:st.leve.map(function(l){return {titolo:l.t,euro:Math.round(l.e),spiegazione:l.d}})}})})
     .then(function(x){return x.json().then(function(j){return {ok:x.ok&&j.ok,j:j}})})
     .then(function(o){btn.disabled=false;btn.textContent="Mostrami il risparmio";if(!o.ok){er.textContent=(o.j&&o.j.errore)||"Non sono riuscito a salvare: riprova tra poco.";return}
-      sbl=true;$("s-form").hidden=true;$("s-ok").hidden=false;disegna();if(typeof gtag==="function")try{gtag("event","simulatore_email")}catch(x){}})
+      sbl=true;$("s-form").hidden=true;$("s-ok").hidden=false;$("simula").classList.add("aperto");disegna();if(typeof gtag==="function")try{gtag("event","simulatore_email")}catch(x){}})
     .catch(function(){btn.disabled=false;btn.textContent="Mostrami il risparmio";er.textContent="Connessione assente: riprova tra poco."})});
-  var calma=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(calma||!("IntersectionObserver" in window)){lin.classList.add("on")}else{var o=new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting){setTimeout(function(){lin.classList.add("on")},250);o.disconnect()}})},{threshold:.4});o.observe(lin)}
 })();
 </script>
 
