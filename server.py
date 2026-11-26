@@ -965,6 +965,56 @@ async def approfondisci_salva(request):
     return JSONResponse(esito, status_code=200 if esito.get("ok") else 400)
 
 
+_SIM_IP: dict = {}
+
+
+@mcp.custom_route("/api/simulatore", methods=["POST"])
+async def simulatore_email(request):
+    """Simulatore della home: chi lascia l'email vede il risparmio e riceve il riepilogo. Salva il contatto
+    (con la scelta facoltativa sulle email di consigli) e avvisa l'amministratore."""
+    from starlette.responses import JSONResponse
+    import asyncio
+    import re as _re
+    import time as _t
+    import html as _html
+    try:
+        c = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
+    email = str(c.get("email", "")).strip().lower()[:200]
+    if not _re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]{2,}", email):
+        return JSONResponse({"ok": False, "errore": "Controlla l'email: sembra incompleta."}, status_code=400)
+    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    ora = _t.time()
+    recenti = [x for x in _SIM_IP.get(ip, []) if ora - x < 3600]
+    if len(recenti) >= 8:
+        return JSONResponse({"ok": False, "errore": "Troppe richieste: riprova tra un po'."}, status_code=429)
+    _SIM_IP[ip] = recenti + [ora]
+    dati = c.get("dati") if isinstance(c.get("dati"), dict) else {}
+    ris = c.get("risultato") if isinstance(c.get("risultato"), dict) else {}
+    novita = bool(c.get("novita"))
+    try:
+        gia = await asyncio.to_thread(db.salva_contatto_simulatore, email, novita, dati, ris)
+    except Exception as e:
+        print(f"simulatore: contatto non salvato: {e}")
+        return JSONResponse({"ok": False, "errore": "Non sono riuscito a salvare: riprova tra poco."}, status_code=500)
+    if gia < 3:
+        try:
+            await asyncio.to_thread(promemoria.manda_simulatore, email, dati, ris)
+        except Exception as e:
+            print(f"simulatore: email non mandata: {e}")
+        if ADMIN_EMAIL and gia == 0:
+            try:
+                await asyncio.to_thread(auth.manda_email, ADMIN_EMAIL, f"TaxScan: nuovo contatto dal simulatore {email}",
+                                        f"<p>{_html.escape(email)} ha usato il simulatore della home.</p>"
+                                        f"<p>Consigli via email: <b>{'sì' if novita else 'no'}</b>. Risparmio stimato: "
+                                        f"{_html.escape(str(ris.get('risparmio', '')))} €.</p>")
+            except Exception:
+                pass
+    _evento("simulatore_email", None, {"novita": novita, "tipo": str(dati.get("tipo", ""))[:5]})
+    return JSONResponse({"ok": True})
+
+
 @mcp.custom_route("/feedback", methods=["GET"])
 async def feedback_pagina(request):
     """Pagina del sondaggio (link firmato nell'email). Aprirla NON registra nulla: si salva solo con Invia."""

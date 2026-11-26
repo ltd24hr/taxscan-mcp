@@ -99,6 +99,51 @@ def _cornice(email: str, titolo: str, corpo: str, pulsante: tuple[str, str] | No
     return emailtpl.cornice(titolo, corpo, pulsante, piede)
 
 
+# ---------------------------------------------------------------- simulatore della home
+# Testi fissi lato server: la richiesta porta solo numeri e la scelta della leva, cosi' l'indirizzo non puo' essere
+# usato per mandare testo arbitrario a terzi.
+LEVE_SIMULATORE = {
+    "Imposta al 5% invece del 15%": "Nei primi 5 anni, se l'attività è davvero nuova (non è il lavoro che facevi prima da "
+        "dipendente o da collaboratore), l'imposta sostitutiva è al 5%. Il requisito va verificato.",
+    "Il coefficiente giusto per ogni attività": "Le attività diverse dalla principale possono avere un coefficiente più "
+        "basso: su quella parte si pagano meno imposta e meno contributi, in regola. Serve il codice ATECO giusto.",
+    "Contributi INPS ridotti del 35%": "Chi è nel forfettario come artigiano o commerciante può chiedere all'INPS la "
+        "riduzione del 35% dei contributi (di solito entro il 28 febbraio). Riduce anche la pensione futura: va scelta con calma.",
+}
+_TIPI_SIM = {"pro": "libero professionista", "art": "artigiano", "com": "commerciante"}
+
+
+def manda_simulatore(email: str, dati: dict, risultato: dict) -> None:
+    """Riepilogo del simulatore della home, mandato a chi l'ha chiesto lasciando l'email."""
+    def n(x, top=10_000_000):
+        try:
+            return max(0, min(top, int(round(float(x)))))
+        except (TypeError, ValueError):
+            return 0
+    tipo = _TIPI_SIM.get(str(dati.get("tipo")), "partita IVA forfettaria")
+    inc, tot, netto, risp = n(dati.get("incassi"), 200_000), n(risultato.get("totale")), n(risultato.get("netto")), n(risultato.get("risparmio"))
+    leve = [(str(l.get("titolo")), n(l.get("euro"))) for l in (risultato.get("leve") or [])[:4]
+            if isinstance(l, dict) and str(l.get("titolo")) in LEVE_SIMULATORE]
+    righe = "".join(f"<li style='margin:0 0 12px'><b>{_e(t)}: fino a {eur(e)} l'anno</b><br>"
+                    f"<span style='color:#3d4a73'>{_e(LEVE_SIMULATORE[t])}</span></li>" for t, e in leve)
+    corpo = (f"<p>Ecco la stima che hai chiesto per un <b>{_e(tipo)}</b> che incassa <b>{eur(inc)}</b> l'anno, con le regole di quest'anno.</p>"
+             "<table style='width:100%;border-collapse:collapse;margin:8px 0 18px'>"
+             f"<tr><td style='padding:8px 0;border-bottom:1px solid #d8e2ed'>Tasse e contributi in un anno</td><td style='padding:8px 0;border-bottom:1px solid #d8e2ed;text-align:right'><b>{eur(tot)}</b></td></tr>"
+             f"<tr><td style='padding:8px 0;border-bottom:1px solid #d8e2ed'>Da mettere da parte ogni mese</td><td style='padding:8px 0;border-bottom:1px solid #d8e2ed;text-align:right'><b>{eur(tot / 12)}</b></td></tr>"
+             f"<tr><td style='padding:8px 0'>Ti restano netti</td><td style='padding:8px 0;text-align:right'><b>{eur(netto)}</b></td></tr></table>")
+    if leve:
+        corpo += (f"<h2 style='font-size:18px;margin:0 0 10px'>Dove puoi pagare meno: fino a {eur(risp)} l'anno</h2>"
+                  f"<ul style='padding-left:18px;margin:0 0 14px'>{righe}</ul>")
+    else:
+        corpo += ("<p>Dai dati di base non vediamo risparmi immediati. Il risparmio vero di solito è nelle fatture: "
+                  "attività diverse con coefficienti diversi, codici ATECO da sistemare, acconti più alti del dovuto.</p>")
+    corpo += ("<p>Questa è una stima veloce con il coefficiente tipico della tua categoria. <b>TaxScan rifà il conto sui tuoi "
+              "numeri veri</b>: legge il certificato della partita IVA e le fatture, e ti dice cosa pagare, quando e dove risparmiare.</p>")
+    html = _cornice(email, "Il tuo risparmio fiscale stimato", corpo,
+                    ("Calcola sui miei numeri", f"{PUBLIC_URL}/colloquio/nuovo?utm_source=email_simulatore"))
+    auth.manda_email(email, "Il tuo risparmio fiscale stimato" + (f": fino a {eur(risp)} l'anno" if leve else ""), html)
+
+
 # ---------------------------------------------------------------- benvenuto
 
 def manda_benvenuto(email: str, id_dashboard: str, nome: str = "", novita: bool = True) -> None:

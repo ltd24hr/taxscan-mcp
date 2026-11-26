@@ -295,6 +295,44 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 /* comparsa al passaggio */
 /* calcolatore con la linea dell'anno */
 .calc{padding:clamp(64px,8vw,110px) 0}
+/* simulatore del risparmio */
+.ancora{display:block;position:relative;top:-90px;height:0}
+#simula [hidden]{display:none!important}
+.seg.s2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sub{margin-top:12px;padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.sub .seg{background:var(--surface)}
+.lbl3{display:block;font-weight:600;font-size:14px;margin-bottom:8px;color:var(--ink2)}
+.lbl3 b{color:var(--ink)}
+.sub input[type=range]{width:100%;accent-color:var(--accent);height:28px;cursor:pointer}
+.aiuto{font-size:13.5px;color:var(--mute);margin:-4px 0 10px;line-height:1.45}
+.rsp{border-radius:18px;padding:20px;background:var(--soft,#eef1fb);border:1.5px solid var(--accent);display:flex;flex-direction:column;gap:10px}
+.rsp.zero{border-color:var(--line)}
+.rk{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.rsp h3{margin:0;font:700 clamp(19px,2vw,23px)/1.2 var(--f-tit);letter-spacing:-.01em}
+.rnum{margin:0;font-size:15px;color:var(--ink2)}
+.rnum b{font:800 clamp(28px,3.2vw,38px)/1.1 var(--f-tit);color:var(--accent-ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vela{filter:blur(7px);user-select:none;-webkit-user-select:none}
+.rlis{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rlis li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.rl1{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:14.5px}
+.re{font-weight:700;color:var(--accent-ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rlis p{margin:6px 0 0;font-size:13.5px;color:var(--ink2);line-height:1.45}
+.rform{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.rinv{margin:0;font-size:14.5px}
+.rrow{display:flex;gap:8px;flex-wrap:wrap}
+.rrow input{flex:1 1 220px;min-height:46px;font:inherit;font-size:15px;padding:10px 14px;border:1px solid var(--line2,var(--line));border-radius:12px;background:var(--surface);color:var(--ink)}
+.rrow input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rrow .btn{min-height:46px}
+@media (max-width:520px){.rrow{flex-direction:column}.rrow input{flex:none;width:100%;min-width:0;box-sizing:border-box}.rrow .btn{width:100%;justify-content:center}#simula .seg.s2,#simula .sub .seg{grid-template-columns:repeat(2,minmax(0,1fr))}#simula .sub .seg{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.rchk{font-size:13.5px}
+.rchk input{width:18px;height:18px}
+.rpriv{margin:0;font-size:12.5px;color:var(--mute)}
+.rpriv a{color:inherit}
+#s-err:empty{display:none}#s-err{color:var(--crit,#c62f3a);font-weight:600}
+.rok{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.rok p{margin:0;font-size:14.5px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sim .cpie{display:block;border-top:1px solid var(--line);padding-top:14px;margin:0;font-size:13px;color:var(--mute)}
 .calc .tit{font-size:clamp(34px,4.6vw,60px)}
 .cbox{margin-top:36px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:stretch}
 .cin,.cout{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px}
@@ -391,7 +429,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <a class="logo" href="/" aria-label="TaxScan, torna all'inizio">Tax<span>Scan</span></a>
     <nav class="nav" aria-label="Navigazione principale">
       <a href="#come-funziona">Come funziona</a>
-      <a href="#cosa-fa">Cosa fa</a>
+      <a href="#simula">Simulatore</a>
       <a href="#esempio">Un esempio</a>
       <a href="#prezzo">Prezzo</a>
       <a href="#domande">Domande</a>
@@ -404,7 +442,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
   <nav class="menu" id="menu" aria-label="Menu">
     <a href="#come-funziona">Come funziona</a>
-    <a href="#cosa-fa">Cosa fa</a>
+    <a href="#simula">Simulatore</a>
     <a href="#esempio">Un esempio</a>
     <a href="#prezzo">Prezzo</a>
     <a href="#domande">Domande</a>
@@ -534,77 +572,88 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 })();
 </script>
 
-<section class="sez scuro" id="cosa-fa" aria-labelledby="t-cosa">
-  <div class="w">
-    <div class="vedi" style="max-width:780px">
-      <h2 class="tit" id="t-cosa">Trova il risparmio.<br><span class="ser">Goditi più tempo libero.</span></h2>
-    </div>
-    <div class="carte">
-      <article class="carta alta vedi">
-        <p class="kick">Attività e coefficienti</p>
-        <h3>Il tuo lavoro non è una voce generica.</h3>
-        <p>Nel forfettario ogni attività ha il suo coefficiente. TaxScan riconosce le prestazioni che fai davvero, verifica quali pagano meno e controlla le riduzioni dei contributi che spesso nessuno ti dice.</p>
-        <div class="vetrina" aria-hidden="true"><div>
-          <div class="riga2"><span>Fatture analizzate</span><span>100%</span></div>
-          <div class="linea"><i></i></div>
-          <p class="riga2" style="margin-top:30px">Risparmio stimato in un anno · esempio</p>
-          <p class="grande">1.240&nbsp;€</p>
-          <div class="ok"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></b>Report con il calcolo passo per passo</div>
-        </div></div>
-      </article>
-      <article class="carta oro vedi">
-        <p class="kick">Soglia 85.000 €</p>
-        <h3>Sai prima quando rallentare.</h3>
-        <p>Segue i tuoi incassi e ti avvisa in tempo, prima che la soglia del forfettario diventi un problema.</p>
-        <div class="dist"><div><p class="lbl">DISTANZA DALLA SOGLIA</p><b>32.600&nbsp;€</b></div><span>61,6%</span></div>
-      </article>
-      <article class="carta lav vedi">
-        <p class="kick">Bandi e agevolazioni</p>
-        <h3>Non perdere un'opportunità.</h3>
-        <p>Ti segnala gli incentivi adatti alla tua attività e alla tua regione, con requisiti e scadenze spiegati in chiaro.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-
-<section class="calc" id="calcola" aria-labelledby="t-calc">
+<section class="calc sim" id="simula" aria-labelledby="t-sim">
+  <span id="cosa-fa" class="ancora"></span><span id="calcola" class="ancora"></span>
   <div class="w">
     <div class="vedi">
-      <h2 class="tit" id="t-calc">Quanto pagherai quest'anno?</h2>
-      <p class="testo">Provalo qui: una stima in pochi secondi, con le regole del 2026. Poi TaxScan la rifà sui tuoi numeri veri e cerca dove puoi pagare meno.</p>
+      <p class="socchio">Simulatore gratuito</p>
+      <h2 class="tit" id="t-sim">Quanto paghi?<br><span class="ser">E quanto puoi risparmiare.</span></h2>
+      <p class="testo">Quattro domande, un minuto. Ti mostriamo subito tasse e contributi con le regole del 2026, e cerchiamo dove puoi pagare meno.</p>
     </div>
     <div class="cbox vedi">
       <div class="cin">
-        <div><span class="lbl2" id="c-tipo-l">Che lavoro fai?</span>
-          <div class="seg" role="group" aria-labelledby="c-tipo-l">
-            <button type="button" data-t="pro" aria-pressed="true">Libero professionista</button>
-            <button type="button" data-t="art" aria-pressed="false">Artigiano</button>
-            <button type="button" data-t="com" aria-pressed="false">Commerciante</button>
+        <div><span class="lbl2" id="s-tipo-l">1. Che lavoro fai?</span>
+          <div class="seg" role="group" aria-labelledby="s-tipo-l" data-q="tipo">
+            <button type="button" data-v="pro" aria-pressed="true">Libero professionista</button>
+            <button type="button" data-v="art" aria-pressed="false">Artigiano</button>
+            <button type="button" data-v="com" aria-pressed="false">Commerciante</button>
           </div></div>
-        <div><label class="lbl2" for="c-inc">Quanto incassi in un anno?</label>
-          <div class="cval" id="c-incv" aria-hidden="true">30.000 €</div>
-          <input type="range" id="c-inc" min="5000" max="85000" step="1000" value="30000" aria-valuetext="30.000 euro">
+        <div><label class="lbl2" for="s-inc">2. Quanto incassi in un anno?</label>
+          <div class="cval" id="s-incv" aria-hidden="true">30.000 €</div>
+          <input type="range" id="s-inc" min="5000" max="85000" step="1000" value="30000" aria-valuetext="30.000 euro">
           <div class="crange" aria-hidden="true"><span>5.000 €</span><span>85.000 €</span></div></div>
-        <label class="chk"><input type="checkbox" id="c-cinque"><span>Ho aperto la partita IVA da meno di 5 anni e l'attività è nuova: imposta al 5% invece del 15%</span></label>
+        <div><span class="lbl2" id="s-ap-l">3. Quando hai aperto la partita IVA?</span>
+          <div class="seg s2" role="group" aria-labelledby="s-ap-l" data-q="ap">
+            <button type="button" data-v="nuova" aria-pressed="false">Meno di 5 anni fa</button>
+            <button type="button" data-v="vecchia" aria-pressed="true">5 anni fa o più</button>
+          </div>
+          <div class="sub" id="s-sub5" hidden>
+            <span class="lbl3" id="s-ali-l">Che imposta paghi oggi?</span>
+            <div class="seg" role="group" aria-labelledby="s-ali-l" data-q="ali">
+              <button type="button" data-v="15" aria-pressed="false">15%</button>
+              <button type="button" data-v="5" aria-pressed="false">5%</button>
+              <button type="button" data-v="ns" aria-pressed="true">Non lo so</button>
+            </div></div></div>
+        <div id="s-q4pro"><span class="lbl2" id="s-alt-l">4. Fai anche lavori di tipo diverso?</span>
+          <p class="aiuto">Per esempio vendi corsi o prodotti digitali, gestisci siti o strumenti per i clienti.</p>
+          <div class="seg s2" role="group" aria-labelledby="s-alt-l" data-q="alt">
+            <button type="button" data-v="no" aria-pressed="true">No</button>
+            <button type="button" data-v="si" aria-pressed="false">Sì, una parte</button>
+          </div>
+          <div class="sub" id="s-subalt" hidden>
+            <label class="lbl3" for="s-quota">Quanto pesano sugli incassi? <b id="s-quotav">20%</b></label>
+            <input type="range" id="s-quota" min="10" max="50" step="5" value="20" aria-valuetext="20 per cento">
+          </div></div>
+        <div id="s-q4ac" hidden><span class="lbl2" id="s-rid-l">4. Paghi già i contributi INPS ridotti del 35%?</span>
+          <div class="seg" role="group" aria-labelledby="s-rid-l" data-q="rid">
+            <button type="button" data-v="si" aria-pressed="false">Sì</button>
+            <button type="button" data-v="no" aria-pressed="false">No</button>
+            <button type="button" data-v="ns" aria-pressed="true">Non lo so</button>
+          </div></div>
       </div>
       <div class="cout" aria-live="polite">
         <div class="ctre">
-          <div><small>Tasse e contributi in un anno</small><b id="c-tot">–</b></div>
-          <div class="forte"><small>Mettine da parte ogni mese</small><b id="c-mese">–</b></div>
-          <div><small>Ti restano netti</small><b id="c-netto">–</b></div>
+          <div><small>Tasse e contributi in un anno</small><b id="s-tot">–</b></div>
+          <div class="forte"><small>Mettine da parte ogni mese</small><b id="s-mese">–</b></div>
+          <div><small>Ti restano netti</small><b id="s-netto">–</b></div>
+        </div>
+        <div class="rsp" id="s-rsp">
+          <p class="rk">Il tuo risparmio</p>
+          <h3 id="s-rtit">Abbiamo trovato 1 modo per pagare meno</h3>
+          <p class="rnum"><span class="vela" id="s-rnum">fino a <b>●.●●● €</b> l'anno</span></p>
+          <ul class="rlis" id="s-rlis"></ul>
+          <form class="rform" id="s-form" novalidate>
+            <p class="rinv">Lasciaci la tua email: ti mostriamo subito <b>quanto e come</b> e ti mandiamo il riepilogo.</p>
+            <div class="rrow"><label class="sr" for="s-mail">La tua email</label>
+              <input type="email" id="s-mail" name="email" placeholder="La tua email" autocomplete="email" required>
+              <button type="submit" class="btn btn-acc btn-sm" id="s-btn">Mostrami il risparmio</button></div>
+            <label class="chk rchk"><input type="checkbox" id="s-nov"><span>Voglio ricevere ogni tanto consigli per pagare meno tasse. Facoltativo: puoi smettere quando vuoi.</span></label>
+            <p class="rpriv" id="s-err" role="alert"></p>
+            <p class="rpriv">Usiamo l'email per mandarti il riepilogo e, solo se spunti la casella, i consigli. <a href="/privacy">Privacy policy</a>.</p>
+          </form>
+          <div class="rok" id="s-ok" hidden>
+            <p>Fatto: il riepilogo è in arrivo nella tua email. Il calcolo vero, sui tuoi numeri e sulle tue fatture, lo fa TaxScan in 2 minuti.</p>
+            <a class="btn btn-acc btn-sm" href="/colloquio/nuovo?utm_source=simulatore">Calcola sui miei numeri</a>
+          </div>
         </div>
         <div class="anno">
           <h3>Il tuo anno fiscale, senza sorprese</h3>
           <p class="sott">Quando paghi, se incassi così ogni anno.</p>
-          <div class="cline" id="c-linea" aria-hidden="true"><div class="traccia"></div><div class="pieno"></div></div>
-          <div class="cleg" aria-hidden="true"><span><i></i>Imposta e contributi</span><span id="c-leg-fissi"><i class="inps"></i><span id="c-fissi-t">Contributi fissi INPS</span></span></div>
-          <ul class="lista" id="c-lista"></ul>
+          <div class="cline" id="s-linea" aria-hidden="true"><div class="traccia"></div><div class="pieno"></div></div>
+          <div class="cleg" aria-hidden="true"><span><i></i>Imposta e contributi</span><span id="s-leg-fissi"><i class="inps"></i><span id="s-fissi-t">Contributi fissi INPS</span></span></div>
+          <ul class="lista" id="s-lista"></ul>
         </div>
-        <div class="cpie">
-          <p id="c-nota">Stima con il coefficiente tipico della categoria, senza la riduzione del 35% dei contributi. TaxScan usa il tuo codice ATECO, le tue fatture e le tue riduzioni.</p>
-          <a class="btn btn-acc btn-sm" href="/colloquio/nuovo">Fai il calcolo sui tuoi numeri</a>
-        </div>
+        <p class="cpie" id="s-nota"></p>
       </div>
     </div>
   </div>
@@ -614,32 +663,66 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 (function(){
   var K={gs:.2607,gsMax:122295,min:18808,sog:56224,max:122295,art:{f:4521.36,a:.24,b:.25},com:{f:4611.64,a:.2448,b:.2548},ord:.15,st:.05,anno:2026};
   try{var j=JSON.parse(document.getElementById("c-dati").textContent);for(var k in j)K[k]=j[k]}catch(e){}
-  var T={pro:{c:.78,nome:"Libero professionista"},art:{c:.67,nome:"Artigiano"},com:{c:.40,nome:"Commerciante"}};
-  var tipo="pro",r=document.getElementById("c-inc"),cb=document.getElementById("c-cinque"),lin=document.getElementById("c-linea"),lis=document.getElementById("c-lista");
+  var T={pro:{c:.78,nome:"libero professionista"},art:{c:.67,nome:"artigiano"},com:{c:.40,nome:"commerciante"}};
+  var COEF_ALT=.67, RID=.35;
+  var S={tipo:"pro",ap:"vecchia",ali:"ns",alt:"no",rid:"ns"},sbl=false;
+  var $=function(i){return document.getElementById(i)};
+  var r=$("s-inc"),rq=$("s-quota"),lin=$("s-linea"),lis=$("s-lista");
   var eur=function(v){return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" €"};
   var MES=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-  function conti(inc){var red=inc*T[tipo].c,fis=0,va;
-    if(tipo==="pro"){va=Math.min(red,K.gsMax)*K.gs}
-    else{var p=tipo==="art"?K.art:K.com,rr=Math.min(red,K.max),ecc=Math.max(0,rr-K.min),fino=Math.min(ecc,Math.max(0,K.sog-K.min));fis=p.f;va=fino*p.a+(ecc-fino)*p.b}
-    var imp=Math.max(0,red-fis-va)*(cb.checked?K.st:K.ord);return {fis:fis,va:va,imp:imp,tot:fis+va+imp}}
+  // reddito -> contributi e imposta (i contributi pagati si deducono dal reddito)
+  function conti(red,aliq,rid){var fis=0,va;
+    if(S.tipo==="pro"){va=Math.min(red,K.gsMax)*K.gs}
+    else{var p=S.tipo==="art"?K.art:K.com,rr=Math.min(red,K.max),ecc=Math.max(0,rr-K.min),fino=Math.min(ecc,Math.max(0,K.sog-K.min));fis=p.f;va=fino*p.a+(ecc-fino)*p.b;
+      if(rid){fis*=1-RID;va*=1-RID}}
+    var imp=Math.max(0,red-fis-va)*aliq;return {fis:fis,va:va,imp:imp,tot:fis+va+imp}}
+  function stato(){var inc=+r.value,c=T[S.tipo].c,q=S.tipo==="pro"&&S.alt==="si"?(+rq.value)/100:0;
+    var aliq=S.ap==="nuova"&&S.ali==="5"?K.st:K.ord, ridOra=S.tipo!=="pro"&&S.rid==="si";
+    var ora=conti(inc*c,aliq,ridOra),leve=[];
+    if(S.ap==="nuova"&&S.ali!=="5"){var a=conti(inc*c,K.st,ridOra);if(ora.tot-a.tot>=1)leve.push({t:"Imposta al 5% invece del 15%",e:ora.tot-a.tot,d:"Nei primi 5 anni, se l'attività è davvero nuova (non è il lavoro che facevi prima da dipendente o da collaboratore), l'imposta è al 5%. Va verificato il requisito: TaxScan te lo controlla."})}
+    var aliqL=leve.length?K.st:aliq;
+    if(q>0){var red2=inc*(1-q)*c+inc*q*COEF_ALT,b=conti(inc*c,aliqL,ridOra),b2=conti(red2,aliqL,ridOra);if(b.tot-b2.tot>=1)leve.push({t:"Il coefficiente giusto per ogni attività",e:b.tot-b2.tot,d:"Le attività diverse dalla principale possono avere un coefficiente più basso (per esempio 67% invece di 78%): su quella parte si pagano meno tasse e meno contributi, in regola. Serve il codice ATECO giusto."})}
+    if(S.tipo!=="pro"&&S.rid!=="si"){var x=conti(inc*c,aliqL,false),y=conti(inc*c,aliqL,true);if(x.tot-y.tot>=1)leve.push({t:"Contributi INPS ridotti del 35%",e:x.tot-y.tot,d:"Chi è nel forfettario come artigiano o commerciante può chiedere all'INPS la riduzione del 35% dei contributi (la domanda si fa di solito entro il 28 febbraio). Attenzione: riduce anche la pensione futura, va scelta con calma."})}
+    return {inc:inc,ora:ora,leve:leve,tot:leve.reduce(function(s,l){return s+l.e},0)}}
   function rata(m,g,imp,cls,cosa){return {m:m,g:g,imp:imp,cls:cls,cosa:cosa}}
-  function disegna(){var inc=+r.value,c=conti(inc);
-    document.getElementById("c-incv").textContent=eur(inc);r.setAttribute("aria-valuetext",eur(inc).replace("€","euro"));
-    document.getElementById("c-tot").textContent=eur(c.tot);document.getElementById("c-mese").textContent=eur(c.tot/12);document.getElementById("c-netto").textContent=eur(inc-c.tot);
-    // in un anno a regime: giugno saldo + 1° acconto (50% imposta, 60% contributi a percentuale), novembre 2° acconto (50% e 40%); fissi INPS in 4 rate
+  function disegna(){var st=stato(),c=st.ora,inc=st.inc;
+    $("s-incv").textContent=eur(inc);r.setAttribute("aria-valuetext",eur(inc).replace("€","euro"));
+    $("s-quotav").textContent=rq.value+"%";rq.setAttribute("aria-valuetext",rq.value+" per cento");
+    $("s-tot").textContent=eur(c.tot);$("s-mese").textContent=eur(c.tot/12);$("s-netto").textContent=eur(inc-c.tot);
+    // risparmio
+    var n=st.leve.length;$("s-rsp").classList.toggle("zero",!n);
+    $("s-rtit").textContent=n?("Abbiamo trovato "+(n===1?"1 modo":n+" modi")+" per pagare meno"):"Dai dati di base non vediamo risparmi immediati";
+    if(sbl){$("s-rnum").innerHTML=n?"fino a <b>"+eur(st.tot)+"</b> l'anno":"Il risparmio vero di solito è nelle fatture e nei codici ATECO: lì guarda TaxScan.";$("s-rnum").classList.remove("vela")}
+    else{$("s-rnum").innerHTML=n?"fino a <b>●.●●● €</b> l'anno":"Spesso il risparmio è nelle fatture e nei codici: lasciaci l'email e ti diciamo dove guardare.";$("s-rnum").classList.toggle("vela",!!n)}
+    $("s-rlis").innerHTML=st.leve.map(function(l){return '<li><div class="rl1"><b>'+l.t+'</b>'+(sbl?'<span class="re">'+eur(l.e)+'</span>':'<span class="re vela">●●● €</span>')+'</div>'+(sbl?'<p>'+l.d+'</p>':'')+'</li>'}).join("");
+    // calendario
     var R=[rata(5,30,c.imp*.5+c.va*.6,"","Saldo e 1° acconto"),rata(10,30,c.imp*.5+c.va*.4,"","2° acconto")];
     if(c.fis){R.push(rata(1,16,c.fis/4,"inps","Contributi fissi INPS"),rata(4,18,c.fis/4,"inps","Contributi fissi INPS"),rata(7,20,c.fis/4,"inps","Contributi fissi INPS"),rata(10,16,c.fis/4,"inps","Contributi fissi INPS"))}
     R.sort(function(a,b){return a.m-b.m||a.g-b.g});
     var h='<div class="traccia"></div><div class="pieno"></div>';
     MES.forEach(function(n,i){h+='<span class="mm" style="left:'+((i+.5)/12*100)+'%">'+n+'</span>'});
-    var visti={};R.forEach(function(x){var k=x.m;var left=(x.m+.5)/12*100;if(visti[k])left+=2.4;visti[k]=1;
+    var visti={};R.forEach(function(x){var left=(x.m+.5)/12*100;if(visti[x.m])left+=2.4;visti[x.m]=1;
       h+='<div class="pg '+x.cls+'" style="left:'+left+'%" title="'+x.g+' '+MES[x.m].toLowerCase()+': '+x.cosa+', '+eur(x.imp)+'"><i></i>'+(x.cls?'':'<span>'+eur(x.imp)+'</span>')+'</div>'});
     var on=lin.classList.contains("on");lin.innerHTML=h;if(on)lin.classList.add("on");
     lis.innerHTML=R.map(function(x){return '<li><span>'+x.g+' '+MES[x.m].toLowerCase()+' · '+x.cosa+'</span><b>'+eur(x.imp)+'</b></li>'}).join("");
-    document.getElementById("c-leg-fissi").style.display=c.fis?"":"none";document.getElementById("c-fissi-t").textContent="Contributi fissi INPS: 4 rate da "+eur(c.fis/4);
-    var no=document.getElementById("c-nota");no.textContent="Stima con il coefficiente tipico per "+T[tipo].nome.toLowerCase()+" ("+Math.round(T[tipo].c*100)+"%)"+(tipo==="pro"?", gestione separata INPS":", senza la riduzione del 35% dei contributi")+". TaxScan usa il tuo codice ATECO, le tue fatture e le riduzioni che ti spettano."}
-  [].forEach.call(document.querySelectorAll(".seg button"),function(b){b.addEventListener("click",function(){tipo=b.getAttribute("data-t");[].forEach.call(document.querySelectorAll(".seg button"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});disegna()})});
-  r.addEventListener("input",disegna);cb.addEventListener("change",disegna);disegna();
+    $("s-leg-fissi").style.display=c.fis?"":"none";$("s-fissi-t").textContent="Contributi fissi INPS: 4 rate da "+eur(c.fis/4);
+    $("s-nota").textContent="Stima per "+T[S.tipo].nome+" con il coefficiente tipico ("+Math.round(T[S.tipo].c*100)+"%)"+(S.tipo==="pro"?" e gestione separata INPS":"")+", regole "+K.anno+". Non è una consulenza: TaxScan rifà il conto sul tuo codice ATECO, sulle tue fatture e sulle riduzioni che ti spettano."}
+  [].forEach.call(document.querySelectorAll("#simula .seg"),function(g){var q=g.getAttribute("data-q");
+    [].forEach.call(g.querySelectorAll("button"),function(b){b.addEventListener("click",function(){S[q]=b.getAttribute("data-v");
+      [].forEach.call(g.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
+      $("s-sub5").hidden=S.ap!=="nuova";$("s-subalt").hidden=S.alt!=="si";$("s-q4pro").hidden=S.tipo!=="pro";$("s-q4ac").hidden=S.tipo==="pro";disegna()})})});
+  r.addEventListener("input",disegna);rq.addEventListener("input",disegna);disegna();
+  // email: sblocca il risultato e manda il riepilogo
+  $("s-form").addEventListener("submit",function(e){e.preventDefault();var m=$("s-mail").value.trim(),er=$("s-err");er.textContent="";
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m)){er.textContent="Controlla l'email: sembra incompleta.";$("s-mail").focus();return}
+    var st=stato(),btn=$("s-btn");btn.disabled=true;btn.textContent="Un attimo…";
+    fetch("/api/simulatore",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:m,novita:$("s-nov").checked,
+      dati:{tipo:S.tipo,incassi:st.inc,apertura:S.ap,aliquota:S.ali,altre_attivita:S.alt,quota_altre:S.alt==="si"?+rq.value:0,riduzione:S.rid},
+      risultato:{totale:Math.round(st.ora.tot),netto:Math.round(st.inc-st.ora.tot),risparmio:Math.round(st.tot),leve:st.leve.map(function(l){return {titolo:l.t,euro:Math.round(l.e),spiegazione:l.d}})}})})
+    .then(function(x){return x.json().then(function(j){return {ok:x.ok&&j.ok,j:j}})})
+    .then(function(o){btn.disabled=false;btn.textContent="Mostrami il risparmio";if(!o.ok){er.textContent=(o.j&&o.j.errore)||"Non sono riuscito a salvare: riprova tra poco.";return}
+      sbl=true;$("s-form").hidden=true;$("s-ok").hidden=false;disegna();if(typeof gtag==="function")try{gtag("event","simulatore_email")}catch(x){}})
+    .catch(function(){btn.disabled=false;btn.textContent="Mostrami il risparmio";er.textContent="Connessione assente: riprova tra poco."})});
   var calma=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(calma||!("IntersectionObserver" in window)){lin.classList.add("on")}else{var o=new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting){setTimeout(function(){lin.classList.add("on")},250);o.disconnect()}})},{threshold:.4});o.observe(lin)}
 })();
@@ -776,7 +859,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   <div class="w">
     <div class="cols">
       <div><a class="logo" href="/">Tax<span>Scan</span></a><p>Il primo agente IA specializzato nel risparmio fiscale per chi ha la partita IVA in regime forfettario.</p></div>
-      <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#cosa-fa">Cosa fa</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
+      <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#simula">Simulatore</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
       <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a></nav></div>
     </div>
     <div class="legale">

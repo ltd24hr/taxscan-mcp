@@ -163,6 +163,15 @@ CREATE TABLE IF NOT EXISTS approfondimento (
     aggiornato_il TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS simulatore_contatti (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    novita BOOLEAN NOT NULL DEFAULT FALSE,
+    dati JSONB NOT NULL DEFAULT '{}'::jsonb,
+    risultato JSONB NOT NULL DEFAULT '{}'::jsonb,
+    creato_il TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS email_opt_out (
     email TEXT PRIMARY KEY,
     disattivato_il TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -826,6 +835,21 @@ def imposta_azienda_fic(email: str, company_id: int, azienda_nome: str) -> None:
 
 # --------------------------------------------------------------------- Promemoria per email
 
+def salva_contatto_simulatore(email: str, novita: bool, dati: dict, risultato: dict) -> int:
+    """Chi lascia l'email nel simulatore della home: risposte, risultato e scelta sulle email di consigli.
+    Ritorna quante volte questa email ha usato il simulatore nelle ultime 24 ore (per limitare gli abusi)."""
+    email = (email or "").strip().lower()
+    with _connetti() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM simulatore_contatti WHERE email = %s AND creato_il > now() - interval '1 day'", (email,))
+            n = int(cur.fetchone()[0])
+            if n < 5:
+                cur.execute("INSERT INTO simulatore_contatti (email, novita, dati, risultato) VALUES (%s, %s, %s, %s)",
+                            (email, bool(novita), Json(dati or {}), Json(risultato or {})))
+        conn.commit()
+    return n
+
+
 def imposta_novita(email: str, si: bool) -> None:
     """Salva la scelta dell'utente sulle email con spunti su bandi, agevolazioni, finanziamenti e previdenza."""
     email = (email or "").strip().lower()
@@ -1121,7 +1145,7 @@ def cancella_dati(email: str | None, id_dashboard: str) -> None:
         with conn.cursor() as cur:
             if email:
                 for tabella in ("sessioni", "fic_collegamenti", "avvisi_inviati", "avvisi_opt_out",
-                                "incentivi_mostrati", "promemoria_inviati", "email_opt_out", "feedback", "consenso_novita", "approfondimento", "utenti"):
+                                "incentivi_mostrati", "promemoria_inviati", "email_opt_out", "feedback", "consenso_novita", "approfondimento", "simulatore_contatti", "utenti"):
                     cur.execute(f"DELETE FROM {tabella} WHERE email = %s", (email,))
                 cur.execute("DELETE FROM eventi WHERE riferimento = %s", (email,))
             try:

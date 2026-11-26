@@ -75,6 +75,7 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <tr><td>Certificato di attribuzione della partita IVA (PDF o foto) o altro documento che carichi al suo posto (per esempio una visura o una fattura)</td><td>Solo se lo carichi: un sistema di intelligenza artificiale capisce che documento è e ne legge i dati utili alla tua scheda; non conserviamo il file</td></tr>
 <tr><td>Nome e cognome del titolare, se compaiono sul documento che carichi</td><td>Li leggiamo per fartele confermare; in dashboard ed email ti salutiamo solo con il nome</td></tr>
 <tr><td>Email</td><td>Quando salvi la tua situazione o usi "Accedi"</td></tr>
+<tr><td>Email e risposte al simulatore della home (tipo di lavoro, incassi indicativi, da quanto hai aperto, risultato della stima)</td><td>Solo se chiedi di vedere il risparmio lasciando l'email: ti mandiamo il riepilogo e, se spunti la casella facoltativa, ogni tanto consigli per pagare meno tasse. Le conserviamo al massimo 24 mesi</td></tr>
 <tr><td>Domande all'assistente e relative risposte</td><td>Quando usi la chat</td></tr>
 <tr><td>Risposte al questionario di approfondimento (immobili, altri redditi, fondo pensione, progetti, interessi)</td><td>Solo se rispondi: sono collegate alla tua email e servono a mostrarti spunti più adatti; le cancelli con "Cancella i miei dati"</td></tr>
 <tr><td>Risposte al sondaggio di feedback (scelte, commento, eventuale consenso a essere ricontattato)</td><td>Solo se rispondi: sono collegate alla tua email per poterti rispondere e le leggiamo noi</td></tr>
@@ -88,6 +89,7 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <li><b>Fornirti il servizio che hai chiesto</b> (stime, dashboard, calendario, assistente, ritrovare i tuoi dati): è necessario per eseguire la tua richiesta.</li>
 <li><b>Mandarti email legate al servizio</b>: codice di accesso, benvenuto, un riepilogo ogni settimana con le tue scadenze, un avviso quando una scadenza è a due giorni, avvisi su cambi di norme che ti riguardano e una richiesta di feedback (con un promemoria). Puoi disiscriverti con un clic da ogni email.</li>
 <li><b>Mandarti email con spunti di ottimizzazione fiscale, risparmio fiscale, bandi, agevolazioni, finanziamenti e previdenza</b>, solo se spunti la casella apposita quando salvi la tua email (è facoltativa e non è già spuntata): una email sui bandi poco dopo l'iscrizione e una sulla previdenza. Sono informazioni generali, non consulenza né offerta di prodotti. Puoi revocare il consenso in qualsiasi momento con il link di disiscrizione o scrivendo a noi.</li>
+<li><b>Simulatore della home</b>: se lasci l'email per vedere il risparmio, la usiamo per mostrarti il risultato e mandarti il riepilogo che hai chiesto; le email con consigli solo se spunti la casella apposita (facoltativa, non già spuntata). Puoi disiscriverti con un clic da ogni email o chiederci di cancellare tutto.</li>
 <li><b>Migliorare TaxScan</b> guardando come viene usato (dati di utilizzo e domande all'assistente): è un nostro legittimo interesse.</li>
 <li><b>Rispettare obblighi di legge</b> e difenderci in caso di necessità.</li>
 </ul>
