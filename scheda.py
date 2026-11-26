@@ -267,6 +267,12 @@ CODICI_TRIBUTO = {
     "CPI":  ("interessi", "rateazione_inps", "INPS commercianti - interessi di rateazione"),
     "1668": ("interessi", "rateazione", "Interessi per rateazione delle imposte"),
     "1944": ("interessi", "ravvedimento", "Interessi da ravvedimento"),
+    "2521": ("bollo", "trimestre_1", "Imposta di bollo sulle fatture elettroniche - 1° trimestre"),
+    "2522": ("bollo", "trimestre_2", "Imposta di bollo sulle fatture elettroniche - 2° trimestre"),
+    "2523": ("bollo", "trimestre_3", "Imposta di bollo sulle fatture elettroniche - 3° trimestre"),
+    "2524": ("bollo", "trimestre_4", "Imposta di bollo sulle fatture elettroniche - 4° trimestre"),
+    "2525": ("sanzioni", "ravvedimento", "Imposta di bollo sulle fatture elettroniche - sanzioni"),
+    "2526": ("interessi", "ravvedimento", "Imposta di bollo sulle fatture elettroniche - interessi"),
     "8944": ("sanzioni", "ravvedimento", "Sanzione da ravvedimento (imposte sui redditi)"),
     "1040": ("ritenuta", "altro", "Ritenute su redditi di lavoro autonomo (non tipico del forfettario)"),
     "6099": ("iva", "annuale", "IVA annuale - NON dovuta dai forfettari: da verificare"),
@@ -1246,6 +1252,87 @@ MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
         "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
 
 
+# --------------------------------------------------------------------------- bollo sulle fatture elettroniche
+# 2 euro per ogni fattura senza IVA sopra 77,47 euro (per il forfettario: quasi tutte). Si paga a trimestre con F24
+# (codici 2521-2524): 1° trim. entro il 31 maggio, 2° entro il 30 settembre, 3° entro il 30 novembre, 4° entro il
+# 28 febbraio dell'anno dopo. Importi piccoli possono slittare: 1° trimestre fino a 5.000 euro al 30 settembre, e se
+# 1° + 2° non superano 5.000 euro tutti e due al 30 novembre (art. 6 DM 17/6/2014, come modificato dal DL 73/2022).
+BOLLO_EURO = 2.0
+BOLLO_SOGLIA_FATTURA = 77.47
+BOLLO_SOGLIA_RINVIO = 5000.0
+
+
+def _festivi(anno: int) -> set:
+    """Festivita' nazionali (con Pasquetta) dell'anno."""
+    a, b, c = anno % 19, anno // 100, anno % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l_ = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l_) // 451
+    mese = (h + l_ - 7 * m + 114) // 31
+    giorno = ((h + l_ - 7 * m + 114) % 31) + 1
+    pasquetta = date.fromordinal(date(anno, mese, giorno).toordinal() + 1)
+    fissi = [(1, 1), (1, 6), (4, 25), (5, 1), (6, 2), (8, 15), (11, 1), (12, 8), (12, 25), (12, 26)]
+    return {date(anno, mm, dd) for mm, dd in fissi} | {pasquetta}
+
+
+def giorno_lavorativo(d: date) -> date:
+    """Se la scadenza cade di sabato, domenica o in un festivo, slitta al primo giorno lavorativo."""
+    while d.weekday() >= 5 or d in _festivi(d.year):
+        d = date.fromordinal(d.toordinal() + 1)
+    return d
+
+
+def bolli_da_fatture(fatture: list) -> dict:
+    """Dalle fatture caricate (data e importo) al numero di bolli per trimestre: {"2026-1": 4, ...}.
+    Conta solo le fatture sopra 77,47 euro con una data leggibile; la stessa fattura caricata due volte vale una."""
+    out, visti = {}, set()
+    for f in fatture or []:
+        if not isinstance(f, dict):
+            continue
+        d = str(f.get("data") or "")[:10]
+        try:
+            g = date.fromisoformat(d)
+            imp = float(f.get("importo") or 0)
+        except (TypeError, ValueError):
+            continue
+        if imp <= BOLLO_SOGLIA_FATTURA:
+            continue
+        chiave = (d, str(f.get("numero") or "").strip().lower(), round(imp, 2))
+        if chiave in visti:
+            continue
+        visti.add(chiave)
+        k = f"{g.year}-{(g.month - 1) // 3 + 1}"
+        out[k] = out.get(k, 0) + 1
+    return out
+
+
+def scadenze_bollo(bolli: dict, pagati: set, anni: tuple) -> list:
+    """Le scadenze del bollo per gli anni indicati: [(data, [(anno, trimestre, n_fatture, importo), ...])].
+    pagati: insieme di (anno, trimestre) gia' versati (dagli F24 letti)."""
+    per_data = {}
+    for anno in anni:
+        imp = {t: BOLLO_EURO * int((bolli or {}).get(f"{anno}-{t}", 0) or 0) for t in (1, 2, 3, 4)}
+        for t in (1, 2, 3, 4):
+            if imp[t] <= 0 or (anno, t) in pagati:
+                continue
+            if t == 1:
+                d = (date(anno, 11, 30) if imp[1] + imp[2] <= BOLLO_SOGLIA_RINVIO else date(anno, 9, 30)) \
+                    if imp[1] <= BOLLO_SOGLIA_RINVIO else date(anno, 5, 31)
+            elif t == 2:
+                d = date(anno, 11, 30) if imp[1] + imp[2] <= BOLLO_SOGLIA_RINVIO else date(anno, 9, 30)
+            elif t == 3:
+                d = date(anno, 11, 30)
+            else:
+                d = date.fromordinal(date(anno + 1, 3, 1).toordinal() - 1)   # 28 o 29 febbraio
+            d = giorno_lavorativo(d)
+            per_data.setdefault(d, []).append((anno, t, int(imp[t] / BOLLO_EURO), imp[t]))
+    return sorted(per_data.items())
+
+
 def _scadenze_con_importi(s: dict, data_oggi: date) -> list:
     """Le scadenze dei prossimi 14 mesi con l'importo stimato di ciascuna."""
     anno = data_oggi.year
@@ -1346,6 +1433,33 @@ def _scadenze_con_importi(s: dict, data_oggi: date) -> list:
                      [f"{_eur(rata, 2)} € contributi fissi sul minimale"],
                      righe=[riga("INPS", "AF" if gest == "artigiani" else "CF", per[2], rata,
                                  "Contributi fissi " + gest, (f"{per[0]:02d}/{per[2]}", f"{per[1]:02d}/{per[2]}"))])
+
+    # --- bollo sulle fatture elettroniche (dalle fatture caricate): si somma alla scadenza dello stesso giorno, se c'e'
+    pagati_bollo = set()
+    for r in (interpreta_f24(s.get("f24_pagati") or [])["righe"] if s.get("f24_pagati") else []):
+        if r["categoria"] == "bollo" and r["natura"].startswith("trimestre_") and r["anno_riferimento"]:
+            pagati_bollo.add((r["anno_riferimento"], int(r["natura"][-1])))
+    for d_b, quote in scadenze_bollo(s.get("bolli_fatture") or {}, pagati_bollo, (anno - 1, anno)):
+        if d_b < data_oggi:
+            continue
+        tot_b = sum(q[3] for q in quote)
+        trim = " e ".join(f"{q[1]}° trimestre {q[0]}" for q in quote)
+        dett = [f"{_eur(q[3], 2)} € bollo delle fatture del {q[1]}° trimestre {q[0]} ({q[2]} "
+                f"{'fattura' if q[2] == 1 else 'fatture'} × 2 €, codice 252{q[1]})" for q in quote]
+        righe_b = [riga("ERARIO", f"252{q[1]}", q[0], q[3], f"Bollo fatture elettroniche - {q[1]}° trimestre") for q in quote]
+        in_corso = any(q[0] == data_oggi.year and q[1] == (data_oggi.month - 1) // 3 + 1 for q in quote)
+        nota_b = ["Bollo: contato sulle fatture che hai caricato in TaxScan. L'importo esatto lo trovi anche nell'area "
+                  "Fatture e corrispettivi dell'Agenzia delle Entrate, che prepara un F24 già compilato."
+                  + (" Il trimestre è ancora in corso: l'importo crescerà con le prossime fatture." if in_corso else "")]
+        stessa = next((v for v in voci if v["data"] == d_b.isoformat()), None)
+        if stessa:
+            stessa["importo"] = round(stessa["importo"] + tot_b, 2)
+            stessa["etichetta"] += " + bollo fatture"
+            stessa["dettaglio"] += dett
+            stessa["righe"] += [r for r in righe_b if r]
+            stessa["note_f24"] = list(stessa.get("note_f24") or []) + nota_b
+        else:
+            aggiungi(d_b.day, d_b.month, d_b.year, f"Bollo fatture ({trim})", tot_b, dett, righe=righe_b, note=nota_b)
 
     for v in voci:
         v["credito_stimato"] = round(credito, 2) if v["etichetta"].startswith("Saldo") and credito > 1 else 0

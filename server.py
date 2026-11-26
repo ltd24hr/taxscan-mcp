@@ -1218,7 +1218,16 @@ async def dashboard_f24(request):
         return PlainTextResponse("Nessuna bozza disponibile per questa scadenza: torna sulla tua situazione e riprova.",
                                  status_code=404)
     _evento("f24_bozza", id_dashboard)
-    return HTMLResponse(f24.pagina(v, id_dashboard), headers={"Cache-Control": "no-store"})
+    pagamento = None
+    try:
+        from datetime import date as _d
+        pg = request.query_params.get("pagamento", "")
+        pagamento = _d.fromisoformat(pg) if pg else None
+        if pagamento and (pagamento < _d.fromisoformat(data_iso) or (pagamento - _d.today()).days > 800):
+            pagamento = None
+    except ValueError:
+        pagamento = None
+    return HTMLResponse(f24.pagina(v, id_dashboard, pagamento), headers={"Cache-Control": "no-store"})
 
 
 @mcp.custom_route("/d/{id_dashboard}/situazione", methods=["GET"])

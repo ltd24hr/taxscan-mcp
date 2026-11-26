@@ -996,7 +996,28 @@ def profilo(pid: str, op: str, dati=None) -> dict:
             cur.execute("INSERT INTO prova_doc (path, dati) VALUES (%s, %s) "
                         "ON CONFLICT (path) DO UPDATE SET dati = EXCLUDED.dati, aggiornato = now()", (path, Json(dati)))
         conn.commit()
+    _aggiorna_bolli(pid, dati)
     return {"ok": True}
+
+
+def _aggiorna_bolli(c: str, dati: dict) -> None:
+    """Dalle fatture del profilo conto i bolli da 2 euro per trimestre; se cambiano, rifaccio le scadenze
+    (il bollo entra nel calendario e nell'F24). Solo data e importo: niente dati dei clienti."""
+    try:
+        import scheda as S
+        fatt = [{"data": (v.get("ctl") or {}).get("data"), "numero": (v.get("ctl") or {}).get("numero"), "importo": v.get("importo")}
+                for v in (dati.get("inv") or []) if isinstance(v, dict) and v.get("ok") is not False and v.get("usa") is not False]
+        bolli = S.bolli_da_fatture(fatt)
+        d = db.carica_dashboard(c)
+        if not d:
+            return
+        sch = dict(d.get("_scheda") or {})
+        if (sch.get("bolli_fatture") or {}) == bolli:
+            return
+        sch["bolli_fatture"] = bolli
+        _rifai(c, d, sch)
+    except Exception as e:
+        print(f"prova: bolli non aggiornati: {e}")
 
 
 _SISTEMA = ("Sei l'agente IA di TaxScan (intelligenza artificiale, non una persona), che aiuta chi ha "
