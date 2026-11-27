@@ -3831,7 +3831,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   window.__oWrite=oWrite;
   document.documentElement.classList.add('flow');
   var _mpsv=showView;showView=function(v){MP.pend=null;mpCue(false);MP.qa=false;MP.asked={};MP.ftok++;clearTimeout(vsTm);_mpsv(v)};
-  if(!(function(){try{return sessionStorage.getItem('astpos')}catch(e){return null}})()&&window.__putDot)window.__putDot(innerWidth>640&&window.__dockX?window.__dockX():14,innerWidth>640?innerHeight-210:innerHeight-170,false);
+  if(!(function(){try{return sessionStorage.getItem('astpos')}catch(e){return null}})()&&window.__putDot)(function(){var dy=innerWidth>900&&window.__dockY?window.__dockY():null;if(dy!=null)window.__putDot(window.__dockX(),dy,false);else window.__putDot(innerWidth>640&&window.__dockX?(innerWidth>900&&window.__sbW&&window.__sbW()>100?window.__sbW()+14:window.__dockX()):14,innerWidth>640?innerHeight-210:innerHeight-170,false)})();
   // ---- l'avatar e il fumetto non coprono mai i pulsanti da cliccare ("Confermo" e simili)
   var _pbCore=placeBub,MPA={t:null};
   function mpHit(a,b,p){return a.left<b.right+p&&a.right>b.left-p&&a.top<b.bottom+p&&a.bottom>b.top-p}
@@ -4273,6 +4273,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // le voci del gruppo Gestione si spengono quando si apre una sezione classica, e viceversa
   B.forEach(function(b){b.addEventListener('click',function(){[].forEach.call(gn.querySelectorAll('button[data-g]'),function(x){x.removeAttribute('aria-current')})})});
   // dall'agente IA: guide e pagine
+  // l'avatar nella barra laterale si mette nello spazio libero tra l'ultima voce di Gestione e Profilo, se c'e'
+  window.__dockY=function(){var a=document.getElementById('astab'),g=gn.lastElementChild,pr=pn.getBoundingClientRect();if(!a||!g||!pr.height)return null;
+    var hgt=a.offsetHeight||84,top=g.getBoundingClientRect().bottom+10,bot=pr.top-10;return bot-top>=hgt?Math.round(top+(bot-top-hgt)/2):null};
+  setTimeout(function(){var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}if(st||innerWidth<=900||!window.__putDot)return;var dy=window.__dockY();if(dy!=null)window.__putDot(window.__dockX(),dy,false)},400);
   window.__vai=function(k){if(/^(fa|cl|in|sc)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
   window.__aiutoVoci=function(){return [['Apri le guide',function(){window.__aiuto&&window.__aiuto()}],['Fatture',function(){window.__vai('fa')}],['Scadenze e F24',function(){window.__vai('sc')}],['Ottimizzazione fiscale',function(){window.__vai('g')}],['Incassi',function(){window.__vai('in')}],['Profilo',function(){window.__vai('f')}]]};
   window.__aiutoChip=function(){setTimeout(function(){window.__xchips&&window.__xchips(window.__aiutoVoci())},60);return 'Ti porto dove vuoi. Le <b>guide</b> spiegano le regole del forfettario in parole semplici; oppure scegli una pagina.'};
