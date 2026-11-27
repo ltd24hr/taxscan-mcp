@@ -859,6 +859,14 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
   #pvHero .phA img{width:40px;height:40px}
   #pvHero .phA .phB{grid-column:1/-1}
 }
+#pvHero .phSc .phCop{background:#f3d98f;margin-top:10px}#pvHero .phSc .phCop i{background:#122452}#pvHero .phSc .phCop.ok i{background:#1f8a4c}
+#pvHero .phSc .phCopT{margin-top:4px}#pvHero .phWarn{color:#9a3412;font-weight:600}
+#pvHero .phSalR{display:flex;gap:6px;margin-top:8px}#pvHero .phSalR input{flex:1 1 auto;min-width:0;font:inherit;font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid #e2c36a;background:#fffaf0;color:#122452}
+#pvHero .phSalR button{font:inherit;font-size:14px;font-weight:600;padding:8px 12px;border-radius:10px;border:1px solid #122452;background:#fff;color:#122452;cursor:pointer}
+#pvHero .phCs{margin-top:12px;background:var(--surface);border:1px solid var(--line)}#pvHero .csG{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}#pvHero .csL{margin:4px 0 6px;font-weight:700;font-size:14px;color:var(--ink)}
+#pvHero .csCh{height:110px}#pvHero .csCh i.pk{background:#c62f3a}#pvHero .csCh i.fl{background:#2ec4b0}
+@media (max-width:900px){#pvHero .phSalR{flex-direction:column}#pvHero .phSalR button{align-self:flex-start}}
+@media (max-width:700px){#pvHero .csG{grid-template-columns:minmax(0,1fr)}#pvHero .csCh{height:80px}}
 @media (prefers-reduced-motion:reduce){#pvHero .phBar i{transition:none}}
 /* v97: una sola grafica per tutte le sezioni: titoli di pagina, riquadri arrotondati, pulsanti e campi uguali */
 .vhd{margin:4px 0 20px}
@@ -3277,8 +3285,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   // ---- numeri
   function pvNum(s){return parseFloat(String(s||'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))||0}
   function pvEur(v){var n=Math.round(v||0),neg=n<0;return (neg?'−':'')+String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' €'}
-  var PVDATA='30 novembre';
-  function pvGiorni(){return giorniA(10,30)}
+  function pvPsD(){var iso=(window.TS_SRV&&TS_SRV.ps)||'';return /^\d{4}-\d{2}-\d{2}$/.test(iso)?new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)):null}
+  var PVDATA=(function(){var d=pvPsD();return d?d.getDate()+' '+MESI[d.getMonth()]:'30 novembre'})();
+  function pvGiorni(){var d=pvPsD();if(!d)return giorniA(10,30);var t=new Date();return Math.max(0,Math.round((d-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/864e5))}
   function pvTarget(){return pvNum(D.imp)}
   function pvSalK(){return D.imp+'|'+PVDATA}
   function pvSal(){var v=PV.sal[pvSalK()];if(v==null&&SRV&&SRV.acc)v=+SRV.acc;if(v==null){var a=accGet();v=a&&a.v==='si'?pvTarget():0}return v}
@@ -3753,6 +3762,27 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       try{PV.incx.forEach(function(x){var d=String(x.d||'');if(d.slice(0,4)!==String(y))return;var mm=+d.slice(5,7)-1;if(mm>=0&&mm<=m){v[mm]+=x.e||0;n++}})}catch(e){}
       return {v:v,n:n,m:m}}
     function quando(g){return g==null?'':g<=0?'Oggi':g===1?'Domani':'Tra '+g+' giorni'}
+    // copertura: quanto hai gia' messo da parte rispetto alla rata che arriva
+    function phCop(N){var tg=0,s=0;try{tg=pvTarget();s=pvSal()}catch(e){}if(!(tg>0))return '';
+      var cp=Math.min(100,Math.round(s*100/tg)),manca=Math.max(0,tg-s),g=N&&N.giorni!=null?N.giorni:null,sett=g!=null?Math.max(1,Math.ceil(g/7)):0,t;
+      if(cp>=100)t='<b>Ci sei:</b> hai già messo da parte tutto per questa scadenza.';
+      else if(g!=null&&g<=30)t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%). <span class="phWarn">Mancano '+pvEur(manca)+' e '+(g<=1?'il tempo è poco':g+' giorni')+'.</span>';
+      else t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%).'+(sett?' Circa <b>'+pvEur(manca/sett)+'</b> a settimana e ci arrivi.':'');
+      return '<div class="phBar phCop'+(cp>=100?' ok':'')+'" role="img" aria-label="Messo da parte il '+cp+'% della prossima scadenza"><i style="width:'+cp+'%"></i></div>'+
+        '<p class="phNote phCopT">'+t+'</p>'+
+        (cp<100?'<div class="phSalR"><input id="phSalV" inputmode="decimal" autocomplete="off" placeholder="Ho messo da parte…" aria-label="Euro messi da parte"><button type="button" id="phSalG">Aggiungi</button></div>':'')}
+    // con e senza: le scadenze dei prossimi 12 mesi come picchi, e la stessa cifra divisa in rate mensili
+    function phCs(){var L=window.TS_SC||[],m3=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'],t=new Date(),v=[0,0,0,0,0,0,0,0,0,0,0,0],tot=0;
+      L.forEach(function(x){var p=String(x.d||'').toLowerCase().split(' ');if(p.length<3)return;var mm=m3.indexOf(p[1].slice(0,3)),yy=+p[2];if(mm<0||!yy)return;
+        var k=(yy-t.getFullYear())*12+mm-t.getMonth();if(k<0||k>11)return;var e=pvNum(x.t);v[k]+=e;tot+=e});
+      if(!(tot>0)||v.filter(function(x){return x>0}).length<1)return '';
+      var rata=tot/12,mx=Math.max.apply(null,v),lab=[];for(var i=0;i<12;i++)lab.push(ML[(t.getMonth()+i)%12]);
+      function ch(a,cl){return '<div class="phCh csCh" aria-hidden="true">'+a.map(function(x,i){return '<span title="'+lab[i]+': '+pvEur(x)+'"><i class="'+(x?cl:'')+'" style="height:'+(x?Math.max(4,Math.round(x*100/mx)):3)+'%"></i></span>'}).join('')+'</div><div class="phMs" aria-hidden="true">'+lab.map(function(l){return '<span>'+l+'</span>'}).join('')+'</div>'}
+      var picchi=v.map(function(x,i){return x>0?pvEur(x)+' a '+MESI[(t.getMonth()+i)%12]:''}).filter(Boolean);
+      return '<section class="phC phCs" aria-labelledby="phCsT"><h2 id="phCsT">Le tasse dei prossimi 12 mesi, con e senza un piano</h2>'+
+        '<div class="csG"><div><p class="csL">Senza piano</p>'+ch(v,'pk')+'<p class="phNote">Paghi tutto in pochi giorni: '+picchi.join(', ')+'.</p></div>'+
+        '<div><p class="csL">Con il piano di TaxScan</p>'+ch(v.map(function(){return rata}),'fl')+'<p class="phNote">La stessa cifra, <b>'+pvEur(tot)+'</b>, messa da parte un po\' alla volta: circa <b>'+pvEur(rata)+'</b> al mese.</p></div></div>'+
+        '<p class="phNote" style="margin-top:8px;font-size:13px">Stime sui tuoi dati. Le scadenze restano quelle: cambia solo che i soldi sono già pronti.</p></section>'}
     function render(){try{
       var oggi=new Date(),y=oggi.getFullYear(),inc=pvIncassato(),so=SOGLIA||85000,p=+D.perc||0,N=nx(),M=mesi(),c=window.TS_C,ps=window.TS_SRV&&TS_SRV.ps;
       var face=document.querySelector('#sl1 .face.idle'),nome=String(D.nome||'').trim();
@@ -3776,9 +3806,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         '<div class="phBar" aria-hidden="true"><i style="width:'+Math.min(100,p)+'%"></i></div>'+
         '<p class="phNote">'+(inc>0?'Su '+pvEur(inc)+' fanno circa <b>'+pvEur(inc*p/100)+'</b> tra imposta e contributi.':'Su 1.000 € incassati, circa <b>'+pvEur(10*p)+'</b> tra imposta e contributi.')+'</p></section>';
       if(N&&N.imp&&N.mese>=0)g+='<section class="phC phSc" aria-labelledby="phScT"><h2 id="phScT">Prossima scadenza</h2><span class="phN">'+N.giorno+' '+MESI[N.mese]+'</span>'+
-        '<p class="phNote">'+pvEsc(N.label||'Imposta e contributi')+' · <b>'+pvEsc(N.imp)+'</b></p>'+(c&&ps?'<a class="phBtn" href="/d/'+encodeURIComponent(c)+'/f24?data='+encodeURIComponent(ps)+'" target="_blank" rel="noopener" id="phF24b">Prepara l\'F24</a>':'')+'</section>';
+        '<p class="phNote">'+pvEsc(N.label||'Imposta e contributi')+' · <b>'+pvEsc(N.imp)+'</b></p>'+phCop(N)+(c&&ps?'<a class="phBtn" href="/d/'+encodeURIComponent(c)+'/f24?data='+encodeURIComponent(ps)+'" target="_blank" rel="noopener" id="phF24b">Prepara l\'F24</a>':'')+'</section>';
       g+='</div>';
-      hero.innerHTML=h+'<div class="phG">'+g+'</div>';
+      hero.innerHTML=h+'<div class="phG">'+g+'</div>'+phCs();
+      var sg=$('phSalG'),si=$('phSalV');if(sg&&si){sg.onclick=function(){var x=pvNum(si.value);if(!(x>0))return;var k=pvSalK();PV.sal[k]=Math.max(0,pvSal()+x);pvPut(PV);tap('hero_salvadanaio');if(window.TS_C)pvPost('/api/prova/salvadanaio',{totale:PV.sal[k]}).catch(function(){});if(PV.sal[k]>=pvTarget()&&pvTarget()){try{accSet('si')}catch(e){}window.__wink&&window.__wink()}try{pvRender('vSal')}catch(e){}render()};si.onkeydown=function(e){if(e.key==='Enter')sg.click()}}
       var u=$('phUp');if(u)u.onclick=function(){tap('hero_carica_fatture');showView('g')};
       var ex=hero.querySelector('[data-ex]');if(ex)ex.addEventListener('click',function(){setTimeout(function(){try{if(MP.pend&&ex.classList.contains('sel'))$('astab').click()}catch(e){}},0)});
       ['phF24a','phF24b'].forEach(function(id){var a=$(id);if(a)a.onclick=function(){tap('hero_f24')}});
