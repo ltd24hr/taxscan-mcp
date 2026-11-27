@@ -105,18 +105,18 @@ _DEDUZIONI_ATECO = [
 # redditivita' dipende dal gruppo, non dal codice esatto, nella maggior parte dei casi). E' una
 # STIMA: la pagina segna codice_ateco_stimato e la dashboard avvisa di controllarlo.
 SETTORI_RAPIDI = [
-    {"etichetta": "Consulenza e servizi alle imprese", "codice": "70.22.09"},
-    {"etichetta": "Informatica: siti, app, programmazione", "codice": "62.01.00"},
-    {"etichetta": "Marketing, grafica, design, fotografia", "codice": "74.10.21"},
-    {"etichetta": "Formazione, corsi, insegnamento", "codice": "85.59.20"},
-    {"etichetta": "Commercio al dettaglio o online", "codice": "47.91.10"},
-    {"etichetta": "Agente o rappresentante di commercio", "codice": "46.18.99"},
-    {"etichetta": "Edilizia, impianti, ristrutturazioni", "codice": "43.39.09"},
-    {"etichetta": "Bar, ristorazione, alloggio", "codice": "56.10.11"},
-    {"etichetta": "Parrucchiere, estetista, servizi alla persona", "codice": "96.02.01"},
-    {"etichetta": "Trasporti e consegne", "codice": "49.41.00"},
-    {"etichetta": "Arte, sport, spettacolo", "codice": "90.03.09"},
-    {"etichetta": "Altro", "codice": "82.99.99"},
+    {"etichetta": "Consulenza e servizi alle imprese", "codice": "70.22.09", "esempi": "es. consulente aziendale, project manager, temporary manager"},
+    {"etichetta": "Informatica: siti, app, programmazione", "codice": "62.01.00", "esempi": "es. sviluppatore, web designer, consulente IT"},
+    {"etichetta": "Marketing, grafica, design, fotografia", "codice": "74.10.21", "esempi": "es. grafico, social media manager, fotografo, copywriter"},
+    {"etichetta": "Formazione, corsi, insegnamento", "codice": "85.59.20", "esempi": "es. formatore, insegnante privato, coach, tutor online"},
+    {"etichetta": "Commercio al dettaglio o online", "codice": "47.91.10", "esempi": "es. negozio online, vendita su Amazon o Etsy, ambulante"},
+    {"etichetta": "Agente o rappresentante di commercio", "codice": "46.18.99", "esempi": "es. agente di commercio, procacciatore d'affari"},
+    {"etichetta": "Edilizia, impianti, ristrutturazioni", "codice": "43.39.09", "esempi": "es. muratore, imbianchino, elettricista, idraulico"},
+    {"etichetta": "Bar, ristorazione, alloggio", "codice": "56.10.11", "esempi": "es. bar, food truck, B&B, affittacamere"},
+    {"etichetta": "Parrucchiere, estetista, servizi alla persona", "codice": "96.02.01", "esempi": "es. parrucchiere, estetista, tatuatore, massaggiatore"},
+    {"etichetta": "Trasporti e consegne", "codice": "49.41.00", "esempi": "es. corriere, autotrasportatore, rider"},
+    {"etichetta": "Arte, sport, spettacolo", "codice": "90.03.09", "esempi": "es. musicista, attore, artista, istruttore sportivo"},
+    {"etichetta": "Altro", "codice": "82.99.99", "esempi": "se non trovi il tuo settore: il codice lo controlliamo dopo"},
 ]
 
 
@@ -186,13 +186,15 @@ CAMPI = [
     # --- previdenza: solo le domande che servono davvero
     {"chiave": "nome_cassa", "gruppo": "previdenza", "obbligatorio": "se_cassa",
      "domanda": "Quale cassa?",
-     "opzioni": "casse_plausibili"},
+     "opzioni": "casse_plausibili",
+     "dove_trovarlo": "Se sei iscritto a un albo professionale (avvocati, ingegneri, psicologi...) i contributi vanno alla cassa del tuo ordine. La trovi sul sito del tuo ordine o nella tessera di iscrizione."},
     {"chiave": "aliquota_cassa", "gruppo": "previdenza", "obbligatorio": False, "tipo": "numero"},
     {"chiave": "riduzione_35", "gruppo": "previdenza", "obbligatorio": "se_artigiani_commercianti",
      "domanda": "Hai chiesto all'INPS uno sconto sui contributi?",
      "opzioni": [("si", "Sì, il 35% riservato ai forfettari"),
                  ("si_50", "Sì, il 50% per chi si è iscritto la prima volta nel 2025"),
-                 ("no", "No"), ("non_so", "Non lo so")]},
+                 ("no", "No"), ("non_so", "Non lo so")],
+     "dove_trovarlo": "Lo sconto non arriva da solo: si chiede con una domanda sul sito INPS. Se non ricordi di averla fatta, probabilmente la risposta è No."},
     {"chiave": "altra_copertura_previdenziale", "gruppo": "previdenza", "obbligatorio": False, "tipo": "bool"},
 
     # --- situazioni particolari: 1 scelta multipla al posto di 5 domande
@@ -202,7 +204,8 @@ CAMPI = [
                  ("societa", "Ho quote in una società di persone, in uno studio associato, o controllo una SRL"),
                  ("ex_datore", "Fatturo soprattutto a un mio ex datore di lavoro degli ultimi due anni"),
                  ("dipendenti_collaboratori", "Ho dipendenti o collaboratori che pago"),
-                 ("nessuna", "Nessuna di queste")]},
+                 ("nessuna", "Nessuna di queste")],
+     "dove_trovarlo": "Servono a controllare che tu possa restare nel forfettario: alcune di queste situazioni lo escludono."},
     {"chiave": "redditi_dipendente_pensione", "gruppo": "situazioni", "obbligatorio": "se_dipendente", "tipo": "numero",
      "domanda": "Il reddito lordo da dipendente o pensione dell'anno scorso era:",
      "opzioni": [("sotto_30000", "Sotto 30.000 €"), ("tra_30000_e_35000", "Tra 30.000 e 35.000 €"),
@@ -210,12 +213,14 @@ CAMPI = [
      "dove_trovarlo": "Certificazione Unica (CU), punto 1 o 2."},
     {"chiave": "rapporto_dipendente_cessato", "gruppo": "situazioni", "obbligatorio": "se_sopra_limite", "tipo": "bool",
      "domanda": "Quel rapporto di lavoro è finito?",
-     "opzioni": [("si", "Sì, è cessato"), ("no", "No, continua")]},
+     "opzioni": [("si", "Sì, è cessato"), ("no", "No, continua")],
+     "dove_trovarlo": "Se quel lavoro è finito entro l'anno scorso, il limite sul reddito da dipendente non si applica più."},
     {"chiave": "partecipazioni_societarie", "gruppo": "situazioni", "obbligatorio": False, "tipo": "bool"},
     {"chiave": "prevalenza_ex_datore", "gruppo": "situazioni", "obbligatorio": False, "tipo": "bool"},
     {"chiave": "spese_personale", "gruppo": "situazioni", "obbligatorio": "se_dipendenti", "tipo": "numero",
      "domanda": "Quanto spendi all'anno, lordo, per dipendenti e collaboratori?",
-     "opzioni": [("sotto_20000", "Meno di 20.000 €"), ("sopra_20000", "Più di 20.000 €")]},
+     "opzioni": [("sotto_20000", "Meno di 20.000 €"), ("sopra_20000", "Più di 20.000 €")],
+     "dove_trovarlo": "Somma degli stipendi lordi e dei compensi pagati a collaboratori l'anno scorso. Oltre 20.000 € non si può stare nel forfettario."},
 
     # --- numeri: Fatture in Cloud, oppure i due soli importi che restano da chiedere
     {"chiave": "usa_fatture_in_cloud", "gruppo": "numeri", "obbligatorio": False,
@@ -226,7 +231,8 @@ CAMPI = [
      "dove_trovarlo": "Somma delle fatture incassate (non emesse) nell'anno. Ultima dichiarazione: quadro LM, "
                       "rigo LM22 colonna 3."},
     {"chiave": "ricavi_anno_corrente", "gruppo": "numeri", "obbligatorio": True, "tipo": "numero",
-     "domanda": "E quest'anno, da gennaio a oggi, quanto hai incassato?"},
+     "domanda": "E quest'anno, da gennaio a oggi, quanto hai incassato?",
+     "dove_trovarlo": "Somma delle fatture che ti hanno già pagato da gennaio a oggi. Va bene una cifra tonda."},
     {"chiave": "contributi_versati_anno_precedente", "gruppo": "numeri", "obbligatorio": False, "tipo": "numero"},
     {"chiave": "f24_pagati", "gruppo": "numeri", "obbligatorio": False, "tipo": "lista"},
 

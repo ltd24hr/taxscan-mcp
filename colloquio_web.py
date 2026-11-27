@@ -1128,9 +1128,12 @@ function rispondi(aggiornamenti) {
 // testi della pagina web: niente rimandi a cose gia' rifiutate (il certificato), niente gergo da dichiarazione, niente promesse che qui non si mantengono
 const WEB = {
   data_apertura: {d: "Quando hai aperto la partita IVA?", h: "Il mese serve per i contributi del primo anno. Se non lo ricordi, basta l'anno."},
-  codice_ateco: {d: "Qual è il tuo codice ATECO?", h: ""},
+  codice_ateco: {d: "Qual è il tuo codice ATECO?", h: "Lo trovi nel certificato di attribuzione della partita IVA, alla voce \u201ccodice attività\u201d. Non lo hai sotto mano? Nessun problema, ti aiuto io."},
+  nome_cassa: {h: "È la cassa del tuo ordine professionale: la trovi sul sito dell'ordine o sulla tessera di iscrizione."},
+  riduzione_35: {h: "Lo sconto si chiede con una domanda sul sito INPS, non arriva da solo. Se non ricordi di averla fatta, probabilmente è No."},
+  spese_personale: {h: "Stipendi lordi più compensi ai collaboratori, in un anno."},
   origine_attivita: {h: "Serve a capire se puoi avere l'imposta al 5% (attività nuove, primi 5 anni) invece del 15%."},
-  situazioni_particolari: {d: "Qualcuna di queste ti riguarda? Puoi sceglierne più d'una."},
+  situazioni_particolari: {d: "Qualcuna di queste ti riguarda? Puoi sceglierne più d'una.", h: "Servono a controllare che tu possa restare nel forfettario."},
   usa_fatture_in_cloud: {d: "Usi Fatture in Cloud per fatturare?", h: "Se lo usi, più avanti potrai collegarlo e leggerò gli incassi da lì. Per ora mi basta una cifra approssimativa."},
   ricavi_anno_precedente: {h: "Conta quello che hai incassato davvero nell'anno, non quello che hai fatturato. Va bene una cifra tonda."},
   ricavi_anno_corrente: {h: "Va bene una cifra tonda."}
@@ -1208,7 +1211,7 @@ function mostraDomanda(v) {
     html += '<div class="riga"><button class="primario" id="trova">Avanti</button></div><div id="trovati" role="status"></div>';
     html += '<button class="link" id="nonso">Preferisco scegliere il mio settore</button>';
     html += '<div id="settori" class="nascosto"><p class="hint">Scegli quello che ti somiglia di più: il codice esatto lo potrai controllare dopo.</p><div class="opzioni">' +
-      ((ultima && ultima.settori) || []).map((s, i) => `<button class="opz" data-i="${i}"><span class="n set">${icoSettore(s.codice)}</span><span>${esc(s.etichetta)}</span></button>`).join("") + '</div></div>';
+      ((ultima && ultima.settori) || []).map((s, i) => `<button class="opz" data-i="${i}"><span class="n set">${icoSettore(s.codice)}</span><span>${esc(s.etichetta)}${s.esempi ? "<br><small>" + esc(s.esempi) + "</small>" : ""}</span></button>`).join("") + '</div></div>';
     box.innerHTML = html; if (PREFILL) { $("descr").value = PREFILL; html = ""; } $("descr").focus();
     const T = $("trovati");
     const pc = c => (c.coefficiente ? " · coefficiente " + Math.round(c.coefficiente * 100) + "%" : "");
