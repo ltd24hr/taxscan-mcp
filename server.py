@@ -894,6 +894,20 @@ async def pagina_chi_siamo(request):
     return HTMLResponse(cookie_banner.inietta(chisiamo.pagina()))
 
 
+@mcp.custom_route("/coefficienti", methods=["GET"])
+async def pagina_coefficienti(request):
+    from starlette.responses import HTMLResponse
+    import coefficienti
+    return HTMLResponse(cookie_banner.inietta(coefficienti.pagina()))
+
+
+@mcp.custom_route("/aziende", methods=["GET"])
+async def pagina_aziende(request):
+    from starlette.responses import HTMLResponse
+    import aziende
+    return HTMLResponse(cookie_banner.inietta(aziende.pagina()))
+
+
 @mcp.custom_route("/commercialisti", methods=["GET"])
 async def pagina_commercialisti(request):
     from starlette.responses import HTMLResponse
@@ -916,6 +930,7 @@ async def candidatura_commercialista(request):
     except Exception:
         return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
     d = {k: str(c.get(k, "") or "").strip()[:800 if k == "nota" else 120] for k in ("nome", "studio", "email", "citta", "nota")}
+    azienda = str(c.get("tipo", "")) == "azienda"
     d["email"] = d["email"].lower()
     if not d["nome"] or not _re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]{2,}", d["email"]):
         return JSONResponse({"ok": False, "errore": "Scrivi nome ed email."}, status_code=400)
@@ -927,14 +942,19 @@ async def candidatura_commercialista(request):
     _COMM_IP[ip] = recenti + [ora]
     if not ADMIN_EMAIL:
         return JSONResponse({"ok": False, "errore": "Non è partita: scrivici a info@ltd24ore.com."}, status_code=500)
-    righe = "".join(f"<p><b>{_html.escape(k.capitalize())}:</b> {_html.escape(v)}</p>" for k, v in d.items() if v)
+    etich = {"studio": "Azienda", "citta": "Collaboratori in P.IVA"} if azienda else {}
+    righe = "".join(f"<p><b>{_html.escape(etich.get(k, k.capitalize()))}:</b> {_html.escape(v)}</p>" for k, v in d.items() if v)
     try:
-        await asyncio.to_thread(auth.manda_email, ADMIN_EMAIL, f"TaxScan: candidatura commercialista partner ({d['nome']})",
-                                "<p>Nuova candidatura dalla pagina /commercialisti:</p>" + righe)
+        if azienda:
+            await asyncio.to_thread(auth.manda_email, ADMIN_EMAIL, f"TaxScan: richiesta da un'azienda ({d['studio'] or d['nome']})",
+                                    "<p>Nuova richiesta dalla pagina /aziende:</p>" + righe)
+        else:
+            await asyncio.to_thread(auth.manda_email, ADMIN_EMAIL, f"TaxScan: candidatura commercialista partner ({d['nome']})",
+                                    "<p>Nuova candidatura dalla pagina /commercialisti:</p>" + righe)
     except Exception as e:
         print(f"commercialisti: candidatura non inviata: {e}")
         return JSONResponse({"ok": False, "errore": "Non è partita: riprova tra poco."}, status_code=500)
-    _evento("commercialista_candidatura", None, {})
+    _evento("azienda_richiesta" if azienda else "commercialista_candidatura", None, {})
     return JSONResponse({"ok": True})
 
 
@@ -1834,7 +1854,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /chi-siamo", "Allow: /commercialisti", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /chi-siamo", "Allow: /commercialisti", "Allow: /aziende", "Allow: /coefficienti", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
@@ -1845,7 +1865,7 @@ async def robots_txt(request):
 async def sitemap_xml(request):
     from starlette.responses import Response
     pagine = [("/", "1.0"), ("/guide", "0.6")] + [(f"/guide/{s}", "0.8") for s in guide.GUIDE] + \
-             [("/privacy", "0.3"), ("/termini", "0.3")]
+             [("/coefficienti", "0.8"), ("/chi-siamo", "0.4"), ("/commercialisti", "0.4"), ("/aziende", "0.4"), ("/privacy", "0.3"), ("/termini", "0.3")]
     url = "".join(f"<url><loc>https://{DOMINIO_PRINCIPALE}{p}</loc><priority>{pr}</priority></url>" for p, pr in pagine)
     return Response('<?xml version="1.0" encoding="UTF-8"?>'
                     f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{url}</urlset>',

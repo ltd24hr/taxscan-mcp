@@ -236,10 +236,120 @@ def segna_pagato(c: str = "", email: str = "", fonte: str = "", importo: float =
         db.registra_evento("pagato", c or email, {"fonte": fonte, "importo": importo})
     except Exception:
         pass
+    try:
+        _premia_invito(c)
+    except Exception as e:
+        print(f"pagamenti: premio invito non assegnato: {e}")
     dest = email or (_email_di(c) if c else "")
     inviato = consegna_report(c, dest) if dest else False
     return {"ok": True, "c": c, "email": dest, "report_inviato": inviato, "fino_al": fino.isoformat()}
 
+
+
+# ------------------------------------------------------------------ passaparola
+# Ogni persona ha un link d'invito (taxscan.it/?invito=CODICE). Chi arriva da quel link e poi attiva TaxScan
+# regala a chi l'ha invitato 3 mesi in piu' (fino a 4 amici, cioe' un anno). L'invitato paga il prezzo normale.
+MESI_PREMIO = 3
+MAX_PREMI = 4
+_COD = re.compile(r"^[A-Za-z0-9]{6,16}$")
+
+
+def _piu_mesi(d: datetime.date, mesi: int) -> datetime.date:
+    m = d.month - 1 + mesi
+    a, m = d.year + m // 12, m % 12 + 1
+    import calendar
+    return datetime.date(a, m, min(d.day, calendar.monthrange(a, m)[1]))
+
+
+def codice_invito(c: str) -> str:
+    if not c or not _ID.match(c):
+        return ""
+    rec = _get("invito_di/" + c)
+    if rec and rec.get("codice"):
+        return rec["codice"]
+    import secrets
+    alf = "abcdefghjkmnpqrstuvwxyz23456789"
+    for _ in range(5):
+        cod = "".join(secrets.choice(alf) for _ in range(8))
+        if not _get("invito/" + cod):
+            break
+    _set("invito/" + cod, {"c": c})
+    _set("invito_di/" + c, {"codice": cod, "premiati": []})
+    return cod
+
+
+def info_invito(c: str) -> dict:
+    import emailtpl
+    cod = codice_invito(c)
+    if not cod:
+        return {"ok": False}
+    rec = _get("invito_di/" + c) or {}
+    n = len(rec.get("premiati") or [])
+    return {"ok": True, "on": attivo(), "link": f"{emailtpl.PUBLIC_URL}/?invito={cod}", "amici": n, "mesi": n * MESI_PREMIO,
+            "max": MAX_PREMI, "premio": MESI_PREMIO}
+
+
+def registra_invito(c_nuovo: str, cod: str) -> dict:
+    """Chi e' arrivato da un link d'invito: lo ricordo, il premio scatta quando attiva TaxScan."""
+    if not c_nuovo or not _ID.match(c_nuovo) or not _COD.match(cod or ""):
+        return {"ok": False}
+    r = _get("invito/" + cod)
+    if not r or r.get("c") == c_nuovo or _get("invitato/" + c_nuovo) or pagato(c_nuovo):
+        return {"ok": True, "registrato": False}
+    _set("invitato/" + c_nuovo, {"da": r["c"], "quando": datetime.date.today().isoformat(), "premiato": False})
+    try:
+        db.registra_evento("invito_registrato", c_nuovo, {})
+    except Exception:
+        pass
+    return {"ok": True, "registrato": True}
+
+
+def _premia_invito(c_nuovo: str) -> None:
+    inv = _get("invitato/" + c_nuovo) if c_nuovo else None
+    if not inv or inv.get("premiato"):
+        return
+    c_inv = inv.get("da") or ""
+    rec = _get("invito_di/" + c_inv) or {"premiati": []}
+    premiati = list(rec.get("premiati") or [])
+    inv["premiato"] = True
+    _set("invitato/" + c_nuovo, inv)
+    if c_nuovo in premiati or len(premiati) >= MAX_PREMI or not _ID.match(c_inv):
+        return
+    oggi = datetime.date.today()
+    p = _get("pagato/" + c_inv) or (_get("pagato_email/" + _email_di(c_inv)) if _email_di(c_inv) else None)
+    try:
+        base = max(oggi, datetime.date.fromisoformat(str((p or {}).get("fino_al") or "")))
+    except ValueError:
+        base = oggi
+    fino = _piu_mesi(base, MESI_PREMIO)
+    nuovo = dict(p) if p else {"dal": oggi.isoformat(), "fonte": "invito", "importo": 0, "rif": "", "email": "", "c": c_inv}
+    nuovo["fino_al"] = fino.isoformat()
+    nuovo["mesi_regalati"] = int(nuovo.get("mesi_regalati") or 0) + MESI_PREMIO
+    _set("pagato/" + c_inv, nuovo)
+    premiati.append(c_nuovo)
+    rec["premiati"] = premiati
+    _set("invito_di/" + c_inv, rec)
+    try:
+        db.registra_evento("invito_premiato", c_inv, {"amici": len(premiati)})
+    except Exception:
+        pass
+    email = _email_di(c_inv)
+    if email:
+        try:
+            import auth
+            import emailtpl
+            import requests
+            link = f"{emailtpl.PUBLIC_URL}/prova?c={c_inv}"
+            requests.post(auth.RESEND_URL, headers={"Authorization": f"Bearer {auth.RESEND_API_KEY}"}, timeout=20,
+                          json={"from": auth.MITTENTE, "to": email, "subject": f"Hai {MESI_PREMIO} mesi di TaxScan in più",
+                                "html": emailtpl.cornice("Grazie per il passaparola",
+                                                         f"<p>Ciao,</p><p>una persona che hai invitato ha appena attivato TaxScan: "
+                                                         f"come promesso, hai <b>{MESI_PREMIO} mesi in più</b>. Ora TaxScan è attivo fino al "
+                                                         f"<b>{fino.strftime('%d/%m/%Y')}</b>.</p>"
+                                                         f"<p><a href='{emailtpl._e(link)}' style='color:#4355cc;font-weight:700'>Apri TaxScan</a></p>")}
+                          ).raise_for_status()
+        except Exception as e:
+            print(f"pagamenti: email del premio invito non inviata: {e}")
 
 # ------------------------------------------------------------------ Stripe
 
@@ -286,6 +396,22 @@ def registra(mcp) -> None:
             print(f"pagamenti: webhook stripe in errore: {e}")
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito, status_code=stato)
+
+    @mcp.custom_route("/api/prova/invito", methods=["POST"])
+    async def prova_invito(request):
+        try:
+            q = await request.json()
+            c = str(q.get("c", ""))
+            if q.get("op") == "registra":
+                esito = await asyncio.to_thread(registra_invito, c, str(q.get("codice", "")))
+            else:
+                if not _ID.match(c) or not await asyncio.to_thread(db.carica_dashboard, c):
+                    return JSONResponse({"ok": False}, status_code=404)
+                esito = await asyncio.to_thread(info_invito, c)
+        except Exception as e:
+            print(f"pagamenti: invito {e}")
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
 
     @mcp.custom_route("/admin/pagato", methods=["GET"])
     async def admin_pagato(request):

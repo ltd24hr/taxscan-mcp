@@ -220,6 +220,66 @@ def _prossimo(d: dict, anno: int) -> int:
     return max([int(d["prossimo"].get(str(anno)) or 1)] + [n + 1 for n in usati])
 
 
+
+# --------------------------------------------------------------------------- dati pubblici dalla partita IVA (VIES)
+# Il servizio VIES della Commissione europea dice se una partita IVA e' attiva e, per l'Italia, restituisce
+# denominazione e indirizzo come risultano all'Agenzia delle Entrate. Nessun dato personale va al servizio
+# oltre al numero cercato. Limite per situazione, per non usarlo come motore di ricerca.
+_VIES = "https://ec.europa.eu/taxation_customs/vies/rest-api/ms/{paese}/vat/{n}"
+_VIES_USO: dict = {}
+_PROV = re.compile(r"^(\d{5})\s+(.+?)\s+([A-Z]{2})$")
+
+
+def _titolo(t: str) -> str:
+    piccole = {"di", "de", "del", "della", "dei", "e", "a", "al", "alla", "in", "da", "s.r.l.", "srl", "s.p.a.", "spa", "snc", "sas"}
+    out = []
+    for i, w in enumerate(t.lower().split()):
+        out.append(w.upper() if w in ("srl", "spa", "snc", "sas", "s.r.l.", "s.p.a.", "s.n.c.", "s.a.s.", "srls")
+                   else (w if i and w in piccole else w[:1].upper() + w[1:]))
+    return " ".join(out)
+
+
+def cerca_piva(c: str, piva: str, paese: str = "IT") -> dict:
+    """{ok, valida, denominazione, indirizzo, cap, comune, provincia} dal registro VIES."""
+    import requests
+    paese = (paese or "IT").upper()[:2]
+    n = re.sub(r"[^0-9A-Za-z]", "", str(piva or "")).upper()
+    if n.startswith(paese):
+        n = n[2:]
+    if paese == "IT" and not re.fullmatch(r"\d{11}", n):
+        return {"ok": False, "errore": "La partita IVA italiana ha 11 cifre."}
+    if not re.fullmatch(r"[0-9A-Z]{4,14}", n) or paese == "GR":
+        return {"ok": False, "errore": "Numero non valido."}
+    ora = time.time()
+    uso = [t for t in _VIES_USO.get(c, []) if ora - t < 3600]
+    if len(uso) >= 30:
+        return {"ok": False, "errore": "Troppe ricerche in poco tempo: riprova tra un po'."}
+    _VIES_USO[c] = uso + [ora]
+    try:
+        r = requests.get(_VIES.format(paese=paese, n=n), timeout=12, headers={"Accept": "application/json"})
+        j = r.json()
+    except Exception as e:
+        print(f"fatturazione: VIES {e}")
+        return {"ok": False, "errore": "Il registro europeo non risponde adesso: scrivi i dati a mano o riprova più tardi."}
+    if j.get("userError") not in (None, "VALID", "INVALID"):
+        return {"ok": False, "errore": "Il registro europeo non risponde adesso: scrivi i dati a mano o riprova più tardi."}
+    if not j.get("isValid"):
+        return {"ok": True, "valida": False}
+    nome = str(j.get("name") or "").strip()
+    nome = "" if nome in ("---", "-") else nome
+    nome = re.sub(r"\s*!!.*$", "", nome).strip()
+    righe = [x.strip() for x in str(j.get("address") or "").replace("\r", "").split("\n") if x.strip() and x.strip() != "---"]
+    out = {"ok": True, "valida": True, "piva": n, "nazione": paese, "denominazione": _titolo(nome) if nome else ""}
+    if righe:
+        m = _PROV.match(righe[-1]) if paese == "IT" else None
+        if m:
+            out.update({"cap": m.group(1), "comune": _titolo(m.group(2)), "provincia": m.group(3),
+                        "indirizzo": _titolo(", ".join(righe[:-1]))})
+        else:
+            out["indirizzo"] = _titolo(", ".join(righe))
+    return out
+
+
 def operazione(c: str, op: str, dati: dict | None = None) -> dict:
     """Una sola porta per la pagina: legge, salva i tuoi dati, i clienti, le fatture; emette, duplica, elimina, incassa."""
     if not _ID.match(c or ""):
@@ -233,6 +293,8 @@ def operazione(c: str, op: str, dati: dict | None = None) -> dict:
     numeri = None
     if op == "get":
         return {"ok": True, "dati": _per_pagina(d, c)}
+    if op == "piva":
+        return cerca_piva(c, str(x.get("piva") or ""), str(x.get("nazione") or "IT"))
     if op == "io":
         d["io"] = _io(x.get("io"))
         pn = int(_n(x.get("prossimo_numero"), 0))

@@ -970,7 +970,7 @@ html.nascondi #pvHero .phN,html.nascondi #pvHero .phNote,html.nascondi #pvHero .
 .gform input:not([type=checkbox]),.gform select,.gform textarea{font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
 .gform .gchk{flex-direction:row;align-items:center;gap:10px;font-weight:500}.gform .gchk input{width:18px;height:18px;flex:none}
 .g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}.g3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:0 12px}
-.gnota{font-size:13px!important;color:var(--ink2);margin:-4px 0 12px!important}
+.gnota{font-size:13px!important;color:var(--ink2);margin:-4px 0 12px!important}.pfib{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}#pfcomm .pfib .pfcgo{margin:0}#pfiL{width:100%}.gpiva{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-2px 0 14px}.gpiva .gnota{margin:0!important}
 .gerr{color:#9b1c1c;font-size:14px;margin:8px 0 0;line-height:1.5}
 .grighe{margin:4px 0 14px}.grh,.grr{display:grid;grid-template-columns:minmax(0,1fr) 70px 110px 36px;gap:8px;align-items:start}
 .grh{font-size:12.5px;font-weight:700;color:var(--ink2);margin:0 0 6px}.grr{margin:0 0 8px}
@@ -2820,7 +2820,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     say(d.q||d.x);pfChips(k);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
   // v98: il Profilo diviso in schede, come un gestionale; l'ultima scheda e' il commercialista
   var PFTABS=[['tu','Tu e gli avvisi',['nome','email','av','tel','dati','account']],['att','Attività e tasse',['att','ateco','fatt','piva','anno','aliq','inps','rid','altri','zona','reg']],
-    ['doc','Incassi e documenti',['inc','prec','docu','fic','modello']],['comm','Commercialista',[]]],PFTAB='att';
+    ['doc','Incassi e documenti',['inc','prec','docu','fic','modello']],['comm','Commercialista',[]],['inv','Invita un collega',[]]],PFTAB='att';
   try{PFTAB=sessionStorage.getItem('ts_pftab')||'att'}catch(e){}
   function pfTabDi(k){for(var i=0;i<PFTABS.length;i++)if(PFTABS[i][2].indexOf(k)>=0)return PFTABS[i][0];return 'tu'}
   function pfTabs(man){var t=$('pftabs');if(!t)return;
@@ -2839,9 +2839,25 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       try{localStorage.setItem('ts_comm_'+c,e)}catch(x){}g.disabled=true;o.textContent='Preparo e invio…';tap('commercialista_invia');
       fetch('/api/prova/commercialista',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:c,email:e,periodo:$('pfcP').value,nota:$('pfcN').value})}).then(function(r){return r.json()}).then(function(j){g.disabled=false;
         o.innerHTML=j&&j.ok?'Inviato a <b>'+oEsc(e)+'</b>'+(j.n!=null?' con '+j.n+(j.n===1?' fattura':' fatture'):'')+'. Ti ho mandato una copia.':oEsc((j&&j.errore)||'Non sono riuscito a inviare. Riprova tra poco.')}).catch(function(){g.disabled=false;o.textContent='Non sono riuscito a inviare. Riprova tra poco.'})}}
+  // v104: passaparola. Il link personale; se il pagamento e' attivo, 3 mesi in piu' per ogni collega che attiva TaxScan
+  function pfInv(){var el=$('pfcomm'),c=window.TS_C;
+    el.innerHTML='<div class="pfcc"><h3>Conosci qualcuno con la partita IVA?</h3><p id="pfiT">Mandagli il tuo link: arriva su TaxScan e prova gratis.</p><div id="pfiB"><p class="pfco">Un attimo…</p></div></div>';
+    if(!c){$('pfiB').innerHTML='<p class="pfco">Il tuo link personale compare qui quando apri TaxScan dalla tua situazione salvata.</p>';return}
+    fetch('/api/prova/invito',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:c,op:'get'})}).then(function(r){return r.json()}).then(function(j){
+      if(!j||!j.ok){$('pfiB').innerHTML='<p class="pfco">Non riesco a preparare il link adesso: riprova tra poco.</p>';return}
+      if(j.on)$('pfiT').innerHTML='Mandagli il tuo link. <b>Per ogni collega che attiva TaxScan ricevi '+j.premio+' mesi in più</b>, fino a '+(j.premio*j.max)+' mesi.';
+      var msg='Uso TaxScan per le tasse della partita IVA: mi dice quanto mettere da parte e quando pagare. Provalo gratis: '+j.link;
+      $('pfiB').innerHTML='<label for="pfiL">Il tuo link</label><input id="pfiL" readonly value="'+oEsc(j.link)+'">'+
+        '<div class="pfib"><button type="button" class="pfcgo" id="pfiC">Copia il link</button><a class="pfcgo sec" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">WhatsApp</a><a class="pfcgo sec" href="mailto:?subject='+encodeURIComponent('Ti consiglio TaxScan')+'&body='+encodeURIComponent(msg)+'">Email</a></div>'+
+        '<p class="pfco" id="pfiO" role="status"></p>'+(j.on?'<p class="pfco">'+(j.amici?'Colleghi che hanno attivato TaxScan dal tuo link: <b>'+j.amici+'</b>. Mesi in più guadagnati: <b>'+j.mesi+'</b>.':'Ancora nessun collega ha attivato TaxScan dal tuo link.')+'</p>':'');
+      $('pfiC').onclick=function(){var i=$('pfiL');tap('invito_copia');try{navigator.clipboard.writeText(j.link).then(function(){$('pfiO').textContent='Link copiato.'},function(){i.select();$('pfiO').textContent='Seleziona il link e copialo.'})}catch(e){i.select()}};
+      [].forEach.call($('pfiB').querySelectorAll('a'),function(a){a.addEventListener('click',function(){tap('invito_'+a.textContent.toLowerCase())})})
+    }).catch(function(){$('pfiB').innerHTML='<p class="pfco">Non riesco a preparare il link adesso: riprova tra poco.</p>'})}
+  // chi e' arrivato da un link d'invito: lo segno una volta sola
+  try{var INV=localStorage.getItem('ts_invito');if(INV&&window.TS_C){fetch('/api/prova/invito',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:window.TS_C,op:'registra',codice:INV})}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok)try{localStorage.removeItem('ts_invito')}catch(e){}}).catch(function(){})}}catch(e){}
   function renderProfilo(){var L=pfRighe(),man={};pfMancano().forEach(function(x){man[x[0]]=1});
     if(!PFTABS.some(function(x){return x[0]===PFTAB}))PFTAB='att';pfTabs(man);
-    var cm=PFTAB==='comm';$('pflist').hidden=cm;$('pfcomm').hidden=!cm;if(cm){pfComm();$('pfok').hidden=true;return}
+    var cm=PFTAB==='comm'||PFTAB==='inv';$('pflist').hidden=cm;$('pfcomm').hidden=!cm;if(cm){if(PFTAB==='inv')pfInv();else pfComm();$('pfok').hidden=true;return}
     var dove=(PFTABS.filter(function(x){return x[0]===PFTAB})[0]||[])[2]||[];L=L.filter(function(d){return dove.indexOf(d.k)>=0||(PFTAB==='tu'&&pfTabDi(d.k)==='tu')});
     $('pflist').innerHTML=L.map(function(d){return '<div class="pfr'+(man[d.k]?' pfman':'')+'" data-k="'+d.k+'" tabindex="0" role="button"><span class="pfl">'+d.l+'</span><span class="pfv">'+(d.v?oEsc(d.v):'<i>da aggiungere</i>')+'</span></div>'}).join('');
     wgInit($('pflist'),'f','.pfr');
@@ -4165,7 +4181,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     return testa('I tuoi dati in fattura','Li scrivi una volta: li metto io in ogni fattura.','<div class="gact"><button type="button" class="gbtn" data-a="indietro">Indietro</button></div>')+
       '<div class="gcard gform"><div class="g2">'+f('nome','Nome',nom,'autocomplete="given-name"')+f('cognome','Cognome',io.cognome,'autocomplete="family-name"')+'</div>'+
       '<div class="g2">'+f('cf','Codice fiscale',io.cf,'autocomplete="off" maxlength="16" style="text-transform:uppercase"')+f('piva','Partita IVA',io.piva||SRV.piva||m.piva,'inputmode="numeric" maxlength="11"')+'</div>'+
-      f('indirizzo','Indirizzo dell\'attività (via e numero)',io.indirizzo||m.indirizzo,'autocomplete="street-address"')+
+      '<div class="gpiva"><button type="button" class="gmini" data-a="iopiva">Compila l\'indirizzo dalla partita IVA</button><span class="gnota" id="gPivaM" role="status"></span></div>'+f('indirizzo','Indirizzo dell\'attività (via e numero)',io.indirizzo||m.indirizzo,'autocomplete="street-address"')+
       '<div class="g3">'+f('cap','CAP',io.cap,'inputmode="numeric" maxlength="5"')+f('comune','Comune',io.comune)+f('provincia','Provincia (sigla)',io.provincia,'maxlength="2" style="text-transform:uppercase"')+'</div>'+
       f('iban','IBAN per i pagamenti',io.iban||m.iban,'autocomplete="off"')+
       '<label class="gchk"><input type="checkbox" data-io="rivalsa"'+(io.rivalsa||(SRV.gest==='separata'&&io.rivalsa===undefined)?' checked':'')+'> Aggiungi la rivalsa INPS del 4% (solo gestione separata, se la applichi)</label>'+
@@ -4215,6 +4231,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       '<label>Paese<select data-c="nazione">'+[['IT','Italia'],['DE','Germania'],['FR','Francia'],['ES','Spagna'],['AT','Austria'],['BE','Belgio'],['NL','Paesi Bassi'],['IE','Irlanda'],['PT','Portogallo'],['CH','Svizzera'],['GB','Regno Unito'],['US','Stati Uniti'],['SM','San Marino']].map(function(p){return '<option value="'+p[0]+'"'+((k.nazione||'IT')===p[0]?' selected':'')+'>'+p[1]+'</option>'}).join('')+'</select></label>'+
       (pri?'<div class="g2">'+f('nome','Nome',k.nome)+f('cognome','Cognome',k.cognome)+'</div>':f('denominazione','Ragione sociale o nome dello studio',k.denominazione))+
       '<div class="g2">'+(pri&&it?'':f('piva',it?'Partita IVA':'Partita IVA (VAT number)',k.piva,'autocomplete="off"'))+(it?f('cf','Codice fiscale'+(pri?'':' (se diverso dalla partita IVA)'),k.cf,'style="text-transform:uppercase" autocomplete="off"'):'')+'</div>'+
+      (!pri&&['AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI','FR','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK'].indexOf(k.nazione||'IT')>=0?'<div class="gpiva"><button type="button" class="gmini" data-a="cercapiva">Compila dalla partita IVA</button><span class="gnota" id="gPivaM" role="status">Scrivi la partita IVA: nome e indirizzo li prendo dal registro europeo VIES.</span></div>':'')+
       f('indirizzo','Indirizzo (via e numero)',k.indirizzo)+'<div class="g3">'+f('cap','CAP',k.cap)+f('comune','Comune o città',k.comune)+(it?f('provincia','Provincia (sigla)',k.provincia,'maxlength="2" style="text-transform:uppercase"'):'')+'</div>'+
       (it&&!pri?'<div class="g2">'+f('sdi','Codice destinatario (7 caratteri)',k.sdi,'maxlength="7" style="text-transform:uppercase"')+f('pec','Oppure PEC',k.pec,'type="email"')+'</div><p class="gnota">Il codice destinatario te lo dà il cliente. Se non ce l\'ha, va bene la PEC; se non c\'è nessuno dei due, la fattura arriva nel suo cassetto fiscale.</p>':'')+
       f('email','Email per mandargli il PDF (facoltativa)',k.email,'type="email"')+
@@ -4223,7 +4240,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 
 
   // ---------- v103: Documenti pronti per un cliente (bozze da far controllare)
-  var DOCT=[['contratto','Contratto di prestazione'],['incarico','Lettera d\'incarico'],['privacy','Informativa privacy']];
+  var DOCT=[['contratto','Contratto di prestazione'],['incarico','Lettera d\'incarico'],['nda','Accordo di riservatezza'],['privacy','Informativa privacy'],['sollecito','Sollecito di pagamento']];
   function nomeIo(io){return [io.nome,io.cognome].filter(Boolean).join(' ')||'[il tuo nome e cognome]'}
   function nomeCl(k){return k.denominazione||[k.nome,k.cognome].filter(Boolean).join(' ')||'[nome del cliente]'}
   function indir(o){var s=[o.indirizzo,[o.cap,o.comune].filter(Boolean).join(' ')+(o.provincia?' ('+o.provincia+')':'')].filter(function(x){return String(x||'').trim()}).join(', ');return s||'[indirizzo]'}
@@ -4250,6 +4267,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       'Eventuali lavori in più, non compresi in questa lettera, saranno concordati e preventivati a parte.\n\n'+
       'Svolgerò l\'incarico in autonomia e con la massima cura. I suoi dati saranno trattati solo per questo incarico e per gli obblighi di legge, come spiegato nell\'informativa privacy.\n\n'+
       'Se è tutto in ordine, le chiedo di restituirmi questa lettera firmata per accettazione.\n\nCordiali saluti\n'+IO+'\n\nPer accettazione, il Cliente ______________________   Data __________\n';
+    if(d.tipo==='nda')return 'ACCORDO DI RISERVATEZZA\n\nTra\n'+CL+', '+CLID+', '+(k.tipo==='privato'?'residente in ':'con sede in ')+indir(k)+'\ne\n'+IO+', C.F. '+CF+', P.IVA '+PIVA+', con sede in '+indir(io)+'\n(insieme "le Parti")\n\n'+
+      '1. Scopo\nLe Parti si scambiano informazioni per il seguente lavoro: '+OGG+'.\n\n'+
+      '2. Informazioni riservate\nSono riservate tutte le informazioni non pubbliche ricevute dall\'altra Parte, in qualsiasi forma: dati di clienti, progetti, documenti, prezzi, codice, strategie. Non lo sono le informazioni già pubbliche, già note prima o ricevute legittimamente da terzi.\n\n'+
+      '3. Impegni\nChi riceve le informazioni le usa solo per lo scopo indicato, non le comunica a terzi senza consenso scritto, le protegge con la stessa cura che usa per le proprie e le restituisce o cancella quando il lavoro finisce, se richiesto.\n\n'+
+      '4. Durata\nGli obblighi valgono per tutta la durata del rapporto e per i 3 anni successivi.\n\n'+
+      '5. Dati personali\nSe le informazioni contengono dati personali, le Parti li trattano nel rispetto del Regolamento UE 2016/679.\n\n'+
+      '6. Controversie\nPer ogni controversia è competente il foro di '+LUOGO+', salvo i casi in cui la legge prevede un foro diverso.\n\n'+
+      LUOGO+', '+DATA+'\n\n'+CL+' ______________________\n\n'+IO+' ______________________\n';
+    if(d.tipo==='sollecito'){var aperte=G.dati.fatture.filter(function(f){return f.cliente_id===d.cl&&f.stato==='emessa'&&!f.incasso}),totA=aperte.reduce(function(a,f){return a+f.tot.totale},0);
+      var elenco=aperte.length?aperte.map(function(f){return '- fattura n. '+f.numero+'/'+f.anno+' del '+dIt(f.data)+', '+eur(f.tot.totale)+(f.scadenza?', da pagare entro il '+dIt(f.scadenza):'')}).join('\n'):'- fattura n. [numero] del [data], [importo] €';
+      return IO+'\n'+indir(io)+'\nP.IVA '+PIVA+'\n\nSpett.le '+CL+'\n'+indir(k)+'\n\n'+LUOGO+', '+DATA+'\n\nOggetto: sollecito di pagamento\n\nGentile cliente,\ndai miei controlli '+(aperte.length>1?'risultano ancora da pagare queste fatture':'risulta ancora da pagare questa fattura')+':\n\n'+elenco+'\n\n'+
+        (aperte.length>1?'Totale: '+eur(totA)+'.\n\n':'')+'Le chiedo di provvedere al pagamento entro 10 giorni da questa lettera, con bonifico'+(io.iban?' sull\'IBAN '+io.iban:' sul conto indicato in fattura')+'.\n\n'+
+        'Se ha già pagato, non tenga conto di questa lettera e mi scusi per il disturbo. Se c\'è qualche problema con la fattura, mi scriva: lo risolviamo volentieri.\n\nCordiali saluti\n'+IO+'\n'}
     return 'INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI\n(art. 13 del Regolamento UE 2016/679)\n\n'+
       '1. Chi tratta i dati\nIl titolare del trattamento è '+IO+', P.IVA '+PIVA+', '+indir(io)+(io.email?', email '+io.email:', email [la tua email]')+'.\n\n'+
       '2. Quali dati e perché\nTratto i dati che mi fornisci (nome, recapiti, dati fiscali, dati di pagamento) per:\na) svolgere il lavoro che mi chiedi e gestire il rapporto (base giuridica: esecuzione del contratto, art. 6.1.b);\nb) emettere le fatture e rispettare gli obblighi fiscali e contabili (base giuridica: obbligo di legge, art. 6.1.c).\nSenza questi dati non posso svolgere il lavoro né fatturarlo.\n\n'+
@@ -4262,7 +4292,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var h=testa('Documenti per '+esc(nomeCl(k)),'Bozze già compilate con i tuoi dati e quelli del cliente. Cambiale come vuoi, poi scaricale o stampale.','<div class="gact"><button type="button" class="gbtn" data-a="chiudidoc">Indietro</button></div>');
     h+='<div class="gcard gform"><div class="gtabs" role="radiogroup">'+DOCT.map(function(t){return '<button type="button" role="radio" data-dt="'+t[0]+'" aria-checked="'+(d.tipo===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>';
     if(!(io.nome||io.cognome)||!(io.cf||io.indirizzo))h+='<p class="gnota">Mancano alcuni tuoi dati (nome, codice fiscale, indirizzo): li trovi tra parentesi quadre. Se li scrivi in <b>Fatture › I tuoi dati in fattura</b>, li metto io qui.</p>';
-    if(d.tipo!=='privacy')h+='<label>Cosa farai<textarea rows="2" data-dc="oggetto" maxlength="600" placeholder="Per esempio: realizzazione del sito web aziendale, 5 pagine, consegna dei testi a cura del cliente">'+esc(d.oggetto||'')+'</textarea></label>'+
+    if(d.tipo==='nda')h+='<label>Per quale lavoro vi scambiate informazioni<textarea rows="2" data-dc="oggetto" maxlength="600" placeholder="Per esempio: progetto del nuovo sito e-commerce">'+esc(d.oggetto||'')+'</textarea></label>';
+    if(d.tipo==='contratto'||d.tipo==='incarico')h+='<label>Cosa farai<textarea rows="2" data-dc="oggetto" maxlength="600" placeholder="Per esempio: realizzazione del sito web aziendale, 5 pagine, consegna dei testi a cura del cliente">'+esc(d.oggetto||'')+'</textarea></label>'+
       '<div class="g2"><label>Compenso<input data-dc="compenso" value="'+esc(d.compenso||'')+'" placeholder="Per esempio: 1.500 €, metà all\'inizio e metà alla consegna"></label><label>Tempi<input data-dc="tempi" value="'+esc(d.tempi||'')+'" placeholder="Per esempio: consegna entro il 31 gennaio 2027"></label></div>';
     h+='<label>Il testo (puoi modificarlo)<textarea rows="18" id="gDocT" data-dc="testo" style="font-family:inherit;line-height:1.5">'+esc(d.testo)+'</textarea></label>'+
       (d.mod?'<p class="gnota">Hai modificato il testo a mano: se cambi i campi sopra non lo riscrivo. <button type="button" class="gmini" data-a="rigeneradoc">Riscrivilo dai campi</button></p>':'')+
@@ -4286,7 +4317,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(!E.length)return h+'<div class="gcard gvuoto"><p>Qui compaiono le fatture che emetti in <b>Fatture</b>. Se le fai con un altro programma, segna gli incassi in Panoramica con «Ho incassato una fattura».</p><button type="button" class="gbtn pri" data-a="vaifa">Vai alle fatture</button></div>';
     var riga=function(f){var rit=!f.incasso&&f.scadenza&&f.scadenza<oggi();return '<div class="grow"><div class="gmain"><b>N. '+esc(f.numero)+'/'+esc(f.anno)+' · '+esc(f.cliente_nome)+'</b><span>'+eur(f.tot.totale)+(f.incasso?' · incassata il '+dIt(f.incasso.data):f.scadenza?' · '+(rit?'<b class="gko">scaduta il '+dIt(f.scadenza)+'</b>':'scade il '+dIt(f.scadenza)):'')+'</span></div>'+
       '<div class="gbt">'+(f.incasso?'<button type="button" class="gmini" data-a="annincasso" data-id="'+f.id+'">Non è incassata</button>':'<input type="date" class="gdi" data-d="'+f.id+'" value="'+oggi()+'" aria-label="Data dell\'incasso"><button type="button" class="gmini pri" data-a="incassa" data-id="'+f.id+'">Segna incassata</button>')+
-      (rit&&f.cliente&&f.cliente.email?'<a class="gmini" href="mailto:'+esc(f.cliente.email)+'?subject='+encodeURIComponent('Fattura n. '+f.numero+'/'+f.anno)+'&body='+encodeURIComponent('Buongiorno,\nle ricordo che la fattura n. '+f.numero+'/'+f.anno+' di '+eur(f.tot.totale)+' era da pagare entro il '+dIt(f.scadenza)+'.\nSe ha già provveduto, non tenga conto di questo messaggio.\nGrazie')+'">Sollecita</a>':'')+'</div></div>'};
+      (rit&&f.cliente&&f.cliente.email?'<a class="gmini" href="mailto:'+esc(f.cliente.email)+'?subject='+encodeURIComponent('Fattura n. '+f.numero+'/'+f.anno)+'&body='+encodeURIComponent('Buongiorno,\nle ricordo che la fattura n. '+f.numero+'/'+f.anno+' di '+eur(f.tot.totale)+' era da pagare entro il '+dIt(f.scadenza)+'.\nSe ha già provveduto, non tenga conto di questo messaggio.\nGrazie')+'">Sollecita</a>':'')+(rit&&f.cliente_id?'<button type="button" class="gmini" data-a="docsol" data-id="'+f.cliente_id+'">Lettera di sollecito</button>':'')+'</div></div>'};
     if(da.length)h+='<h2 class="gh2">Da incassare</h2><div class="glist">'+da.map(riga).join('')+'</div>';
     var fatte=E.filter(function(f){return f.incasso});if(fatte.length)h+='<h2 class="gh2">Incassate</h2><div class="glist">'+fatte.slice(0,30).map(riga).join('')+'</div>';
     return h}
@@ -4375,10 +4406,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       else if(a==='salvacl'){leggiCliente(el);b.disabled=true;post('cliente',{cliente:G.clEdit}).then(function(j){b.disabled=false;if(!aggiorna(j,'Cliente salvato.')){err('gcE',esc((j&&j.errore)||'Non sono riuscito a salvarlo.'));return}tp('cliente_salvato');G.clEdit=null;
           if(G.ritorno){G.edit=G.ritorno;G.edit.cliente_id=j.id;G.ritorno=null;apri('fa');return}disegna()}).catch(function(){b.disabled=false;err('gcE','Non sono riuscito a salvarlo.')})}
       else if(a==='delcl'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro?';b.classList.add('ko');return}post('elimina_cliente',{id:id}).then(function(j){aggiorna(j,'Cliente eliminato. Le fatture già fatte restano.');disegna()})}
+      else if(a==='cercapiva'||a==='iopiva'){var io2=a==='iopiva',sel=io2?'[data-io]':'[data-c]',at=io2?'data-io':'data-c',campo=function(n){return el.querySelector('['+at+'="'+n+'"]')},
+        pv=(campo('piva')||{}).value||'',naz=io2?'IT':((campo('nazione')||{}).value||'IT'),mm=$('gPivaM');if(mm)mm.textContent='Cerco nel registro…';b.disabled=true;
+        post('piva',{piva:pv,nazione:naz}).then(function(j){b.disabled=false;if(!mm)return;
+          if(!j||!j.ok){mm.textContent=(j&&j.errore)||'Non riesco a cercare adesso.';return}
+          if(!j.valida){mm.textContent='Questa partita IVA non risulta attiva nel registro VIES. Controlla le cifre.';return}
+          var n=0;['denominazione','indirizzo','cap','comune','provincia'].forEach(function(k){if(io2&&k==='denominazione')return;var i=campo(k);if(i&&j[k]){i.value=j[k];n++}});
+          if(!io2&&j.denominazione){leggiCliente(el)}
+          mm.textContent=n?'Fatto: ho compilato '+(io2?'l\'indirizzo':'nome e indirizzo')+' come risultano all\'Agenzia delle Entrate. Controlla e salva.':'La partita IVA è attiva, ma il registro non dà nome e indirizzo: scrivili a mano.';tp('piva_vies')}).catch(function(){b.disabled=false;if(mm)mm.textContent='Non riesco a cercare adesso.'})}
       else if(a==='doccl'){G.doc={cl:id,tipo:'contratto'};tp('doc_apri');disegna()}
+      else if(a==='docsol'){G.doc={cl:id,tipo:'sollecito'};tp('doc_sollecito');apri('cl')}
       else if(a==='chiudidoc'){G.doc=null;disegna()}
       else if(a==='rigeneradoc'){G.doc.mod=false;G.doc.testo=null;disegna()}
-      else if(a==='copiadoc'||a==='worddoc'||a==='stampadoc'){var tx=($('gDocT')||{}).value||'',mm=$('gDocM'),nm=({contratto:'Contratto',incarico:'Lettera-incarico',privacy:'Informativa-privacy'})[G.doc.tipo]+'.doc';
+      else if(a==='copiadoc'||a==='worddoc'||a==='stampadoc'){var tx=($('gDocT')||{}).value||'',mm=$('gDocM'),nm=({contratto:'Contratto',incarico:'Lettera-incarico',nda:'Accordo-riservatezza',privacy:'Informativa-privacy',sollecito:'Sollecito-pagamento'})[G.doc.tipo]+'.doc';
         var dice=function(t){if(mm){mm.hidden=false;mm.textContent=t}};tp(a);
         if(a==='copiadoc'){try{navigator.clipboard.writeText(tx).then(function(){dice('Testo copiato.')},function(){dice('Non riesco a copiare: seleziona il testo e copialo a mano.')})}catch(e){dice('Non riesco a copiare: seleziona il testo e copialo a mano.')}}
         else if(a==='worddoc'){var bl=new Blob(['\ufeff'+docHtml(tx)],{type:'application/msword'}),u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download=nm;document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);dice('Scaricato: '+nm)}
