@@ -1135,7 +1135,7 @@ def chiudi_account(c: str, passo: str, codice: str = "") -> dict:
         with db._connetti() as conn:
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s) OR path LIKE %s",
-                            (["profili/" + c, "preferenze/" + c, "fatture/" + c], "app/" + c + "/%"))
+                            (["profili/" + c, "preferenze/" + c, "fatture/" + c, "apikeys_di/" + c], "app/" + c + "/%"))
                 cur.execute("DELETE FROM prova_email WHERE c = %s", (c,))
             conn.commit()
         db.cancella_dati(dati.get("_email"), c)

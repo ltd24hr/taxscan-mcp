@@ -1844,6 +1844,8 @@ async def fic_callback(request):
 
 
 prova.registra(mcp, avvisi)
+import api_pubblica  # noqa: E402  chiavi API per gli assistenti IA
+api_pubblica.registra(mcp)
 admin_pannello.registra(mcp, _evento)
 guide.registra(mcp, _evento)
 
@@ -1854,7 +1856,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /chi-siamo", "Allow: /commercialisti", "Allow: /aziende", "Allow: /coefficienti", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /chi-siamo", "Allow: /commercialisti", "Allow: /aziende", "Allow: /coefficienti", "Allow: /api$", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]
