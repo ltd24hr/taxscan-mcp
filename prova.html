@@ -921,6 +921,16 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
 #novita .nvb{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 #novita .nvgo{font:inherit;font-weight:700;font-size:15px;padding:11px 18px;border-radius:12px;border:0;background:var(--accent);color:#fff;cursor:pointer}
 #novita .nvx{font:inherit;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer}
+/* v102: azioni rapide, occhio che nasconde gli importi, tasse del mese */
+#pvHero .phTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+#pvHero .phEye{flex:none;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:600;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer}
+#pvHero .phEye[aria-pressed=true]{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+#pvHero .phQ{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+#pvHero .phQ button{font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+#pvHero .phQ button:first-child{background:var(--accent);border-color:var(--accent);color:#fff}
+#pvHero .phQ button:hover{border-color:var(--accent)}
+html.nascondi #pvHero .phN,html.nascondi #pvHero .phNote,html.nascondi #pvHero .phCh,html.nascondi .gstat summary,html.nascondi #pvHero .phA b,html.nascondi #pvHero .phCh,html.nascondi #pvHero .pasR b,html.nascondi .gkpi b,html.nascondi .gmain span,html.nascondi .gmain b,html.nascondi .gtot b,html.nascondi .gst,html.nascondi #pflist .pfv{filter:blur(7px);user-select:none}
+@media (max-width:700px){#pvHero .phEye span{display:none}#pvHero .phQ{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#pvHero .phQ button{flex:none}}
 /* v99: Gestione (Fatture, Clienti, Incassi, Scadenze e F24) */
 #gnav{display:flex;flex-direction:column;gap:4px}
 #gnav .gnt{margin:14px 12px 4px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute,#8a93ad)}
@@ -3903,6 +3913,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       try{PV.incx.forEach(function(x){var d=String(x.d||'');if(d.slice(0,4)!==String(y))return;var mm=+d.slice(5,7)-1;if(mm>=0&&mm<=m){v[mm]+=x.e||0;n++}})}catch(e){}
       return {v:v,n:n,m:m}}
     function quando(g){return g==null?'':g<=0?'Oggi':g===1?'Domani':'Tra '+g+' giorni'}
+    function phMese(M,i,p){var x=M.v[i]||0;return '<b>'+MESI[i].charAt(0).toUpperCase()+MESI[i].slice(1)+'</b>: '+pvEur(x)+' incassati, circa <b>'+pvEur(x*p/100)+'</b> di tasse e contributi da mettere da parte. Ogni 100 € incassati, '+p+' € vanno al fisco. Tocca un mese per vederlo.'}
     // copertura: quanto hai gia' messo da parte rispetto alla rata che arriva
     function phCop(N){var tg=0,s=0;try{tg=pvTarget();s=pvSal()}catch(e){}if(!(tg>0))return '';
       var cp=Math.min(100,Math.round(s*100/tg)),manca=Math.max(0,tg-s),g=N&&N.giorni!=null?N.giorni:null,sett=g!=null?Math.max(1,Math.ceil(g/7)):0,t;
@@ -3948,7 +3959,10 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function render(){try{
       var oggi=new Date(),y=oggi.getFullYear(),inc=pvIncassato(),so=SOGLIA||85000,p=+D.perc||0,N=nx(),M=mesi(),c=window.TS_C,ps=window.TS_SRV&&TS_SRV.ps;
       var face=document.querySelector('#sl1 .face.idle'),nome=String(D.nome||'').trim();
-      var h='<div><h1 class="phT">'+(nome?'Ciao '+pvEsc(nome)+', ecco la tua situazione':'Ecco la tua situazione')+'</h1><p class="phS">Aggiornata oggi, '+oggi.getDate()+' '+MESI[oggi.getMonth()]+' '+y+'.</p></div>';
+      var nasc=false;try{nasc=localStorage.getItem('ts_nascondi')==='1'}catch(e){}
+      var h='<div class="phTop"><div><h1 class="phT">'+(nome?'Ciao '+pvEsc(nome)+', ecco la tua situazione':'Ecco la tua situazione')+'</h1><p class="phS">Aggiornata oggi, '+oggi.getDate()+' '+MESI[oggi.getMonth()]+' '+y+'.</p></div>'+
+        '<button type="button" class="phEye" id="phEye" aria-pressed="'+nasc+'" title="'+(nasc?'Mostra gli importi':'Nascondi gli importi')+'"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(nasc?'<path d="M3 3l18 18"/><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 4.5 10 6-.4.7-1.5 2.1-3 3.4M6.6 6.6C4.4 7.9 2.8 10 2 12c1 1.5 5 6 10 6 1.6 0 3.1-.5 4.4-1.2"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>':'<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')+'</svg><span>'+(nasc?'Mostra importi':'Nascondi importi')+'</span></button></div>'+
+        '<div class="phQ" role="group" aria-label="Azioni rapide"><button type="button" data-q="nuova">+ Nuova fattura</button><button type="button" data-q="in">Segna un incasso</button><button type="button" data-q="sc">Scadenze e F24</button><button type="button" data-q="g">Carica fatture</button></div>';
       if(N&&N.imp){var f24=c&&ps?'<a class="phBtn" href="/d/'+encodeURIComponent(c)+'/f24?data='+encodeURIComponent(ps)+'" target="_blank" rel="noopener" id="phF24a">Prepara l\'F24</a>':'';
         h+='<div class="phA">'+
           '<p><b>'+quando(N.giorni)+' paghi '+(N.label?'il '+pvEsc(N.label.replace(/^(il|lo|la)\s+/i,'')):'la prossima scadenza')+': '+pvEsc(N.imp)+'.</b> Vuoi vedere come ho calcolato l\'importo?</p>'+
@@ -3959,9 +3973,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         '<div class="phBar'+(resta<0?' over':'')+'" role="img" aria-label="'+pct+'% della soglia"><i style="width:'+pct+'%"></i></div>'+
         '<p class="phNote">'+(resta>=0?'Ti restano <b>'+pvEur(resta)+'</b> prima della soglia.':'Hai superato la soglia di <b>'+pvEur(so)+'</b>: guarda qui sotto «Quanto spazio ti resta» e parliamone.')+'</p>';
       if(M.n>0){var mx=Math.max.apply(null,M.v)||1;
-        g+='<div class="phCh" role="img" aria-label="Incassi mese per mese nel '+y+'">'+M.v.map(function(x,i){var fut=i>M.m;return '<span title="'+MESI[i]+': '+(fut?'mese non ancora arrivato':pvEur(x))+'"><i class="'+(fut?'fut':i===M.m?'cur':'')+'" style="height:'+(fut?12:Math.max(x?6:3,Math.round(x*100/mx)))+'%"></i></span>'}).join('')+'</div>'+
+        g+='<div class="phCh" role="img" aria-label="Incassi mese per mese nel '+y+'">'+M.v.map(function(x,i){var fut=i>M.m;return '<span data-mi="'+i+'" title="'+MESI[i]+': '+(fut?'mese non ancora arrivato':pvEur(x)+' incassati · circa '+pvEur(x*p/100)+' di tasse e contributi')+'"><i class="'+(fut?'fut':i===M.m?'cur':'')+'" style="height:'+(fut?12:Math.max(x?6:3,Math.round(x*100/mx)))+'%"></i></span>'}).join('')+'</div>'+
           '<div class="phMs" aria-hidden="true">'+ML.map(function(l){return '<span>'+l+'</span>'}).join('')+'</div>'+
-          '<p class="phNote" style="margin-top:8px;font-size:13px">Mese per mese, dalle fatture che hai caricato e dagli incassi che hai segnato qui.</p>'}
+          '<p class="phNote phMi" id="phMi" style="margin-top:8px;font-size:13px">'+phMese(M,M.m,p)+'</p>'}
       else g+='<div class="phEmpty"><p>Qui ti disegno gli incassi mese per mese. Mi servono le fatture.</p><button type="button" class="phBtn pri" id="phUp">Carica le fatture</button></div>';
       g+='</section><div class="phR">';
       g+='<section class="phC phPar" aria-labelledby="phParT"><h2 id="phParT">Da mettere da parte</h2><span class="phN">'+p+'% di ogni incasso</span>'+
@@ -3971,6 +3985,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
         '<p class="phNote">'+pvEsc(N.label||'Imposta e contributi')+' · <b>'+pvEsc(N.imp)+'</b></p>'+phCop(N)+(c&&ps?'<a class="phBtn" href="/d/'+encodeURIComponent(c)+'/f24?data='+encodeURIComponent(ps)+'" target="_blank" rel="noopener" id="phF24b">Prepara l\'F24</a>':'')+'</section>';
       g+='</div>';
       hero.innerHTML=h+'<div class="phG">'+g+'</div>'+phPas()+phCs()+phBol();phPagaLega();
+      [].forEach.call(hero.querySelectorAll('.phCh:not(.csCh) [data-mi]'),function(sp){sp.style.cursor='pointer';sp.onclick=function(){var mi=+sp.dataset.mi;if(mi>M.m)return;var e=$('phMi');if(e)e.innerHTML=phMese(M,mi,p);tap('hero_mese')}});
+      var ey=$('phEye');if(ey)ey.onclick=function(){var on=document.documentElement.classList.toggle('nascondi');try{localStorage.setItem('ts_nascondi',on?'1':'0')}catch(e){}tap('hero_nascondi_'+(on?'si':'no'));render()};
+      [].forEach.call(hero.querySelectorAll('[data-q]'),function(b){b.onclick=function(){var q=b.dataset.q;tap('hero_rapida_'+q);if(q==='nuova'){window.__nuovaFattura&&window.__nuovaFattura()}else if(q==='g'){showView('g')}else{window.__vai&&window.__vai(q)}}});
       var sg=$('phSalG'),si=$('phSalV');if(sg&&si){sg.onclick=function(){var x=pvNum(si.value);if(!(x>0))return;var k=pvSalK();PV.sal[k]=Math.max(0,pvSal()+x);pvPut(PV);tap('hero_salvadanaio');if(window.TS_C)pvPost('/api/prova/salvadanaio',{totale:PV.sal[k]}).catch(function(){});if(PV.sal[k]>=pvTarget()&&pvTarget()){try{accSet('si')}catch(e){}window.__wink&&window.__wink()}try{pvRender('vSal')}catch(e){}render()};si.onkeydown=function(e){if(e.key==='Enter')sg.click()}}
       var u=$('phUp');if(u)u.onclick=function(){tap('hero_carica_fatture');showView('g')};
       var ex=hero.querySelector('[data-ex]');if(ex)ex.addEventListener('click',function(){setTimeout(function(){try{if(MP.pend&&ex.classList.contains('sel'))$('astab').click()}catch(e){}},0)});
@@ -4100,6 +4117,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   new MutationObserver(function(){if(!G.vista)return;if(MAIN.some(function(id){var e=$(id);return e&&!e.hidden}))nascondiMie()})
     .observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});
   window.__gestione=apri;
+  window.__nuovaFattura=function(){G.edit=null;G.io=false;G.msg='';apri('fa');var t=setInterval(function(){if(G.dati){clearInterval(t);G.edit=nuovaF();disegna()}},100);setTimeout(function(){clearInterval(t)},8000)};
 
   function carica(){if(!C||G.dati)return;post('get').then(function(j){if(j&&j.ok){G.dati=j.dati;disegna()}}).catch(function(){})}
   function testa(t,s,azioni){return '<header class="vhd gvh"><div><h1>'+t+'</h1><p>'+s+'</p></div>'+(azioni||'')+'</header>'}
@@ -4122,6 +4140,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       '<div class="gact"><button type="button" class="gbtn" data-a="io">I tuoi dati in fattura</button><button type="button" class="gbtn pri" data-a="nuova">Nuova fattura</button></div>');
     if(G.msg)h+='<div class="gmsg" role="status">'+G.msg+'</div>';
     if(!D.io_completo)h+='<div class="gcard gwarn"><b>Prima di emettere la prima fattura</b><p>Mi servono i tuoi dati da mettere in fattura: nome, codice fiscale, partita IVA e indirizzo dell\'attività. Li scrivi una volta sola.</p><button type="button" class="gbtn pri" data-a="io">Completa i tuoi dati</button></div>';
+    h+=vStat(D);
     h+='<div class="gtabs" role="tablist">'+[['tutte','Tutte'],['bozze','Bozze'],['emesse','Emesse']].map(function(t){return '<button type="button" role="tab" data-f="'+t[0]+'" aria-selected="'+(G.filtro===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>';
     if(!L.length)h+='<div class="gcard gvuoto"><p>'+(D.fatture.length?'Nessuna fattura qui.':'Non hai ancora fatture. Con <b>Nuova fattura</b> ne prepari una in un minuto: il numero lo metto io quando la emetti.')+'</p></div>';
     else h+='<div class="glist">'+L.map(function(f){return '<div class="grow"><div class="gmain"><b>'+(f.numero?'N. '+esc(f.numero)+'/'+esc(f.anno):'Bozza')+' · '+esc(f.cliente_nome||'Senza cliente')+'</b><span>'+dIt(f.data)+' · '+eur(f.tot.totale)+'</span></div>'+stato(f)+
@@ -4130,6 +4149,15 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       '<button type="button" class="gmini" data-a="dup" data-id="'+f.id+'">Duplica</button><button type="button" class="gmini" data-a="del" data-id="'+f.id+'" aria-label="Elimina">Elimina</button></div></div>'}).join('')+'</div>';
     h+='<details class="gcard ghelp"><summary>Come si invia la fattura all\'Agenzia delle Entrate</summary><ol><li>Emetti la fattura qui e scarica il file <b>XML</b>.</li><li>Entra in <a href="https://ivaservizi.agenziaentrate.gov.it/portale/" target="_blank" rel="noopener">Fatture e corrispettivi</a> con SPID, CIE o CNS.</li><li>Vai su <b>Fatturazione</b> › <b>Trasmissione</b> e carica il file. È gratis.</li><li>Al cliente puoi mandare anche il PDF, come copia di cortesia.</li></ol><p>Tra poco potrai inviarla direttamente da TaxScan.</p></details>';
     return h}
+
+  // ---------- Statistiche delle fatture dell'anno
+  function vStat(D){var y=new Date().getFullYear(),E=D.fatture.filter(function(f){return f.stato==='emessa'&&String(f.data).slice(0,4)===String(y)});if(!E.length)return '';
+    var tot=E.reduce(function(a,f){return a+f.tot.totale},0),inc=E.filter(function(f){return f.incasso}).reduce(function(a,f){return a+(+f.incasso.importo||0)},0),bol=E.filter(function(f){return f.tot.bollo}).length,cl={};
+    E.forEach(function(f){var k=f.cliente_nome||'Senza nome';cl[k]=(cl[k]||0)+f.tot.totale});var top=Object.keys(cl).sort(function(a,b){return cl[b]-cl[a]}).slice(0,3);
+    var m=E.reduce(function(a,f){return a+f.tot.totale},0)/Math.max(1,new Date().getMonth()+1);
+    return '<details class="gcard gstat"><summary>Statistiche del '+y+': '+E.length+(E.length===1?' fattura':' fatture')+' per '+eur(tot)+'</summary>'+
+      '<div class="gkpi"><div><span>Fatturato</span><b>'+eur(tot)+'</b><small>circa '+eur(m)+' al mese</small></div><div><span>Già incassato</span><b>'+eur(inc)+'</b><small>'+(tot?Math.round(inc*100/tot):0)+'% del fatturato</small></div><div><span>Bolli da 2 €</span><b>'+bol+'</b><small>'+eur(bol*2)+'</small></div></div>'+
+      '<p><b>Clienti principali:</b> '+top.map(function(k){return esc(k)+' ('+(tot?Math.round(cl[k]*100/tot):0)+'%)'}).join(', ')+'.'+(top.length&&tot&&cl[top[0]]/tot>.6&&E.length>2?' Più della metà del lavoro arriva da un solo cliente: se è un ex datore di lavoro degli ultimi due anni, attento al requisito del forfettario.':'')+'</p></details>'}
 
   // ---------- I tuoi dati in fattura
   function vIo(){var io=G.dati.io||{},m=window.__modello||{},nom=(io.nome||'')||String((window.D&&D.nome)||'');
@@ -4333,6 +4361,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   window.__dockY=function(){var a=document.getElementById('astab'),g=gn.lastElementChild,pr=pn.getBoundingClientRect();if(!a||!g||!pr.height)return null;
     var hgt=a.offsetHeight||84,top=g.getBoundingClientRect().bottom+10,bot=pr.top-10;return bot-top>=hgt?Math.round(top+(bot-top-hgt)/2):null};
   setTimeout(function(){var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}if(st||innerWidth<=900||!window.__putDot)return;var dy=window.__dockY();if(dy!=null)window.__putDot(window.__dockX(),dy,false)},400);
+  try{if(localStorage.getItem('ts_nascondi')==='1')document.documentElement.classList.add('nascondi')}catch(e){}
   window.__vai=function(k){if(/^(fa|cl|in|sc|ae)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
   window.__aiutoVoci=function(){return [['Apri le guide',function(){window.__aiuto&&window.__aiuto()}],['Fatture',function(){window.__vai('fa')}],['Scadenze e F24',function(){window.__vai('sc')}],['Ottimizzazione fiscale',function(){window.__vai('g')}],['Incassi',function(){window.__vai('in')}],['Profilo',function(){window.__vai('f')}]]};
   window.__aiutoChip=function(){setTimeout(function(){window.__xchips&&window.__xchips(window.__aiutoVoci())},60);return 'Ti porto dove vuoi. Le <b>guide</b> spiegano le regole del forfettario in parole semplici; oppure scegli una pagina.'};
