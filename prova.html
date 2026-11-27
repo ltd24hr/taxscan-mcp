@@ -4111,7 +4111,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].forEach.call(gn.querySelectorAll('button'),function(b){if(b.dataset.g===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
     try{hideBub()}catch(e){}
     scrollTo(0,0);tp('gestione_'+v);disegna();carica()}
-  [].forEach.call(gn.querySelectorAll('button'),function(b){b.onclick=function(){G.edit=null;G.clEdit=null;G.aeEdit=null;G.msg='';apri(b.dataset.g)}});
+  [].forEach.call(gn.querySelectorAll('button'),function(b){b.onclick=function(){G.edit=null;G.clEdit=null;G.aeEdit=null;G.doc=null;G.msg='';apri(b.dataset.g)}});
   // quando un'altra sezione si apre (dal menu o dall'agente), le mie si chiudono
   [].forEach.call(nav.querySelectorAll('button'),function(b){b.addEventListener('click',nascondiMie,true)});
   new MutationObserver(function(){if(!G.vista)return;if(MAIN.some(function(id){var e=$(id);return e&&!e.hidden}))nascondiMie()})
@@ -4127,7 +4127,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(!C){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'')+senzaC();return}
     if(!G.dati){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'Un attimo, prendo i tuoi dati…');return}
     if(v==='fa')el.innerHTML=G.edit?vEditor():(G.edit===null&&G.io?vIo():vFatture());
-    if(v==='cl')el.innerHTML=G.clEdit?vCliente():vClienti();
+    if(v==='cl'){if(G.doc){el.innerHTML=vDoc();legaDoc(el)}else el.innerHTML=G.clEdit?vCliente():vClienti()}
     if(v==='in')el.innerHTML=vIncassi();
     if(v==='ae')el.innerHTML=G.aeEdit?vAcqEdit():vAcq();
     lega(el)}
@@ -4207,7 +4207,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     return h+'<div class="glist">'+L.map(function(k){var fk=fat.filter(function(f){return f.cliente_id===k.id&&f.stato==='emessa'}),tot=fk.reduce(function(a,f){return a+f.tot.totale},0);
       return '<div class="grow"><div class="gmain"><b>'+esc(k.denominazione||((k.nome||'')+' '+(k.cognome||'')))+'</b><span>'+esc([k.piva?(k.nazione==='IT'?'P.IVA ':'VAT ')+k.piva:'',k.comune,k.nazione!=='IT'?k.nazione:''].filter(Boolean).join(' · '))+'</span></div>'+
         '<span class="gst">'+(fk.length?fk.length+(fk.length===1?' fattura · ':' fatture · ')+eur(tot):'Nessuna fattura')+'</span>'+
-        '<div class="gbt"><button type="button" class="gmini pri" data-a="fattcl" data-id="'+k.id+'">Nuova fattura</button><button type="button" class="gmini" data-a="modcl" data-id="'+k.id+'">Modifica</button><button type="button" class="gmini" data-a="delcl" data-id="'+k.id+'">Elimina</button></div></div>'}).join('')+'</div>'}
+        '<div class="gbt"><button type="button" class="gmini pri" data-a="fattcl" data-id="'+k.id+'">Nuova fattura</button><button type="button" class="gmini" data-a="doccl" data-id="'+k.id+'">Contratto e documenti</button><button type="button" class="gmini" data-a="modcl" data-id="'+k.id+'">Modifica</button><button type="button" class="gmini" data-a="delcl" data-id="'+k.id+'">Elimina</button></div></div>'}).join('')+'</div>'}
   function vCliente(){var k=G.clEdit,pri=k.tipo==='privato',it=(k.nazione||'IT')==='IT';
     var f=function(c,l,v,a){return '<label>'+l+'<input data-c="'+c+'" value="'+esc(v||'')+'" '+(a||'')+'></label>'};
     return testa(k.id?'Modifica il cliente':'Nuovo cliente','Scrivi i dati come sono nella sua visura o nel suo sito: finiscono nella fattura.','<div class="gact"><button type="button" class="gbtn" data-a="annullacl">Annulla</button></div>')+
@@ -4220,6 +4220,61 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       f('email','Email per mandargli il PDF (facoltativa)',k.email,'type="email"')+
       '<div class="gact"><button type="button" class="gbtn pri" data-a="salvacl">Salva il cliente</button></div><p class="gerr" id="gcE" role="alert"></p></div>'}
   function leggiCliente(el){var k=G.clEdit;[].forEach.call(el.querySelectorAll('[data-c]'),function(i){k[i.dataset.c]=i.value});return k}
+
+
+  // ---------- v103: Documenti pronti per un cliente (bozze da far controllare)
+  var DOCT=[['contratto','Contratto di prestazione'],['incarico','Lettera d\'incarico'],['privacy','Informativa privacy']];
+  function nomeIo(io){return [io.nome,io.cognome].filter(Boolean).join(' ')||'[il tuo nome e cognome]'}
+  function nomeCl(k){return k.denominazione||[k.nome,k.cognome].filter(Boolean).join(' ')||'[nome del cliente]'}
+  function indir(o){var s=[o.indirizzo,[o.cap,o.comune].filter(Boolean).join(' ')+(o.provincia?' ('+o.provincia+')':'')].filter(function(x){return String(x||'').trim()}).join(', ');return s||'[indirizzo]'}
+  function testoDoc(d){var io=G.dati.io||{},k=G.dati.clienti.filter(function(x){return x.id===d.cl})[0]||{},m=window.__modello||{};
+    var IO=nomeIo(io),PIVA=io.piva||SRV.piva||m.piva||'[partita IVA]',CF=io.cf||'[codice fiscale]',CL=nomeCl(k),
+      CLID=k.piva?(k.nazione&&k.nazione!=='IT'?'VAT ':'P.IVA ')+k.piva:(k.cf?'C.F. '+k.cf:'[P.IVA o codice fiscale]'),
+      OGG=d.oggetto||'[descrivi il lavoro: cosa farai, cosa consegnerai]',COMP=d.compenso||'[importo] €',TEMPI=d.tempi||'[date o durata]',
+      GG=io.scadenza_giorni!=null&&io.scadenza_giorni!==''?io.scadenza_giorni:30,LUOGO=io.comune||'[luogo]',DATA=dIt(oggi()),
+      FORF='Il compenso non è soggetto a IVA: operazione senza applicazione dell\'IVA ai sensi dell\'art. 1, commi 54-89, della Legge 190/2014 (regime forfettario), non soggetta a IVA né a ritenuta d\'acconto. Sulle fatture oltre 77,47 € si applica l\'imposta di bollo di 2 €'+(io.bollo_cliente!==false?', a carico del Committente':'')+'.'+(io.rivalsa?' Al compenso si aggiunge la rivalsa INPS del 4%.':'');
+    if(d.tipo==='contratto')return 'CONTRATTO DI PRESTAZIONE D\'OPERA\n\nTra\n'+CL+', '+CLID+', '+(k.tipo==='privato'?'residente in ':'con sede in ')+indir(k)+' (di seguito "Committente")\ne\n'+IO+', C.F. '+CF+', P.IVA '+PIVA+', con sede in '+indir(io)+' (di seguito "Prestatore")\n\nsi conviene quanto segue.\n\n'+
+      '1. Oggetto\nIl Committente affida al Prestatore, che accetta, il seguente lavoro: '+OGG+'.\n\n'+
+      '2. Modalità\nIl Prestatore svolge il lavoro in piena autonomia, con mezzi propri e senza vincolo di subordinazione né di orario, ai sensi degli artt. 2222 e seguenti del Codice civile. Il Committente fornisce in tempo le informazioni e i materiali necessari.\n\n'+
+      '3. Tempi\n'+TEMPI+'.\n\n'+
+      '4. Compenso e pagamento\nPer il lavoro il Committente riconosce al Prestatore '+COMP+'. Il pagamento avviene con bonifico entro '+GG+' giorni dalla data della fattura.\n'+FORF+'\n\n'+
+      '5. Proprietà del lavoro\nCon il pagamento completo, i diritti di utilizzo di quanto consegnato passano al Committente per gli usi concordati. Il Prestatore può citare il lavoro nel proprio portfolio, salvo diverso accordo scritto.\n\n'+
+      '6. Riservatezza\nLe parti tengono riservate le informazioni dell\'altra parte conosciute durante il lavoro.\n\n'+
+      '7. Recesso\nCiascuna parte può recedere con un preavviso scritto di 15 giorni. In caso di recesso del Committente, al Prestatore spetta il compenso per il lavoro già svolto e il rimborso delle spese sostenute.\n\n'+
+      '8. Dati personali\nI dati personali sono trattati solo per eseguire questo contratto e per gli obblighi di legge, nel rispetto del Regolamento UE 2016/679.\n\n'+
+      '9. Controversie\nPer ogni controversia è competente il foro di '+LUOGO+', salvo i casi in cui la legge prevede un foro diverso.\n\n'+
+      LUOGO+', '+DATA+'\n\nIl Committente ______________________\n\nIl Prestatore ______________________\n';
+    if(d.tipo==='incarico')return IO+'\n'+indir(io)+'\nP.IVA '+PIVA+'\n\nSpett.le '+CL+'\n'+indir(k)+'\n\n'+LUOGO+', '+DATA+'\n\nOggetto: lettera d\'incarico e preventivo\n\n'+
+      'Gentile cliente,\ncome concordato, le confermo le condizioni del lavoro che mi ha chiesto.\n\n'+
+      'Cosa farò: '+OGG+'.\n\nTempi: '+TEMPI+'.\n\nCompenso: '+COMP+', da pagare con bonifico entro '+GG+' giorni dalla fattura.\n'+FORF+'\n\n'+
+      'Eventuali lavori in più, non compresi in questa lettera, saranno concordati e preventivati a parte.\n\n'+
+      'Svolgerò l\'incarico in autonomia e con la massima cura. I suoi dati saranno trattati solo per questo incarico e per gli obblighi di legge, come spiegato nell\'informativa privacy.\n\n'+
+      'Se è tutto in ordine, le chiedo di restituirmi questa lettera firmata per accettazione.\n\nCordiali saluti\n'+IO+'\n\nPer accettazione, il Cliente ______________________   Data __________\n';
+    return 'INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI\n(art. 13 del Regolamento UE 2016/679)\n\n'+
+      '1. Chi tratta i dati\nIl titolare del trattamento è '+IO+', P.IVA '+PIVA+', '+indir(io)+(io.email?', email '+io.email:', email [la tua email]')+'.\n\n'+
+      '2. Quali dati e perché\nTratto i dati che mi fornisci (nome, recapiti, dati fiscali, dati di pagamento) per:\na) svolgere il lavoro che mi chiedi e gestire il rapporto (base giuridica: esecuzione del contratto, art. 6.1.b);\nb) emettere le fatture e rispettare gli obblighi fiscali e contabili (base giuridica: obbligo di legge, art. 6.1.c).\nSenza questi dati non posso svolgere il lavoro né fatturarlo.\n\n'+
+      '3. A chi li comunico\nSolo a chi serve: il Sistema di Interscambio e l\'Agenzia delle Entrate per le fatture elettroniche, la banca per i pagamenti, l\'eventuale commercialista e i fornitori dei programmi che uso per fatturare e archiviare, nominati responsabili del trattamento quando richiesto. Non vendo né diffondo i tuoi dati.\n\n'+
+      '4. Per quanto tempo\nPer la durata del rapporto e poi per 10 anni, come richiesto per le scritture contabili (art. 2220 del Codice civile).\n\n'+
+      '5. I tuoi diritti\nPuoi chiedermi in qualsiasi momento di accedere ai tuoi dati, correggerli, cancellarli quando non devo più conservarli, limitarne l\'uso o riceverli in un formato leggibile (artt. 15-22 del Regolamento). Puoi anche presentare un reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).\n\n'+
+      LUOGO+', '+DATA+'\n\n'+IO+'\n\nPer presa visione, '+CL+' ______________________\n'}
+  function vDoc(){var d=G.doc,k=G.dati.clienti.filter(function(x){return x.id===d.cl})[0]||{},io=G.dati.io||{};
+    if(d.testo==null)d.testo=testoDoc(d);
+    var h=testa('Documenti per '+esc(nomeCl(k)),'Bozze già compilate con i tuoi dati e quelli del cliente. Cambiale come vuoi, poi scaricale o stampale.','<div class="gact"><button type="button" class="gbtn" data-a="chiudidoc">Indietro</button></div>');
+    h+='<div class="gcard gform"><div class="gtabs" role="radiogroup">'+DOCT.map(function(t){return '<button type="button" role="radio" data-dt="'+t[0]+'" aria-checked="'+(d.tipo===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>';
+    if(!(io.nome||io.cognome)||!(io.cf||io.indirizzo))h+='<p class="gnota">Mancano alcuni tuoi dati (nome, codice fiscale, indirizzo): li trovi tra parentesi quadre. Se li scrivi in <b>Fatture › I tuoi dati in fattura</b>, li metto io qui.</p>';
+    if(d.tipo!=='privacy')h+='<label>Cosa farai<textarea rows="2" data-dc="oggetto" maxlength="600" placeholder="Per esempio: realizzazione del sito web aziendale, 5 pagine, consegna dei testi a cura del cliente">'+esc(d.oggetto||'')+'</textarea></label>'+
+      '<div class="g2"><label>Compenso<input data-dc="compenso" value="'+esc(d.compenso||'')+'" placeholder="Per esempio: 1.500 €, metà all\'inizio e metà alla consegna"></label><label>Tempi<input data-dc="tempi" value="'+esc(d.tempi||'')+'" placeholder="Per esempio: consegna entro il 31 gennaio 2027"></label></div>';
+    h+='<label>Il testo (puoi modificarlo)<textarea rows="18" id="gDocT" data-dc="testo" style="font-family:inherit;line-height:1.5">'+esc(d.testo)+'</textarea></label>'+
+      (d.mod?'<p class="gnota">Hai modificato il testo a mano: se cambi i campi sopra non lo riscrivo. <button type="button" class="gmini" data-a="rigeneradoc">Riscrivilo dai campi</button></p>':'')+
+      '<div class="gact"><button type="button" class="gbtn" data-a="copiadoc">Copia</button><button type="button" class="gbtn" data-a="worddoc">Scarica per Word</button><button type="button" class="gbtn pri" data-a="stampadoc">Stampa o salva in PDF</button></div><p class="gmsg" id="gDocM" role="status" hidden></p>'+
+      '<p class="gnota">È una bozza di partenza, non una consulenza legale: per lavori importanti falla controllare a un avvocato o al tuo commercialista.</p></div>';
+    return h}
+  function docHtml(t){return '<!doctype html><html><head><meta charset="utf-8"><title>Documento</title><style>body{font:12pt/1.55 Georgia,serif;max-width:17cm;margin:2cm auto;color:#111;white-space:pre-wrap}</style></head><body>'+esc(t)+'</body></html>'}
+  function legaDoc(el){var d=G.doc;
+    [].forEach.call(el.querySelectorAll('[data-dt]'),function(b){b.onclick=function(){d.tipo=b.dataset.dt;d.testo=null;d.mod=false;tp('doc_'+d.tipo);disegna()}});
+    [].forEach.call(el.querySelectorAll('[data-dc]'),function(i){i.addEventListener('input',function(){var k=i.dataset.dc;d[k]=i.value;
+      if(k==='testo'){if(!d.mod){d.mod=true;disegna();var t=$('gDocT');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}}return}
+      if(!d.mod){d.testo=testoDoc(d);var t2=$('gDocT');if(t2)t2.value=d.testo}})})}
 
   // ---------- Incassi
   function vIncassi(){var E=G.dati.fatture.filter(function(f){return f.stato==='emessa'}),y=String(new Date().getFullYear());
@@ -4320,6 +4375,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       else if(a==='salvacl'){leggiCliente(el);b.disabled=true;post('cliente',{cliente:G.clEdit}).then(function(j){b.disabled=false;if(!aggiorna(j,'Cliente salvato.')){err('gcE',esc((j&&j.errore)||'Non sono riuscito a salvarlo.'));return}tp('cliente_salvato');G.clEdit=null;
           if(G.ritorno){G.edit=G.ritorno;G.edit.cliente_id=j.id;G.ritorno=null;apri('fa');return}disegna()}).catch(function(){b.disabled=false;err('gcE','Non sono riuscito a salvarlo.')})}
       else if(a==='delcl'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro?';b.classList.add('ko');return}post('elimina_cliente',{id:id}).then(function(j){aggiorna(j,'Cliente eliminato. Le fatture già fatte restano.');disegna()})}
+      else if(a==='doccl'){G.doc={cl:id,tipo:'contratto'};tp('doc_apri');disegna()}
+      else if(a==='chiudidoc'){G.doc=null;disegna()}
+      else if(a==='rigeneradoc'){G.doc.mod=false;G.doc.testo=null;disegna()}
+      else if(a==='copiadoc'||a==='worddoc'||a==='stampadoc'){var tx=($('gDocT')||{}).value||'',mm=$('gDocM'),nm=({contratto:'Contratto',incarico:'Lettera-incarico',privacy:'Informativa-privacy'})[G.doc.tipo]+'.doc';
+        var dice=function(t){if(mm){mm.hidden=false;mm.textContent=t}};tp(a);
+        if(a==='copiadoc'){try{navigator.clipboard.writeText(tx).then(function(){dice('Testo copiato.')},function(){dice('Non riesco a copiare: seleziona il testo e copialo a mano.')})}catch(e){dice('Non riesco a copiare: seleziona il testo e copialo a mano.')}}
+        else if(a==='worddoc'){var bl=new Blob(['\ufeff'+docHtml(tx)],{type:'application/msword'}),u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download=nm;document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);dice('Scaricato: '+nm)}
+        else{var w=window.open('','_blank');if(!w){dice('Il browser ha bloccato la finestra: permetti i popup per questo sito.');return}w.document.write(docHtml(tx));w.document.close();w.focus();setTimeout(function(){w.print()},300)}}
       else if(a==='fattcl'){G.edit=nuovaF(id);apri('fa')}
       else if(a==='vaifa'){apri('fa')}
       else if(a==='vaiio'){G.io=true;G.edit=null;apri('fa')}
