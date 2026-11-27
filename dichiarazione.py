@@ -493,6 +493,8 @@ def salva(c: str, anno, x: dict) -> dict:
         anno = anno_da_preparare(oggi)
     if anno not in (oggi.year, oggi.year - 1):
         return {"ok": False, "errore": "Anno non valido."}
+    if pagamenti.attivo() and not pagamenti.pagato(c):
+        return {"ok": False, "errore": "La dichiarazione guidata è inclusa in TaxScan attivo."}
     v = pulisci(x, anno)
     pagamenti._set(_chiave(c, anno), {"v": v, "agg": oggi.isoformat()})
     try:
@@ -539,6 +541,8 @@ def chiedi_controllo(c: str, anno, nota: str = "") -> dict:
         return {"ok": False, "errore": "Hai già mandato la richiesta oggi: ti rispondiamo appena possibile."}
     admin = os.environ.get("ADMIN_EMAIL", "")
     a = apri(c, anno)
+    if a.get("ok") and not a.get("attivo"):
+        return {"ok": False, "errore": "La dichiarazione guidata è inclusa in TaxScan attivo."}
     if not a.get("ok") or not admin:
         return {"ok": False, "errore": "Non è partita: riprova tra poco."}
     r = a["risultato"]
@@ -577,7 +581,7 @@ def pdf(c: str, anno) -> bytes | None:
     """Promemoria stampabile: i righi da copiare, gli F24, gli avvisi."""
     import report_pdf as R
     a = apri(c, anno)
-    if not a.get("ok"):
+    if not a.get("ok") or not a.get("attivo"):
         return None
     r = a["risultato"]
     p = R._Pdf()
