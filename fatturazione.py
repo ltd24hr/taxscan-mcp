@@ -83,7 +83,7 @@ def cf_valido(cf: str) -> bool:
 # --------------------------------------------------------------------------- archivio
 
 def _vuoto() -> dict:
-    return {"io": {}, "clienti": [], "fatture": [], "prossimo": {}, "acquisti": []}
+    return {"io": {}, "clienti": [], "fatture": [], "prossimo": {}, "acquisti": [], "servizi": [], "preventivi": [], "prossimo_prev": {}}
 
 
 def carica(c: str) -> dict:
@@ -202,7 +202,7 @@ def _fattura(x: dict, vecchia: dict | None, io: dict) -> dict:
          "rivalsa": bool(x.get("rivalsa")) if "rivalsa" in x else bool(io.get("rivalsa")),
          "bollo_cliente": (x.get("bollo_cliente") is not False) if "bollo_cliente" in x else io.get("bollo_cliente", True),
          "scadenza": _data(x.get("scadenza")), "iban": re.sub(r"\s", "", str(x.get("iban") or io.get("iban") or "")).upper()[:34],
-         "note": _t(x.get("note"), 600), "rif": _t(x.get("rif"), 40),
+         "note": _t(x.get("note"), 600), "rif": _t(x.get("rif"), 40) if "rif" in x else (v.get("rif") or ""),
          "incasso": v.get("incasso"), "creata": v.get("creata") or int(time.time()), "modificata": int(time.time())}
     if f["stato"] == "emessa":   # dopo l'emissione numero e data restano quelli
         f["data"] = v.get("data") or f["data"]
@@ -411,6 +411,63 @@ def operazione(c: str, op: str, dati: dict | None = None) -> dict:
             return {"ok": False}
         a["pagato"] = (_data(x.get("data")) or oggi.isoformat()) if not x.get("annulla") else ""
         msg = a["id"]
+    elif op == "servizio":
+        x2 = x.get("servizio") if isinstance(x.get("servizio"), dict) else x
+        desc = _t(x2.get("descrizione"), 300)
+        if not desc:
+            return {"ok": False, "errore": "Scrivi la descrizione del servizio."}
+        vecchio = _cerca(d["servizi"], _t(x2.get("id"), 40))
+        sv = {"id": (vecchio or {}).get("id") or uuid.uuid4().hex[:12], "descrizione": desc, "prezzo": round(_n(x2.get("prezzo")), 2)}
+        if vecchio:
+            d["servizi"][d["servizi"].index(vecchio)] = sv
+        else:
+            if len(d["servizi"]) >= 200:
+                return {"ok": False, "errore": "Hai già 200 servizi salvati: eliminane qualcuno."}
+            d["servizi"].append(sv)
+        msg = sv["id"]
+    elif op == "elimina_servizio":
+        d["servizi"] = [k for k in d["servizi"] if k.get("id") != _t(x.get("id"), 40)]
+    elif op == "preventivo":
+        vecchio = _cerca(d["preventivi"], _t(x.get("id"), 40))
+        pv = _fattura(x.get("preventivo") if isinstance(x.get("preventivo"), dict) else x, vecchio, d["io"])
+        pv["stato"] = "preventivo"
+        cl = _cerca(d["clienti"], pv["cliente_id"]) if pv["cliente_id"] else None
+        if cl:
+            pv["cliente"] = dict(cl)
+        if vecchio:
+            pv.update({"numero": vecchio.get("numero"), "anno": vecchio.get("anno"), "accettato": vecchio.get("accettato") or "",
+                       "fattura_id": vecchio.get("fattura_id") or ""})
+            d["preventivi"][d["preventivi"].index(vecchio)] = pv
+        else:
+            if len(d["preventivi"]) >= 500:
+                return {"ok": False, "errore": "Archivio pieno: elimina qualche preventivo vecchio."}
+            anno = int(pv["data"][:4])
+            n = max([int(d["prossimo_prev"].get(str(anno)) or 1)] + [int(k["numero"]) + 1 for k in d["preventivi"]
+                                                                   if k.get("anno") == anno and str(k.get("numero") or "").isdigit()])
+            pv.update({"numero": str(n), "anno": anno, "accettato": "", "fattura_id": ""})
+            d["prossimo_prev"][str(anno)] = n + 1
+            d["preventivi"].append(pv)
+        msg = pv["id"]
+    elif op == "elimina_preventivo":
+        d["preventivi"] = [k for k in d["preventivi"] if k.get("id") != _t(x.get("id"), 40)]
+    elif op == "preventivo_fattura":
+        pv = _cerca(d["preventivi"], _t(x.get("id"), 40))
+        if not pv:
+            return {"ok": False, "errore": "Preventivo non trovato."}
+        if pv.get("fattura_id") and _cerca(d["fatture"], pv["fattura_id"]):
+            msg = pv["fattura_id"]
+        else:
+            g = d["io"].get("scadenza_giorni")
+            g = int(_n(g, 30)) if g not in (None, "") else 30
+            n = dict(pv, id=uuid.uuid4().hex[:12], stato="bozza", numero="", anno=None, incasso=None, data=oggi.isoformat(),
+                     scadenza=(oggi + datetime.timedelta(days=g)).isoformat() if g else "", creata=int(time.time()), modificata=int(time.time()),
+                     note=(pv.get("note") or ""), rif="Preventivo n. " + str(pv.get("numero")) + "/" + str(pv.get("anno")))
+            for k in ("accettato", "fattura_id"):
+                n.pop(k, None)
+            d["fatture"].append(n)
+            pv["accettato"] = oggi.isoformat()
+            pv["fattura_id"] = n["id"]
+            msg = n["id"]
     else:
         return {"ok": False}
     if not _salva(c, d):
@@ -434,7 +491,10 @@ def _per_pagina(d: dict, c: str) -> dict:
     anno = datetime.date.today().year
     acq = [dict(a, **iva_acquisto(a)) for a in sorted(d.get("acquisti") or [], key=lambda k: k.get("data") or "", reverse=True)]
     return {"io": io, "clienti": sorted(d.get("clienti") or [], key=lambda k: nome_cliente(k).lower()), "fatture": out,
-            "prossimo": _prossimo(d, anno), "io_completo": not controlla_io(io), "acquisti": acq}
+            "prossimo": _prossimo(d, anno), "io_completo": not controlla_io(io), "acquisti": acq,
+            "servizi": sorted(d.get("servizi") or [], key=lambda k: k.get("descrizione", "").lower()),
+            "preventivi": [dict(k, tot=totali(k, io), cliente_nome=nome_cliente(k.get("cliente")))
+                           for k in sorted(d.get("preventivi") or [], key=lambda k: (k.get("data") or "", int(k["numero"]) if str(k.get("numero") or "").isdigit() else 0), reverse=True)]}
 
 
 # --------------------------------------------------------------------------- acquisti da fornitori esteri (reverse charge)
@@ -680,7 +740,9 @@ def pdf(f: dict, io: dict) -> bytes:
     t = totali(f, io)
     cl = f.get("cliente") or {}
     p.rett(0, R.PAGE_H - 8, R.PAGE_W, 8, R.BLU)
-    tit = ("NOTA DI CREDITO" if f.get("tipo") == "TD04" else "FATTURA") + (" N. " + str(f["numero"]) if f.get("numero") else " (BOZZA)")
+    prev = f.get("stato") == "preventivo"
+    tit = ("PREVENTIVO N. " + str(f.get("numero") or "") + "/" + str(f.get("anno") or "")) if prev else \
+        (("NOTA DI CREDITO" if f.get("tipo") == "TD04" else "FATTURA") + (" N. " + str(f["numero"]) if f.get("numero") else " (BOZZA)"))
     dat = "Data: " + "/".join(reversed(str(f.get("data") or "").split("-")))
     p.testo(R.MARG, R.PAGE_H - 50, tit, 18, True, R.SCURO)
     p.testo(R.MARG, R.PAGE_H - 66, dat, 9.5, False, R.GRIGIO)
@@ -723,11 +785,19 @@ def pdf(f: dict, io: dict) -> bytes:
     p.testo(R.PAGE_W - R.MARG - 220, p.y - 17, "Totale documento", 10.5, True, R.SCURO)
     p.testo(R.PAGE_W - R.MARG - 10 - R._lar(eur(t["totale"]), 11, True), p.y - 17, eur(t["totale"]), 11, True, R.SCURO)
     p.y -= 44
-    dic = [DICITURA] + ([DICITURA_UE] if _natura(cl) == "N2.1" else []) + ([DICITURA_BOLLO] if t["bollo"] else [])
+    dic = [DICITURA] + ([DICITURA_UE] if _natura(cl) == "N2.1" else []) + ([DICITURA_BOLLO] if t["bollo"] and not prev else [])
     if t["rivalsa"]:
         dic.append("Rivalsa INPS 4% ai sensi dell'art. 1, comma 212, L. 662/1996.")
     for d in dic:
         p.par(d, 8.5, False, R.GRIGIO, dopo=3)
+    if prev:
+        if f.get("scadenza"):
+            p.par("Preventivo valido fino al " + "/".join(reversed(f["scadenza"].split("-"))) + ".", 9.5, True, R.SCURO, dopo=4)
+        if f.get("note"):
+            p.par(f["note"], 9, False, R.SCURO, dopo=4)
+        p.y -= 6
+        p.par("Per accettare, rispondi con una conferma scritta o firma qui: ______________________", 9, False, R.SCURO, dopo=2)
+        return p.bytes()
     if f.get("iban") or f.get("scadenza"):
         p.y -= 4
         p.par("Pagamento: bonifico" + (" su IBAN " + f["iban"] if f.get("iban") else "")
@@ -750,6 +820,9 @@ def file_fattura(c: str, fid: str, tipo: str):
     d = carica(c)
     f = _cerca(d["fatture"], _t(fid, 40))
     io = d.get("io") or {}
+    pv = None if f else _cerca(d.get("preventivi") or [], _t(fid, 40))
+    if pv:
+        return pdf(pv, io), f"preventivo-{pv.get('anno')}-{pv.get('numero')}.pdf", "application/pdf"
     if not f:
         a = _cerca(d.get("acquisti") or [], _t(fid, 40))
         if not a or tipo != "xml":

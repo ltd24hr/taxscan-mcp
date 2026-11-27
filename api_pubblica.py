@@ -127,8 +127,115 @@ def chiavi_app(c: str, op: str, dati: dict) -> dict:
         return crea(c, dati.get("nome", ""), dati.get("accesso", ""))
     if op == "elimina":
         return elimina(c, str(dati.get("id", "")))
-    return elenco(c)
+    if op == "permesso":
+        return imposta_permesso(c, str(dati.get("azione", "")), str(dati.get("valore", "")))
+    if op in ("approva", "rifiuta"):
+        return decidi(c, str(dati.get("id", "")), op == "approva")
+    out = elenco(c)
+    out.update({"permessi": permessi(c), "azioni": [[a, n] for a, n, _ in AZIONI],
+                "attesa": [{k: x.get(k) for k in ("id", "azione", "t", "chiave", "riassunto")} | {"nome": _NOMI.get(x.get("azione"), "")}
+                           for x in in_attesa(c)]})
+    return out
 
+
+
+# ------------------------------------------------------------------ cosa l'assistente puo' fare da solo (come Finom: «Consenti» o «Chiedi»)
+AZIONI = [("bozza", "Preparare bozze di fatture e preventivi", "consenti"),
+          ("cliente", "Creare o modificare un cliente", "consenti"),
+          ("incasso", "Segnare un incasso", "consenti"),
+          ("incassa", "Segnare una fattura come incassata", "consenti"),
+          ("emetti", "Emettere una fattura (numero definitivo)", "chiedi")]
+_NOMI = {a: n for a, n, _ in AZIONI}
+
+
+def permessi(c: str) -> dict:
+    rec = _get("apiperm/" + c) or {}
+    return {a: (rec.get(a) if rec.get(a) in ("consenti", "chiedi") else dflt) for a, _, dflt in AZIONI}
+
+
+def imposta_permesso(c: str, azione: str, valore: str) -> dict:
+    if azione not in _NOMI or valore not in ("consenti", "chiedi"):
+        return {"ok": False}
+    p = permessi(c)
+    p[azione] = valore
+    _set("apiperm/" + c, p)
+    return {"ok": True, "permessi": p}
+
+
+def esegui(c: str, azione: str, dati: dict) -> dict:
+    import fatturazione
+    import prova
+    if azione == "incasso":
+        return prova.incasso(c, dati.get("importo"), str(dati.get("data") or ""))
+    if azione == "cliente":
+        return fatturazione.operazione(c, "cliente", {"cliente": dati.get("cliente") or dati})
+    if azione == "bozza":
+        op = "preventivo" if dati.get("_preventivo") else "fattura"
+        chiave = "preventivo" if op == "preventivo" else "fattura"
+        corpo = dati.get(chiave) if isinstance(dati.get(chiave), dict) else {k: v for k, v in dati.items() if not k.startswith("_") and k != "id"}
+        return fatturazione.operazione(c, op, {"id": str(dati.get("id") or ""), chiave: corpo})
+    if azione in ("emetti", "incassa"):
+        return fatturazione.operazione(c, azione, {"id": str(dati.get("id") or ""), "data": str(dati.get("data") or "")})
+    return {"ok": False, "errore": "Azione non prevista."}
+
+
+def in_attesa(c: str) -> list:
+    rec = _get("apiattesa/" + c) or {}
+    limite = time.time() - 7 * 86400
+    return [x for x in rec.get("lista") or [] if x.get("t", 0) > limite]
+
+
+def chiedi(c: str, u: dict, azione: str, dati: dict) -> dict:
+    L = in_attesa(c)
+    if len(L) >= 50:
+        return {"ok": False, "errore": "Ci sono già troppe richieste da approvare."}
+    nome = ""
+    for k in (_get("apikeys_di/" + c) or {}).get("chiavi") or []:
+        if k.get("h") == u.get("h"):
+            nome = k.get("nome") or ""
+    voce = {"id": secrets.token_hex(6), "azione": azione, "dati": dati, "t": time.time(), "chiave": nome,
+            "riassunto": _riassunto(azione, dati, c)}
+    L.append(voce)
+    _set("apiattesa/" + c, {"lista": L})
+    _avvisa(c, "Il tuo assistente IA chiede il permesso",
+            f"<p>Ciao,</p><p>l'assistente che usa la chiave <b>{html.escape(nome or 'API')}</b> vuole: "
+            f"<b>{html.escape(_NOMI.get(azione, azione))}</b> ({html.escape(voce['riassunto'])}).</p>"
+            "<p>Per approvare o rifiutare apri TaxScan: Profilo, scheda «Assistenti IA e API». "
+            "Se non fai niente, tra 7 giorni la richiesta scade.</p>")
+    return {"ok": True, "in_attesa": True, "richiesta": voce["id"],
+            "messaggio": "Questa azione va approvata dalla persona in TaxScan (Profilo, Assistenti IA e API). Le abbiamo mandato un'email."}
+
+
+def _riassunto(azione: str, dati: dict, c: str = "") -> str:
+    try:
+        if azione == "incasso":
+            return f"{float(dati.get('importo') or 0):.2f} €".replace(".", ",")
+        if azione == "cliente":
+            cl = dati.get("cliente") or dati
+            return str(cl.get("denominazione") or " ".join(x for x in (cl.get("nome"), cl.get("cognome")) if x) or "cliente")[:80]
+        if azione in ("emetti", "incassa"):
+            import fatturazione
+            d = fatturazione.carica(c)
+            f = fatturazione._cerca(d.get("fatture") or [], str(dati.get("id") or ""))
+            if f:
+                return f"bozza per {fatturazione.nome_cliente(f.get('cliente'))}, {fatturazione.eur(fatturazione.totali(f, d.get('io') or {})['totale'])}"
+        return "dettagli nella richiesta"
+    except Exception:
+        return "dettagli nella richiesta"
+
+
+
+def decidi(c: str, rid: str, approva: bool) -> dict:
+    L = in_attesa(c)
+    voce = next((x for x in L if x.get("id") == rid), None)
+    if not voce:
+        return {"ok": False, "errore": "Richiesta non trovata o scaduta."}
+    _set("apiattesa/" + c, {"lista": [x for x in L if x.get("id") != rid]})
+    if not approva:
+        return {"ok": True, "fatto": False, "attesa": in_attesa(c)}
+    esito = esegui(c, voce["azione"], voce.get("dati") or {})
+    ok = isinstance(esito, dict) and esito.get("ok") is not False
+    return {"ok": True, "fatto": ok, "errore": "" if ok else (esito or {}).get("errore", "Non è andata a buon fine."), "attesa": in_attesa(c)}
 
 # ------------------------------------------------------------------ autenticazione delle chiamate
 
@@ -203,7 +310,7 @@ def scadenze(c: str) -> dict:
 def openapi(base: str) -> dict:
     def op(summary, desc="", body=None, scrive=False, params=None):
         o = {"summary": summary, "description": desc + (" Richiede una chiave di lettura e modifica." if scrive else ""),
-             "responses": {"200": {"description": "OK"}, "401": {"description": "Chiave mancante o non valida"},
+             "responses": {"200": {"description": "OK"}, "202": {"description": "In attesa: la persona deve approvare l'azione in TaxScan"}, "401": {"description": "Chiave mancante o non valida"},
                            "403": {"description": "La chiave è di sola lettura"}, "429": {"description": "Troppe richieste"}}}
         if params:
             o["parameters"] = params
@@ -249,6 +356,10 @@ def openapi(base: str) -> dict:
                                                     "Legge fatture XML, PDF o foto (in base64) e dice per servizio quanto hai incassato e con che coefficiente. Non salva i file.",
                                                     {"type": "object", "required": ["files"], "properties": {"files": {"type": "array", "items": {"type": "object", "properties": {
                                                         "nome": {"type": "string"}, "tipo": {"type": "string"}, "dati": {"type": "string", "description": "contenuto in base64"}}}}}})},
+            "/api/v1/servizi": {"get": op("I servizi salvati", "Descrizione e prezzo dei servizi che la persona usa nelle fatture.")},
+            "/api/v1/preventivi": {"get": op("I preventivi"),
+                                   "post": op("Crea o modifica un preventivo", "Stessi campi della fattura; scadenza = valido fino al.",
+                                              {"type": "object", "properties": {"id": {"type": "string"}, "preventivo": {"type": "object"}}}, True)},
             "/api/v1/piva/{piva}": {"get": op("Dati pubblici da una partita IVA", "Denominazione e indirizzo dal registro europeo VIES.", None, False,
                                               [{"name": "piva", "in": "path", "required": True, "schema": {"type": "string"}}])},
         },
@@ -276,6 +387,8 @@ td:first-child{white-space:nowrap;font-weight:600}td small{display:block;color:v
              ("POST", "/api/v1/fatture/{id}/incassa", "Segna la fattura come incassata.", "modifica"),
              ("GET", "/api/v1/fatture/{id}/pdf · /xml", "Il PDF per il cliente o il file XML per l'Agenzia delle Entrate.", ""),
              ("POST", "/api/v1/fatture/analizza", "Legge fatture caricate (XML, PDF, foto in base64) senza salvarle.", ""),
+             ("GET", "/api/v1/servizi", "I servizi salvati, con descrizione e prezzo.", ""),
+             ("GET · POST", "/api/v1/preventivi", "I preventivi; con POST ne crei o modifichi uno.", "modifica"),
              ("GET", "/api/v1/piva/{numero}", "Denominazione e indirizzo dal registro europeo VIES.", "")]
     tab = "".join(f'<tr><td><span class="m">{m}</span>{html.escape(p)}</td><td>{html.escape(d)}'
                   f'{"<small>Serve una chiave di lettura e modifica.</small>" if s else ""}</td></tr>' for m, p, d, s in righe)
@@ -293,6 +406,7 @@ td:first-child{white-space:nowrap;font-weight:600}td small{display:block;color:v
 <p class="s">Usi Claude? Puoi anche aggiungere TaxScan come connettore: in quel caso non serve la chiave.</p>
 </div>
 <div class="card"><h2>Cosa può fare</h2><table>{tab}</table>
+<p class="s">Per ogni azione che modifica qualcosa la persona sceglie se l'assistente può farla da solo o se deve chiedere: in quel caso la risposta è <code>202</code> con <code>"in_attesa": true</code>, e l'azione parte solo quando la persona la approva in TaxScan. Emettere una fattura, di base, va sempre approvato.</p>
 <p class="s">Al massimo {LIMITE_ORA} richieste l'ora per chiave. Le risposte sono in JSON, gli importi in euro. I calcoli sono stime e non sostituiscono un professionista.</p></div>
 <div class="card"><h2>Sicurezza</h2>
 <p>Le chiavi non sono salvate in chiaro. Ti scriviamo un'email ogni volta che ne crei o ne elimini una. Puoi eliminarle quando vuoi dal Profilo: da quel momento smettono di funzionare. Se pensi che una chiave sia finita nelle mani sbagliate, eliminala e creane una nuova.</p></div>
@@ -340,6 +454,14 @@ def registra(mcp) -> None:
         except Exception:
             pass
 
+
+    async def fai(u, azione, dati):
+        traccia(u, azione)
+        if permessi(u["c"]).get(azione) == "chiedi":
+            esito = await asyncio.to_thread(chiedi, u["c"], u, azione, dati)
+            return JSONResponse(esito, status_code=202 if esito.get("ok") else 400)
+        return risposta(await asyncio.to_thread(esegui, u["c"], azione, dati), ["fatture", "clienti", "preventivi"] if azione != "incasso" else None)
+
     @mcp.custom_route("/api", methods=["GET"])
     async def api_doc(request):
         return HTMLResponse(pagina_doc(base(request)))
@@ -373,9 +495,7 @@ def registra(mcp) -> None:
         u, e = await utente(request, True)
         if e:
             return e
-        x = await corpo(request)
-        traccia(u, "incasso")
-        return risposta(await asyncio.to_thread(prova.incasso, u["c"], x.get("importo"), str(x.get("data") or "")))
+        return await fai(u, "incasso", await corpo(request))
 
     @mcp.custom_route("/api/v1/clienti", methods=["GET", "POST"])
     async def v1_clienti(request):
@@ -385,10 +505,7 @@ def registra(mcp) -> None:
             return e
         if not scrive:
             return risposta(await asyncio.to_thread(fatturazione.operazione, u["c"], "get", {}), ["clienti"])
-        x = await corpo(request)
-        traccia(u, "cliente")
-        esito = await asyncio.to_thread(fatturazione.operazione, u["c"], "cliente", {"cliente": x.get("cliente") or x})
-        return risposta(esito, ["clienti"])
+        return await fai(u, "cliente", await corpo(request))
 
     @mcp.custom_route("/api/v1/fatture", methods=["GET", "POST"])
     async def v1_fatture(request):
@@ -398,10 +515,7 @@ def registra(mcp) -> None:
             return e
         if not scrive:
             return risposta(await asyncio.to_thread(fatturazione.operazione, u["c"], "get", {}), ["fatture", "prossimo", "io_completo"])
-        x = await corpo(request)
-        traccia(u, "fattura")
-        dati = {"id": str(x.get("id") or ""), "fattura": x.get("fattura") if isinstance(x.get("fattura"), dict) else x}
-        return risposta(await asyncio.to_thread(fatturazione.operazione, u["c"], "fattura", dati), ["fatture"])
+        return await fai(u, "bozza", await corpo(request))
 
     @mcp.custom_route("/api/v1/fatture/analizza", methods=["POST"])
     async def v1_analizza(request):
@@ -429,10 +543,28 @@ def registra(mcp) -> None:
             if e:
                 return e
             x = await corpo(request)
-            traccia(u, az)
-            esito = await asyncio.to_thread(fatturazione.operazione, u["c"], az, {"id": fid, "data": str(x.get("data") or "")})
-            return risposta(esito, ["fatture"])
+            return await fai(u, az, {"id": fid, "data": str(x.get("data") or "")})
         return JSONResponse({"ok": False, "errore": "Azione non prevista."}, status_code=404)
+
+
+    @mcp.custom_route("/api/v1/servizi", methods=["GET"])
+    async def v1_servizi(request):
+        u, e = await utente(request)
+        if e:
+            return e
+        return risposta(await asyncio.to_thread(fatturazione.operazione, u["c"], "get", {}), ["servizi"])
+
+    @mcp.custom_route("/api/v1/preventivi", methods=["GET", "POST"])
+    async def v1_preventivi(request):
+        scrive = request.method == "POST"
+        u, e = await utente(request, scrive)
+        if e:
+            return e
+        if not scrive:
+            return risposta(await asyncio.to_thread(fatturazione.operazione, u["c"], "get", {}), ["preventivi"])
+        x = await corpo(request)
+        x["_preventivo"] = True
+        return await fai(u, "bozza", x)
 
     @mcp.custom_route("/api/v1/piva/{piva}", methods=["GET"])
     async def v1_piva(request):
