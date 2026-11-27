@@ -83,7 +83,7 @@ def cf_valido(cf: str) -> bool:
 # --------------------------------------------------------------------------- archivio
 
 def _vuoto() -> dict:
-    return {"io": {}, "clienti": [], "fatture": [], "prossimo": {}}
+    return {"io": {}, "clienti": [], "fatture": [], "prossimo": {}, "acquisti": []}
 
 
 def carica(c: str) -> dict:
@@ -324,6 +324,31 @@ def operazione(c: str, op: str, dati: dict | None = None) -> dict:
                     f["incasso"]["segnato"] = True
                     numeri = r.get("numeri")
         msg = f["id"]
+    elif op == "acquisto":
+        x2 = x.get("acquisto") if isinstance(x.get("acquisto"), dict) else x
+        vecchio = _cerca(d["acquisti"], _t(x2.get("id"), 40))
+        a = _acquisto(x2, vecchio)
+        if not a["fornitore"]["nome"] or a["importo"] <= 0 or not a["data"]:
+            return {"ok": False, "errore": "Servono il fornitore, la data e l'importo della fattura."}
+        if not vecchio:
+            if len(d["acquisti"]) >= 1000:
+                return {"ok": False, "errore": "Archivio pieno."}
+            anno = int(a["data"][:4])
+            usati = [int(k["numero"]) for k in d["acquisti"] if k.get("anno") == anno and str(k.get("numero") or "").isdigit()]
+            a["numero"], a["anno"] = str(max(usati or [0]) + 1), anno
+            d["acquisti"].append(a)
+        else:
+            a["numero"], a["anno"] = vecchio.get("numero"), vecchio.get("anno")
+            d["acquisti"][d["acquisti"].index(vecchio)] = a
+        msg = a["id"]
+    elif op == "elimina_acquisto":
+        d["acquisti"] = [k for k in d["acquisti"] if k.get("id") != _t(x.get("id"), 40)]
+    elif op == "acquisto_pagato":
+        a = _cerca(d["acquisti"], _t(x.get("id"), 40))
+        if not a:
+            return {"ok": False}
+        a["pagato"] = (_data(x.get("data")) or oggi.isoformat()) if not x.get("annulla") else ""
+        msg = a["id"]
     else:
         return {"ok": False}
     if not _salva(c, d):
@@ -345,8 +370,101 @@ def _per_pagina(d: dict, c: str) -> dict:
         t = totali(f, io)
         out.append(dict(f, tot=t, cliente_nome=nome_cliente(f.get("cliente")), problemi=controlla(f, io) if f.get("stato") != "emessa" else []))
     anno = datetime.date.today().year
+    acq = [dict(a, **iva_acquisto(a)) for a in sorted(d.get("acquisti") or [], key=lambda k: k.get("data") or "", reverse=True)]
     return {"io": io, "clienti": sorted(d.get("clienti") or [], key=lambda k: nome_cliente(k).lower()), "fatture": out,
-            "prossimo": _prossimo(d, anno), "io_completo": not controlla_io(io)}
+            "prossimo": _prossimo(d, anno), "io_completo": not controlla_io(io), "acquisti": acq}
+
+
+# --------------------------------------------------------------------------- acquisti da fornitori esteri (reverse charge)
+# Il forfettario che compra servizi da un fornitore estero (Google, Meta, software...) deve integrare la fattura con
+# l'IVA italiana: autofattura TD17 da mandare allo SDI entro il 15 del mese dopo e IVA versata con l'F24 entro il 16 del
+# mese successivo all'operazione, codice tributo 6001-6012 (il mese dell'operazione). L'IVA non si detrae.
+ALIQUOTA_IVA = 0.22
+
+
+def _acquisto(x: dict, vecchio: dict | None) -> dict:
+    x = x if isinstance(x, dict) else {}
+    v = dict(vecchio or {})
+    fo = x.get("fornitore") if isinstance(x.get("fornitore"), dict) else {}
+    naz = re.sub(r"[^A-Za-z]", "", str(fo.get("nazione") or "IE")).upper()[:2] or "IE"
+    return {"id": v.get("id") or uuid.uuid4().hex[:12],
+            "fornitore": {"nome": _t(fo.get("nome"), 80), "nazione": naz,
+                          "vat": re.sub(r"[^A-Za-z0-9]", "", str(fo.get("vat") or "")).upper()[:28],
+                          "indirizzo": _t(fo.get("indirizzo"), 80), "citta": _t(fo.get("citta"), 60)},
+            "tipo": "beni" if x.get("tipo") == "beni" else "servizi",
+            "numero_orig": _t(x.get("numero_orig"), 40), "data": _data(x.get("data")),
+            "descrizione": _t(x.get("descrizione"), 300) or "Servizi", "importo": round(_n(x.get("importo")), 2),
+            "pagato": v.get("pagato") or "", "creato": v.get("creato") or int(time.time())}
+
+
+def iva_acquisto(a: dict) -> dict:
+    """IVA da versare, codice tributo, scadenze dell'autofattura e del versamento."""
+    iva = round((a.get("importo") or 0) * ALIQUOTA_IVA, 2)
+    try:
+        d = datetime.date.fromisoformat(a.get("data") or "")
+    except ValueError:
+        return {"iva": iva, "codice": "", "scad_iva": "", "scad_sdi": ""}
+    dopo = datetime.date(d.year + (d.month == 12), d.month % 12 + 1, 1)
+    return {"iva": iva, "codice": f"60{d.month:02d}", "scad_iva": dopo.replace(day=16).isoformat(),
+            "scad_sdi": dopo.replace(day=15).isoformat(), "ue": a.get("fornitore", {}).get("nazione") in _PAESI_UE}
+
+
+def xml_acquisto(a: dict, io: dict) -> tuple[str, str]:
+    """Autofattura TD17 (servizi dall'estero) o TD18 (beni da paese UE): il fornitore estero e' il cedente, tu il committente."""
+    t = iva_acquisto(a)
+    fo = a.get("fornitore") or {}
+    naz = fo.get("nazione") or "IE"
+    vat = fo.get("vat") or ""
+    if vat[:2] == naz:
+        vat = vat[2:]
+    tipo = "TD18" if (a.get("tipo") == "beni" and naz in _PAESI_UE) else "TD17"
+    cf_io = io.get("cf") or io.get("piva")
+    k = (int(a.get("anno") or 0) % 100) * 10000 + int(a.get("numero") or 1 if str(a.get("numero") or "1").isdigit() else 1)
+    b36 = ""
+    while True:
+        k, r = divmod(k, 36)
+        b36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[r] + b36
+        if not k:
+            break
+    prog = "A" + b36.zfill(4)[-4:]   # 5 caratteri, mai uguali a quelli delle fatture di vendita (solo cifre)
+    imp = round(a.get("importo") or 0, 2)
+    rif = (f"<DatiFattureCollegate><IdDocumento>{_x(a['numero_orig'])}</IdDocumento>"
+           + (f"<Data>{a['data']}</Data>" if a.get("data") else "") + "</DatiFattureCollegate>") if a.get("numero_orig") else ""
+    s = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+         '<p:FatturaElettronica versione="FPR12" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" '
+         'xmlns:p="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2" '
+         'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+         'xsi:schemaLocation="http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2 '
+         'http://www.fatturapa.gov.it/export/fatturazione/sdi/fatturapa/v1.2/Schema_del_file_xml_FatturaPA_versione_1.2.xsd">'
+         "<FatturaElettronicaHeader>"
+         f"<DatiTrasmissione><IdTrasmittente><IdPaese>IT</IdPaese><IdCodice>{cf_io}</IdCodice></IdTrasmittente>"
+         f"<ProgressivoInvio>{prog}</ProgressivoInvio><FormatoTrasmissione>FPR12</FormatoTrasmissione>"
+         "<CodiceDestinatario>0000000</CodiceDestinatario></DatiTrasmissione>"
+         "<CedentePrestatore><DatiAnagrafici>"
+         f"<IdFiscaleIVA><IdPaese>{naz}</IdPaese><IdCodice>{_x(vat or '99999999999')}</IdCodice></IdFiscaleIVA>"
+         f"<Anagrafica><Denominazione>{_x(fo.get('nome') or '')}</Denominazione></Anagrafica>"
+         "<RegimeFiscale>RF18</RegimeFiscale></DatiAnagrafici>"
+         f"<Sede><Indirizzo>{_x(fo.get('indirizzo') or 'N.D.')}</Indirizzo><CAP>00000</CAP><Comune>{_x(fo.get('citta') or 'N.D.')}</Comune>"
+         f"<Nazione>{naz}</Nazione></Sede></CedentePrestatore>"
+         "<CessionarioCommittente><DatiAnagrafici>"
+         f"<IdFiscaleIVA><IdPaese>IT</IdPaese><IdCodice>{io.get('piva')}</IdCodice></IdFiscaleIVA>"
+         + (f"<CodiceFiscale>{io['cf']}</CodiceFiscale>" if io.get("cf") else "")
+         + f"<Anagrafica><Nome>{_x(io.get('nome') or '')}</Nome><Cognome>{_x(io.get('cognome') or '')}</Cognome></Anagrafica>"
+         "</DatiAnagrafici>" + _sede(dict(io, nazione="IT")) + "</CessionarioCommittente>"
+         "</FatturaElettronicaHeader>"
+         "<FatturaElettronicaBody><DatiGenerali><DatiGeneraliDocumento>"
+         f"<TipoDocumento>{tipo}</TipoDocumento><Divisa>EUR</Divisa><Data>{a['data']}</Data>"
+         f"<Numero>{_x(str(a.get('numero') or '1'))}/AF</Numero>"
+         f"<ImportoTotaleDocumento>{_d2(round(imp + t['iva'], 2))}</ImportoTotaleDocumento>"
+         "<Causale>Integrazione fattura del fornitore estero (inversione contabile, art. 17 c. 2 DPR 633/72).</Causale>"
+         f"</DatiGeneraliDocumento>{rif}</DatiGenerali>"
+         "<DatiBeniServizi><DettaglioLinee><NumeroLinea>1</NumeroLinea>"
+         f"<Descrizione>{_x(a.get('descrizione') or 'Servizi')}</Descrizione><Quantita>1.00</Quantita>"
+         f"<PrezzoUnitario>{_d2(imp)}</PrezzoUnitario><PrezzoTotale>{_d2(imp)}</PrezzoTotale><AliquotaIVA>22.00</AliquotaIVA></DettaglioLinee>"
+         f"<DatiRiepilogo><AliquotaIVA>22.00</AliquotaIVA><ImponibileImporto>{_d2(imp)}</ImponibileImporto>"
+         f"<Imposta>{_d2(t['iva'])}</Imposta><EsigibilitaIVA>I</EsigibilitaIVA></DatiRiepilogo></DatiBeniServizi>"
+         "</FatturaElettronicaBody></p:FatturaElettronica>")
+    return s, f"IT{cf_io}_{prog[-5:].zfill(5)}.xml"
 
 
 # --------------------------------------------------------------------------- controlli prima di emettere
@@ -569,9 +687,13 @@ def file_fattura(c: str, fid: str, tipo: str):
         return None
     d = carica(c)
     f = _cerca(d["fatture"], _t(fid, 40))
-    if not f:
-        return None
     io = d.get("io") or {}
+    if not f:
+        a = _cerca(d.get("acquisti") or [], _t(fid, 40))
+        if not a or tipo != "xml":
+            return None
+        s, nome = xml_acquisto(a, io)
+        return s.encode("utf-8"), nome, "application/xml"
     nome_base = ("fattura-" + (f"{f['anno']}-{f['numero']}" if f.get("numero") else "bozza")).replace("/", "-")
     if tipo == "xml":
         s, nome = xml(f, io)

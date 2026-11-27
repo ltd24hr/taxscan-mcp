@@ -909,6 +909,18 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
   #rnav .nvi,#pnav .nvi,#gnav button[data-nav] .nvi{margin:0!important;width:20px!important;height:20px!important;flex:none}
   #rnav .tdn,#pnav .tdn,#gnav .tdn{margin-left:auto}
 }
+
+#novita{position:fixed;inset:0;z-index:95;background:rgba(10,19,48,.5);display:flex;align-items:center;justify-content:center;padding:16px}
+#novita .nvw{background:var(--surface);color:var(--ink);border-radius:22px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:26px 24px 20px;box-shadow:0 24px 70px rgba(10,19,48,.35)}
+#novita .nvp{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#fff1c2;color:#6b4a00;border-radius:999px;padding:4px 10px}
+#novita h2{margin:10px 0 6px;font-family:var(--display);font-size:clamp(22px,2.4vw,28px);line-height:1.2}
+#novita .nvs{margin:0 0 14px;color:var(--ink2);font-size:15px;line-height:1.5}
+#novita ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#novita li button{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;font:inherit;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+#novita li button:hover{background:#f4f6fd}#novita li b{font-size:15px}#novita li span{font-size:13.5px;color:var(--ink2);line-height:1.45}
+#novita .nvb{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+#novita .nvgo{font:inherit;font-weight:700;font-size:15px;padding:11px 18px;border-radius:12px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+#novita .nvx{font:inherit;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer}
 /* v99: Gestione (Fatture, Clienti, Incassi, Scadenze e F24) */
 #gnav{display:flex;flex-direction:column;gap:4px}
 #gnav .gnt{margin:14px 12px 4px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute,#8a93ad)}
@@ -4064,8 +4076,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   var ICO={fa:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/>',
     cl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.7M18.2 14.8c1.7.8 2.8 2.5 3.3 5.2"/>',
     in:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h4"/>',
-    sc:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h3"/>'};
-  var VOCI=[['fa','Fatture'],['cl','Clienti'],['in','Incassi'],['sc','Scadenze e F24']];
+    sc:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h3"/>',
+    ae:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/>'};
+  var VOCI=[['fa','Fatture'],['cl','Clienti'],['in','Incassi'],['sc','Scadenze e F24'],['ae','Acquisti esteri']];
   var gn=document.createElement('div');gn.id='gnav';gn.setAttribute('role','navigation');gn.setAttribute('aria-label','Gestione');
   gn.innerHTML='<p class="gnt">Gestione</p>'+VOCI.map(function(v){return '<button type="button" data-g="'+v[0]+'"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[v[0]]+'</svg><span>'+v[1]+'</span></button>'}).join('');
   nav.parentNode.insertBefore(gn,nav.nextSibling);
@@ -4081,7 +4094,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].forEach.call(gn.querySelectorAll('button'),function(b){if(b.dataset.g===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
     try{hideBub()}catch(e){}
     scrollTo(0,0);tp('gestione_'+v);disegna();carica()}
-  [].forEach.call(gn.querySelectorAll('button'),function(b){b.onclick=function(){G.edit=null;G.clEdit=null;G.msg='';apri(b.dataset.g)}});
+  [].forEach.call(gn.querySelectorAll('button'),function(b){b.onclick=function(){G.edit=null;G.clEdit=null;G.aeEdit=null;G.msg='';apri(b.dataset.g)}});
   // quando un'altra sezione si apre (dal menu o dall'agente), le mie si chiudono
   [].forEach.call(nav.querySelectorAll('button'),function(b){b.addEventListener('click',nascondiMie,true)});
   new MutationObserver(function(){if(!G.vista)return;if(MAIN.some(function(id){var e=$(id);return e&&!e.hidden}))nascondiMie()})
@@ -4098,6 +4111,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(v==='fa')el.innerHTML=G.edit?vEditor():(G.edit===null&&G.io?vIo():vFatture());
     if(v==='cl')el.innerHTML=G.clEdit?vCliente():vClienti();
     if(v==='in')el.innerHTML=vIncassi();
+    if(v==='ae')el.innerHTML=G.aeEdit?vAcqEdit():vAcq();
     lega(el)}
 
   // ---------- Fatture: elenco
@@ -4194,17 +4208,50 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var fatte=E.filter(function(f){return f.incasso});if(fatte.length)h+='<h2 class="gh2">Incassate</h2><div class="glist">'+fatte.slice(0,30).map(riga).join('')+'</div>';
     return h}
 
+  // ---------- Acquisti da fornitori esteri
+  var FORN=[['','Scegli…',''],['Google Ireland Ltd','Google (Ads, Workspace)','IE'],['Meta Platforms Ireland Ltd','Meta (Facebook, Instagram)','IE'],['Microsoft Ireland Operations Ltd','Microsoft','IE'],['Apple Distribution International Ltd','Apple','IE'],['OpenAI Ireland Ltd','OpenAI (ChatGPT)','IE'],['*','Un altro fornitore','']];
+  var NAZ=[['IE','Irlanda'],['NL','Paesi Bassi'],['LU','Lussemburgo'],['DE','Germania'],['FR','Francia'],['ES','Spagna'],['US','Stati Uniti'],['GB','Regno Unito'],['CH','Svizzera'],['AU','Australia'],['IL','Israele'],['CY','Cipro'],['EE','Estonia'],['SE','Svezia'],['AT','Austria'],['BE','Belgio']];
+  function vAcq(){var L=G.dati.acquisti||[],da=L.filter(function(a){return !a.pagato}),tot=da.reduce(function(x,a){return x+a.iva},0);
+    var h=testa('Acquisti esteri','Google, Meta, software e servizi comprati da fornitori fuori dall\'Italia: anche nel forfettario va aggiunta l\'IVA italiana del 22%.','<div class="gact"><button type="button" class="gbtn pri" data-a="nuovoae">Aggiungi un acquisto</button></div>');
+    if(G.msg)h+='<div class="gmsg" role="status">'+G.msg+'</div>';
+    h+='<details class="gcard ghelp"'+(L.length?'':' open')+'><summary>Cosa devi fare, in breve</summary><ol><li><b>Autofattura</b>: entro il 15 del mese dopo la fattura del fornitore mandi allo SDI un\'integrazione (tipo TD17) con l\'IVA al 22%. Il file XML te lo preparo io.</li><li><b>IVA</b>: entro il 16 del mese dopo la versi con l\'F24, sezione Erario, codice tributo del mese (per esempio <b>6010</b> per ottobre) e l\'anno.</li><li>Nel forfettario quell\'IVA <b>non si recupera</b>: è un costo in più. Per questo conviene saperlo prima.</li></ol><p>Se il fornitore ha già messo in fattura l\'IVA del suo paese, chiedi a un consulente prima di fare l\'autofattura.</p></details>';
+    if(!G.dati.io_completo&&L.length)h+='<div class="gcard gwarn"><b>Per preparare l\'autofattura mi servono i tuoi dati</b><p>Nome, codice fiscale, partita IVA e indirizzo: li scrivi una volta in Fatture › I tuoi dati in fattura.</p><button type="button" class="gbtn" data-a="vaiio">Completa i tuoi dati</button></div>';
+    if(L.length)h+='<div class="gkpi"><div class="'+(tot?'ko':'')+'"><span>IVA ancora da versare</span><b>'+eur(tot)+'</b><small>'+da.length+(da.length===1?' acquisto':' acquisti')+'</small></div><div><span>Acquisti registrati</span><b>'+L.length+'</b><small>'+eur(L.reduce(function(x,a){return x+a.importo},0))+' in tutto</small></div></div>';
+    if(!L.length)return h+'<div class="gcard gvuoto"><p>Non hai ancora registrato acquisti esteri. Quando ricevi una fattura da un fornitore estero, aggiungila qui: ti dico quanta IVA versare e quando.</p></div>';
+    return h+'<div class="glist">'+L.map(function(a){var rit=!a.pagato&&a.scad_iva&&a.scad_iva<oggi();
+      return '<div class="grow"><div class="gmain"><b>'+esc(a.fornitore.nome)+' · '+eur(a.importo)+'</b><span>Fattura del '+dIt(a.data)+(a.numero_orig?' n. '+esc(a.numero_orig):'')+' · IVA <b>'+eur(a.iva)+'</b>'+
+        (a.pagato?' · versata il '+dIt(a.pagato):' · F24 codice <b>'+a.codice+'</b>, anno '+a.data.slice(0,4)+', '+(rit?'<b class="gko">scaduto il '+dIt(a.scad_iva)+'</b>':'entro il '+dIt(a.scad_iva)))+'</span>'+
+        (a.pagato?'':'<span>Autofattura allo SDI entro il '+dIt(a.scad_sdi)+'</span>')+'</div>'+
+        '<div class="gbt">'+(G.dati.io_completo?'<a class="gmini" href="/api/prova/fattura/xml?c='+encodeURIComponent(C)+'&id='+a.id+'" data-t="acquisto_xml">Autofattura XML</a>':'')+
+        (a.pagato?'<button type="button" class="gmini" data-a="aenonpag" data-id="'+a.id+'">Non è versata</button>':'<button type="button" class="gmini pri" data-a="aepag" data-id="'+a.id+'">IVA versata</button>')+
+        '<button type="button" class="gmini" data-a="aemod" data-id="'+a.id+'">Modifica</button><button type="button" class="gmini" data-a="aedel" data-id="'+a.id+'">Elimina</button></div></div>'}).join('')+'</div>'}
+  function vAcqEdit(){var a=G.aeEdit,fo=a.fornitore||{},iva=Math.round(num(a.importo)*22)/100;
+    var f=function(k,l,v,x){return '<label>'+l+'<input data-ae="'+k+'" value="'+esc(v==null?'':v)+'" '+(x||'')+'></label>'};
+    return testa(a.id?'Modifica l\'acquisto':'Nuovo acquisto estero','Copia i dati dalla fattura del fornitore: nome, partita IVA (VAT), indirizzo, numero e data.','<div class="gact"><button type="button" class="gbtn" data-a="aeann">Annulla</button></div>')+
+      '<div class="gcard gform"><label>Fornitore<select data-ae="preset">'+FORN.map(function(p){return '<option value="'+esc(p[0])+'"'+(p[0]&&p[0]===fo.nome?' selected':'')+'>'+esc(p[1])+'</option>'}).join('')+'</select></label>'+
+      '<div class="g2">'+f('f_nome','Nome del fornitore (come in fattura)',fo.nome)+'<label>Paese<select data-ae="f_nazione">'+NAZ.map(function(n){return '<option value="'+n[0]+'"'+((fo.nazione||'IE')===n[0]?' selected':'')+'>'+n[1]+'</option>'}).join('')+'</select></label></div>'+
+      '<div class="g2">'+f('f_vat','Partita IVA del fornitore (VAT number)',fo.vat,'autocomplete="off" style="text-transform:uppercase"')+f('f_indirizzo','Indirizzo del fornitore',fo.indirizzo)+'</div>'+
+      '<div class="g2">'+f('f_citta','Città',fo.citta)+f('numero_orig','Numero della sua fattura',a.numero_orig)+'</div>'+
+      '<div class="g2"><label>Data della fattura<input type="date" data-ae="data" value="'+esc(a.data||'')+'"></label>'+f('importo','Importo in euro (senza IVA)',a.importo,'inputmode="decimal" placeholder="0,00"')+'</div>'+
+      f('descrizione','Cosa hai comprato',a.descrizione,'placeholder="Per esempio: pubblicità Google Ads, ottobre"')+
+      '<p class="gnota">Se la fattura è in dollari o in un\'altra valuta, scrivi l\'importo in euro con il cambio del giorno della fattura.</p>'+
+      '<div class="gtot" id="aeTot"><div><span>Imponibile</span><b>'+eur(num(a.importo))+'</b></div><div class="gtt"><span>IVA da versare (22%)</span><b>'+eur(iva)+'</b></div></div>'+
+      '<div class="gact"><button type="button" class="gbtn pri" data-a="aesalva">Salva</button></div><p class="gerr" id="aeE" role="alert"></p></div>'}
+  function leggiAe(el){var a=G.aeEdit;a.fornitore=a.fornitore||{};[].forEach.call(el.querySelectorAll('[data-ae]'),function(i){var k=i.dataset.ae;if(k==='preset')return;if(k.indexOf('f_')===0)a.fornitore[k.slice(2)]=i.value;else a[k]=i.value});return a}
+
   // ---------- Scadenze e F24 (dai dati della situazione)
   function vScad(){var L=window.TS_SC||[],P=SRV.passate||[],B=SRV.bolli||[];
     var h=testa('Scadenze e F24','Tutte le date in cui paghi imposta, contributi e bollo, con l\'F24 già compilato da copiare nella tua banca.',C?'<div class="gact"><a class="gbtn" href="/d/'+encodeURIComponent(C)+'/calendario" target="_blank" rel="noopener" data-t="scad_calendario">Metti tutto nel calendario</a></div>':'');
     if(!L.length&&!P.length&&!B.length)return h+'<div class="gcard gvuoto"><p>Per ora non ci sono scadenze calcolate. Completa il Profilo con gli incassi e le scadenze compaiono qui.</p></div>';
     if(L.length)h+='<div class="glist">'+L.map(function(x,i){return '<div class="grow gscr'+(i===0?' first':'')+'"><div class="gmain"><b>'+esc(x.d)+' · '+esc(x.e)+'</b><span>Imposta '+esc(x.i)+' · Contributi '+esc(x.c)+'</span></div><span class="gst'+(i===0?' b':'')+'">'+esc(x.t)+'</span>'+
       '<div class="gbt">'+(C&&x.iso?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.iso+'" target="_blank" rel="noopener" data-t="scad_f24">Prepara l\'F24</a>':'')+'</div></div>'}).join('')+'</div>';
+    var AQ=((G.dati&&G.dati.acquisti)||[]).filter(function(a){return !a.pagato});
+    if(AQ.length)h+='<h2 class="gh2">IVA sugli acquisti esteri</h2><div class="glist">'+AQ.map(function(a){return '<div class="grow"><div class="gmain"><b>'+(a.scad_iva<oggi()?'<span class="gko">Scaduto il ':'Entro il ')+dIt(a.scad_iva)+(a.scad_iva<oggi()?'</span>':'')+' · IVA '+esc(a.fornitore.nome)+'</b><span>F24 sezione Erario: codice <b>'+a.codice+'</b>, anno '+a.data.slice(0,4)+', importo '+eur(a.iva)+'</span></div><div class="gbt"><button type="button" class="gmini" data-a2="ae">Apri</button></div></div>'}).join('')+'</div>';
     if(P.length)h+='<h2 class="gh2">Già passate</h2><p class="gnota">Se le hai pagate, segnale. Se no, ti preparo l\'F24 per mettersi in regola.</p><div class="glist">'+P.map(function(x){return '<div class="grow"><div class="gmain"><b>'+dIt(x.d)+' · '+esc(x.e)+'</b><span>'+eur(x.t)+' · scaduta da '+x.g+' giorni</span></div><div class="gbt"><button type="button" class="gmini" data-pag="scadenza" data-k="'+x.d+'">L\'ho pagata</button>'+(C?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.d+'" target="_blank" rel="noopener">Non l\'ho pagata</a>':'')+'</div></div>'}).join('')+'</div>';
     if(B.length)h+='<h2 class="gh2">Bollo delle fatture</h2><div class="glist">'+B.map(function(x){return '<div class="grow"><div class="gmain"><b>'+x.t+'° trimestre '+x.a+'</b><span>'+x.n+(x.n===1?' fattura':' fatture')+' · '+eur(x.e)+' · '+(x.p?'pagato':x.corso?'trimestre in corso':'scade il '+dIt(x.s))+'</span></div>'+
       (x.p?'':(x.corso?'':'<div class="gbt">'+(C?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.s+'" target="_blank" rel="noopener">Prepara F24</a>':'')+'<button type="button" class="gmini" data-pag="bollo" data-k="'+x.k+'">Segna come pagato</button></div>'))+'</div>'}).join('')+'</div>';
     return h}
-  function legaScad(){var el=V.sc;[].forEach.call(el.querySelectorAll('[data-pag]'),function(b){b.onclick=function(){if(!C)return;b.disabled=true;
+  function legaScad(){var el=V.sc;[].forEach.call(el.querySelectorAll('[data-a2]'),function(b){b.onclick=function(){apri(b.dataset.a2)}});[].forEach.call(el.querySelectorAll('[data-pag]'),function(b){b.onclick=function(){if(!C)return;b.disabled=true;
       fetch('/api/prova/pagato',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:C,tipo:b.dataset.pag,k:b.dataset.k,v:true})}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok){SRV.bolli=j.bolli||[];SRV.passate=j.passate||[];disegna();try{window.__heroRender&&window.__heroRender()}catch(e){}}else b.disabled=false}).catch(function(){b.disabled=false})}});
     [].forEach.call(el.querySelectorAll('[data-t]'),function(a){a.addEventListener('click',function(){tp(a.dataset.t)})})}
 
@@ -4217,6 +4264,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     [].forEach.call(el.querySelectorAll('[data-tipo]'),function(b){b.onclick=function(){leggiCliente(el);G.clEdit.tipo=b.dataset.tipo;disegna()}});
     var naz=el.querySelector('[data-c="nazione"]');if(naz)naz.onchange=function(){leggiCliente(el);disegna()};
     var sel=el.querySelector('[data-e="cliente_id"]');if(sel)sel.onchange=function(){if(sel.value==='+'){leggiEditor(el);G.ritorno=G.edit;G.clEdit={tipo:'azienda',nazione:'IT'};apri('cl');return}};
+    var pr=el.querySelector('[data-ae="preset"]');if(pr)pr.onchange=function(){leggiAe(el);var p=FORN.filter(function(x){return x[0]===pr.value})[0];if(p&&p[0]&&p[0]!=='*'){G.aeEdit.fornitore.nome=p[0];G.aeEdit.fornitore.nazione=p[2]}else if(pr.value==='*'){G.aeEdit.fornitore.nome=''}disegna()};
+    var ai=el.querySelector('[data-ae="importo"]');if(ai)ai.addEventListener('input',function(){var t=$('aeTot');if(t)t.innerHTML='<div><span>Imponibile</span><b>'+eur(num(ai.value))+'</b></div><div class="gtt"><span>IVA da versare (22%)</span><b>'+eur(Math.round(num(ai.value)*22)/100)+'</b></div>'});
     if(G.edit){var up=function(){leggiEditor(el);var t=$('gTot');if(t)t.innerHTML=totHtml(calc(G.edit))};[].forEach.call(el.querySelectorAll('[data-r],[data-e]'),function(i){i.addEventListener('input',up);i.addEventListener('change',up)})}
     [].forEach.call(el.querySelectorAll('[data-a]'),function(b){b.onclick=function(){var a=b.dataset.a,id=b.dataset.id;
       if(a==='nuova'){G.edit=nuovaF();G.io=false;tp('fattura_nuova');disegna()}
@@ -4245,12 +4294,19 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       else if(a==='delcl'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro?';b.classList.add('ko');return}post('elimina_cliente',{id:id}).then(function(j){aggiorna(j,'Cliente eliminato. Le fatture già fatte restano.');disegna()})}
       else if(a==='fattcl'){G.edit=nuovaF(id);apri('fa')}
       else if(a==='vaifa'){apri('fa')}
+      else if(a==='vaiio'){G.io=true;G.edit=null;apri('fa')}
+      else if(a==='nuovoae'){G.aeEdit={fornitore:{nazione:'IE'},data:oggi(),importo:'',descrizione:''};disegna()}
+      else if(a==='aeann'){G.aeEdit=null;disegna()}
+      else if(a==='aemod'){var q=(G.dati.acquisti||[]).filter(function(x){return x.id===id})[0];if(q){G.aeEdit=JSON.parse(JSON.stringify(q));disegna()}}
+      else if(a==='aesalva'){leggiAe(el);var q2=G.aeEdit;q2.importo=num(q2.importo);b.disabled=true;
+        post('acquisto',{acquisto:q2}).then(function(j){b.disabled=false;if(aggiorna(j,'Acquisto salvato.')){tp('acquisto_salvato');G.aeEdit=null;disegna()}else err('aeE',esc((j&&j.errore)||'Non sono riuscito a salvarlo.'))}).catch(function(){b.disabled=false;err('aeE','Non sono riuscito a salvarlo.')})}
+      else if(a==='aepag'||a==='aenonpag'){b.disabled=true;post('acquisto_pagato',{id:id,annulla:a==='aenonpag'}).then(function(j){aggiorna(j,a==='aepag'?'Segnato: IVA versata.':'');disegna()})}
+      else if(a==='aedel'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro?';b.classList.add('ko');return}post('elimina_acquisto',{id:id}).then(function(j){aggiorna(j,'Acquisto eliminato.');disegna()})}
       else if(a==='incassa'||a==='annincasso'){var di=el.querySelector('[data-d="'+id+'"]');b.disabled=true;
         post('incassa',{id:id,data:di?di.value:'',annulla:a==='annincasso'}).then(function(j){b.disabled=false;if(aggiorna(j,a==='incassa'?'Incasso segnato: ho aggiornato tasse, quota da mettere da parte e soglia.':'Ho tolto l\'incasso.')){tp('fattura_'+a);
           if(j.numeri)try{pvNumeri(j.numeri);pvSoglia()}catch(e){}}disegna()}).catch(function(){b.disabled=false})}
     }})}
 })();
-
 </script>
 <script>
 /* v100: sul computer la barra laterale e' divisa in gruppi: Panoramica, Risparmio (Ottimizzazione, Bandi), Gestione (Da fare,
@@ -4277,9 +4333,28 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   window.__dockY=function(){var a=document.getElementById('astab'),g=gn.lastElementChild,pr=pn.getBoundingClientRect();if(!a||!g||!pr.height)return null;
     var hgt=a.offsetHeight||84,top=g.getBoundingClientRect().bottom+10,bot=pr.top-10;return bot-top>=hgt?Math.round(top+(bot-top-hgt)/2):null};
   setTimeout(function(){var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}if(st||innerWidth<=900||!window.__putDot)return;var dy=window.__dockY();if(dy!=null)window.__putDot(window.__dockX(),dy,false)},400);
-  window.__vai=function(k){if(/^(fa|cl|in|sc)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
+  window.__vai=function(k){if(/^(fa|cl|in|sc|ae)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
   window.__aiutoVoci=function(){return [['Apri le guide',function(){window.__aiuto&&window.__aiuto()}],['Fatture',function(){window.__vai('fa')}],['Scadenze e F24',function(){window.__vai('sc')}],['Ottimizzazione fiscale',function(){window.__vai('g')}],['Incassi',function(){window.__vai('in')}],['Profilo',function(){window.__vai('f')}]]};
   window.__aiutoChip=function(){setTimeout(function(){window.__xchips&&window.__xchips(window.__aiutoVoci())},60);return 'Ti porto dove vuoi. Le <b>guide</b> spiegano le regole del forfettario in parole semplici; oppure scegli una pagina.'};
 })();
+</script>
+<script>
+/* v101: la finestra «Novità», una volta sola, a chi conosce già TaxScan (ha finito la presentazione iniziale) */
+(function(){var C=window.TS_C||'demo',K='ts_novita_101';
+  try{if(localStorage.getItem(K)||localStorage.getItem('ts_intro_'+C)!=='1')return}catch(e){return}
+  var N=[['fa','Fatture e Clienti','Crei e modifichi le fatture con le diciture del forfettario già giuste, scarichi PDF e file XML. La rubrica dei clienti le compila da sola.'],
+    ['in','Incassi','Segni quando un cliente ti paga: tasse, quota da mettere da parte e soglia si aggiornano subito.'],
+    ['sc','Scadenze e F24','Tutte le date in una pagina, con l\'F24 pronto, il bollo trimestre per trimestre e le scadenze da sistemare.'],
+    ['ae','Acquisti esteri','Google, Meta, software dall\'estero: ti dico quanta IVA versare, quando, e ti preparo l\'autofattura.'],
+    ['f','Il tuo commercialista','Dal Profilo gli mandi riepilogo e fatture con un clic.']];
+  function apri(){if(document.documentElement.classList.contains('tour'))return;var o=document.createElement('div');o.id='novita';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-labelledby','novT');
+    o.innerHTML='<div class="nvw"><span class="nvp">Novità</span><h2 id="novT">TaxScan ora fa anche da gestionale</h2><p class="nvs">Il risparmio resta al centro. In più, tutto quello che ti serve ogni giorno è nella barra laterale, sotto <b>Gestione</b>.</p><ul>'+
+      N.map(function(x){return '<li><button type="button" data-n="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button></li>'}).join('')+'</ul><div class="nvb"><button type="button" class="nvgo" data-n="fa">Prova le fatture</button><button type="button" class="nvx">Più tardi</button></div></div>';
+    document.body.appendChild(o);var chiudi=function(){o.remove();try{localStorage.setItem(K,'1')}catch(e){}};
+    o.querySelector('.nvx').onclick=function(){try{tap('novita_chiudi')}catch(e){}chiudi()};o.addEventListener('click',function(e){if(e.target===o)chiudi()});
+    document.addEventListener('keydown',function k(e){if(e.key==='Escape'&&document.getElementById('novita')){chiudi();document.removeEventListener('keydown',k)}});
+    [].forEach.call(o.querySelectorAll('[data-n]'),function(b){b.onclick=function(){try{tap('novita_'+b.dataset.n)}catch(e){}chiudi();if(b.dataset.n==='f'){try{sessionStorage.setItem('ts_pftab','comm')}catch(e){}}window.__vai&&window.__vai(b.dataset.n)}});
+    setTimeout(function(){var b=o.querySelector('.nvgo');b&&b.focus()},50)}
+  setTimeout(apri,2500)})();
 </script>
 </body></html>

@@ -315,6 +315,20 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .dnota{margin-top:28px;font-size:13px;color:var(--mute)}
 @media (max-width:820px){.riga{grid-template-columns:minmax(0,1fr)}.riga.inv .scena{order:0}.scena{min-height:300px}}
 @media (max-width:420px){.nuv{font-size:13.5px;max-width:66%}.nuv.chi{left:34%}.nuv.ia{top:128px}.mav{top:190px}}
+/* test requisiti del forfettario */
+.rq .rqn{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+.rq .rqbar{height:6px;border-radius:3px;background:var(--soft);margin:10px 0 20px;overflow:hidden}.rq .rqbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.rq h3{font-size:clamp(20px,2.2vw,26px);line-height:1.25;margin:0 0 8px}
+.rq p.rqx{color:var(--ink2);font-size:15px;margin:0 0 18px}
+.rq .rqb{display:flex;gap:10px;flex-wrap:wrap}
+.rq .rqb button{font:inherit;font-weight:700;font-size:16px;min-height:48px;min-width:96px;padding:10px 22px;border-radius:12px;border:2px solid var(--accent);background:var(--surface);color:var(--accent-ink);cursor:pointer}
+.rq .rqb button:hover{background:var(--soft)}
+.rq .rqind{display:block;margin-top:16px;background:none;border:0;font:inherit;font-size:14px;color:var(--ink2);text-decoration:underline;cursor:pointer;padding:0}
+.rq .rqok{font-family:var(--f-tit);font-weight:700;font-size:clamp(22px,2.4vw,28px);line-height:1.2;margin:0 0 10px}
+.rq ul.rqp{margin:0 0 16px;padding-left:20px;color:var(--ink2)}.rq ul.rqp li{margin:6px 0}
+.rq .rqa{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.rq .rqa .btn{margin-top:0}
+.rq small{display:block;margin-top:14px;color:var(--ink2);font-size:12.5px}
 /* simulatore del risparmio */
 .ancora{display:block;position:relative;top:-90px;height:0}
 #simula [hidden]{display:none!important}
@@ -821,6 +835,18 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 
+<section class="sez" id="requisiti" aria-labelledby="t-req" style="padding-top:0">
+  <div class="w due centro">
+    <div class="vedi">
+      <h2 class="tit" id="t-req" style="font-size:clamp(34px,4.2vw,56px)">Il forfettario fa per te?</h2>
+      <p class="testo">Sei domande, un clic ciascuna. Ti dico subito se ci sono ostacoli per entrare o restare nel regime forfettario.</p>
+    </div>
+    <div class="storia vedi rq" id="rq" aria-live="polite">
+      <noscript><p>Per fare il test serve JavaScript.</p></noscript>
+    </div>
+  </div>
+</section>
+
 <section class="sez" id="prezzo" aria-labelledby="t-prezzo" style="padding-top:0">
   <div class="w">
     <div class="prezzo vedi">
@@ -904,7 +930,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   <div class="w">
     <div class="cols">
       <div><a class="logo" href="/">Tax<span>Scan</span></a><p>Il primo agente IA specializzato nel risparmio fiscale per chi ha la partita IVA in regime forfettario.</p></div>
-      <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#simula">Simulatore</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
+      <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#simula">Simulatore</a><a href="#requisiti">Il forfettario fa per te?</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
       <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a><a href="/commercialisti">Sei un commercialista?</a></nav></div>
     </div>
     <div class="legale">
@@ -934,6 +960,33 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   var o=new IntersectionObserver(function(x){x.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");o.unobserve(e.target)}})},{threshold:.12,rootMargin:"0px 0px -40px 0px"});
   v.forEach(function(e){o.observe(e)});
 })();
+</script>
+<script>
+/* test «Il forfettario fa per te?»: tutto nel browser, nessun dato inviato */
+(function(){var el=document.getElementById('rq');if(!el)return;
+  var Q=[
+    ["L'anno scorso hai incassato più di 85.000 € con la partita IVA?","Contano gli incassi, non le fatture emesse. Se hai aperto quest'anno, rispondi no.","Hai incassato più di 85.000 €: dall'anno dopo esci dal forfettario."],
+    ["Hai speso più di 20.000 € lordi per dipendenti o collaboratori?","Stipendi, collaboratori, lavoro accessorio, compensi agli associati.","Le spese per il personale superano 20.000 €."],
+    ["L'anno scorso hai avuto più di 35.000 € da lavoro dipendente o pensione?","Se il lavoro da dipendente è finito, rispondi no: il limite non vale.","Lo stipendio o la pensione superano 35.000 € (dal 2027 il limite torna a 30.000 €)."],
+    ["Sei socio di una società di persone, di un'associazione professionale o di un'impresa familiare?","Per esempio una snc, una sas o uno studio associato.","Le quote in società di persone o associazioni professionali impediscono il forfettario."],
+    ["Controlli una SRL che fa un lavoro simile al tuo?","Controllo vuol dire avere la maggioranza, anche insieme ai familiari.","Il controllo di una SRL con un'attività simile alla tua impedisce il forfettario."],
+    ["Lavori soprattutto per un datore di lavoro che ti ha avuto come dipendente negli ultimi due anni?","Vale anche per le società collegate a lui. Se arrivi da un praticantato obbligatorio, rispondi no.","Lavorare soprattutto per l'ex datore di lavoro degli ultimi due anni fa uscire dal forfettario."]];
+  var i=0,R=[],partito=false;
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+  function domanda(){var q=Q[i];el.innerHTML='<span class="rqn">Domanda '+(i+1)+' di '+Q.length+'</span><div class="rqbar"><i style="width:'+Math.round(i*100/Q.length)+'%"></i></div>'+
+      '<h3>'+esc(q[0])+'</h3><p class="rqx">'+esc(q[1])+'</p><div class="rqb"><button type="button" data-r="no">No</button><button type="button" data-r="si">Sì</button></div>'+
+      (i?'<button type="button" class="rqind">Torna indietro</button>':'');
+    [].forEach.call(el.querySelectorAll('[data-r]'),function(b){b.onclick=function(){R[i]=b.dataset.r;i++;i<Q.length?domanda():esito()}});
+    var ind=el.querySelector('.rqind');if(ind)ind.onclick=function(){i--;domanda()};
+    var f=el.querySelector('[data-r]');if(f&&partito)f.focus();partito=true}
+  function esito(){var p=Q.filter(function(q,k){return R[k]==='si'}).map(function(q){return q[2]});
+    el.innerHTML=(p.length?'<p class="rqok">Attenzione: '+(p.length===1?'c\'è un ostacolo':'ci sono '+p.length+' ostacoli')+'.</p><ul class="rqp">'+p.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>'+
+        '<p class="rqx">Ci sono eccezioni che dipendono dal tuo caso: meglio parlarne con un consulente prima di decidere.</p><div class="rqa"><a class="btn btn-acc" href="https://calendly.com/ltd24ore?utm_source=taxscan_test_requisiti" target="_blank" rel="noopener">Parla con un consulente, gratis</a></div>'
+      :'<p class="rqok">Dalle tue risposte non vedo ostacoli: il forfettario fa per te.</p><p class="rqx">Resta da controllare la residenza fiscale: in Italia, oppure in un paese UE con almeno il 75% del reddito prodotto in Italia. Ora scopri quanto paghi e quanto puoi risparmiare.</p><div class="rqa"><a class="btn btn-acc" href="/colloquio/nuovo?utm_source=test_requisiti">Scopri quanto puoi risparmiare</a></div>')+
+      '<small>È un controllo indicativo sui requisiti principali, non una consulenza.</small><button type="button" class="rqind">Rifai il test</button>';
+    el.querySelector('.rqind').onclick=function(){i=0;R=[];domanda()};
+    var h=el.querySelector('.rqok');if(h){h.tabIndex=-1;h.focus()}}
+  domanda()})();
 </script>
 </body>
 </html>
