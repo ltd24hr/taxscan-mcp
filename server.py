@@ -1846,6 +1846,8 @@ async def fic_callback(request):
 prova.registra(mcp, avvisi)
 import api_pubblica  # noqa: E402  chiavi API per gli assistenti IA
 api_pubblica.registra(mcp)
+import dichiarazione  # noqa: E402  dichiarazione dei redditi guidata
+dichiarazione.registra(mcp)
 admin_pannello.registra(mcp, _evento)
 guide.registra(mcp, _evento)
 

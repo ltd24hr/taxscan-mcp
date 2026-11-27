@@ -1151,6 +1151,7 @@ def cancella_dati(email: str | None, id_dashboard: str) -> None:
             try:
                 cur.execute("SAVEPOINT pd")
                 cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s)", (["profili/" + id_dashboard, "sessioni/" + id_dashboard, "feedback/" + id_dashboard, "fatture/" + id_dashboard, "apikeys_di/" + id_dashboard],))
+                cur.execute("DELETE FROM prova_doc WHERE path LIKE %s", ("dichiarazione/" + id_dashboard + "/%",))
                 cur.execute("RELEASE SAVEPOINT pd")
             except Exception:
                 cur.execute("ROLLBACK TO SAVEPOINT pd")

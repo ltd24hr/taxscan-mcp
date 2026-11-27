@@ -1,4 +1,57 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>@media(max-width:560px){#scal th:nth-child(3),#scal td:nth-child(3),#scal th:nth-child(4),#scal td:nth-child(4){display:none}#scal td,#scal th{padding:8px 4px;font-size:13px}#scal .pf24{padding:6px 8px;font-size:12px}#sview table,#scal{width:100%}}img,table{max-width:100%}</style><style>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* v110 dichiarazione guidata */
+.dprog{list-style:none;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 14px;padding:0}
+.dprog li{min-width:0}
+.dprog button{width:100%;font:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink2)}
+.dprog button span{display:flex;align-items:center;justify-content:center;width:100%;height:6px;border-radius:99px;background:var(--line);font-size:0}
+.dprog li.ok button span{background:#2ec4b0}
+.dprog li.cur button span{background:var(--accent)}
+.dprog small{font-size:11.5px;line-height:1.25;text-align:center;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dprog li.cur small{color:var(--ink);font-weight:700}
+.dnav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 0}
+.dlive{font-size:13.5px;color:var(--ink2);text-align:center;flex:1 1 auto}
+.dnt{font-weight:400;font-size:12.5px;color:var(--ink2);line-height:1.4}
+.dstima{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fff1d6;color:#8a5300;vertical-align:middle}
+.dchips{display:grid;gap:2px;margin:0 0 6px}
+.dann{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.dann select{font:inherit;font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.dant{font-size:14px}
+.datt{margin:6px 0 10px}
+.dah,.dar{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 74px minmax(0,1.1fr) 40px;gap:8px;align-items:center}
+.dah{font-size:12.5px;font-weight:700;color:var(--ink2);margin:0 0 6px}
+.dar{margin:0 0 8px}
+.dal{display:flex!important;flex-direction:column;margin:0!important;gap:3px!important}
+.dal small{display:none;font-size:12px;color:var(--ink2);font-weight:600}
+.dtot{margin-left:auto;font-weight:700}
+.dmore summary{cursor:pointer;font-weight:600;font-size:14px;margin:4px 0 10px}
+.dsrr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px;margin:0 0 8px}
+.dq summary{cursor:pointer;font-weight:700;font-size:15px}
+.dtab{margin-top:8px}
+.dtr{display:grid;grid-template-columns:78px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.dri{font-weight:700;display:flex;flex-direction:column;font-size:14px}
+.dri small,.dds small{font-weight:400;font-size:12px;color:var(--ink2)}
+.dds{display:flex;flex-direction:column;font-size:14px;line-height:1.4}
+.dvl{font-size:15px;text-align:right;white-space:nowrap}
+.dcp.ok{background:#e9f7ef;border-color:#b7e2c7;color:#14532d}
+.dcome,.dmille{font-size:14.5px;line-height:1.5}
+.dmille{background:#f4f6fd}
+.dfin{margin:6px 0 10px}
+.dnota{margin-top:6px!important}
+@media (max-width:640px){
+.dprog small{display:none}
+.dprog li.cur small{display:block;position:absolute;left:0;right:0;top:34px;text-align:left;pointer-events:none}
+.dprog button{min-height:28px;justify-content:center}
+.dprog{position:relative;padding-bottom:26px}
+.dah{display:none}
+.dal small{display:block}
+.dar{grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:#f6f7fb;border-radius:12px;padding:8px}
+.dar .gx{grid-column:2;justify-self:end;width:40px}
+.dtr{grid-template-columns:62px minmax(0,1fr);row-gap:4px}
+.dvl{grid-column:2;text-align:left}
+.dcp{grid-column:2;justify-self:start}
+.dlive{order:-1;flex-basis:100%;text-align:left}
+}
+</style><style>@media(max-width:560px){#scal th:nth-child(3),#scal td:nth-child(3),#scal th:nth-child(4),#scal td:nth-child(4){display:none}#scal td,#scal th{padding:8px 4px;font-size:13px}#scal .pf24{padding:6px 8px;font-size:12px}#sview table,#scal{width:100%}}img,table{max-width:100%}</style><style>
 nav button:nth-child(1){order:1}nav button:nth-child(3){order:2}nav button:nth-child(6){order:3}nav button:nth-child(2){order:4}nav button:nth-child(4){order:5}nav button:nth-child(5){order:6}#gperc,#gscene{display:none!important}
 .sxtag{margin:-6px 0 14px;font-size:15px;color:var(--ink2)}.sxtag b{color:var(--ink)}
 .cta{display:block;width:100%;font:inherit;font-weight:700;font-size:18px;color:#fff;background:var(--accent);border:2px solid var(--accent);padding:16px 20px;border-radius:14px;cursor:pointer;box-shadow:0 6px 18px rgba(67,85,204,.3);margin:12px 0;text-align:center;text-decoration:none}
@@ -4178,8 +4231,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     cl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.7M18.2 14.8c1.7.8 2.8 2.5 3.3 5.2"/>',
     in:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h4"/>',
     sc:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h3"/>',
+    di:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h7M9 15h3"/><path d="M13 17.5l2 2 3.5-3.5"/>',
     ae:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/>'};
-  var VOCI=[['fa','Fatture'],['cl','Clienti'],['in','Incassi'],['sc','Scadenze e F24'],['ae','Acquisti esteri']];
+  var VOCI=[['fa','Fatture'],['cl','Clienti'],['in','Incassi'],['sc','Scadenze e F24'],['di','Dichiarazione'],['ae','Acquisti esteri']];
   var gn=document.createElement('div');gn.id='gnav';gn.setAttribute('role','navigation');gn.setAttribute('aria-label','Gestione');
   gn.innerHTML='<p class="gnt">Gestione</p>'+VOCI.map(function(v){return '<button type="button" data-g="'+v[0]+'"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[v[0]]+'</svg><span>'+v[1]+'</span></button>'}).join('');
   nav.parentNode.insertBefore(gn,nav.nextSibling);
@@ -4208,6 +4262,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   function senzaC(){return '<div class="gcard"><p>Le fatture, i clienti e gli incassi si salvano nella tua situazione. Apri TaxScan dal link della tua situazione (lo trovi nell\'email di benvenuto) e li ritrovi qui.</p></div>'}
   function disegna(){var v=G.vista;if(!v)return;var el=V[v];
     if(v==='sc'){el.innerHTML=vScad();legaScad();return}
+    if(v==='di'){if(window.__dich)window.__dich(el);return}
     if(!C){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'')+senzaC();return}
     if(!G.dati){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'Un attimo, prendo i tuoi dati…');return}
     if(v==='fa')el.innerHTML=G.edit?vEditor():G.serv?vServizi():(G.edit===null&&G.io?vIo():vFatture());
@@ -4579,6 +4634,162 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
           if(j.numeri)try{pvNumeri(j.numeri);pvSoglia()}catch(e){}}disegna()}).catch(function(){b.disabled=false})}
     }})}
 })();
+
+/* v110: Dichiarazione dei redditi guidata (solo forfettario). Sette passi con i dati che TaxScan ha gia', poi i righi da
+   copiare nella dichiarazione online (quadri LM, RR, RS, RX), gli F24 e il PDF. Dati sul server: /api/prova/dichiarazione. */
+(function(){
+  var C=window.TS_C||'';
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  function eur(v){var n=Math.round((+v||0)*100)/100,neg=n<0;n=Math.abs(n);var p=n.toFixed(2).split('.');return (neg?'−':'')+p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+p[1]+' €'}
+  function eur0(v){return eur(v).replace(/,\d\d €$/,' €')}
+  function num(s){var t=String(s==null?'':s).trim();if(/,/.test(t))t=t.replace(/\./g,'').replace(',','.');return parseFloat(t.replace(/[^\d.-]/g,''))||0}
+  function inp(v){v=+v||0;return v?String(Math.round(v*100)/100).replace('.',','):''}
+  function tp(k){try{tap(k)}catch(e){}}
+  function post(op,x){x=x||{};x.c=C;x.op=op;return fetch('/api/prova/dichiarazione',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(x)}).then(function(r){return r.json()})}
+  var D={el:null,j:null,v:null,ris:null,msg:'',err:'',carico:false};
+  var PASSI=['Il tuo caso','I tuoi dati','Incassi','Contributi','Acconti e crediti','Spese e informazioni','Risultato'];
+  var QUADRI={LM:'Quadro LM · reddito dei forfettari',RR:'Quadro RR · contributi INPS',RS:'Quadro RS · informazioni dei forfettari',RX:'Quadro RX · debito o credito'};
+  var ALTRI=[['dipendente','Lavoro dipendente o pensione'],['affitti','Affitti di case o terreni'],['estero','Redditi o conti all\'estero, cripto'],['altro','Altro']];
+
+  var ILL='<svg viewBox="0 0 220 150" class="gills" aria-hidden="true"><ellipse cx="110" cy="138" rx="80" ry="8" fill="#f7efdf"/>'+
+    '<rect x="58" y="18" width="84" height="112" rx="6" fill="#fff" stroke="#122452" stroke-width="2"/><rect x="58" y="18" width="84" height="20" rx="6" fill="#dfe4fb" stroke="#122452" stroke-width="2"/>'+
+    '<path d="M70 52h24M70 66h24M70 80h24M70 94h24M104 52h26M104 66h26M104 80h26M104 94h26" stroke="#122452" stroke-width="2" stroke-linecap="round"/><rect x="70" y="106" width="38" height="12" rx="3" fill="#2ec4b0"/>'+
+    '<circle cx="152" cy="108" r="20" fill="#4355cc"/><path d="M143 108l7 7 12-13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<path d="M44 34C45 40 45 40 52 42C45 44 45 44 44 50C43 44 43 44 36 42C43 40 43 40 44 34Z" fill="#2ec4b0"/><circle cx="178" cy="40" r="3" fill="none" stroke="#122452" stroke-width="1.6"/></svg>';
+
+  function testa(s){var anni=(D.j&&D.j.anni)||[],sel=anni.length>1?'<label class="dann">Anno <select id="dAnno">'+anni.map(function(a){return '<option value="'+a+'"'+(a===D.j.anno?' selected':'')+'>redditi '+a+'</option>'}).join('')+'</select></label>':'';
+    return '<header class="vhd gvh"><div><h1>Dichiarazione dei redditi</h1><p>'+s+'</p></div>'+sel+'</header>'}
+
+  function disegna(el){D.el=el||D.el;el=D.el;if(!el)return;
+    if(!C){el.innerHTML=testa('')+'<div class="gcard"><p>La dichiarazione si prepara dalla tua situazione salvata. Apri TaxScan dal link della tua situazione (lo trovi nell\'email di benvenuto).</p></div>';return}
+    if(!D.j){el.innerHTML=testa('Un attimo, preparo i dati che ho già…');if(!D.carico)carica();return}
+    if(!D.j.ok){el.innerHTML=testa('')+'<div class="gcard"><p>Non riesco a prendere i tuoi dati adesso. Riprova tra poco.</p></div>';return}
+    var j=D.j,v=D.v,h=testa('Redditi '+j.anno+' · da presentare nel '+(j.anno+1)+'. Ti preparo i numeri da copiare nella dichiarazione online, rigo per rigo.');
+    if(!j.attivo){el.innerHTML=h+'<div class="gcard gill">'+ILL+'<h3>La dichiarazione guidata è inclusa in TaxScan attivo</h3><p>Sette passi con i dati che TaxScan ha già: alla fine hai i righi dei quadri LM, RR, RS e RX da copiare, gli F24 da pagare e un PDF da tenere.</p><div class="gact"><a class="gbtn pri" href="'+esc(((window.TS_SRV||{}).pag||{}).link||'/acquista')+'">Attiva TaxScan</a></div></div>';lega(el);return}
+    if(j.anteprima)h+='<div class="gcard gwarn dant"><b>Anteprima.</b> Il modello per i redditi '+j.anno+' esce di solito a marzo '+(j.anno+1)+': intanto uso le regole del modello Redditi PF '+(j.anno)+'. Quando esce, controllo e aggiorno i righi e te lo dico.</div>';
+    var p=v.passo||1;
+    h+='<ol class="dprog" aria-label="Passi">'+PASSI.map(function(t,i){var n=i+1,st=n===p?' cur':(v.fatti.indexOf(n)>=0?' ok':'');return '<li class="'+st.trim()+'"><button type="button" data-da="vai" data-p="'+n+'"'+(n===p?' aria-current="step"':'')+'><span>'+n+'</span><small>'+t+'</small></button></li>'}).join('')+'</ol>';
+    if(D.msg)h+='<div class="gmsg" role="status">'+D.msg+'</div>';
+    h+=[p1,p2,p3,p4,p5,p6,p7][p-1]();
+    if(p<7)h+='<div class="dnav"><button type="button" class="gbtn" data-da="indietro"'+(p===1?' disabled':'')+'>Indietro</button><span class="dlive">'+live()+'</span><button type="button" class="gbtn pri" data-da="avanti">Avanti</button></div><p class="gerr" id="dErr" role="alert">'+esc(D.err)+'</p>';
+    el.innerHTML=h;lega(el)}
+
+  function live(){var r=D.ris&&D.ris.riepilogo;if(!r||!r.ricavi)return '';return 'Imposta '+r.aliquota+'%: <b>'+eur0(r.imposta)+'</b> · a giugno <b>'+eur0(r.giugno)+'</b>'}
+  function stima(k){return (D.j.stime||[]).indexOf(k)>=0&&!D.j.salvato?' <span class="dstima">stima di TaxScan: controlla</span>':''}
+  function campo(k,l,v,nota,extra){return '<label>'+l+(extra||'')+'<input data-dk="'+k+'" inputmode="decimal" value="'+esc(inp(v))+'" placeholder="0">'+(nota?'<small class="dnt">'+nota+'</small>':'')+'</label>'}
+  function scelta(k,l,opz,val){return '<label>'+l+'<select data-dk="'+k+'">'+opz.map(function(o){return '<option value="'+o[0]+'"'+(String(val)===String(o[0])?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select></label>'}
+  function chk(k,l,val){return '<label class="gchk"><input type="checkbox" data-dk="'+k+'"'+(val?' checked':'')+'>'+l+'</label>'}
+
+  function p1(){var v=D.v;
+    return '<div class="gcard gform"><h3 class="gh3">Nell\'anno hai avuto altri redditi oltre alla partita IVA?</h3><div class="dchips">'+
+      '<label class="gchk"><input type="checkbox" data-alt="nessuno"'+(v.altri_redditi.length?'':' checked')+'>Nessuno, solo la partita IVA</label>'+
+      ALTRI.map(function(a){return '<label class="gchk"><input type="checkbox" data-alt="'+a[0]+'"'+(v.altri_redditi.indexOf(a[0])>=0?' checked':'')+'>'+a[1]+'</label>'}).join('')+'</div>'+
+      (v.altri_redditi.length?'<div class="gcard gwarn"><p>Con altri redditi servono anche altri quadri e il calcolo dell\'IRPEF. Ti preparo comunque la parte della partita IVA, ma ti consiglio di farla controllare a un commercialista: lo trovi all\'ultimo passo.</p></div>':'')+
+      '<h3 class="gh3">Il regime</h3>'+chk('requisiti_ok','Per tutto l\'anno sono rimasto nel forfettario: incassi sotto 85.000 €, spese per collaboratori sotto 20.000 €, nessuna causa di esclusione',v.requisiti_ok)+
+      '<p class="gnota">Se uno di questi non torna, fermati qui e senti un commercialista: la dichiarazione cambia del tutto.</p></div>'}
+
+  function p2(){var v=D.v,ac=v.gestione==='artigiani'||v.gestione==='commercianti';
+    return '<div class="gcard gform"><div class="g2">'+scelta('tipo','Che lavoro fai',[['autonomo','Lavoro autonomo (professionista)'],['impresa','Impresa (artigiano o commerciante)'],['impresa_familiare','Impresa familiare']],v.tipo)+
+      '<label>Codice ATECO 2025<input data-dk="ateco2025" value="'+esc(v.ateco2025)+'" placeholder="es. 62.10.00"><small class="dnt">Il codice in vigore dal 2025: lo trovi nel cassetto fiscale.</small></label></div>'+
+      '<div class="g2">'+scelta('gestione','Dove versi i contributi',[['separata','INPS gestione separata'],['artigiani','INPS artigiani'],['commercianti','INPS commercianti'],['cassa','Cassa del mio Ordine']],v.gestione)+
+      scelta('mesi','Mesi di attività nell\'anno',[12,11,10,9,8,7,6,5,4,3,2,1].map(function(m){return [m,m===12?'Tutto l\'anno':m+' mesi']}),v.mesi)+'</div>'+
+      (ac?'<div class="g2">'+scelta('riduzione','Sconto INPS sui contributi',[['no','Nessuno'],['35','35% dei forfettari'],['50','50% per i nuovi iscritti 2025']],v.riduzione)+
+        '<label>Codice INPS della posizione<input data-dk="codice_inps" value="'+esc(v.codice_inps)+'" maxlength="17" placeholder="17 caratteri"><small class="dnt">È quello dei moduli F24 dei contributi fissi, nel Cassetto previdenziale.</small></label></div>'+
+        chk('ante_1996','Ho versato contributi INPS già prima del 1996',v.ante_1996):'')+
+      (v.gestione==='separata'?chk('altra_copertura','Ho anche un\'altra pensione obbligatoria o un lavoro dipendente (aliquota 24%)',v.altra_copertura):'')+
+      chk('aliquota5','Attività nuova: pago il 5% (nei primi 5 anni, se ne ho i requisiti)',v.aliquota5)+'</div>'}
+
+  function p3(){var v=D.v,A=v.attivita.length?v.attivita:[{ateco:'',coeff:0,ricavi:0,nome:''}],tot=A.reduce(function(a,x){return a+(+x.ricavi||0)},0);
+    return '<div class="gcard gform"><p>Gli incassi <b>ricevuti</b> dal 1° gennaio al 31 dicembre '+v.anno+' (conta la data del pagamento, non quella della fattura).'+stima('ricavi')+'</p>'+(v.anno===new Date().getFullYear()?'<p class="gnota">L\'anno non è ancora finito: qui ci sono gli incassi fino a oggi. A gennaio aggiorna il totale e i conti si rifanno.</p>':'')+
+      '<div class="datt"><div class="dah"><span>Attività</span><span>Codice</span><span>Coeff. %</span><span>Incassi €</span><span></span></div>'+
+      A.map(function(x,i){var L=function(t,inp){return '<label class="dal"><small>'+t+'</small>'+inp+'</label>'};return '<div class="dar">'+L('Attività','<input data-at="'+i+'" data-f="nome" value="'+esc(x.nome||'')+'" placeholder="Attività">')+L('Codice','<input data-at="'+i+'" data-f="ateco" value="'+esc(x.ateco)+'" placeholder="Codice">')+L('Coeff. %','<input data-at="'+i+'" data-f="coeff" inputmode="decimal" value="'+(x.coeff?Math.round(x.coeff*100):'')+'">')+L('Incassi €','<input data-at="'+i+'" data-f="ricavi" inputmode="decimal" value="'+esc(inp(x.ricavi))+'">')+'<button type="button" class="gx" data-da="delatt" data-i="'+i+'" aria-label="Togli"'+(A.length<2?' disabled':'')+'>×</button></div>'}).join('')+'</div>'+
+      '<div class="gact"><button type="button" class="gmini" data-da="addatt">+ Un\'altra attività con un coefficiente diverso</button><span class="dtot">Totale '+eur(tot)+'</span></div>'+
+      (tot>85000?'<div class="gcard gwarn"><p>Sopra 85.000 € dall\'anno dopo esci dal forfettario'+(tot>100000?'; sopra 100.000 € si esce subito. Qui serve un commercialista.':'.')+'</p></div>':'')+
+      '<p class="gnota">Se fai lavori di gruppi diversi, ogni attività ha il suo coefficiente: l\'ho preso dal check delle attività, se l\'hai fatto.</p></div>'}
+
+  function p4(){var v=D.v;
+    if(v.gestione==='cassa')return '<div class="gcard gform">'+campo('contributi_versati','Contributi pagati alla tua cassa nell\'anno',v.contributi_versati,'Quelli pagati davvero tra gennaio e dicembre, anche se riferiti all\'anno prima.',stima('contributi_versati'))+'</div>';
+    var ac=v.gestione==='artigiani'||v.gestione==='commercianti';
+    return '<div class="gcard gform">'+campo('contributi_versati','Tutti i contributi INPS pagati nell\'anno',v.contributi_versati,'Somma degli F24 dei contributi pagati tra gennaio e dicembre (saldo dell\'anno prima, acconti, rate fisse). Si deducono dal reddito.',stima('contributi_versati'))+
+      (ac?'<div class="g2">'+campo('fissi_versati','Di cui rate fisse per quest\'anno',v.fissi_versati,'Le quattro rate (maggio, agosto, novembre, febbraio).',stima('fissi_versati'))+
+          campo('acconti_inps_versati','Acconti pagati sul reddito oltre il minimale',v.acconti_inps_versati,'Giugno e novembre, codice '+(v.gestione==='artigiani'?'AP':'CP')+'.',stima('acconti_inps_versati'))+'</div>'
+        :campo('acconti_inps_versati','Acconti pagati per quest\'anno (giugno P10 e novembre P11)',v.acconti_inps_versati,'Li trovi negli F24 della sezione INPS.',stima('acconti_inps_versati')))+
+      '<p class="gnota">I numeri che ho messo sono una stima fatta dall\'anno prima: confrontali con gli F24 che hai pagato (li trovi in Scadenze e F24 o nell\'home banking).</p></div>'}
+
+  function p5(){var v=D.v;
+    return '<div class="gcard gform">'+campo('acconti_versati','Acconti di imposta pagati per quest\'anno (codici 1790 e 1791)',v.acconti_versati,'Giugno e novembre. Se non li hai pagati, lascia 0.',stima('acconti_versati'))+
+      '<details class="dmore"'+(v.eccedenza_prec||v.crediti||v.perdite?' open':'')+'><summary>Crediti e perdite (di solito non servono)</summary><div class="g2">'+
+      campo('eccedenza_prec','Credito dalla dichiarazione dell\'anno prima',v.eccedenza_prec,'Rigo RX31 colonna 5 della dichiarazione precedente.')+
+      campo('eccedenza_compensata','Di cui già usato negli F24',v.eccedenza_compensata)+
+      campo('crediti','Crediti d\'imposta da usare',v.crediti)+campo('perdite','Perdite degli anni precedenti',v.perdite)+'</div></details></div>'}
+
+  function p6(){var v=D.v,rs=v.rs,imp=v.tipo!=='autonomo'||v.attivita.some(function(x){return x.natura==='impresa'});
+    var S=(rs.senza_ritenuta||[]).slice();if(!S.length)S=[{cf:'',importo:0}];
+    return '<div class="gcard gform"><p>Il quadro RS chiede alcune informazioni: non cambiano le tasse, ma vanno scritte. Se non sai una cifra, una stima ragionevole va bene.</p>'+
+      (imp?'<div class="g2">'+campo('rs.veicoli','Veicoli usati per il lavoro a fine anno',rs.veicoli)+campo('rs.acquisti','Acquisti di merci e materiali',rs.acquisti)+campo('rs.beni_terzi','Affitti, noleggi e leasing',rs.beni_terzi)+campo('rs.carburante','Carburante',rs.carburante)+'</div>'
+        :campo('rs.consumi','Spese di telefono, luce e carburante per il lavoro',rs.consumi))+
+      '<h3 class="gh3">Hai pagato qualcuno senza ritenuta? (collaboratori, affitto dello studio)</h3><div class="dsr">'+S.map(function(x,i){return '<div class="dsrr"><input data-sr="'+i+'" data-f="cf" value="'+esc(x.cf)+'" placeholder="Codice fiscale" aria-label="Codice fiscale"><input data-sr="'+i+'" data-f="importo" inputmode="decimal" value="'+esc(inp(x.importo))+'" placeholder="Importo €" aria-label="Importo"></div>'}).join('')+'</div>'+
+      '<div class="gact"><button type="button" class="gmini" data-da="addsr">+ Un\'altra persona</button></div></div>'}
+
+  function p7(){var r=D.ris,rp=r.riepilogo,h='';
+    h+='<div class="gkpi dkpi"><div><span>Imposta '+rp.aliquota+'%</span><b>'+eur(rp.imposta)+'</b><small>reddito '+eur0(rp.imponibile)+'</small></div>'+
+      '<div><span>Da pagare entro il 30 giugno</span><b>'+eur(rp.giugno)+'</b><small>saldo e primo acconto</small></div>'+
+      '<div><span>Da pagare entro il 30 novembre</span><b>'+eur(rp.novembre)+'</b><small>secondo acconto</small></div></div>';
+    if(r.avvisi.length)h+='<div class="gcard gwarn">'+r.avvisi.map(function(a){return '<p>'+(a.livello==='importante'?'<b>':'')+esc(a.testo)+(a.livello==='importante'?'</b>':'')+'</p>'}).join('')+'</div>';
+    h+='<div class="gcard dcome"><b>Come si usa.</b> Entra nella dichiarazione precompilata (sito dell\'Agenzia delle Entrate, con SPID o CIE), scegli il modello Redditi, aggiungi i quadri qui sotto e copia ogni valore nel rigo e nella colonna indicati. Il pulsante accanto al valore lo copia.</div>';
+    ['LM','RR','RS','RX'].forEach(function(q){var R=r.righi.filter(function(x){return x.quadro===q});if(!R.length)return;
+      h+='<details class="gcard dq"'+(q==='LM'?' open':'')+'><summary>'+QUADRI[q]+'</summary><div class="dtab">'+R.map(function(x,i){var val=typeof x.val==='number'?String(x.val).replace('.',','):String(x.val);
+        return '<div class="dtr"><span class="dri">'+esc(x.rigo)+(x.col?'<small>col. '+esc(x.col)+'</small>':'')+'</span><span class="dds">'+esc(x.desc)+(x.nota?'<small>'+esc(x.nota)+'</small>':'')+'</span><b class="dvl">'+esc(val)+'</b><button type="button" class="gmini dcp" data-da="copia" data-v="'+esc(val)+'" aria-label="Copia '+esc(x.rigo)+'">Copia</button></div>'}).join('')+'</div></details>'});
+    if(r.f24.length)h+='<h2 class="gh2">I pagamenti con F24</h2><div class="glist">'+r.f24.map(function(f){return '<div class="grow"><div class="gmain"><b>'+esc(f.desc)+'</b><small>Entro il '+esc(r.scadenze[f.quando]||f.quando)+' · sezione '+esc(f.sezione)+' · codice <b>'+esc(f.codice)+'</b> · anno '+f.anno+'</small></div><b>'+eur(f.importo)+'</b></div>'}).join('')+'</div>'+
+      '<p class="gnota">Le scadenze di questi F24 le trovi anche in Scadenze e F24. Chi paga dopo il 30 giugno può farlo entro il 30 luglio con lo 0,40% in più.</p>';
+    h+='<div class="gcard dmille"><b>Prima di inviare: 8, 5 e 2 per mille.</b> Nel frontespizio puoi scegliere a chi destinarli. Non costano nulla e non cambiano quello che paghi.</div>';
+    h+='<div class="gcard gform dctr"><h3 class="gh3">Falla controllare a un commercialista</h3><p>Se vuoi un controllo in più prima di inviarla, un commercialista che collabora con TaxScan riceve questi numeri e ti scrive con quello che controlla e quanto costa, prima di iniziare. Non è obbligatorio.</p>'+
+      '<label>Vuoi aggiungere qualcosa? (facoltativo)<textarea id="dNota" rows="2" maxlength="800" placeholder="Per esempio: ho chiuso la partita IVA a settembre"></textarea></label><div class="gact"><button type="button" class="gbtn pri" data-da="controllo">Chiedi il controllo</button></div><p class="gerr" id="dCe" role="alert"></p></div>';
+    h+='<div class="gact dfin"><a class="gbtn pri" href="/api/prova/dichiarazione.pdf?c='+encodeURIComponent(C)+'&anno='+D.j.anno+'" target="_blank" rel="noopener">Scarica il PDF</a><button type="button" class="gbtn" data-da="vai" data-p="1">Rivedi i passi</button><button type="button" class="gbtn" data-da="ricomincia">Ricomincia dai dati di TaxScan</button></div>';
+    h+='<p class="gnota dnota">'+esc(r.nota)+'</p>';return h}
+
+  function leggi(el){var v=D.v;
+    [].forEach.call(el.querySelectorAll('[data-dk]'),function(i){var k=i.dataset.dk,o=v,val;if(k.indexOf('rs.')===0){o=v.rs;k=k.slice(3)}
+      if(i.type==='checkbox')val=i.checked;else if(i.tagName==='SELECT')val=k==='mesi'?+i.value:i.value;else if(i.getAttribute('inputmode')==='decimal')val=num(i.value);else val=i.value.trim();o[k]=val});
+    var alt=el.querySelectorAll('[data-alt]');if(alt.length){v.altri_redditi=[].filter.call(alt,function(i){return i.checked&&i.dataset.alt!=='nessuno'}).map(function(i){return i.dataset.alt})}
+    var at=el.querySelectorAll('[data-at]');if(at.length){var A=[];[].forEach.call(at,function(i){var n=+i.dataset.at;A[n]=A[n]||{natura:v.tipo==='autonomo'?'autonomo':'impresa'};var f=i.dataset.f;A[n][f]=f==='coeff'?num(i.value)/100:f==='ricavi'?num(i.value):i.value.trim()});
+      v.attivita=A.filter(function(x){return x&&(x.ricavi||x.ateco||x.nome)})}
+    var sr=el.querySelectorAll('[data-sr]');if(sr.length){var S=[];[].forEach.call(sr,function(i){var n=+i.dataset.sr;S[n]=S[n]||{};S[n][i.dataset.f]=i.dataset.f==='importo'?num(i.value):i.value.trim().toUpperCase()});
+      v.rs.senza_ritenuta=S.filter(function(x){return x&&x.cf&&x.importo})}}
+
+  function controlla(p){var v=D.v;
+    if(p===3&&!v.attivita.some(function(x){return x.ricavi>0}))return 'Scrivi gli incassi dell\'anno.';
+    if(p===3&&v.attivita.some(function(x){return x.ricavi>0&&!(x.coeff>0&&x.coeff<=1)}))return 'Ogni attività ha bisogno del suo coefficiente (per esempio 78).';
+    if(p===2&&!/^\d{2}\.\d{2}(\.\d{1,2})?$/.test(v.ateco2025||''))return 'Scrivi il codice ATECO con i punti, per esempio 62.10.00.';
+    return ''}
+
+  function salva(passo,poi){var v=D.v;v.passo=passo;D.err='';
+    post('salva',{anno:D.j.anno,dati:v}).then(function(j){if(j&&j.ok){D.v=j.dati;D.ris=j.risultato;D.j.salvato=true;if(poi)poi()}else{D.err=(j&&j.errore)||'Non riesco a salvare adesso: riprova.'};disegna()})
+      .catch(function(){D.err='Non riesco a salvare adesso: controlla la connessione.';disegna()})}
+
+  function carica(anno){D.carico=true;post('apri',anno?{anno:anno}:{}).then(function(j){D.carico=false;D.j=j||{ok:false};if(j&&j.ok){D.v=j.dati;D.ris=j.risultato}disegna()}).catch(function(){D.carico=false;D.j={ok:false};disegna()})}
+
+  function lega(el){var an=$('dAnno');if(an)an.onchange=function(){D.j=null;D.msg='';tp('dich_anno');disegna();carica(+an.value)};
+    [].forEach.call(el.querySelectorAll('[data-alt]'),function(i){i.onchange=function(){if(i.dataset.alt==='nessuno'&&i.checked)[].forEach.call(el.querySelectorAll('[data-alt]'),function(x){if(x!==i)x.checked=false});
+      else if(i.checked){var n=el.querySelector('[data-alt="nessuno"]');if(n)n.checked=false}leggi(el);disegna()}});
+    [].forEach.call(el.querySelectorAll('select[data-dk="gestione"],select[data-dk="tipo"]'),function(s){s.onchange=function(){leggi(el);disegna()}});
+    el.onclick=function(e){var b=e.target.closest('[data-da]');if(!b||!el.contains(b))return;var a=b.dataset.da,v=D.v,p=v&&v.passo||1;D.msg='';
+      if(a==='avanti'){leggi(el);var er=controlla(p);if(er){D.err=er;var x=$('dErr');if(x)x.textContent=er;return}if(v.fatti.indexOf(p)<0)v.fatti.push(p);tp('dich_passo_'+p);salva(Math.min(7,p+1),function(){scrollTo(0,0)})}
+      else if(a==='indietro'){leggi(el);salva(Math.max(1,p-1))}
+      else if(a==='vai'){if(p<7)leggi(el);salva(+b.dataset.p,function(){scrollTo(0,0)})}
+      else if(a==='addatt'){leggi(el);v.attivita.push({ateco:'',coeff:0,ricavi:0,nome:'',natura:v.tipo==='autonomo'?'autonomo':'impresa'});disegna()}
+      else if(a==='delatt'){leggi(el);v.attivita.splice(+b.dataset.i,1);disegna()}
+      else if(a==='addsr'){leggi(el);v.rs.senza_ritenuta=(v.rs.senza_ritenuta||[]).concat([{cf:'',importo:0}]);disegna()}
+      else if(a==='copia'){var t=b.dataset.v;try{navigator.clipboard.writeText(t).then(function(){b.textContent='Copiato';b.classList.add('ok');setTimeout(function(){b.textContent='Copia';b.classList.remove('ok')},1500)})}catch(er2){}tp('dich_copia')}
+      else if(a==='controllo'){var ce=$('dCe');b.disabled=true;tp('dich_controllo');post('controllo',{anno:D.j.anno,nota:($('dNota')||{}).value||''}).then(function(j){b.disabled=false;
+          if(j&&j.ok){D.msg='Richiesta inviata. Un commercialista che collabora con TaxScan ti scrive all\'email che hai confermato. Ti ho mandato una conferma.';disegna();scrollTo(0,0)}else if(ce)ce.textContent=(j&&j.errore)||'Non è partita: riprova tra poco.'}).catch(function(){b.disabled=false;if(ce)ce.textContent='Non è partita: controlla la connessione.'})}
+      else if(a==='ricomincia'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro? Perdi le modifiche';return}tp('dich_ricomincia');post('ricomincia',{anno:D.j.anno}).then(function(j){if(j&&j.ok){D.j=j;D.v=j.dati;D.ris=j.risultato;D.msg='Ho ripreso i dati di TaxScan.'}disegna()})}
+    }}
+
+  window.__dich=function(el){tp('dich_apri');disegna(el)};
+})();
+
 </script>
 <script>
 /* v100: sul computer la barra laterale e' divisa in gruppi: Panoramica, Risparmio (Ottimizzazione, Bandi), Gestione (Da fare,
@@ -4606,7 +4817,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     var hgt=a.offsetHeight||84,top=g.getBoundingClientRect().bottom+10,bot=pr.top-10;return bot-top>=hgt?Math.round(top+(bot-top-hgt)/2):null};
   setTimeout(function(){var st=null;try{st=sessionStorage.getItem('astpos')}catch(e){}if(st||innerWidth<=900||!window.__putDot)return;var dy=window.__dockY();if(dy!=null)window.__putDot(window.__dockX(),dy,false)},400);
   try{localStorage.removeItem('ts_nascondi')}catch(e){}
-  window.__vai=function(k){if(/^(fa|cl|in|sc|ae)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
+  window.__vai=function(k){if(/^(fa|cl|in|sc|di|ae)$/.test(k)){window.__gestione&&window.__gestione(k);return}var b=by(k);if(b)b.click()};
   window.__aiutoVoci=function(){return [['Apri le guide',function(){window.__aiuto&&window.__aiuto()}],['Fatture',function(){window.__vai('fa')}],['Scadenze e F24',function(){window.__vai('sc')}],['Ottimizzazione fiscale',function(){window.__vai('g')}],['Incassi',function(){window.__vai('in')}],['Profilo',function(){window.__vai('f')}]]};
   window.__aiutoChip=function(){setTimeout(function(){window.__xchips&&window.__xchips(window.__aiutoVoci())},60);return 'Ti porto dove vuoi. Le <b>guide</b> spiegano le regole del forfettario in parole semplici; oppure scegli una pagina.'};
 })();
