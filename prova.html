@@ -846,7 +846,7 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
 #pvHero .phBar{height:8px;border-radius:4px;background:var(--accent-soft);overflow:hidden;margin:6px 0 2px}
 #pvHero .phBar i{display:block;height:100%;border-radius:4px;background:var(--accent);transition:width .6s cubic-bezier(.22,1,.36,1)}
 #pvHero .phInc .phBar.over i{background:#c62f3a}
-#pvHero .phNote{margin:0;font-size:14px;color:var(--ink2);line-height:1.45}
+#pvHero .phNote{margin:0;font-size:14px;color:var(--ink2);line-height:1.45}#pvHero .phTo{display:flex;align-items:center;gap:20px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}#pvHero .phToS{width:132px;height:132px;flex:none}#pvHero .phToS circle{transform-origin:center}#pvHero .phToN{font:800 8px Poppins,system-ui,sans-serif;fill:var(--ink)}#pvHero .phToL{font:600 3.6px system-ui,sans-serif;fill:var(--ink2)}#pvHero .phToD{flex:1;min-width:0}#pvHero .phToH{margin:0 0 8px;font-weight:700;font-size:15px}#pvHero .phToR{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14.5px}#pvHero .phToR i{width:10px;height:10px;border-radius:3px;flex:none}#pvHero .phToR b{margin-left:auto}#pvHero .phLk{color:#9a3412;font-weight:700}@media(max-width:520px){#pvHero .phTo{flex-direction:column;align-items:stretch}#pvHero .phToS{align-self:center}}html.nascondi #pvHero .phTo b{filter:blur(7px);user-select:none}
 #pvHero .phNote b{color:var(--ink)}
 #pvHero .phCh{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:16px}
 #pvHero .phCh span{flex:1;display:flex;align-items:flex-end;justify-content:center;height:100%}
@@ -2839,6 +2839,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       try{localStorage.setItem('ts_comm_'+c,e)}catch(x){}g.disabled=true;o.textContent='Preparo e invio…';tap('commercialista_invia');
       fetch('/api/prova/commercialista',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:c,email:e,periodo:$('pfcP').value,nota:$('pfcN').value})}).then(function(r){return r.json()}).then(function(j){g.disabled=false;
         o.innerHTML=j&&j.ok?'Inviato a <b>'+oEsc(e)+'</b>'+(j.n!=null?' con '+j.n+(j.n===1?' fattura':' fatture'):'')+'. Ti ho mandato una copia.':oEsc((j&&j.errore)||'Non sono riuscito a inviare. Riprova tra poco.')}).catch(function(){g.disabled=false;o.textContent='Non sono riuscito a inviare. Riprova tra poco.'})}}
+  window.__pfTab=function(t){PFTAB=t;try{sessionStorage.setItem('ts_pftab',t)}catch(e){}try{renderProfilo()}catch(e){}};
   // v104: passaparola. Il link personale; se il pagamento e' attivo, 3 mesi in piu' per ogni collega che attiva TaxScan
   function pfInv(){var el=$('pfcomm'),c=window.TS_C;
     el.innerHTML='<div class="pfcc"><h3>Conosci qualcuno con la partita IVA?</h3><p id="pfiT">Mandagli il tuo link: arriva su TaxScan e prova gratis.</p><div id="pfiB"><p class="pfco">Un attimo…</p></div></div>';
@@ -3440,7 +3441,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   if(SRV){PV.incx=PV.incx.filter(function(x){return !x.s}).concat((SRV.incx||[]).map(function(x){return {e:+x.e||0,d:x.d,s:1}}))}
   function pvPost(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.assign({c:window.TS_C},b))}).then(function(r){return r.json()})}
   // il server ha rifatto i calcoli: la pagina prende i numeri nuovi senza ricaricarsi
-  function pvNumeri(n){if(!n)return;if(n.incassato!=null)INCASSATO=+n.incassato||0;
+  function pvNumeri(n){if(!n)return;if(n.incassato!=null)INCASSATO=+n.incassato||0;if(n.anno&&window.TS_SRV)TS_SRV.anno=n.anno;
     if(n.quota){var q=parseInt(n.quota,10);if(q){D.perc=q;var pe=$('perc');if(pe)pe.textContent=String(n.quota).replace('.0%','%')}}
     if(n.netto!=null){var ne=$('netto');if(ne)ne.textContent=pvEur(n.netto)}
     var so=$('slSo');if(so){var r=function(k,v){var b=so.querySelector('[data-ex='+k+'] b');if(b&&v!=null)b.textContent=v};r('so_inc',pvEur(INCASSATO));r('so_margine',n.margine!=null?pvEur(n.margine):null);r('so_proj',n.previsione!=null?'circa '+pvEur(n.previsione):null);try{$('sobar').innerHTML=bar(INCASSATO)}catch(e){}}
@@ -3493,7 +3494,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     vSal:function(el){var tg=pvTarget(),s=pvSal(),n=pvGiorni(),pc=tg?Math.min(100,Math.round(s*100/tg)):0,manca=Math.max(0,tg-s),sett=Math.max(1,Math.ceil(n/7));
       el.querySelector('.pvc').innerHTML='<h3 data-ex="pv_sal" tabindex="0" role="button">Salvadanaio · '+PVDATA+'</h3>'+
         '<div class="pvbig"><b>'+pvEur(s)+'</b><span> di '+pvEur(tg)+'</span></div><div class="pvbar'+(pc>=100?' ok':'')+'"><span style="width:'+pc+'%"></span></div>'+
-        '<div class="pvout">'+(!tg?'Non c\'è una scadenza da preparare adesso.':pc>=100?'Ci sei: i soldi per il '+PVDATA+' sono pronti.':'Mancano '+(n===1?'1 giorno':n+' giorni')+': circa <b>'+pvEur(manca/sett)+'</b> a settimana.')+'</div>'+
+        '<div class="pvout">'+(!tg?'Non c\'è una scadenza da preparare adesso.':pc>=100?'Ci sei: i soldi per il '+PVDATA+' sono pronti.':(n<=7?'Mancano '+(n===1?'1 giorno':n+' giorni')+': servono <b>'+pvEur(manca)+'</b> entro il '+PVDATA+'.':n>60?'Mancano '+n+' giorni: circa <b>'+pvEur(manca/Math.max(1,Math.round(n/30.4)))+'</b> al mese.':'Mancano '+n+' giorni: circa <b>'+pvEur(manca/sett)+'</b> a settimana.'))+'</div>'+
         '<div class="pvrow bnx2"><input class="pvin" id="pvSalV" inputmode="decimal" autocomplete="off" placeholder="Ho messo da parte…" aria-label="Euro messi da parte"><button class="pvgo pvsm" id="pvSalG">Aggiungi</button></div>';
       var i=$('pvSalV'),g=$('pvSalG');
       g.onclick=function(){var x=pvNum(i.value);if(!x)return;var k=pvSalK();PV.sal[k]=Math.max(0,pvSal()+x);pvPut(PV);tap('pv_salvadanaio');if(window.TS_C)pvPost('/api/prova/salvadanaio',{totale:PV.sal[k]}).catch(function(){});
@@ -3934,8 +3935,8 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function phCop(N){var tg=0,s=0;try{tg=pvTarget();s=pvSal()}catch(e){}if(!(tg>0))return '';
       var cp=Math.min(100,Math.round(s*100/tg)),manca=Math.max(0,tg-s),g=N&&N.giorni!=null?N.giorni:null,sett=g!=null?Math.max(1,Math.ceil(g/7)):0,t;
       if(cp>=100)t='<b>Ci sei:</b> hai già messo da parte tutto per questa scadenza.';
-      else if(g!=null&&g<=30)t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%). <span class="phWarn">Mancano '+pvEur(manca)+' e '+(g<=1?'il tempo è poco':g+' giorni')+'.</span>';
-      else t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%).'+(sett?' Circa <b>'+pvEur(manca/sett)+'</b> a settimana e ci arrivi.':'');
+      else if(g!=null&&g<=30)t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%). <span class="phWarn">Mancano '+pvEur(manca)+' e '+(g<=1?'il tempo è poco':g+' giorni')+'.</span>'+(g<=10&&N&&N.mese===10?' <a class="phLk" href="/guide/soldi-non-bastano-acconto-novembre" target="_blank" rel="noopener">Non ce la fai? Ecco cosa puoi fare</a>':(g>7?' Circa <b>'+pvEur(manca/sett)+'</b> a settimana.':''));
+      else t='Hai messo da parte <b>'+pvEur(s)+'</b> ('+cp+'%).'+(g!=null&&g>60?' Circa <b>'+pvEur(manca/Math.max(1,Math.round(g/30.4)))+'</b> al mese e ci arrivi.':sett?' Circa <b>'+pvEur(manca/sett)+'</b> a settimana e ci arrivi.':'');
       return '<div class="phBar phCop'+(cp>=100?' ok':'')+'" role="img" aria-label="Messo da parte il '+cp+'% della prossima scadenza"><i style="width:'+cp+'%"></i></div>'+
         '<p class="phNote phCopT">'+t+'</p>'+
         (cp<100?'<div class="phSalR"><input id="phSalV" inputmode="decimal" autocomplete="off" placeholder="Ho messo da parte…" aria-label="Euro messi da parte"><button type="button" id="phSalG">Aggiungi</button></div>':'')}
@@ -3960,6 +3961,14 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     function phPagaLega(){[].slice.call(hero.querySelectorAll('[data-pag]')).forEach(function(b){b.onclick=function(){if(b.disabled)return;b.disabled=true;var v=b.dataset.v!=='0';
       tap('hero_pagato_'+b.dataset.pag);pvPost('/api/prova/pagato',{tipo:b.dataset.pag,k:b.dataset.k,v:v}).then(function(j){if(j&&j.ok){TS_SRV.bolli=j.bolli||[];TS_SRV.passate=j.passate||[];if(j.numeri)try{pvNumeri(j.numeri)}catch(e){}render()}else b.disabled=false}).catch(function(){b.disabled=false})}});
       [].slice.call(hero.querySelectorAll('[data-rav]')).forEach(function(a){a.addEventListener('click',function(){tap('hero_ravvedimento')})})}
+    // v105: dove vanno gli incassi dell'anno (ciambella: imposta, contributi, quello che ti resta)
+    function phTorta(inc,y){var A=(window.TS_SRV&&TS_SRV.anno)||{},im=+A.imp||0,co=+A.con||0,ne=+A.net||0,tot=im+co+ne;if(!(inc>0)||!(tot>0))return '';
+      var V=[['Imposta',im,'#4355cc'],['Contributi',co,'#f0a33a'],['Ti resta',ne,'#2ec4b0']],R=15.9155,off=25,arc='';
+      V.forEach(function(v){var p=v[1]*100/tot;if(p>0)arc+='<circle r="'+R+'" cx="21" cy="21" fill="none" stroke="'+v[2]+'" stroke-width="6" stroke-dasharray="'+p.toFixed(2)+' '+(100-p).toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'"></circle>';off-=p});
+      var pr=Math.round((im+co)*100/tot);
+      return '<div class="phTo"><svg viewBox="0 0 42 42" class="phToS" role="img" aria-label="Su 100 € incassati, circa '+pr+' vanno in imposta e contributi">'+arc+'<text x="21" y="20.5" text-anchor="middle" class="phToN">'+(100-pr)+'%</text><text x="21" y="26" text-anchor="middle" class="phToL">ti resta</text></svg>'+
+        '<div class="phToD"><p class="phToH">Dove vanno i tuoi incassi del '+y+'</p>'+V.map(function(v){return '<div class="phToR"><i style="background:'+v[2]+'"></i><span>'+v[0]+'</span><b>'+pvEur(v[1])+'</b></div>'}).join('')+
+        '<p class="phNote" style="font-size:13px;margin-top:6px">Stima su quanto hai incassato finora. Ogni 100 € incassati, circa '+pr+' € vanno al fisco.</p></div></div>'}
     // con e senza: le scadenze dei prossimi 12 mesi come picchi, e la stessa cifra divisa in rate mensili
     function phCs(){var L=window.TS_SC||[],m3=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'],t=new Date(),v=[0,0,0,0,0,0,0,0,0,0,0,0],tot=0;
       L.forEach(function(x){var p=String(x.d||'').toLowerCase().split(' ');if(p.length<3)return;var mm=m3.indexOf(p[1].slice(0,3)),yy=+p[2];if(mm<0||!yy)return;
@@ -3993,6 +4002,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
           '<div class="phMs" aria-hidden="true">'+ML.map(function(l){return '<span>'+l+'</span>'}).join('')+'</div>'+
           '<p class="phNote phMi" id="phMi" style="margin-top:8px;font-size:13px">'+phMese(M,M.m,p)+'</p>'}
       else g+='<div class="phEmpty"><p>Qui ti disegno gli incassi mese per mese. Mi servono le fatture.</p><button type="button" class="phBtn pri" id="phUp">Carica le fatture</button></div>';
+      g+=phTorta(inc,y);
       g+='</section><div class="phR">';
       g+='<section class="phC phPar" aria-labelledby="phParT"><h2 id="phParT">Da mettere da parte</h2><span class="phN">'+p+'% di ogni incasso</span>'+
         '<div class="phBar" aria-hidden="true"><i style="width:'+Math.min(100,p)+'%"></i></div>'+
@@ -4472,21 +4482,27 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
 </script>
 <script>
 /* v101: la finestra «Novità», una volta sola, a chi conosce già TaxScan (ha finito la presentazione iniziale) */
-(function(){var C=window.TS_C||'demo',K='ts_novita_101';
-  try{if(localStorage.getItem(K)||localStorage.getItem('ts_intro_'+C)!=='1')return}catch(e){return}
+(function(){var C=window.TS_C||'demo',K='ts_novita_101',K2='ts_novita_105',vecchio=false;
+  try{if(localStorage.getItem('ts_intro_'+C)!=='1')return;vecchio=!!localStorage.getItem(K);if(vecchio&&localStorage.getItem(K2))return}catch(e){return}
   var N=[['fa','Fatture e Clienti','Crei e modifichi le fatture con le diciture del forfettario già giuste, scarichi PDF e file XML. La rubrica dei clienti le compila da sola.'],
     ['in','Incassi','Segni quando un cliente ti paga: tasse, quota da mettere da parte e soglia si aggiornano subito.'],
     ['sc','Scadenze e F24','Tutte le date in una pagina, con l\'F24 pronto, il bollo trimestre per trimestre e le scadenze da sistemare.'],
     ['ae','Acquisti esteri','Google, Meta, software dall\'estero: ti dico quanta IVA versare, quando, e ti preparo l\'autofattura.'],
     ['f','Il tuo commercialista','Dal Profilo gli mandi riepilogo e fatture con un clic.']];
+  // v105: le novità di dopo; a chi ha già visto la prima finestra mostro solo queste
+  var N2=[['cl','Contratti e documenti pronti','In Clienti: contratto, lettera d\'incarico, accordo di riservatezza, informativa privacy e sollecito, già compilati con i dati tuoi e del cliente.'],
+    ['cl','Dati del cliente dalla partita IVA','Scrivi solo la partita IVA: nome e indirizzo li prendo io dal registro europeo.'],
+    ['p','Dove vanno i tuoi incassi','In Panoramica vedi quanto va in imposta, quanto in contributi e quanto ti resta.'],
+    ['inv','Invita un collega','Dal Profilo mandi il tuo link a chi ha la partita IVA.']];
+  if(vecchio)N=N2;else N=N.concat(N2.slice(0,2));
   function apri(){if(document.documentElement.classList.contains('tour'))return;var o=document.createElement('div');o.id='novita';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-labelledby','novT');
-    o.innerHTML='<div class="nvw"><span class="nvp">Novità</span><h2 id="novT">TaxScan ora fa anche da gestionale</h2><p class="nvs">Il risparmio resta al centro. In più, tutto quello che ti serve ogni giorno è nella barra laterale, sotto <b>Gestione</b>.</p><ul>'+
-      N.map(function(x){return '<li><button type="button" data-n="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button></li>'}).join('')+'</ul><div class="nvb"><button type="button" class="nvgo" data-n="fa">Prova le fatture</button><button type="button" class="nvx">Più tardi</button></div></div>';
-    document.body.appendChild(o);var chiudi=function(){o.remove();try{localStorage.setItem(K,'1')}catch(e){}};
+    o.innerHTML='<div class="nvw"><span class="nvp">Novità</span><h2 id="novT">'+(vecchio?'Altre cose nuove in TaxScan':'TaxScan ora fa anche da gestionale')+'</h2><p class="nvs">'+(vecchio?'Quattro cose nuove per il lavoro di ogni giorno.':'Il risparmio resta al centro. In più, tutto quello che ti serve ogni giorno è nella barra laterale, sotto <b>Gestione</b>.')+'</p><ul>'+
+      N.map(function(x){return '<li><button type="button" data-n="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button></li>'}).join('')+'</ul><div class="nvb">'+(vecchio?'':'<button type="button" class="nvgo" data-n="fa">Prova le fatture</button>')+'<button type="button" class="nvx">Più tardi</button></div></div>';
+    document.body.appendChild(o);var chiudi=function(){o.remove();try{localStorage.setItem(K,'1');localStorage.setItem(K2,'1')}catch(e){}};
     o.querySelector('.nvx').onclick=function(){try{tap('novita_chiudi')}catch(e){}chiudi()};o.addEventListener('click',function(e){if(e.target===o)chiudi()});
     document.addEventListener('keydown',function k(e){if(e.key==='Escape'&&document.getElementById('novita')){chiudi();document.removeEventListener('keydown',k)}});
-    [].forEach.call(o.querySelectorAll('[data-n]'),function(b){b.onclick=function(){try{tap('novita_'+b.dataset.n)}catch(e){}chiudi();if(b.dataset.n==='f'){try{sessionStorage.setItem('ts_pftab','comm')}catch(e){}}window.__vai&&window.__vai(b.dataset.n)}});
-    setTimeout(function(){var b=o.querySelector('.nvgo');b&&b.focus()},50)}
+    [].forEach.call(o.querySelectorAll('[data-n]'),function(b){b.onclick=function(){try{tap('novita_'+b.dataset.n)}catch(e){}chiudi();var n=b.dataset.n;if(n==='f'||n==='inv'){try{sessionStorage.setItem('ts_pftab',n==='inv'?'inv':'comm')}catch(e){}n='f'}window.__vai&&window.__vai(n);if(b.dataset.n==='f'||b.dataset.n==='inv')setTimeout(function(){window.__pfTab&&window.__pfTab(b.dataset.n==='inv'?'inv':'comm')},150)}});
+    setTimeout(function(){var b=o.querySelector('.nvgo')||o.querySelector('.nvx');b&&b.focus()},50)}
   setTimeout(apri,2500)})();
 </script>
 </body></html>

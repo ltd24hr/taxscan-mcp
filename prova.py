@@ -125,7 +125,8 @@ def _per_pagina(d: dict, c: str = "") -> dict:
                       "No" if sch.get("situazioni_particolari") else ""),
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
             "mailv": _mail_verificata(c), "pag": _pagamento(c),
-            "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch), "guide": _guide_pagina()}
+            "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch), "guide": _guide_pagina(),
+            "anno": _anno_pagina(d)}
 
 
 def _guide_pagina() -> list:
@@ -896,6 +897,16 @@ def _rifai(c: str, dati: dict, sch: dict) -> dict:
     return nuovi
 
 
+def _anno_pagina(d: dict) -> dict:
+    """Dove vanno gli incassi dell'anno: imposta, contributi e quello che resta (per la ciambella della Panoramica)."""
+    ac = d.get("anno_corrente") or {}
+    try:
+        return {"imp": round(float(ac.get("imposta") or 0)), "con": round(float(ac.get("contributi") or 0)),
+                "net": round(float(ac.get("netto") or 0))}
+    except (TypeError, ValueError):
+        return {}
+
+
 def _numeri(d: dict) -> dict:
     """I numeri che la pagina aggiorna al volo dopo un incasso o un accantonamento."""
     ac = d.get("anno_corrente") or {}
@@ -904,7 +915,7 @@ def _numeri(d: dict) -> dict:
     ps = d.get("prossima_scadenza") or {}
     return {"incassato": float(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora") or 0), "netto": ac.get("netto"),
             "margine": so.get("margine"), "previsione": so.get("previsione"), "quota": str(d.get("quota_per_fattura") or ""),
-            "scadenza": ps.get("importo")}
+            "scadenza": ps.get("importo"), "anno": _anno_pagina(d)}
 
 
 def incasso(c: str, importo, data: str = "") -> dict:
