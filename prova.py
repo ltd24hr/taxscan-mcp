@@ -125,7 +125,102 @@ def _per_pagina(d: dict, c: str = "") -> dict:
                       "No" if sch.get("situazioni_particolari") else ""),
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
             "mailv": _mail_verificata(c), "pag": _pagamento(c),
-            "fatti": _fatti(d, sch)}
+            "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch)}
+
+
+def _bolli_pagina(sch: dict) -> list:
+    """Il bollo trimestre per trimestre (anno scorso e quest'anno): fatture, euro, scadenza, se e' pagato."""
+    import datetime
+    import scheda as S
+    try:
+        b = sch.get("bolli_fatture") or {}
+        if not b:
+            return []
+        oggi = datetime.date.today()
+        pag = set(str(k) for k in (sch.get("bolli_pagati") or []))
+        pag_f24 = set()
+        try:
+            for r in (S.interpreta_f24(sch.get("f24_pagati") or [])["righe"] if sch.get("f24_pagati") else []):
+                if r["categoria"] == "bollo" and r["natura"].startswith("trimestre_") and r["anno_riferimento"]:
+                    pag_f24.add(f"{r['anno_riferimento']}-{r['natura'][-1]}")
+        except Exception:
+            pass
+        scad = {}
+        for d_b, quote in S.scadenze_bollo(b, set(), (oggi.year - 1, oggi.year)):
+            for q in quote:
+                scad[f"{q[0]}-{q[1]}"] = d_b.isoformat()
+        out = []
+        for anno in (oggi.year - 1, oggi.year):
+            for t in (1, 2, 3, 4):
+                k = f"{anno}-{t}"
+                n = int(b.get(k) or 0)
+                if n <= 0 or k not in scad:
+                    continue
+                if anno == oggi.year - 1 and scad[k] < (oggi - datetime.timedelta(days=200)).isoformat():
+                    continue
+                out.append({"k": k, "a": anno, "t": t, "n": n, "e": round(n * S.BOLLO_EURO, 2), "s": scad[k],
+                            "p": k in pag or k in pag_f24, "f24": k in pag_f24,
+                            "corso": anno == oggi.year and t == (oggi.month - 1) // 3 + 1})
+        return out
+    except Exception as e:
+        print(f"prova: bolli {e}")
+        return []
+
+
+def _passate(sch: dict) -> list:
+    """Le scadenze degli ultimi 4 mesi, ricostruite com'erano quel giorno: chi non le ha pagate puo' rimediare
+    con il ravvedimento. Quelle che la persona ha segnato come pagate non si mostrano piu'."""
+    import datetime
+    import scheda as S
+    try:
+        if not S.verifica_scheda(sch)["completa"]:
+            return []
+        oggi = datetime.date.today()
+        da = oggi - datetime.timedelta(days=120)
+        ini = S._inizio(sch.get("data_apertura"))
+        pagate = set(str(x) for x in (sch.get("scadenze_pagate") or []))
+        out = []
+        for v in S._scadenze_con_importi(S._normalizza(sch), da):
+            if not (da.isoformat() <= v["data"] < oggi.isoformat()) or v["data"] in pagate or not v.get("righe"):
+                continue
+            if ini and v["data"][:4] < str(ini[0]):
+                continue
+            if v["etichetta"].lower().startswith("bollo"):
+                continue   # il bollo ha il suo riquadro, trimestre per trimestre
+            g = (oggi - datetime.date.fromisoformat(v["data"])).days
+            out.append({"d": v["data"], "e": v["etichetta"], "t": round(v["importo"], 2), "g": g})
+        return out[-3:]
+    except Exception as e:
+        print(f"prova: scadenze passate {e}")
+        return []
+
+
+def segna_pagato(c: str, tipo: str, chiave: str, pagato=True) -> dict:
+    """La persona segna dalla pagina un trimestre del bollo o una scadenza passata come pagati (o toglie il segno)."""
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    chiave = str(chiave or "")[:10]
+    campo = {"bollo": "bolli_pagati", "scadenza": "scadenze_pagate"}.get(str(tipo or ""))
+    ok = re.fullmatch(r"\d{4}-[1-4]", chiave) if campo == "bolli_pagati" else re.fullmatch(r"\d{4}-\d{2}-\d{2}", chiave)
+    if not c or not campo or not ok:
+        return {"ok": False}
+    dati = db.carica_dashboard(c)
+    if not dati:
+        return {"ok": False}
+    sch = dict(dati.get("_scheda") or {})
+    l = [x for x in (sch.get(campo) or []) if x != chiave]
+    if pagato:
+        l.append(chiave)
+    sch[campo] = l[-40:]
+    nuovi = _rifai(c, dati, sch)
+    if "errore" in nuovi:
+        return {"ok": False}
+    try:
+        db.registra_evento("segnato_pagato", c, {"tipo": tipo})
+    except Exception:
+        pass
+    sch2 = nuovi.get("_scheda") or sch
+    return {"ok": True, "numeri": _numeri(nuovi), "bolli": _bolli_pagina(sch2), "passate": _passate(sch2),
+            "ps": (nuovi.get("prossima_scadenza") or {}).get("data") or ""}
 
 
 def _fatti(d: dict, sch: dict) -> str:
@@ -2305,6 +2400,15 @@ def registra(mcp, avvisi):
         try:
             c = await request.json()
             esito = await asyncio.to_thread(salvadanaio, c.get("c", ""), c.get("totale"), c.get("scadenza", ""))
+        except Exception:
+            return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/pagato", methods=["POST"])
+    async def prova_pagato(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(segna_pagato, c.get("c", ""), c.get("tipo", ""), c.get("k", ""), c.get("v", True) is not False)
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)

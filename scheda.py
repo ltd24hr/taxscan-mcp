@@ -1439,6 +1439,12 @@ def _scadenze_con_importi(s: dict, data_oggi: date) -> list:
     for r in (interpreta_f24(s.get("f24_pagati") or [])["righe"] if s.get("f24_pagati") else []):
         if r["categoria"] == "bollo" and r["natura"].startswith("trimestre_") and r["anno_riferimento"]:
             pagati_bollo.add((r["anno_riferimento"], int(r["natura"][-1])))
+    for k in s.get("bolli_pagati") or []:   # trimestri che la persona ha segnato come pagati dalla pagina
+        try:
+            a, t = str(k).split("-")
+            pagati_bollo.add((int(a), int(t)))
+        except ValueError:
+            continue
     for d_b, quote in scadenze_bollo(s.get("bolli_fatture") or {}, pagati_bollo, (anno - 1, anno)):
         if d_b < data_oggi:
             continue

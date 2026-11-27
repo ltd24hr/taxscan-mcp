@@ -865,6 +865,11 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
 #pvHero .phSalR button{font:inherit;font-size:14px;font-weight:600;padding:8px 12px;border-radius:10px;border:1px solid #122452;background:#fff;color:#122452;cursor:pointer}
 #pvHero .phCs{margin-top:12px;background:var(--surface);border:1px solid var(--line)}#pvHero .csG{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}#pvHero .csL{margin:4px 0 6px;font-weight:700;font-size:14px;color:var(--ink)}
 #pvHero .csCh{height:110px}#pvHero .csCh i.pk{background:#c62f3a}#pvHero .csCh i.fl{background:#2ec4b0}
+#pvHero .phPas,#pvHero .phBol{margin-top:12px;background:var(--surface);border:1px solid var(--line)}#pvHero .phPas{border-color:#f0b48c;background:#fff7f0}
+#pvHero .pasR{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}
+#pvHero .pasB{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}#pvHero .phMini{font:inherit;font-size:13px;font-weight:600;padding:7px 11px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;white-space:nowrap}
+#pvHero .phMini.pri{background:#122452;border-color:#122452;color:#fff}#pvHero .bolOk{color:#1f8a4c;font-weight:600}#pvHero .bolC{color:var(--ink2)}
+@media (max-width:700px){#pvHero .pasR{flex-direction:column;align-items:flex-start}#pvHero .pasB{justify-content:flex-start}#pvHero .phMini{white-space:normal}}
 @media (max-width:900px){#pvHero .phSalR{flex-direction:column}#pvHero .phSalR button{align-self:flex-start}}
 @media (max-width:700px){#pvHero .csG{grid-template-columns:minmax(0,1fr)}#pvHero .csCh{height:80px}}
 @media (prefers-reduced-motion:reduce){#pvHero .phBar i{transition:none}}
@@ -3771,6 +3776,27 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       return '<div class="phBar phCop'+(cp>=100?' ok':'')+'" role="img" aria-label="Messo da parte il '+cp+'% della prossima scadenza"><i style="width:'+cp+'%"></i></div>'+
         '<p class="phNote phCopT">'+t+'</p>'+
         (cp<100?'<div class="phSalR"><input id="phSalV" inputmode="decimal" autocomplete="off" placeholder="Ho messo da parte…" aria-label="Euro messi da parte"><button type="button" id="phSalG">Aggiungi</button></div>':'')}
+    function phDt(iso){var d=new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10));return d.getDate()+' '+MESI[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():'')}
+    // scadenze gia' passate: se non le hai pagate, F24 con il ravvedimento; se le hai pagate, si segnano e spariscono
+    function phPas(){var L=(window.TS_SRV&&TS_SRV.passate)||[],c=window.TS_C;if(!L.length||!c)return '';
+      return '<section class="phC phPas" aria-labelledby="phPasT"><h2 id="phPasT">Scadenze già passate</h2>'+
+        '<p class="phNote">Se le hai pagate, segnale e non te le mostro più. Se no, si rimedia: ti preparo l\'F24 con quello che serve per mettersi in regola.</p>'+
+        L.map(function(x){return '<div class="pasR"><div><b>'+phDt(x.d)+'</b> · '+pvEsc(x.e)+' · '+pvEur(x.t)+'<br><span class="phWarn">Scaduta da '+(x.g===1?'1 giorno':x.g+' giorni')+'</span></div>'+
+          '<div class="pasB"><button type="button" class="phMini" data-pag="scadenza" data-k="'+x.d+'">L\'ho pagata</button>'+
+          '<a class="phMini pri" href="/d/'+encodeURIComponent(c)+'/f24?data='+x.d+'" target="_blank" rel="noopener" data-rav="1">'+(/inps/i.test(x.e)&&!/acconto|saldo/i.test(x.e)?'Non l\'ho pagata: cosa fare':'Non l\'ho pagata: F24 con ravvedimento')+'</a></div></div>'}).join('')+'</section>'}
+    // il bollo trimestre per trimestre
+    function phBol(){var L=(window.TS_SRV&&TS_SRV.bolli)||[],c=window.TS_C;if(!L.length)return '';
+      var oggi=new Date().toISOString().slice(0,10),tot=L.filter(function(x){return !x.p}).reduce(function(a,x){return a+x.e},0);
+      return '<section class="phC phBol" aria-labelledby="phBolT"><h2 id="phBolT">Bollo delle fatture</h2>'+
+        '<p class="phNote">2 € per ogni fattura sopra 77,47 €, contate sulle fatture che hai caricato. '+(tot>0?'Da pagare: <b>'+pvEur(tot)+'</b>.':'Tutto pagato.')+'</p>'+
+        L.map(function(x){var stato=x.p?'<span class="bolOk">Pagato'+(x.f24?' (dall\'F24)':'')+'</span>':x.corso?'<span class="bolC">Trimestre in corso</span>':(x.s<oggi?'<span class="phWarn">Scaduto il '+phDt(x.s)+'</span>':'Scade il <b>'+phDt(x.s)+'</b>');
+          return '<div class="pasR"><div><b>'+x.t+'° trimestre '+x.a+'</b> · '+x.n+(x.n===1?' fattura':' fatture')+' · '+pvEur(x.e)+'<br>'+stato+'</div>'+
+            (x.p?(x.f24?'':'<div class="pasB"><button type="button" class="phMini" data-pag="bollo" data-k="'+x.k+'" data-v="0">Non è pagato</button></div>'):
+              '<div class="pasB">'+(c&&!x.corso?'<a class="phMini pri" href="/d/'+encodeURIComponent(c)+'/f24?data='+x.s+'" target="_blank" rel="noopener">Prepara F24</a>':'')+
+              (c&&!x.corso?'<button type="button" class="phMini" data-pag="bollo" data-k="'+x.k+'">Segna come pagato</button>':'')+'</div>')+'</div>'}).join('')+'</section>'}
+    function phPagaLega(){[].slice.call(hero.querySelectorAll('[data-pag]')).forEach(function(b){b.onclick=function(){if(b.disabled)return;b.disabled=true;var v=b.dataset.v!=='0';
+      tap('hero_pagato_'+b.dataset.pag);pvPost('/api/prova/pagato',{tipo:b.dataset.pag,k:b.dataset.k,v:v}).then(function(j){if(j&&j.ok){TS_SRV.bolli=j.bolli||[];TS_SRV.passate=j.passate||[];if(j.numeri)try{pvNumeri(j.numeri)}catch(e){}render()}else b.disabled=false}).catch(function(){b.disabled=false})}});
+      [].slice.call(hero.querySelectorAll('[data-rav]')).forEach(function(a){a.addEventListener('click',function(){tap('hero_ravvedimento')})})}
     // con e senza: le scadenze dei prossimi 12 mesi come picchi, e la stessa cifra divisa in rate mensili
     function phCs(){var L=window.TS_SC||[],m3=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'],t=new Date(),v=[0,0,0,0,0,0,0,0,0,0,0,0],tot=0;
       L.forEach(function(x){var p=String(x.d||'').toLowerCase().split(' ');if(p.length<3)return;var mm=m3.indexOf(p[1].slice(0,3)),yy=+p[2];if(mm<0||!yy)return;
@@ -3808,7 +3834,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
       if(N&&N.imp&&N.mese>=0)g+='<section class="phC phSc" aria-labelledby="phScT"><h2 id="phScT">Prossima scadenza</h2><span class="phN">'+N.giorno+' '+MESI[N.mese]+'</span>'+
         '<p class="phNote">'+pvEsc(N.label||'Imposta e contributi')+' · <b>'+pvEsc(N.imp)+'</b></p>'+phCop(N)+(c&&ps?'<a class="phBtn" href="/d/'+encodeURIComponent(c)+'/f24?data='+encodeURIComponent(ps)+'" target="_blank" rel="noopener" id="phF24b">Prepara l\'F24</a>':'')+'</section>';
       g+='</div>';
-      hero.innerHTML=h+'<div class="phG">'+g+'</div>'+phCs();
+      hero.innerHTML=h+'<div class="phG">'+g+'</div>'+phPas()+phCs()+phBol();phPagaLega();
       var sg=$('phSalG'),si=$('phSalV');if(sg&&si){sg.onclick=function(){var x=pvNum(si.value);if(!(x>0))return;var k=pvSalK();PV.sal[k]=Math.max(0,pvSal()+x);pvPut(PV);tap('hero_salvadanaio');if(window.TS_C)pvPost('/api/prova/salvadanaio',{totale:PV.sal[k]}).catch(function(){});if(PV.sal[k]>=pvTarget()&&pvTarget()){try{accSet('si')}catch(e){}window.__wink&&window.__wink()}try{pvRender('vSal')}catch(e){}render()};si.onkeydown=function(e){if(e.key==='Enter')sg.click()}}
       var u=$('phUp');if(u)u.onclick=function(){tap('hero_carica_fatture');showView('g')};
       var ex=hero.querySelector('[data-ex]');if(ex)ex.addEventListener('click',function(){setTimeout(function(){try{if(MP.pend&&ex.classList.contains('sel'))$('astab').click()}catch(e){}},0)});

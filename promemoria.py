@@ -517,6 +517,31 @@ def _scegli(email: str, scheda: dict, dati: dict, creato_il, aggiornato_il, oggi
                     "oggetto": f"TaxScan: {sc.get('etichetta')} {quando}", "titolo": f"Scadenza {quando}",
                     "corpo": corpo, "pulsante": "Vedi i dettagli"}
 
+    # 1b. bollo delle fatture: un avviso un mese prima, cosi' c'e' tempo di controllare le fatture del trimestre
+    for x in (dati.get("scadenze") or []):
+        g = x.get("giorni")
+        if g is None or not (25 <= g <= 30) or "bollo" not in str(x.get("etichetta") or "").lower():
+            continue
+        chiave = f"{x.get('data')}-30"
+        if db.promemoria_gia_inviato(email, "bollo", chiave):
+            continue
+        giorni_ultimo = db.giorni_dall_ultimo_promemoria(email)
+        if giorni_ultimo is not None and giorni_ultimo < 1:
+            break
+        bollo = [d for d in (x.get("dettaglio") or []) if "bollo" in str(d).lower()]
+        f24 = ""
+        if x.get("f24") and x.get("data") and id_dashboard:
+            f24 = (f"<p>L'F24 è già pronto, con i codici del bollo: "
+                   f"<a href='{_e(PUBLIC_URL)}/d/{_e(id_dashboard)}/f24?data={_e(x['data'])}' "
+                   "style='color:#4355cc;font-weight:700'>apri l'F24</a>.</p>")
+        corpo = (f"<p>Il <b>{_e(_data_it(x.get('data')))}</b> scade il bollo sulle fatture elettroniche "
+                 f"(2 € per ogni fattura sopra 77,47 €).</p>"
+                 + ("<ul style='padding-left:20px'>" + "".join(f"<li>{_e(d)}</li>" for d in bollo) + "</ul>" if bollo else "")
+                 + "<p>Ti scrivo un mese prima così hai tempo di controllare che le fatture del trimestre siano tutte in "
+                   "TaxScan. Se l'hai già pagato, segnalo come pagato nella tua pagina e non te lo ricordo più.</p>" + f24)
+        return {"tipo": "bollo", "chiave": chiave, "oggetto": f"TaxScan: bollo delle fatture tra {g} giorni",
+                "titolo": "Il bollo delle fatture", "corpo": corpo, "pulsante": "Apri la tua situazione"}
+
     # 2. riepilogo settimanale (una settimana dopo l'iscrizione, poi ogni 7 giorni)
     giorni_iscritto = (oggi - creato_il.date()).days if creato_il else 0
     if giorni_iscritto < PRIMO_RIEPILOGO_DOPO_GIORNI:
