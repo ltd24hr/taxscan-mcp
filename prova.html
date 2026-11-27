@@ -890,6 +890,68 @@ html.settled body #slN,html.settled body [data-wk="slN"],html.settled body [data
 @media (max-width:900px){#pvHero .phSalR{flex-direction:column}#pvHero .phSalR button{align-self:flex-start}}
 @media (max-width:700px){#pvHero .csG{grid-template-columns:minmax(0,1fr)}#pvHero .csCh{height:80px}}
 @media (prefers-reduced-motion:reduce){#pvHero .phBar i{transition:none}}
+
+/* v99: Gestione (Fatture, Clienti, Incassi, Scadenze e F24) */
+#gnav{display:flex;flex-direction:column;gap:4px}
+#gnav .gnt{margin:14px 12px 4px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute,#8a93ad)}
+#gnav button{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;box-sizing:border-box;text-align:left;font:inherit;font-size:15px;font-weight:600;padding:10px 12px;border:0;border-radius:12px;background:none;color:var(--ink2);cursor:pointer}
+#gnav button:hover{background:#f2f4fb;color:var(--ink)}
+#gnav button[aria-current]{background:var(--accent-soft);color:var(--accent)}
+#gnav .nvi{flex:none}
+@media (max-width:900px){
+  #gnav{flex-direction:row;overflow-x:auto;gap:6px;margin:10px 0 2px;padding-bottom:4px;scrollbar-width:none}#gnav::-webkit-scrollbar{display:none}
+  #gnav .gnt{display:none}
+  #gnav button{width:auto;flex:none;min-height:38px;padding:7px 12px;font-size:14px;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px}
+  #gnav button .nvi{width:17px;height:17px}
+}
+.gview2{padding-bottom:40px}
+.gvh{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.gact{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.gbtn{font:inherit;font-size:15px;font-weight:600;padding:10px 16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.gbtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}.gbtn:disabled{opacity:.6}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 12px}
+.gcard p{margin:4px 0 10px;color:var(--ink2);font-size:14.5px;line-height:1.5}
+.gwarn{background:#fff7e8;border-color:#f0d58c}.gvuoto{text-align:left}
+.gmsg{background:#e9f7ef;border:1px solid #b7e2c7;color:#14532d;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:14.5px}.gmsg a{color:inherit;font-weight:700}
+.gtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.gtabs button{font:inherit;font-size:14px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer}
+.gtabs button[aria-selected=true],.gtabs button[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.glist{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:0 0 12px}
+.grow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}.grow:first-child{border-top:0}
+.gmain{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}.gmain b{font-size:15px;color:var(--ink);overflow-wrap:anywhere}.gmain span{font-size:13.5px;color:var(--ink2)}
+.gst{flex:none;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eef1fa;color:var(--ink2);white-space:nowrap}
+.gst.b{background:#fff1d6;color:#7a4b00}.gst.ok{background:#e3f5ea;color:#17663a}.gst.ko{background:#fde8e8;color:#9b1c1c}
+.gbt{flex:none;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.gmini{font:inherit;font-size:13px;font-weight:600;padding:7px 11px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;white-space:nowrap}
+.gmini.pri{background:#122452;border-color:#122452;color:#fff}.gmini.ko{background:#fde8e8;border-color:#f3b4b4;color:#9b1c1c}
+.gko{color:#9b1c1c}
+.gdi{font:inherit;font-size:13px;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.gform label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink);margin:0 0 12px}
+.gform input:not([type=checkbox]),.gform select,.gform textarea{font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.gform .gchk{flex-direction:row;align-items:center;gap:10px;font-weight:500}.gform .gchk input{width:18px;height:18px;flex:none}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}.g3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:0 12px}
+.gnota{font-size:13px!important;color:var(--ink2);margin:-4px 0 12px!important}
+.gerr{color:#9b1c1c;font-size:14px;margin:8px 0 0;line-height:1.5}
+.grighe{margin:4px 0 14px}.grh,.grr{display:grid;grid-template-columns:minmax(0,1fr) 70px 110px 36px;gap:8px;align-items:start}
+.grh{font-size:12.5px;font-weight:700;color:var(--ink2);margin:0 0 6px}.grr{margin:0 0 8px}
+.grr textarea{resize:vertical;min-height:44px}
+.gx{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:42px;font-size:20px;color:var(--ink2);cursor:pointer}
+.gtot{margin:6px 0 12px auto;max-width:320px;background:#f4f6fd;border-radius:12px;padding:10px 14px}
+.gtot div{display:flex;justify-content:space-between;font-size:14px;color:var(--ink2);padding:3px 0}.gtot b{color:var(--ink)}.gtot .gtt{border-top:1px solid var(--line);margin-top:4px;padding-top:7px;font-size:16px;color:var(--ink)}
+.gkpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.gkpi div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.gkpi span{font-size:13px;color:var(--ink2)}.gkpi b{font-size:22px;color:var(--ink)}.gkpi small{font-size:12.5px;color:var(--ink2)}.gkpi .ko b{color:#9b1c1c}
+.gh2{font-size:16px;margin:18px 0 8px;color:var(--ink)}
+.ghelp summary{cursor:pointer;font-weight:600;color:var(--ink)}.ghelp ol{margin:8px 0;padding-left:20px;font-size:14px;color:var(--ink2);line-height:1.6}.ghelp a{color:var(--accent)}
+.gscr.first{background:#fffaf0}
+@media (max-width:700px){
+  .grow{flex-wrap:wrap}.gbt{width:100%;justify-content:flex-start}
+  .g2,.g3{grid-template-columns:minmax(0,1fr)}
+  .grh{display:none}.grr{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.grr textarea{grid-column:1/-1}
+  .gkpi{grid-template-columns:minmax(0,1fr)}
+  .gtot{max-width:none}
+}
+
 /* v97: una sola grafica per tutte le sezioni: titoli di pagina, riquadri arrotondati, pulsanti e campi uguali */
 .vhd{margin:4px 0 20px}
 .vhd h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(24px,2.6vw,32px);line-height:1.15;letter-spacing:-.02em;color:var(--ink)}
@@ -3959,5 +4021,216 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   L.addEventListener('click',function(e){if(e.target.closest('a'))try{tap('aiuto_guida')}catch(x){}});
   document.getElementById('aiChat').onclick=function(){chiudi();try{tap('aiuto_chat')}catch(x){}var t=document.getElementById('astab');if(t)t.click();setTimeout(function(){var i=document.getElementById('mp_in');if(i)i.focus()},250)};
   window.__aiuto=apri})();
+</script>
+<script>
+/* v99: Gestione. Quattro sezioni nuove nella barra laterale: Fatture, Clienti, Incassi, Scadenze e F24.
+   Le fatture si creano, si modificano, si emettono (numero automatico), si scaricano in PDF e XML da caricare sul portale
+   dell'Agenzia delle Entrate. I dati stanno sul server (/api/prova/fatture), solo per chi ha la situazione salvata. */
+(function(){
+  var C=window.TS_C||'',SRV=window.TS_SRV||{};
+  function $(i){return document.getElementById(i)}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  function eur(v){var n=Math.round((+v||0)*100)/100,neg=n<0;n=Math.abs(n);var p=n.toFixed(2).split('.');return (neg?'−':'')+p[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+p[1]+' €'}
+  function num(s){var t=String(s==null?'':s).trim();if(/,/.test(t))t=t.replace(/\./g,'').replace(',','.');return parseFloat(t.replace(/[^\d.-]/g,''))||0}
+  function dIt(iso){var p=String(iso||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:''}
+  function oggi(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function piu(iso,g){var p=iso.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]+g);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function tp(k){try{tap(k)}catch(e){}}
+  function post(op,dati){return fetch('/api/prova/fatture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:C,op:op,dati:dati||{}})}).then(function(r){return r.json()})}
+  var G={dati:null,vista:'',filtro:'tutte',edit:null,clEdit:null,msg:''};
+  var MAIN=['scroller','gview','sview','bview','pview','tview'];
+
+  // ---------- barra laterale: il gruppo Gestione
+  var hdr=$('hdr'),nav=hdr&&hdr.querySelector('nav');if(!hdr||!nav)return;
+  var ICO={fa:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/>',
+    cl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.7M18.2 14.8c1.7.8 2.8 2.5 3.3 5.2"/>',
+    in:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h4"/>',
+    sc:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h3"/>'};
+  var VOCI=[['fa','Fatture'],['cl','Clienti'],['in','Incassi'],['sc','Scadenze e F24']];
+  var gn=document.createElement('div');gn.id='gnav';gn.setAttribute('role','navigation');gn.setAttribute('aria-label','Gestione');
+  gn.innerHTML='<p class="gnt">Gestione</p>'+VOCI.map(function(v){return '<button type="button" data-g="'+v[0]+'"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[v[0]]+'</svg><span>'+v[1]+'</span></button>'}).join('');
+  nav.parentNode.insertBefore(gn,nav.nextSibling);
+
+  // ---------- le viste
+  var ref=$('tview');if(!ref)return;
+  var V={};
+  VOCI.forEach(function(v){var el=document.createElement('div');el.id='gv_'+v[0];el.className='gview2';el.hidden=true;ref.parentNode.insertBefore(el,ref.nextSibling);V[v[0]]=el});
+  function nascondiMie(){Object.keys(V).forEach(function(k){V[k].hidden=true});G.vista='';[].forEach.call(gn.querySelectorAll('button'),function(b){b.removeAttribute('aria-current')})}
+  function apri(v){if(!V[v])return;MAIN.forEach(function(id){var e=$(id);if(e)e.hidden=true});var ag=$('again');if(ag)ag.hidden=true;
+    [].forEach.call(nav.querySelectorAll('button'),function(b){b.removeAttribute('aria-current')});
+    Object.keys(V).forEach(function(k){V[k].hidden=k!==v});G.vista=v;
+    [].forEach.call(gn.querySelectorAll('button'),function(b){if(b.dataset.g===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+    try{hideBub()}catch(e){}
+    scrollTo(0,0);tp('gestione_'+v);disegna();carica()}
+  [].forEach.call(gn.querySelectorAll('button'),function(b){b.onclick=function(){G.edit=null;G.clEdit=null;G.msg='';apri(b.dataset.g)}});
+  // quando un'altra sezione si apre (dal menu o dall'agente), le mie si chiudono
+  [].forEach.call(nav.querySelectorAll('button'),function(b){b.addEventListener('click',nascondiMie,true)});
+  new MutationObserver(function(){if(!G.vista)return;if(MAIN.some(function(id){var e=$(id);return e&&!e.hidden}))nascondiMie()})
+    .observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});
+  window.__gestione=apri;
+
+  function carica(){if(!C||G.dati)return;post('get').then(function(j){if(j&&j.ok){G.dati=j.dati;disegna()}}).catch(function(){})}
+  function testa(t,s,azioni){return '<header class="vhd gvh"><div><h1>'+t+'</h1><p>'+s+'</p></div>'+(azioni||'')+'</header>'}
+  function senzaC(){return '<div class="gcard"><p>Le fatture, i clienti e gli incassi si salvano nella tua situazione. Apri TaxScan dal link della tua situazione (lo trovi nell\'email di benvenuto) e li ritrovi qui.</p></div>'}
+  function disegna(){var v=G.vista;if(!v)return;var el=V[v];
+    if(v==='sc'){el.innerHTML=vScad();legaScad();return}
+    if(!C){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'')+senzaC();return}
+    if(!G.dati){el.innerHTML=testa(VOCI.filter(function(x){return x[0]===v})[0][1],'Un attimo, prendo i tuoi dati…');return}
+    if(v==='fa')el.innerHTML=G.edit?vEditor():(G.edit===null&&G.io?vIo():vFatture());
+    if(v==='cl')el.innerHTML=G.clEdit?vCliente():vClienti();
+    if(v==='in')el.innerHTML=vIncassi();
+    lega(el)}
+
+  // ---------- Fatture: elenco
+  function stato(f){if(f.stato!=='emessa')return '<span class="gst b">Bozza</span>';if(f.incasso)return '<span class="gst ok">Incassata</span>';
+    if(f.scadenza&&f.scadenza<oggi())return '<span class="gst ko">Scaduta</span>';return '<span class="gst">Da incassare</span>'}
+  function vFatture(){var D=G.dati,L=D.fatture.filter(function(f){return G.filtro==='tutte'||(G.filtro==='bozze'?f.stato!=='emessa':f.stato==='emessa')});
+    var h=testa('Fatture','Crea le tue fatture con le diciture del forfettario già giuste. Scarichi il PDF per il cliente e il file XML da inviare all\'Agenzia delle Entrate.',
+      '<div class="gact"><button type="button" class="gbtn" data-a="io">I tuoi dati in fattura</button><button type="button" class="gbtn pri" data-a="nuova">Nuova fattura</button></div>');
+    if(G.msg)h+='<div class="gmsg" role="status">'+G.msg+'</div>';
+    if(!D.io_completo)h+='<div class="gcard gwarn"><b>Prima di emettere la prima fattura</b><p>Mi servono i tuoi dati da mettere in fattura: nome, codice fiscale, partita IVA e indirizzo dell\'attività. Li scrivi una volta sola.</p><button type="button" class="gbtn pri" data-a="io">Completa i tuoi dati</button></div>';
+    h+='<div class="gtabs" role="tablist">'+[['tutte','Tutte'],['bozze','Bozze'],['emesse','Emesse']].map(function(t){return '<button type="button" role="tab" data-f="'+t[0]+'" aria-selected="'+(G.filtro===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>';
+    if(!L.length)h+='<div class="gcard gvuoto"><p>'+(D.fatture.length?'Nessuna fattura qui.':'Non hai ancora fatture. Con <b>Nuova fattura</b> ne prepari una in un minuto: il numero lo metto io quando la emetti.')+'</p></div>';
+    else h+='<div class="glist">'+L.map(function(f){return '<div class="grow"><div class="gmain"><b>'+(f.numero?'N. '+esc(f.numero)+'/'+esc(f.anno):'Bozza')+' · '+esc(f.cliente_nome||'Senza cliente')+'</b><span>'+dIt(f.data)+' · '+eur(f.tot.totale)+'</span></div>'+stato(f)+
+      '<div class="gbt">'+(f.stato!=='emessa'?'<button type="button" class="gmini pri" data-a="mod" data-id="'+f.id+'">Modifica</button>':'')+
+      '<a class="gmini" href="/api/prova/fattura/pdf?c='+encodeURIComponent(C)+'&id='+f.id+'" data-t="fattura_pdf">PDF</a>'+(f.stato==='emessa'?'<a class="gmini" href="/api/prova/fattura/xml?c='+encodeURIComponent(C)+'&id='+f.id+'" data-t="fattura_xml">XML</a>':'')+
+      '<button type="button" class="gmini" data-a="dup" data-id="'+f.id+'">Duplica</button><button type="button" class="gmini" data-a="del" data-id="'+f.id+'" aria-label="Elimina">Elimina</button></div></div>'}).join('')+'</div>';
+    h+='<details class="gcard ghelp"><summary>Come si invia la fattura all\'Agenzia delle Entrate</summary><ol><li>Emetti la fattura qui e scarica il file <b>XML</b>.</li><li>Entra in <a href="https://ivaservizi.agenziaentrate.gov.it/portale/" target="_blank" rel="noopener">Fatture e corrispettivi</a> con SPID, CIE o CNS.</li><li>Vai su <b>Fatturazione</b> › <b>Trasmissione</b> e carica il file. È gratis.</li><li>Al cliente puoi mandare anche il PDF, come copia di cortesia.</li></ol><p>Tra poco potrai inviarla direttamente da TaxScan.</p></details>';
+    return h}
+
+  // ---------- I tuoi dati in fattura
+  function vIo(){var io=G.dati.io||{},m=window.__modello||{},nom=(io.nome||'')||String((window.D&&D.nome)||'');
+    var f=function(k,l,v,a){return '<label>'+l+'<input data-io="'+k+'" value="'+esc(v||'')+'" '+(a||'')+'></label>'};
+    return testa('I tuoi dati in fattura','Li scrivi una volta: li metto io in ogni fattura.','<div class="gact"><button type="button" class="gbtn" data-a="indietro">Indietro</button></div>')+
+      '<div class="gcard gform"><div class="g2">'+f('nome','Nome',nom,'autocomplete="given-name"')+f('cognome','Cognome',io.cognome,'autocomplete="family-name"')+'</div>'+
+      '<div class="g2">'+f('cf','Codice fiscale',io.cf,'autocomplete="off" maxlength="16" style="text-transform:uppercase"')+f('piva','Partita IVA',io.piva||SRV.piva||m.piva,'inputmode="numeric" maxlength="11"')+'</div>'+
+      f('indirizzo','Indirizzo dell\'attività (via e numero)',io.indirizzo||m.indirizzo,'autocomplete="street-address"')+
+      '<div class="g3">'+f('cap','CAP',io.cap,'inputmode="numeric" maxlength="5"')+f('comune','Comune',io.comune)+f('provincia','Provincia (sigla)',io.provincia,'maxlength="2" style="text-transform:uppercase"')+'</div>'+
+      f('iban','IBAN per i pagamenti',io.iban||m.iban,'autocomplete="off"')+
+      '<label class="gchk"><input type="checkbox" data-io="rivalsa"'+(io.rivalsa||(SRV.gest==='separata'&&io.rivalsa===undefined)?' checked':'')+'> Aggiungi la rivalsa INPS del 4% (solo gestione separata, se la applichi)</label>'+
+      '<label class="gchk"><input type="checkbox" data-io="bollo_cliente"'+(io.bollo_cliente!==false?' checked':'')+'> Il bollo da 2 € lo paga il cliente (lo aggiungo al totale)</label>'+
+      '<div class="g2">'+f('scadenza_giorni','Giorni per pagare',io.scadenza_giorni!=null?io.scadenza_giorni:30,'inputmode="numeric"')+f('prossimo_numero','Numero della prossima fattura',G.dati.prossimo,'inputmode="numeric"')+'</div>'+
+      '<p class="gnota">Se quest\'anno hai già fatto fatture con un altro programma, scrivi qui il numero da cui ripartire.</p>'+
+      '<div class="gact"><button type="button" class="gbtn pri" data-a="salvaio">Salva</button></div><p class="gerr" id="gioE" role="alert"></p></div>'}
+
+  // ---------- Editor della fattura
+  function nuovaF(cid){var io=G.dati.io||{},g=io.scadenza_giorni!=null&&io.scadenza_giorni!==''?(+io.scadenza_giorni||0):30;return {id:'',cliente_id:cid||'',data:oggi(),righe:[{descrizione:'',quantita:1,prezzo:''}],rivalsa:!!io.rivalsa,bollo_cliente:io.bollo_cliente!==false,scadenza:g?piu(oggi(),g):'',iban:io.iban||'',note:''}}
+  function calc(f){var imp=0;f.righe.forEach(function(r){imp+=num(r.quantita||1)*num(r.prezzo)});imp=Math.round(imp*100)/100;var riv=f.rivalsa?Math.round(imp*4)/100:0,base=Math.round((imp+riv)*100)/100,bol=base>77.47?2:0,add=bol&&f.bollo_cliente?2:0;
+    return {imp:imp,riv:riv,bol:bol,add:add,tot:Math.round((base+add)*100)/100}}
+  function vEditor(){var f=G.edit,cl=G.dati.clienti,t=calc(f);
+    var h=testa(f.id?'Modifica la bozza':'Nuova fattura','Il numero lo metto io quando la emetti. Prima di emetterla puoi cambiarla quante volte vuoi.','<div class="gact"><button type="button" class="gbtn" data-a="annulla">Annulla</button></div>');
+    h+='<div class="gcard gform"><div class="g2"><label>Cliente<select data-e="cliente_id"><option value="">Scegli il cliente…</option>'+cl.map(function(k){return '<option value="'+k.id+'"'+(k.id===f.cliente_id?' selected':'')+'>'+esc(k.denominazione||((k.nome||'')+' '+(k.cognome||'')))+'</option>'}).join('')+'<option value="+">+ Nuovo cliente</option></select></label>'+
+      '<label>Data<input type="date" data-e="data" value="'+esc(f.data)+'"></label></div>';
+    h+='<div class="grighe"><div class="grh"><span>Descrizione</span><span>Q.tà</span><span>Prezzo €</span><span></span></div>'+f.righe.map(function(r,i){return '<div class="grr"><textarea rows="2" data-r="'+i+'" data-k="descrizione" placeholder="Cosa hai fatto, per esempio: consulenza marketing, ottobre 2026">'+esc(r.descrizione)+'</textarea>'+
+      '<input data-r="'+i+'" data-k="quantita" inputmode="decimal" value="'+esc(r.quantita)+'" aria-label="Quantità"><input data-r="'+i+'" data-k="prezzo" inputmode="decimal" value="'+esc(r.prezzo)+'" placeholder="0,00" aria-label="Prezzo"><button type="button" class="gx" data-a="togli" data-i="'+i+'" aria-label="Togli la riga">×</button></div>'}).join('')+
+      '<button type="button" class="gbtn" data-a="riga">+ Aggiungi una riga</button></div>';
+    h+='<label class="gchk"><input type="checkbox" data-e="rivalsa"'+(f.rivalsa?' checked':'')+'> Rivalsa INPS 4% (gestione separata)</label>'+
+      '<label class="gchk"><input type="checkbox" data-e="bollo_cliente"'+(f.bollo_cliente?' checked':'')+'> Il bollo da 2 € lo paga il cliente</label>'+
+      '<div class="g2"><label>Da pagare entro<input type="date" data-e="scadenza" value="'+esc(f.scadenza)+'"></label><label>IBAN<input data-e="iban" value="'+esc(f.iban)+'" autocomplete="off"></label></div>'+
+      '<label>Note in fattura (facoltative)<textarea rows="2" data-e="note" maxlength="600">'+esc(f.note)+'</textarea></label>';
+    h+='<div class="gtot" id="gTot">'+totHtml(t)+'</div>';
+    h+='<p class="gnota">Metto io la dicitura del forfettario e l\'IVA a zero'+(t.bol?', e il bollo virtuale da 2 €':'')+'. Nessuna ritenuta d\'acconto.</p>';
+    h+='<div class="gact"><button type="button" class="gbtn" data-a="bozza">Salva bozza</button><button type="button" class="gbtn pri" data-a="emetti">Emetti la fattura</button></div><div class="gerr" id="gfE" role="alert"></div></div>';
+    return h}
+  function totHtml(t){return '<div><span>Imponibile</span><b>'+eur(t.imp)+'</b></div>'+(t.riv?'<div><span>Rivalsa INPS 4%</span><b>'+eur(t.riv)+'</b></div>':'')+(t.add?'<div><span>Rimborso bollo</span><b>'+eur(t.add)+'</b></div>':'')+'<div><span>IVA</span><b>'+eur(0)+'</b></div><div class="gtt"><span>Totale</span><b>'+eur(t.tot)+'</b></div>'}
+  function leggiEditor(el){var f=G.edit;[].forEach.call(el.querySelectorAll('[data-e]'),function(i){var k=i.dataset.e;f[k]=i.type==='checkbox'?i.checked:i.value});
+    [].forEach.call(el.querySelectorAll('[data-r]'),function(i){f.righe[+i.dataset.r][i.dataset.k]=i.value});return f}
+  function perServer(f){return {id:f.id,fattura:{cliente_id:f.cliente_id,data:f.data,righe:f.righe.map(function(r){return {descrizione:r.descrizione,quantita:num(r.quantita)||1,prezzo:num(r.prezzo)}}),rivalsa:!!f.rivalsa,bollo_cliente:!!f.bollo_cliente,scadenza:f.scadenza,iban:f.iban,note:f.note}}}
+
+  // ---------- Clienti
+  function vClienti(){var L=G.dati.clienti;
+    var h=testa('Clienti','La tua rubrica: i dati del cliente entrano da soli nella fattura.','<div class="gact"><button type="button" class="gbtn pri" data-a="nuovocl">Nuovo cliente</button></div>');
+    if(G.msg)h+='<div class="gmsg" role="status">'+G.msg+'</div>';
+    if(!L.length)return h+'<div class="gcard gvuoto"><p>Non hai ancora clienti. Aggiungine uno: ti servono il nome o la ragione sociale, la partita IVA (o il codice fiscale se è un privato) e l\'indirizzo.</p></div>';
+    var fat=G.dati.fatture;
+    return h+'<div class="glist">'+L.map(function(k){var fk=fat.filter(function(f){return f.cliente_id===k.id&&f.stato==='emessa'}),tot=fk.reduce(function(a,f){return a+f.tot.totale},0);
+      return '<div class="grow"><div class="gmain"><b>'+esc(k.denominazione||((k.nome||'')+' '+(k.cognome||'')))+'</b><span>'+esc([k.piva?(k.nazione==='IT'?'P.IVA ':'VAT ')+k.piva:'',k.comune,k.nazione!=='IT'?k.nazione:''].filter(Boolean).join(' · '))+'</span></div>'+
+        '<span class="gst">'+(fk.length?fk.length+(fk.length===1?' fattura · ':' fatture · ')+eur(tot):'Nessuna fattura')+'</span>'+
+        '<div class="gbt"><button type="button" class="gmini pri" data-a="fattcl" data-id="'+k.id+'">Nuova fattura</button><button type="button" class="gmini" data-a="modcl" data-id="'+k.id+'">Modifica</button><button type="button" class="gmini" data-a="delcl" data-id="'+k.id+'">Elimina</button></div></div>'}).join('')+'</div>'}
+  function vCliente(){var k=G.clEdit,pri=k.tipo==='privato',it=(k.nazione||'IT')==='IT';
+    var f=function(c,l,v,a){return '<label>'+l+'<input data-c="'+c+'" value="'+esc(v||'')+'" '+(a||'')+'></label>'};
+    return testa(k.id?'Modifica il cliente':'Nuovo cliente','Scrivi i dati come sono nella sua visura o nel suo sito: finiscono nella fattura.','<div class="gact"><button type="button" class="gbtn" data-a="annullacl">Annulla</button></div>')+
+      '<div class="gcard gform"><div class="gtabs" role="radiogroup"><button type="button" role="radio" data-tipo="azienda" aria-checked="'+!pri+'">Azienda o professionista</button><button type="button" role="radio" data-tipo="privato" aria-checked="'+pri+'">Privato</button></div>'+
+      '<label>Paese<select data-c="nazione">'+[['IT','Italia'],['DE','Germania'],['FR','Francia'],['ES','Spagna'],['AT','Austria'],['BE','Belgio'],['NL','Paesi Bassi'],['IE','Irlanda'],['PT','Portogallo'],['CH','Svizzera'],['GB','Regno Unito'],['US','Stati Uniti'],['SM','San Marino']].map(function(p){return '<option value="'+p[0]+'"'+((k.nazione||'IT')===p[0]?' selected':'')+'>'+p[1]+'</option>'}).join('')+'</select></label>'+
+      (pri?'<div class="g2">'+f('nome','Nome',k.nome)+f('cognome','Cognome',k.cognome)+'</div>':f('denominazione','Ragione sociale o nome dello studio',k.denominazione))+
+      '<div class="g2">'+(pri&&it?'':f('piva',it?'Partita IVA':'Partita IVA (VAT number)',k.piva,'autocomplete="off"'))+(it?f('cf','Codice fiscale'+(pri?'':' (se diverso dalla partita IVA)'),k.cf,'style="text-transform:uppercase" autocomplete="off"'):'')+'</div>'+
+      f('indirizzo','Indirizzo (via e numero)',k.indirizzo)+'<div class="g3">'+f('cap','CAP',k.cap)+f('comune','Comune o città',k.comune)+(it?f('provincia','Provincia (sigla)',k.provincia,'maxlength="2" style="text-transform:uppercase"'):'')+'</div>'+
+      (it&&!pri?'<div class="g2">'+f('sdi','Codice destinatario (7 caratteri)',k.sdi,'maxlength="7" style="text-transform:uppercase"')+f('pec','Oppure PEC',k.pec,'type="email"')+'</div><p class="gnota">Il codice destinatario te lo dà il cliente. Se non ce l\'ha, va bene la PEC; se non c\'è nessuno dei due, la fattura arriva nel suo cassetto fiscale.</p>':'')+
+      f('email','Email per mandargli il PDF (facoltativa)',k.email,'type="email"')+
+      '<div class="gact"><button type="button" class="gbtn pri" data-a="salvacl">Salva il cliente</button></div><p class="gerr" id="gcE" role="alert"></p></div>'}
+  function leggiCliente(el){var k=G.clEdit;[].forEach.call(el.querySelectorAll('[data-c]'),function(i){k[i.dataset.c]=i.value});return k}
+
+  // ---------- Incassi
+  function vIncassi(){var E=G.dati.fatture.filter(function(f){return f.stato==='emessa'}),y=String(new Date().getFullYear());
+    var inc=E.filter(function(f){return f.incasso&&String(f.incasso.data).slice(0,4)===y}).reduce(function(a,f){return a+(+f.incasso.importo||0)},0),
+      da=E.filter(function(f){return !f.incasso}),daT=da.reduce(function(a,f){return a+f.tot.totale},0),sc=da.filter(function(f){return f.scadenza&&f.scadenza<oggi()});
+    var h=testa('Incassi','Nel forfettario le tasse si pagano su quello che incassi davvero. Quando un cliente ti paga, segnalo qui: aggiorno subito tasse, quota da mettere da parte e soglia.');
+    if(G.msg)h+='<div class="gmsg" role="status">'+G.msg+'</div>';
+    h+='<div class="gkpi"><div><span>Incassato nel '+y+' dalle fatture</span><b>'+eur(inc)+'</b></div><div><span>Da incassare</span><b>'+eur(daT)+'</b><small>'+da.length+(da.length===1?' fattura':' fatture')+'</small></div><div class="'+(sc.length?'ko':'')+'"><span>Pagamenti in ritardo</span><b>'+sc.length+'</b><small>'+(sc.length?eur(sc.reduce(function(a,f){return a+f.tot.totale},0)):'nessuno')+'</small></div></div>';
+    if(!E.length)return h+'<div class="gcard gvuoto"><p>Qui compaiono le fatture che emetti in <b>Fatture</b>. Se le fai con un altro programma, segna gli incassi in Panoramica con «Ho incassato una fattura».</p><button type="button" class="gbtn pri" data-a="vaifa">Vai alle fatture</button></div>';
+    var riga=function(f){var rit=!f.incasso&&f.scadenza&&f.scadenza<oggi();return '<div class="grow"><div class="gmain"><b>N. '+esc(f.numero)+'/'+esc(f.anno)+' · '+esc(f.cliente_nome)+'</b><span>'+eur(f.tot.totale)+(f.incasso?' · incassata il '+dIt(f.incasso.data):f.scadenza?' · '+(rit?'<b class="gko">scaduta il '+dIt(f.scadenza)+'</b>':'scade il '+dIt(f.scadenza)):'')+'</span></div>'+
+      '<div class="gbt">'+(f.incasso?'<button type="button" class="gmini" data-a="annincasso" data-id="'+f.id+'">Non è incassata</button>':'<input type="date" class="gdi" data-d="'+f.id+'" value="'+oggi()+'" aria-label="Data dell\'incasso"><button type="button" class="gmini pri" data-a="incassa" data-id="'+f.id+'">Segna incassata</button>')+
+      (rit&&f.cliente&&f.cliente.email?'<a class="gmini" href="mailto:'+esc(f.cliente.email)+'?subject='+encodeURIComponent('Fattura n. '+f.numero+'/'+f.anno)+'&body='+encodeURIComponent('Buongiorno,\nle ricordo che la fattura n. '+f.numero+'/'+f.anno+' di '+eur(f.tot.totale)+' era da pagare entro il '+dIt(f.scadenza)+'.\nSe ha già provveduto, non tenga conto di questo messaggio.\nGrazie')+'">Sollecita</a>':'')+'</div></div>'};
+    if(da.length)h+='<h2 class="gh2">Da incassare</h2><div class="glist">'+da.map(riga).join('')+'</div>';
+    var fatte=E.filter(function(f){return f.incasso});if(fatte.length)h+='<h2 class="gh2">Incassate</h2><div class="glist">'+fatte.slice(0,30).map(riga).join('')+'</div>';
+    return h}
+
+  // ---------- Scadenze e F24 (dai dati della situazione)
+  function vScad(){var L=window.TS_SC||[],P=SRV.passate||[],B=SRV.bolli||[];
+    var h=testa('Scadenze e F24','Tutte le date in cui paghi imposta, contributi e bollo, con l\'F24 già compilato da copiare nella tua banca.',C?'<div class="gact"><a class="gbtn" href="/d/'+encodeURIComponent(C)+'/calendario" target="_blank" rel="noopener" data-t="scad_calendario">Metti tutto nel calendario</a></div>':'');
+    if(!L.length&&!P.length&&!B.length)return h+'<div class="gcard gvuoto"><p>Per ora non ci sono scadenze calcolate. Completa il Profilo con gli incassi e le scadenze compaiono qui.</p></div>';
+    if(L.length)h+='<div class="glist">'+L.map(function(x,i){return '<div class="grow gscr'+(i===0?' first':'')+'"><div class="gmain"><b>'+esc(x.d)+' · '+esc(x.e)+'</b><span>Imposta '+esc(x.i)+' · Contributi '+esc(x.c)+'</span></div><span class="gst'+(i===0?' b':'')+'">'+esc(x.t)+'</span>'+
+      '<div class="gbt">'+(C&&x.iso?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.iso+'" target="_blank" rel="noopener" data-t="scad_f24">Prepara l\'F24</a>':'')+'</div></div>'}).join('')+'</div>';
+    if(P.length)h+='<h2 class="gh2">Già passate</h2><p class="gnota">Se le hai pagate, segnale. Se no, ti preparo l\'F24 per mettersi in regola.</p><div class="glist">'+P.map(function(x){return '<div class="grow"><div class="gmain"><b>'+dIt(x.d)+' · '+esc(x.e)+'</b><span>'+eur(x.t)+' · scaduta da '+x.g+' giorni</span></div><div class="gbt"><button type="button" class="gmini" data-pag="scadenza" data-k="'+x.d+'">L\'ho pagata</button>'+(C?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.d+'" target="_blank" rel="noopener">Non l\'ho pagata</a>':'')+'</div></div>'}).join('')+'</div>';
+    if(B.length)h+='<h2 class="gh2">Bollo delle fatture</h2><div class="glist">'+B.map(function(x){return '<div class="grow"><div class="gmain"><b>'+x.t+'° trimestre '+x.a+'</b><span>'+x.n+(x.n===1?' fattura':' fatture')+' · '+eur(x.e)+' · '+(x.p?'pagato':x.corso?'trimestre in corso':'scade il '+dIt(x.s))+'</span></div>'+
+      (x.p?'':(x.corso?'':'<div class="gbt">'+(C?'<a class="gmini pri" href="/d/'+encodeURIComponent(C)+'/f24?data='+x.s+'" target="_blank" rel="noopener">Prepara F24</a>':'')+'<button type="button" class="gmini" data-pag="bollo" data-k="'+x.k+'">Segna come pagato</button></div>'))+'</div>'}).join('')+'</div>';
+    return h}
+  function legaScad(){var el=V.sc;[].forEach.call(el.querySelectorAll('[data-pag]'),function(b){b.onclick=function(){if(!C)return;b.disabled=true;
+      fetch('/api/prova/pagato',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:C,tipo:b.dataset.pag,k:b.dataset.k,v:true})}).then(function(r){return r.json()}).then(function(j){if(j&&j.ok){SRV.bolli=j.bolli||[];SRV.passate=j.passate||[];disegna();try{window.__heroRender&&window.__heroRender()}catch(e){}}else b.disabled=false}).catch(function(){b.disabled=false})}});
+    [].forEach.call(el.querySelectorAll('[data-t]'),function(a){a.addEventListener('click',function(){tp(a.dataset.t)})})}
+
+  // ---------- azioni
+  function err(id,t){var e=$(id);if(e)e.innerHTML=t}
+  function aggiorna(j,msg){if(j&&j.ok){G.dati=j.dati;G.msg=msg||'';return true}return false}
+  function lega(el){
+    [].forEach.call(el.querySelectorAll('[data-t]'),function(a){a.addEventListener('click',function(){tp(a.dataset.t)})});
+    [].forEach.call(el.querySelectorAll('[data-f]'),function(b){b.onclick=function(){G.filtro=b.dataset.f;disegna()}});
+    [].forEach.call(el.querySelectorAll('[data-tipo]'),function(b){b.onclick=function(){leggiCliente(el);G.clEdit.tipo=b.dataset.tipo;disegna()}});
+    var naz=el.querySelector('[data-c="nazione"]');if(naz)naz.onchange=function(){leggiCliente(el);disegna()};
+    var sel=el.querySelector('[data-e="cliente_id"]');if(sel)sel.onchange=function(){if(sel.value==='+'){leggiEditor(el);G.ritorno=G.edit;G.clEdit={tipo:'azienda',nazione:'IT'};apri('cl');return}};
+    if(G.edit){var up=function(){leggiEditor(el);var t=$('gTot');if(t)t.innerHTML=totHtml(calc(G.edit))};[].forEach.call(el.querySelectorAll('[data-r],[data-e]'),function(i){i.addEventListener('input',up);i.addEventListener('change',up)})}
+    [].forEach.call(el.querySelectorAll('[data-a]'),function(b){b.onclick=function(){var a=b.dataset.a,id=b.dataset.id;
+      if(a==='nuova'){G.edit=nuovaF();G.io=false;tp('fattura_nuova');disegna()}
+      else if(a==='io'){G.io=true;G.edit=null;disegna()}
+      else if(a==='indietro'){G.io=false;disegna()}
+      else if(a==='salvaio'){var io={};[].forEach.call(el.querySelectorAll('[data-io]'),function(i){io[i.dataset.io]=i.type==='checkbox'?i.checked:i.value});var pn=io.prossimo_numero;delete io.prossimo_numero;b.disabled=true;
+        post('io',{io:io,prossimo_numero:pn}).then(function(j){b.disabled=false;if(aggiorna(j,'Ho salvato i tuoi dati.')){G.io=false;disegna()}else err('gioE',esc((j&&j.errore)||'Non sono riuscito a salvare.'))}).catch(function(){b.disabled=false;err('gioE','Non sono riuscito a salvare.')})}
+      else if(a==='mod'){var f=G.dati.fatture.filter(function(x){return x.id===id})[0];if(f){G.edit=JSON.parse(JSON.stringify({id:f.id,cliente_id:f.cliente_id,data:f.data,righe:f.righe.length?f.righe:[{descrizione:'',quantita:1,prezzo:''}],rivalsa:f.rivalsa,bollo_cliente:f.bollo_cliente,scadenza:f.scadenza,iban:f.iban,note:f.note}));disegna()}}
+      else if(a==='annulla'){G.edit=null;disegna()}
+      else if(a==='riga'){leggiEditor(el);G.edit.righe.push({descrizione:'',quantita:1,prezzo:''});disegna()}
+      else if(a==='togli'){leggiEditor(el);G.edit.righe.splice(+b.dataset.i,1);if(!G.edit.righe.length)G.edit.righe.push({descrizione:'',quantita:1,prezzo:''});disegna()}
+      else if(a==='bozza'||a==='emetti'){leggiEditor(el);b.disabled=true;err('gfE','');
+        post('fattura',perServer(G.edit)).then(function(j){if(!j||!j.ok){b.disabled=false;err('gfE',esc((j&&j.errore)||'Non sono riuscito a salvare.'));return}G.edit.id=j.id;G.dati=j.dati;
+          if(a==='bozza'){G.edit=null;G.msg='Bozza salvata.';tp('fattura_bozza');disegna();return}
+          post('emetti',{id:j.id}).then(function(k){b.disabled=false;if(k&&k.ok){var f=k.dati.fatture.filter(function(x){return x.id===j.id})[0];G.dati=k.dati;G.edit=null;tp('fattura_emessa');
+              G.msg='Fattura <b>n. '+esc(f.numero)+'/'+esc(f.anno)+'</b> emessa. Ora <a href="/api/prova/fattura/xml?c='+encodeURIComponent(C)+'&id='+f.id+'">scarica il file XML</a> e caricalo su Fatture e corrispettivi (vedi la guida qui sotto). Il <a href="/api/prova/fattura/pdf?c='+encodeURIComponent(C)+'&id='+f.id+'">PDF</a> è la copia per il cliente.';disegna()}
+            else err('gfE','<b>Manca ancora qualcosa:</b><br>'+((k&&k.problemi)||[(k&&k.errore)||'Non sono riuscito a emetterla.']).map(esc).join('<br>')+'<br>Intanto l\'ho salvata come bozza.')}).catch(function(){b.disabled=false;err('gfE','Non sono riuscito a emetterla. L\'ho salvata come bozza.')})}).catch(function(){b.disabled=false;err('gfE','Non sono riuscito a salvare.')})}
+      else if(a==='dup'){post('duplica',{id:id}).then(function(j){if(aggiorna(j)){var f=j.dati.fatture.filter(function(x){return x.id===j.id})[0];G.edit={id:f.id,cliente_id:f.cliente_id,data:f.data,righe:f.righe,rivalsa:f.rivalsa,bollo_cliente:f.bollo_cliente,scadenza:f.scadenza,iban:f.iban,note:f.note};disegna()}})}
+      else if(a==='del'){var f2=G.dati.fatture.filter(function(x){return x.id===id})[0];if(!f2)return;if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent=f2.stato==='emessa'?'Sicuro? È emessa':'Sicuro?';b.classList.add('ko');return}
+        post('elimina',{id:id}).then(function(j){if(!aggiorna(j,'Eliminata.')){G.msg=esc((j&&j.errore)||'Non sono riuscito a eliminarla.')}disegna()})}
+      else if(a==='nuovocl'){G.clEdit={tipo:'azienda',nazione:'IT'};disegna()}
+      else if(a==='modcl'){var k=G.dati.clienti.filter(function(x){return x.id===id})[0];if(k){G.clEdit=JSON.parse(JSON.stringify(k));disegna()}}
+      else if(a==='annullacl'){G.clEdit=null;if(G.ritorno){G.edit=G.ritorno;G.ritorno=null;apri('fa');return}disegna()}
+      else if(a==='salvacl'){leggiCliente(el);b.disabled=true;post('cliente',{cliente:G.clEdit}).then(function(j){b.disabled=false;if(!aggiorna(j,'Cliente salvato.')){err('gcE',esc((j&&j.errore)||'Non sono riuscito a salvarlo.'));return}tp('cliente_salvato');G.clEdit=null;
+          if(G.ritorno){G.edit=G.ritorno;G.edit.cliente_id=j.id;G.ritorno=null;apri('fa');return}disegna()}).catch(function(){b.disabled=false;err('gcE','Non sono riuscito a salvarlo.')})}
+      else if(a==='delcl'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='Sicuro?';b.classList.add('ko');return}post('elimina_cliente',{id:id}).then(function(j){aggiorna(j,'Cliente eliminato. Le fatture già fatte restano.');disegna()})}
+      else if(a==='fattcl'){G.edit=nuovaF(id);apri('fa')}
+      else if(a==='vaifa'){apri('fa')}
+      else if(a==='incassa'||a==='annincasso'){var di=el.querySelector('[data-d="'+id+'"]');b.disabled=true;
+        post('incassa',{id:id,data:di?di.value:'',annulla:a==='annincasso'}).then(function(j){b.disabled=false;if(aggiorna(j,a==='incassa'?'Incasso segnato: ho aggiornato tasse, quota da mettere da parte e soglia.':'Ho tolto l\'incasso.')){tp('fattura_'+a);
+          if(j.numeri)try{pvNumeri(j.numeri);pvSoglia()}catch(e){}}disegna()}).catch(function(){b.disabled=false})}
+    }})}
+})();
+
 </script>
 </body></html>

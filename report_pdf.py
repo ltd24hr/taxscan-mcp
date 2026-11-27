@@ -169,7 +169,7 @@ class _Pdf:
         kids = []
         for i, pg in enumerate(self.pages):
             corpo = list(pg)
-            corpo.append(b"0.45 0.5 0.6 rg BT /F1 8 Tf 48 28 Td (" + _esc("TaxScan · stima non vincolante · pagina %d di %d" % (i + 1, n)) + b") Tj ET")
+            corpo.append(b"0.45 0.5 0.6 rg BT /F1 8 Tf 48 28 Td (" + _esc(getattr(self, "piede", "TaxScan · stima non vincolante") + " · pagina %d di %d" % (i + 1, n)) + b") Tj ET")
             cont = b"\n".join(corpo)
             cs = nuovo(b"<< /Length %d >>\nstream\n" % len(cont) + cont + b"\nendstream")
             pid = nuovo(("<< /Type /Page /Parent %d 0 R /MediaBox [0 0 %d %d] /Contents %d 0 R "

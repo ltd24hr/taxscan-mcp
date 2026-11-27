@@ -610,7 +610,7 @@ def personalizza(t: str, d: dict, idc: str = "", vai: str = "") -> str:
                 continue
             det = x.get("dettaglio") or []
             ii, cc = _somma(det, "imposta"), _somma(det, "contribut")
-            scj.append({"d": f"{dd.day} {_MESI[dd.month-1][:3]} {dd.year}", "e": x.get("etichetta") or "",
+            scj.append({"d": f"{dd.day} {_MESI[dd.month-1][:3]} {dd.year}", "iso": dd.isoformat(), "e": x.get("etichetta") or "",
                         "i": (f"{_it(ii)} €" if ii else "—"), "c": (f"{_it(cc)} €" if cc else "—"),
                         "t": f"{_it(x.get('importo') or 0)} €", "det": det})
         extra_real = "window.TS_SC=%s;window.TS_PREC=%s;" % (json.dumps(scj), "true" if pa else "false")
@@ -939,6 +939,33 @@ def incasso(c: str, importo, data: str = "") -> dict:
     return {"ok": True, "numeri": _numeri(nuovi)}
 
 
+def togli_incasso(c: str, importo, data: str = "") -> dict:
+    """Il contrario di incasso(): la persona dice che una fattura segnata come incassata non lo e'."""
+    import datetime
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    try:
+        x = round(float(importo), 2)
+    except Exception:
+        return {"ok": False}
+    dati = db.carica_dashboard(c) if c else None
+    if not dati or not (0 < x < 1_000_000):
+        return {"ok": False}
+    sch = dict(dati.get("_scheda") or {})
+    if str(data or "")[:4] != str(datetime.date.today().year):
+        return {"ok": False}
+    sch["ricavi_anno_corrente"] = max(0, int(round(float(sch.get("ricavi_anno_corrente") or 0) - x)))
+    seg = list(sch.get("incassi_segnati") or [])
+    for i in range(len(seg) - 1, -1, -1):
+        if abs(float(seg[i].get("e") or 0) - x) < 0.01 and str(seg[i].get("d") or "") == str(data)[:10]:
+            seg.pop(i)
+            break
+    sch["incassi_segnati"] = seg
+    nuovi = _rifai(c, dati, sch)
+    if "errore" in nuovi:
+        return {"ok": False}
+    return {"ok": True, "numeri": _numeri(nuovi)}
+
+
 def salvadanaio(c: str, totale, scadenza: str = "") -> dict:
     """Quanto la persona ha gia' messo da parte per la prossima scadenza: entra nel piano dei pagamenti."""
     c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
@@ -1059,7 +1086,7 @@ def chiudi_account(c: str, passo: str, codice: str = "") -> dict:
         with db._connetti() as conn:
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM prova_doc WHERE path = ANY(%s) OR path LIKE %s",
-                            (["profili/" + c, "preferenze/" + c], "app/" + c + "/%"))
+                            (["profili/" + c, "preferenze/" + c, "fatture/" + c], "app/" + c + "/%"))
                 cur.execute("DELETE FROM prova_email WHERE c = %s", (c,))
             conn.commit()
         db.cancella_dati(dati.get("_email"), c)
@@ -2538,6 +2565,28 @@ def registra(mcp, avvisi):
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
         return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/fatture", methods=["POST"])
+    async def prova_fatture(request):
+        import fatturazione
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(fatturazione.operazione, str(c.get("c", "")), str(c.get("op", "")), c.get("dati") or {})
+        except Exception as e:
+            print(f"prova: fatture {e}")
+            return JSONResponse({"ok": False, "errore": "Non riesco a salvare adesso: riprova tra poco."}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/fattura/{tipo}", methods=["GET"])
+    async def prova_fattura_file(request):
+        from starlette.responses import Response
+        import fatturazione
+        tipo = "xml" if request.path_params.get("tipo") == "xml" else "pdf"
+        r = await asyncio.to_thread(fatturazione.file_fattura, request.query_params.get("c", ""), request.query_params.get("id", ""), tipo)
+        if not r:
+            return JSONResponse({"ok": False}, status_code=404)
+        dati, nome, mt = r
+        return Response(dati, media_type=mt, headers={"Content-Disposition": f'attachment; filename="{nome}"', "Cache-Control": "no-store"})
 
     @mcp.custom_route("/api/prova/commercialista", methods=["POST"])
     async def prova_commercialista(request):
