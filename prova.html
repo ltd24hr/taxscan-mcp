@@ -642,6 +642,12 @@ small.pvs{font-size:12.5px;color:var(--mute)}
 #stage [data-wk=slC_3] .pvsp{margin:0 0 4px!important}
 #pfok,#pview .pfn{display:none!important}
 #pflist .pfr{cursor:pointer}
+#pftabs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}#pftabs button{font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer;position:relative}
+#pftabs button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff}#pftabs .pfdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e8590c;margin-left:6px;vertical-align:middle}
+#pfcomm .pfcc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px}#pfcomm h3{margin:0 0 4px;font-size:17px}#pfcomm p{margin:0 0 6px;font-size:14px;color:var(--ink2);line-height:1.5}
+#pfcomm label{font-size:13px;font-weight:600;color:var(--ink);margin-top:6px}#pfcomm input,#pfcomm select,#pfcomm textarea{font:inherit;font-size:15px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+#pfcomm .pfcgo{align-self:flex-start;margin-top:10px;font:inherit;font-weight:600;font-size:15px;padding:10px 16px;border-radius:12px;border:0;background:var(--accent);color:#fff;cursor:pointer;text-decoration:none}#pfcomm .pfcgo.sec{background:#122452}#pfcomm .pfcgo:disabled{opacity:.6}
+#pfcomm .pfco{font-size:14px;color:var(--ink);min-height:1em}#pfcomm .pfcp{background:#f4f6fd}
 #pflist .pfr.pfman .pfv i{color:#9a3b12;font-style:normal;font-weight:600}
 .bpu{margin:4px 0 0;font-size:13px}.bpu a{color:#4355cc;font-weight:600}
 .pvsa{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
@@ -762,6 +768,17 @@ window.__dockX=function(){var d=document.getElementById('astab'),w=d?d.offsetWid
 <style id="sbcss">
 /* v95: menu laterale che scorre e si chiude (computer), barra in basso (telefono) */
 #hdr .sbx,#sbopen{display:none}
+#hdAiuto{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink2);font-weight:600;font-size:14px;border-radius:10px}
+#hdAiuto:hover{color:var(--ink)}#hdAiuto .hdAs{display:none}@media (max-width:900px){#hdAiuto .hdAl{display:none}#hdAiuto .hdAs{display:inline}}
+@media (min-width:901px){html body #hdr #hdAiuto{margin-top:auto;padding:10px 12px;font-size:15px;gap:12px}html body #hdr #hdAiuto:hover{background:#f2f4fb}}
+@media (max-width:900px){html body #hdr{position:relative!important}#hdAiuto{position:absolute;right:0;top:12px;padding:6px 10px;border:1px solid var(--line);background:var(--surface);font-size:13px}#hdAiuto svg{width:18px;height:18px}}
+#aiuto{position:fixed;inset:0;z-index:90;background:rgba(10,19,48,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px 16px}#aiuto[hidden]{display:none}
+#aiuto .aiw{background:var(--surface);color:var(--ink);border-radius:18px;max-width:560px;width:100%;max-height:86vh;overflow:auto;padding:20px 20px 16px;box-shadow:0 20px 60px rgba(10,19,48,.3)}
+#aiuto h2{margin:0 0 4px;font-size:20px}#aiuto .aix{float:right;border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--ink2)}
+#aiuto input{font:inherit;font-size:15px;width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin:10px 0}
+#aiuto ul{list-style:none;margin:0;padding:0}#aiuto li a{display:block;padding:10px 4px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:600;font-size:15px}#aiuto li a small{display:block;font-weight:400;color:var(--ink2);font-size:13px;margin-top:2px}
+#aiuto .aib{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}#aiuto .aib a,#aiuto .aib button{font:inherit;font-size:14px;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none}#aiuto .aib .pri{background:var(--accent);border-color:var(--accent);color:#fff}
+#aiuto .aiv{padding:8px 4px;color:var(--ink2);font-size:14px}
 #hdr nav button .nvs{display:none}
 @media (min-width:901px){
   html body{padding-left:var(--sbw,0px);transition:padding-left .32s cubic-bezier(.22,1,.36,1)}
@@ -1233,7 +1250,7 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   <nav aria-label="Sezioni">
     <button aria-current="page"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Panoramica</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Scadenze</button>
     <button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20L20 4"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Ottimizzazione fiscale</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zm0 0c2-4 6-4 6-1.5S14 8 12 8z"/></svg>Bandi e agevolazioni</button><button><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profilo</button><button id="navtd"><svg class="nvi" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/></svg>Da fare <span class="tdn" id="tdn" hidden></span></button>
-  </nav></header>
+  </nav><a href="#" id="hdAiuto" role="button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.3-2.4 3.6"/><path d="M12 17.2h.01"/></svg><span class="hdAl">Guide e aiuto</span><span class="hdAs">Aiuto</span></a></header>
   <h1 id="nome">TaxScan</h1>
   <div class="nota" id="nota" role="status"></div>
 
@@ -1380,7 +1397,9 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
   </div>
   <div id="pview" hidden>
     <div class="narr dx" id="fnarr"><div class="bub" id="tf"></div><span class="fc" data-from="sl2"></span></div>
+    <div id="pftabs" role="tablist" aria-label="Sezioni del profilo"></div>
     <div id="pflist"></div>
+    <div id="pfcomm" hidden></div>
     <button id="pfok">Sì, sono giusti</button>
     <p class="pfn">Se vuoi cancellare i tuoi dati o scaricarli, scrivimelo qui sotto: te lo preparo.</p>
   </div>
@@ -2691,13 +2710,37 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(window.TS_C&&!(window.TS_SRV&&window.TS_SRV.reg))m.push(['zona','Dimmi in che regione lavori']);if(window.TS_C&&!OT.ficOk)m.push(['fic','Collega Fatture in Cloud']);return m}
   function pfRiga(k){return document.querySelector('#pflist .pfr[data-k="'+k+'"]')}
   // tocca un dato «mancante» dai suggerimenti: lo seleziono e chiedo il valore
-  function pfVai(k){var r=pfRiga(k),d=pfRighe().filter(function(x){return x.k===k})[0];if(!r||!d)return;
+  function pfVai(k){var tb=pfTabDi(k);if(tb!==PFTAB){PFTAB=tb;try{renderProfilo()}catch(e){}}var r=pfRiga(k),d=pfRighe().filter(function(x){return x.k===k})[0];if(!r||!d)return;
     if(k==='aliq'&&pfAliqConf()){if(!r.classList.contains('sel'))window.__tieni(r,d.x,d.l,pfAliqChiedi);pfAliqChiedi();return}
     if(k==='fic'&&window.TS_C){say('Ti porto su Fatture in Cloud per il collegamento: dai l\'ok e torni qui.');setTimeout(oFicCollega,1200);return}
     if(!r.classList.contains('sel'))window.__tieni(r,d.x+(d.q?' '+d.q:''),d.l,pfChips);
     try{r.scrollIntoView({block:'center',behavior:reduce?'auto':'smooth'})}catch(e){}
     say(d.q||d.x);pfChips(k);var i=$('mp_in');if(i&&innerWidth>640)setTimeout(function(){i.focus()},60)}
+  // v98: il Profilo diviso in schede, come un gestionale; l'ultima scheda e' il commercialista
+  var PFTABS=[['tu','Tu e gli avvisi',['nome','email','av','tel','dati','account']],['att','Attività e tasse',['att','ateco','fatt','piva','anno','aliq','inps','rid','altri','zona','reg']],
+    ['doc','Incassi e documenti',['inc','prec','docu','fic','modello']],['comm','Commercialista',[]]],PFTAB='att';
+  try{PFTAB=sessionStorage.getItem('ts_pftab')||'att'}catch(e){}
+  function pfTabDi(k){for(var i=0;i<PFTABS.length;i++)if(PFTABS[i][2].indexOf(k)>=0)return PFTABS[i][0];return 'tu'}
+  function pfTabs(man){var t=$('pftabs');if(!t)return;
+    t.innerHTML=PFTABS.map(function(x){var m=x[2].some(function(k){return man[k]});return '<button type="button" role="tab" data-tab="'+x[0]+'" aria-selected="'+(x[0]===PFTAB)+'">'+x[1]+(m?'<i class="pfdot" aria-label="manca qualcosa"></i>':'')+'</button>'}).join('');
+    [].slice.call(t.querySelectorAll('[data-tab]')).forEach(function(b){b.onclick=function(){PFTAB=b.dataset.tab;try{sessionStorage.setItem('ts_pftab',PFTAB)}catch(e){}tap('profilo_scheda_'+PFTAB);renderProfilo()}})}
+  function pfComm(){var el=$('pfcomm'),c=window.TS_C,SV=window.TS_SRV||{},m='';try{m=localStorage.getItem('ts_comm_'+(c||'demo'))||''}catch(e){}
+    el.innerHTML='<div class="pfcc"><h3>Manda i tuoi numeri al commercialista</h3><p>Gli arriva un\'email con il riepilogo della tua situazione (partita IVA, codice ATECO, coefficiente, contributi, incassi, prossime scadenze) e l\'elenco delle fatture del periodo in un file che si apre con Excel. Tu ricevi una copia. Le risposte arrivano a te.</p>'+
+      '<label for="pfcE">Email del commercialista</label><input id="pfcE" type="email" autocomplete="off" placeholder="nome@studio.it" value="'+oEsc(m)+'">'+
+      '<label for="pfcP">Periodo delle fatture</label><select id="pfcP"><option value="anno">Quest\'anno</option><option value="trim">Ultimo trimestre chiuso</option><option value="prec">Anno scorso</option></select>'+
+      '<label for="pfcN">Un messaggio per lui (facoltativo)</label><textarea id="pfcN" rows="3" maxlength="600" placeholder="Per esempio: mi controlli gli acconti di novembre?"></textarea>'+
+      '<button type="button" id="pfcG" class="pfcgo">Invia al commercialista</button><p id="pfcO" class="pfco" role="status"></p></div>'+
+      '<div class="pfcc pfcp"><h3>Non hai un commercialista?</h3><p>TaxScan ti accompagna da solo, ma quando vuoi puoi parlare con un consulente vero: la prima chiamata è gratuita e senza impegno.</p><a class="pfcgo sec" href="https://calendly.com/ltd24ore?utm_source=taxscan_app" target="_blank" rel="noopener">Prenota una chiamata gratuita</a></div>';
+    var g=$('pfcG'),o=$('pfcO');
+    g.onclick=function(){var e=$('pfcE').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){o.textContent='Scrivi un\'email valida.';return}
+      if(!c){o.textContent='Questa è una pagina di prova: l\'invio funziona dalla tua situazione salvata.';return}
+      try{localStorage.setItem('ts_comm_'+c,e)}catch(x){}g.disabled=true;o.textContent='Preparo e invio…';tap('commercialista_invia');
+      fetch('/api/prova/commercialista',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({c:c,email:e,periodo:$('pfcP').value,nota:$('pfcN').value})}).then(function(r){return r.json()}).then(function(j){g.disabled=false;
+        o.innerHTML=j&&j.ok?'Inviato a <b>'+oEsc(e)+'</b>'+(j.n!=null?' con '+j.n+(j.n===1?' fattura':' fatture'):'')+'. Ti ho mandato una copia.':oEsc((j&&j.errore)||'Non sono riuscito a inviare. Riprova tra poco.')}).catch(function(){g.disabled=false;o.textContent='Non sono riuscito a inviare. Riprova tra poco.'})}}
   function renderProfilo(){var L=pfRighe(),man={};pfMancano().forEach(function(x){man[x[0]]=1});
+    if(!PFTABS.some(function(x){return x[0]===PFTAB}))PFTAB='att';pfTabs(man);
+    var cm=PFTAB==='comm';$('pflist').hidden=cm;$('pfcomm').hidden=!cm;if(cm){pfComm();$('pfok').hidden=true;return}
+    var dove=(PFTABS.filter(function(x){return x[0]===PFTAB})[0]||[])[2]||[];L=L.filter(function(d){return dove.indexOf(d.k)>=0||(PFTAB==='tu'&&pfTabDi(d.k)==='tu')});
     $('pflist').innerHTML=L.map(function(d){return '<div class="pfr'+(man[d.k]?' pfman':'')+'" data-k="'+d.k+'" tabindex="0" role="button"><span class="pfl">'+d.l+'</span><span class="pfv">'+(d.v?oEsc(d.v):'<i>da aggiungere</i>')+'</span></div>'}).join('');
     wgInit($('pflist'),'f','.pfr');
     [].slice.call($('pflist').querySelectorAll('.pfr')).forEach(function(r){r.onclick=function(e){if(e.target.closest('button,input,label,.wc'))return;var k=r.getAttribute('data-k'),d=L.filter(function(x){return x.k===k})[0]||{};
@@ -3892,5 +3935,29 @@ nav button.spot{opacity:1;color:var(--accent);background:var(--surface);box-shad
     if(v.firstElementChild!==h)v.insertBefore(h,v.firstChild)}
   Object.keys(T).forEach(function(id){metti(id);var v=document.getElementById(id);if(v)new MutationObserver(function(){if(!v.hidden)setTimeout(function(){metti(id)},0)}).observe(v,{attributes:true,attributeFilter:['hidden']})});
 })();
+</script>
+<script>
+/* v98: Guide e aiuto. Le guide di TaxScan con una ricerca, e le strade per chiedere: all'agente IA o a una persona */
+(function(){var a=document.getElementById('hdAiuto');if(!a)return;
+  var G=(window.TS_SRV&&window.TS_SRV.guide)||[['acconto-30-novembre-forfettario','Secondo acconto del 30 novembre: quanto si paga'],['saldo-acconto-30-giugno-forfettario','Saldo e primo acconto del 30 giugno'],['come-si-calcolano-tasse-forfettario','Come si calcolano le tasse nel forfettario'],['quanto-mettere-da-parte-forfettario','Quanto mettere da parte su ogni fattura'],['coefficienti-redditivita-forfettario-ateco','Coefficienti di redditività per codice ATECO'],['soglia-85000-forfettario','Soglia degli 85.000 euro: cosa succede se la superi'],['contributi-inps-forfettario','Contributi INPS nel forfettario'],['requisiti-regime-forfettario','Requisiti per il regime forfettario']];
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+  var box=document.createElement('div');box.id='aiuto';box.hidden=true;box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-labelledby','aiT');
+  box.innerHTML='<div class="aiw"><button type="button" class="aix" aria-label="Chiudi">×</button><h2 id="aiT">Guide e aiuto</h2><p style="margin:0;color:var(--ink2);font-size:14px">Le regole del forfettario spiegate semplici. Se non trovi la risposta, chiedila all\'agente IA.</p>'+
+    '<input id="aiQ" type="search" placeholder="Cerca: acconti, INPS, soglia, coefficiente…" aria-label="Cerca nelle guide"><ul id="aiL"></ul>'+
+    '<div class="aib"><button type="button" class="pri" id="aiChat">Chiedi all\'agente IA</button><a href="https://calendly.com/ltd24ore?utm_source=taxscan_app_aiuto" target="_blank" rel="noopener">Parla con un consulente</a></div></div>';
+  document.body.appendChild(box);
+  var L=document.getElementById('aiL'),Q=document.getElementById('aiQ');
+  function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}
+  function draw(){var q=norm(Q.value).split(/\s+/).filter(Boolean),r=G.filter(function(g){var t=norm(g[1]+' '+g[0].replace(/-/g,' '));return q.every(function(w){return t.indexOf(w)>=0})});
+    L.innerHTML=r.length?r.map(function(g){return '<li><a href="/guide/'+esc(g[0])+'" target="_blank" rel="noopener">'+esc(g[1])+(g[2]?'<small>'+esc(g[2])+'</small>':'')+'</a></li>'}).join(''):'<li class="aiv">Nessuna guida su questo. Chiedilo all\'agente IA: ti risponde sulla tua situazione.</li>'}
+  var prima=null;
+  function apri(e){if(e)e.preventDefault();prima=document.activeElement;box.hidden=false;Q.value='';draw();setTimeout(function(){Q.focus()},30);try{tap('aiuto_apri')}catch(x){}}
+  function chiudi(){box.hidden=true;if(prima&&prima.focus)prima.focus()}
+  a.addEventListener('click',apri);Q.addEventListener('input',draw);
+  box.querySelector('.aix').onclick=chiudi;box.addEventListener('click',function(e){if(e.target===box)chiudi()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!box.hidden)chiudi()});
+  L.addEventListener('click',function(e){if(e.target.closest('a'))try{tap('aiuto_guida')}catch(x){}});
+  document.getElementById('aiChat').onclick=function(){chiudi();try{tap('aiuto_chat')}catch(x){}var t=document.getElementById('astab');if(t)t.click();setTimeout(function(){var i=document.getElementById('mp_in');if(i)i.focus()},250)};
+  window.__aiuto=apri})();
 </script>
 </body></html>

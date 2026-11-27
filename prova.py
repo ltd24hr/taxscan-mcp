@@ -125,7 +125,22 @@ def _per_pagina(d: dict, c: str = "") -> dict:
                       "No" if sch.get("situazioni_particolari") else ""),
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
             "mailv": _mail_verificata(c), "pag": _pagamento(c),
-            "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch)}
+            "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch), "guide": _guide_pagina()}
+
+
+def _guide_pagina() -> list:
+    """Le guide pubbliche, per il pannello «Guide e aiuto» della pagina: [slug, titolo, una riga di descrizione]."""
+    try:
+        import guide
+        out = []
+        for k, v in guide.GUIDE.items():
+            dsc = str(v.get("descrizione") or "")
+            dsc = dsc.split(". ")[0][:140]
+            out.append([k, str(v.get("titolo") or k), dsc])
+        return out
+    except Exception as e:
+        print(f"prova: guide {e}")
+        return []
 
 
 def _bolli_pagina(sch: dict) -> list:
@@ -193,6 +208,126 @@ def _passate(sch: dict) -> list:
     except Exception as e:
         print(f"prova: scadenze passate {e}")
         return []
+
+
+_COMM_INVII: dict = {}
+
+
+def invia_commercialista(c: str, email_comm: str, periodo: str = "anno", nota: str = "") -> dict:
+    """Manda al commercialista scelto dalla persona il riepilogo della situazione e l'elenco delle fatture del periodo
+    (file CSV che si apre con Excel). Solo dalla situazione salvata, con l'email della persona confermata, e al massimo
+    tre invii al giorno: la persona riceve sempre una copia e le risposte arrivano a lei."""
+    import base64
+    import datetime
+    import time
+    import requests
+    import auth
+    import azioni
+    import emailtpl
+    import scheda as S
+    c = re.sub(r"[^A-Za-z0-9_-]", "", c or "")[:64]
+    email_comm = _pulisci(email_comm, 120).lower()
+    if not c:
+        return {"ok": False, "errore": "Serve la tua situazione salvata."}
+    if not _EMAIL_RE.match(email_comm):
+        return {"ok": False, "errore": "Scrivi un'email valida."}
+    try:
+        mia, ok = azioni.verificata(c)
+    except Exception:
+        mia, ok = "", False
+    if not ok or not mia:
+        return {"ok": False, "errore": "Prima conferma la tua email nella scheda «Tu e gli avvisi»: così il commercialista sa chi gli scrive e le risposte arrivano a te."}
+    ora = time.time()
+    l = [t for t in _COMM_INVII.get(c, []) if ora - t < 86400]
+    if len(l) >= 3:
+        return {"ok": False, "errore": "Oggi hai già fatto tre invii: riprova domani."}
+    d = db.carica_dashboard(c) or {}
+    sch = d.get("_scheda") or {}
+    prof = d.get("profilo") or {}
+    oggi = datetime.date.today()
+    if periodo == "prec":
+        da, a, nome_p = datetime.date(oggi.year - 1, 1, 1), datetime.date(oggi.year - 1, 12, 31), f"anno {oggi.year - 1}"
+    elif periodo == "trim":
+        q = (oggi.month - 1) // 3
+        anno_q = oggi.year if q else oggi.year - 1
+        q = q or 4
+        da, a = datetime.date(anno_q, 3 * q - 2, 1), datetime.date(anno_q + (q == 4), (3 * q) % 12 + 1, 1) - datetime.timedelta(days=1)
+        nome_p = f"{q}° trimestre {anno_q}"
+    else:
+        da, a, nome_p = datetime.date(oggi.year, 1, 1), oggi, f"anno {oggi.year} fino a oggi"
+    fatture = []
+    try:
+        doc = (profilo(c, "get") or {}).get("data") or {}
+        visti = set()
+        for v in doc.get("inv") or []:
+            if not isinstance(v, dict) or v.get("ok") is False or v.get("usa") is False:
+                continue
+            ctl = v.get("ctl") or {}
+            dd = str(ctl.get("data") or "")[:10]
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", dd) or not (da.isoformat() <= dd <= a.isoformat()):
+                continue
+            try:
+                imp = round(float(v.get("importo") or 0), 2)
+            except Exception:
+                imp = 0.0
+            k = (dd, str(ctl.get("numero") or ""), imp)
+            if k in visti:
+                continue
+            visti.add(k)
+            fatture.append({"data": dd, "numero": _pulisci(ctl.get("numero"), 30), "importo": imp})
+    except Exception as e:
+        print(f"prova: fatture per il commercialista {e}")
+    fatture.sort(key=lambda f: f["data"])
+    tot = sum(f["importo"] for f in fatture)
+
+    def it(n):
+        return f"{n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    righe_csv = ["Data;Numero;Importo (EUR);Bollo 2 EUR"] + [
+        f"{f['data'][8:10]}/{f['data'][5:7]}/{f['data'][:4]};{f['numero'].replace(';', ',')};{it(f['importo'])};{'sì' if f['importo'] > S.BOLLO_SOGLIA_FATTURA else 'no'}"
+        for f in fatture] + [f";Totale;{it(tot)};"]
+    csv = ("\ufeff" + "\r\n".join(righe_csv)).encode("utf-8")
+    nome = S.pulisci_nome(sch.get("nome")) if hasattr(S, "pulisci_nome") else _pulisci(sch.get("nome"), 60)
+    nome_c = " ".join(x for x in [_pulisci(sch.get("nome"), 40), _pulisci(sch.get("cognome"), 40)] if x)
+    piva = re.sub(r"\D", "", str(sch.get("partita_iva") or ""))[:11]
+    gest = {"separata": "Gestione separata INPS", "artigiani": "INPS artigiani", "commercianti": "INPS commercianti",
+            "cassa": "Cassa professionale"}.get(str(prof.get("gestione") or sch.get("gestione_previdenziale") or ""), "")
+    e = emailtpl._e
+    dati = [("Partita IVA", piva), ("Inizio attività", _apertura_txt(sch.get("data_apertura"))),
+            ("Codice ATECO", _pulisci(sch.get("codice_ateco"), 12)), ("Coefficiente", str(prof.get("coefficiente") or "")),
+            ("Imposta sostitutiva", str(prof.get("aliquota") or "")), ("Contributi", gest),
+            ("Incassi " + str(oggi.year) + " finora", (it(float(sch.get("ricavi_anno_corrente"))) + " €") if sch.get("ricavi_anno_corrente") not in (None, "") else ""),
+            ("Incassi " + str(oggi.year - 1), (it(float(sch.get("ricavi_anno_precedente"))) + " €") if sch.get("ricavi_anno_precedente") not in (None, "") else "")]
+    tab = "".join(f"<tr><td style='padding:4px 12px 4px 0;color:#5b6475'>{e(k)}</td><td style='padding:4px 0'><b>{e(v)}</b></td></tr>" for k, v in dati if v)
+    scad = [x for x in (d.get("scadenze") or []) if x.get("giorni") is not None and x["giorni"] >= 0][:4]
+    sc_html = "".join(f"<li>{e('/'.join(reversed(str(x.get('data') or '').split('-'))))}: {e(x.get('etichetta') or '')} · circa {e(it(float(x.get('importo') or 0)))} €</li>" for x in scad)
+    nota = _pulisci(nota, 600)
+    corpo = (f"<p>Buongiorno,</p><p>{e(nome_c or 'un tuo cliente')} ({e(mia)}) ti manda tramite TaxScan il riepilogo della sua "
+             f"partita IVA in regime forfettario e le fatture del periodo <b>{e(nome_p)}</b>.</p>"
+             + (f"<p style='background:#f4f6fd;padding:10px 12px;border-radius:8px'><b>Il suo messaggio:</b><br>{e(nota)}</p>" if nota else "")
+             + f"<table style='border-collapse:collapse;font-size:14px;margin:8px 0'>{tab}</table>"
+             + (f"<p><b>Prossime scadenze stimate</b></p><ul style='padding-left:20px'>{sc_html}</ul>" if sc_html else "")
+             + f"<p>In allegato: <b>{len(fatture)}</b> {'fattura' if len(fatture) == 1 else 'fatture'} per un totale di <b>{it(tot)} €</b> "
+               "(data, numero, importo, se c'è il bollo). Sono le fatture caricate in TaxScan: se ne manca qualcuna, chiedila direttamente al cliente.</p>"
+             + "<p style='color:#5b6475;font-size:13px'>Le cifre sono stime di TaxScan, da verificare. Per rispondere, rispondi a questa email: "
+               "arriva al cliente.</p>")
+    html_m = emailtpl.cornice("Riepilogo di un cliente forfettario", corpo)
+    oggetto = f"{nome_c or 'Un cliente'}: riepilogo partita IVA forfettaria ({nome_p}) · TaxScan"
+    try:
+        r = requests.post(auth.RESEND_URL, headers={"Authorization": f"Bearer {auth.RESEND_API_KEY}"}, timeout=20,
+                          json={"from": auth.MITTENTE, "to": email_comm, "cc": mia, "reply_to": mia, "subject": oggetto, "html": html_m,
+                                "attachments": [{"filename": f"fatture-{da.isoformat()}-{a.isoformat()}.csv",
+                                                 "content": base64.b64encode(csv).decode("ascii")}]})
+        r.raise_for_status()
+    except Exception as ex:
+        print(f"prova: invio al commercialista non riuscito: {ex}")
+        return {"ok": False, "errore": "Non sono riuscito a inviare adesso. Riprova tra poco."}
+    l.append(ora)
+    _COMM_INVII[c] = l
+    try:
+        db.registra_evento("commercialista_invio", c, {"fatture": len(fatture), "periodo": periodo})
+    except Exception:
+        pass
+    return {"ok": True, "n": len(fatture)}
 
 
 def segna_pagato(c: str, tipo: str, chiave: str, pagato=True) -> dict:
@@ -2402,6 +2537,15 @@ def registra(mcp, avvisi):
             esito = await asyncio.to_thread(salvadanaio, c.get("c", ""), c.get("totale"), c.get("scadenza", ""))
         except Exception:
             return JSONResponse({"ok": False}, status_code=500)
+        return JSONResponse(esito)
+
+    @mcp.custom_route("/api/prova/commercialista", methods=["POST"])
+    async def prova_commercialista(request):
+        try:
+            c = await request.json()
+            esito = await asyncio.to_thread(invia_commercialista, c.get("c", ""), c.get("email", ""), str(c.get("periodo", "anno")), c.get("nota", ""))
+        except Exception:
+            return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
         return JSONResponse(esito)
 
     @mcp.custom_route("/api/prova/pagato", methods=["POST"])

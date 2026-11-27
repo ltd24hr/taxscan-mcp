@@ -905,7 +905,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <div class="cols">
       <div><a class="logo" href="/">Tax<span>Scan</span></a><p>Il primo agente IA specializzato nel risparmio fiscale per chi ha la partita IVA in regime forfettario.</p></div>
       <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#simula">Simulatore</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
-      <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a></nav></div>
+      <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a><a href="/commercialisti">Sei un commercialista?</a></nav></div>
     </div>
     <div class="legale">
       <p>TaxScan prepara e spiega: sono stime a scopo informativo, calcolate sui dati che inserisci tu. Puoi gestire tutto da solo, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare le cifre a un professionista quando vuoi. Non è una consulenza.</p>

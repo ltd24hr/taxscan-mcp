@@ -76,6 +76,8 @@ table{{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}} td,th{{
 <tr><td>Nome e cognome del titolare, se compaiono sul documento che carichi</td><td>Li leggiamo per fartele confermare; in dashboard ed email ti salutiamo solo con il nome</td></tr>
 <tr><td>Email</td><td>Quando salvi la tua situazione o usi "Accedi"</td></tr>
 <tr><td>Email e risposte al simulatore della home (tipo di lavoro, incassi indicativi, da quanto hai aperto, risultato della stima)</td><td>Solo se chiedi di vedere il risparmio lasciando l'email: ti mandiamo il riepilogo e, se spunti la casella facoltativa, ogni tanto consigli per pagare meno tasse. Le conserviamo al massimo 24 mesi</td></tr>
+<tr><td>Email del tuo commercialista e messaggio, se scegli di mandargli il riepilogo dal Profilo</td><td>Solo per inviargli in quel momento il riepilogo e l'elenco delle fatture che hai scelto (tu ricevi una copia). L'indirizzo lo ricorda solo il tuo browser</td></tr>
+<tr><td>Candidature dei commercialisti partner (nome, studio, email, città, messaggio)</td><td>Solo per ricontattare chi si candida dalla pagina /commercialisti. Le conserviamo al massimo 24 mesi</td></tr>
 <tr><td>Domande all'assistente e relative risposte</td><td>Quando usi la chat</td></tr>
 <tr><td>Risposte al questionario di approfondimento (immobili, altri redditi, fondo pensione, progetti, interessi)</td><td>Solo se rispondi: sono collegate alla tua email e servono a mostrarti spunti più adatti; le cancelli con "Cancella i miei dati"</td></tr>
 <tr><td>Risposte al sondaggio di feedback (scelte, commento, eventuale consenso a essere ricontattato)</td><td>Solo se rispondi: sono collegate alla tua email per poterti rispondere e le leggiamo noi</td></tr>

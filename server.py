@@ -26,6 +26,7 @@ import landing
 import prova
 import promemoria
 import privacy
+import commercialisti
 import termini
 import admin_pannello
 import guide
@@ -884,6 +885,50 @@ async def cron_controlla_avvisi(request):
 async def pagina_privacy(request):
     from starlette.responses import HTMLResponse
     return HTMLResponse(cookie_banner.inietta(privacy.pagina()))
+
+
+@mcp.custom_route("/commercialisti", methods=["GET"])
+async def pagina_commercialisti(request):
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(cookie_banner.inietta(commercialisti.pagina()))
+
+
+_COMM_IP: dict = {}
+
+
+@mcp.custom_route("/api/commercialisti", methods=["POST"])
+async def candidatura_commercialista(request):
+    """Un commercialista si candida come partner: la candidatura arriva all'amministratore via email."""
+    from starlette.responses import JSONResponse
+    import asyncio
+    import re as _re
+    import time as _t
+    import html as _html
+    try:
+        c = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "errore": "Richiesta non valida."}, status_code=400)
+    d = {k: str(c.get(k, "") or "").strip()[:800 if k == "nota" else 120] for k in ("nome", "studio", "email", "citta", "nota")}
+    d["email"] = d["email"].lower()
+    if not d["nome"] or not _re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]{2,}", d["email"]):
+        return JSONResponse({"ok": False, "errore": "Scrivi nome ed email."}, status_code=400)
+    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    ora = _t.time()
+    recenti = [x for x in _COMM_IP.get(ip, []) if ora - x < 3600]
+    if len(recenti) >= 4:
+        return JSONResponse({"ok": False, "errore": "Troppe richieste: riprova tra un po'."}, status_code=429)
+    _COMM_IP[ip] = recenti + [ora]
+    if not ADMIN_EMAIL:
+        return JSONResponse({"ok": False, "errore": "Non è partita: scrivici a info@ltd24ore.com."}, status_code=500)
+    righe = "".join(f"<p><b>{_html.escape(k.capitalize())}:</b> {_html.escape(v)}</p>" for k, v in d.items() if v)
+    try:
+        await asyncio.to_thread(auth.manda_email, ADMIN_EMAIL, f"TaxScan: candidatura commercialista partner ({d['nome']})",
+                                "<p>Nuova candidatura dalla pagina /commercialisti:</p>" + righe)
+    except Exception as e:
+        print(f"commercialisti: candidatura non inviata: {e}")
+        return JSONResponse({"ok": False, "errore": "Non è partita: riprova tra poco."}, status_code=500)
+    _evento("commercialista_candidatura", None, {})
+    return JSONResponse({"ok": True})
 
 
 @mcp.custom_route("/termini", methods=["GET"])
