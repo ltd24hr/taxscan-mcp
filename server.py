@@ -27,6 +27,7 @@ import prova
 import promemoria
 import privacy
 import commercialisti
+import chisiamo
 import termini
 import admin_pannello
 import guide
@@ -885,6 +886,12 @@ async def cron_controlla_avvisi(request):
 async def pagina_privacy(request):
     from starlette.responses import HTMLResponse
     return HTMLResponse(cookie_banner.inietta(privacy.pagina()))
+
+
+@mcp.custom_route("/chi-siamo", methods=["GET"])
+async def pagina_chi_siamo(request):
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(cookie_banner.inietta(chisiamo.pagina()))
 
 
 @mcp.custom_route("/commercialisti", methods=["GET"])
@@ -1827,7 +1834,7 @@ DOMINIO_PRINCIPALE = os.environ.get("DOMINIO_PRINCIPALE", "taxscan.it").strip().
 @mcp.custom_route("/robots.txt", methods=["GET"])
 async def robots_txt(request):
     from starlette.responses import PlainTextResponse
-    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
+    righe = ["User-agent: *", "Allow: /$", "Allow: /privacy", "Allow: /termini", "Allow: /guide", "Allow: /chi-siamo", "Allow: /commercialisti", "Allow: /favicon", "Allow: /apple-touch-icon.png", "Allow: /icon-", "Allow: /og.jpg", "Allow: /og-avatar.jpg",
              "Disallow: /admin", "Disallow: /api/", "Disallow: /d/", "Disallow: /c/", "Disallow: /colloquio",
              "Disallow: /accedi", "Disallow: /feedback", "Disallow: /approfondisci", "Disallow: /cron/",
              "Disallow: /oauth/", "Disallow: /mcp", "", f"Sitemap: https://{DOMINIO_PRINCIPALE}/sitemap.xml", ""]

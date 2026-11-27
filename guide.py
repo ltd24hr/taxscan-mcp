@@ -292,6 +292,74 @@ l'attività è davvero nuova: non devi averne svolta una simile nei tre anni pre
 di un lavoro dipendente.</p>
 """,
     },
+    "soldi-non-bastano-acconto-novembre": {
+        "titolo": "Non ho abbastanza soldi per l'acconto del 30 novembre: cosa fare",
+        "descrizione": "Il secondo acconto di novembre non si rateizza. Le strade possibili per un forfettario: metodo "
+                       "previsionale, pagamento parziale e ravvedimento operoso, con quanto costa pagare in ritardo.",
+        "corpo": """
+<p class="lead">Il secondo acconto del 30 novembre <b>non si può rateizzare</b>. Se i soldi non bastano ci sono tre strade,
+e la peggiore è non fare niente.</p>
+
+<h2>1. Se quest'anno guadagni meno: il metodo previsionale</h2>
+<p>L'acconto si calcola di solito sull'imposta dell'anno prima. Se quest'anno incasserai meno, puoi versare un acconto
+calcolato su quanto prevedi di dovere davvero. Attenzione: se la previsione è troppo bassa, sulla differenza si pagano
+sanzione e interessi.</p>
+
+<h2>2. Paga quello che puoi e regolarizza il resto</h2>
+<p>Un versamento parziale riduce la sanzione, che si calcola solo sulla parte non pagata. Il resto si regolarizza con il
+<b>ravvedimento operoso</b>: si paga l'imposta con una sanzione ridotta e gli interessi legali.</p>
+
+<h2>3. Quanto costa pagare in ritardo l'imposta</h2>
+<ul>
+<li>Entro 14 giorni: circa lo <b>0,083% per ogni giorno</b> di ritardo.</li>
+<li>Dal 15° al 30° giorno: <b>1,25%</b>.</li>
+<li>Dal 31° al 90° giorno: circa <b>1,39%</b>.</li>
+<li>Oltre 90 giorni, entro il termine della dichiarazione dell'anno: <b>3,125%</b>.</li>
+</ul>
+<p>A questo si aggiungono gli interessi al tasso legale, giorno per giorno. Su un acconto di 1.000&nbsp;€ pagato con 20
+giorni di ritardo la sanzione è di circa 12,50&nbsp;€: molto meno di quella piena se non si rimedia.</p>
+
+<h2>E i contributi INPS</h2>
+<p>Per i contributi il ravvedimento non esiste: in caso di ritardo l'INPS applica le sue <b>sanzioni civili</b> e le calcola
+lui. Conviene pagare appena possibile.</p>
+
+<h2>Per non ritrovarti scoperto</h2>
+<p>Il modo più semplice è mettere da parte una quota di ogni incasso, mese per mese: le scadenze restano quelle, ma i
+soldi sono già pronti. Ogni situazione ha le sue eccezioni: in caso di dubbio senti un professionista.</p>
+""",
+    },
+    "acquisti-esteri-iva-forfettario": {
+        "titolo": "Google, Meta e fornitori esteri: l'IVA che anche il forfettario deve versare",
+        "descrizione": "Il forfettario non applica l'IVA, ma quando compra servizi da fornitori esteri deve integrare la "
+                       "fattura e versare l'IVA italiana del 22%. Scadenze, codice tributo ed esempio in euro.",
+        "corpo": """
+<p class="lead">Nel forfettario le tue fatture sono senza IVA. Ma quando <b>compri servizi da un fornitore estero</b>
+(pubblicità su Google o Meta, software, piattaforme) l'IVA la devi versare tu, perché il fornitore non te la addebita:
+si chiama <b>inversione contabile</b> (reverse charge).</p>
+
+<h2>Cosa devi fare</h2>
+<ol>
+<li><b>Integrazione della fattura</b> (autofattura di tipo TD17): la invii allo SDI entro il 15 del mese successivo a
+quello in cui hai ricevuto la fattura del fornitore.</li>
+<li><b>Versamento dell'IVA al 22%</b> con il modello F24 entro il 16 del mese successivo a quello dell'operazione, sezione
+Erario, con il codice tributo del mese (da 6001 per gennaio a 6012 per dicembre) e l'anno.</li>
+</ol>
+<p>Nel forfettario quell'IVA <b>non si recupera</b>: è un costo in più, da mettere nel prezzo dei tuoi servizi.</p>
+
+<h2>Esempio</h2>
+<p>A ottobre spendi 300&nbsp;€ di pubblicità con un fornitore irlandese. Entro il 15 novembre invii l'integrazione allo
+SDI ed entro il 16 novembre versi <b>66&nbsp;€</b> di IVA con l'F24, codice 6010, anno di riferimento quello in corso.</p>
+
+<h2>Le cose da controllare</h2>
+<ul>
+<li>Se il fornitore ti ha addebitato l'IVA del suo paese, non fare l'integrazione da solo: senti un professionista.</li>
+<li>Per comprare servizi da fornitori dell'Unione europea senza IVA estera, la tua partita IVA deve essere registrata nel
+VIES, l'archivio europeo delle partite IVA.</li>
+<li>Gli acquisti di beni da paesi UE seguono regole diverse e hanno una soglia annua.</li>
+</ul>
+<p>Ogni situazione ha le sue eccezioni: in caso di dubbio senti un professionista.</p>
+""",
+    },
 })
 
 

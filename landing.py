@@ -315,6 +315,15 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
 .dnota{margin-top:28px;font-size:13px;color:var(--mute)}
 @media (max-width:820px){.riga{grid-template-columns:minmax(0,1fr)}.riga.inv .scena{order:0}.scena{min-height:300px}}
 @media (max-width:420px){.nuv{font-size:13.5px;max-width:66%}.nuv.chi{left:34%}.nuv.ia{top:128px}.mav{top:190px}}
+/* con e senza un piano */
+.cs2 .csl{font-weight:700;font-size:15px;margin:0 0 6px}
+.cs2 .csb{display:flex;align-items:flex-end;gap:6px;height:120px;margin-bottom:6px}
+.cs2 .csb span{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.cs2 .csb i{display:block;width:100%;max-width:26px;border-radius:6px 6px 2px 2px}
+.cs2 .csb i.pk{background:#d03b3b}.cs2 .csb i.zz{background:var(--soft)}.cs2 .csb i.fl{background:#05c4b8}
+.cs2 .csb em{font-style:normal;font-size:11px;color:var(--ink2)}
+.cs2 .csn{font-size:15px;color:var(--ink2);margin:0 0 18px}
+.cs2 small{display:block;color:var(--ink2);font-size:12.5px}
 /* test requisiti del forfettario */
 .rq .rqn{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
 .rq .rqbar{height:6px;border-radius:3px;background:var(--soft);margin:10px 0 20px;overflow:hidden}.rq .rqbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
@@ -835,6 +844,24 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
   </div>
 </section>
 
+<section class="sez" id="piano" aria-labelledby="t-piano" style="padding-top:0">
+  <div class="w due centro">
+    <div class="vedi">
+      <h2 class="tit" id="t-piano" style="font-size:clamp(34px,4.2vw,56px)">Le tasse arrivano a picchi. Tu no.</h2>
+      <p class="testo">Giugno e novembre arrivano tutti gli anni. TaxScan ti dice quanto mettere da parte ogni mese, così quando arriva la scadenza i soldi ci sono già.</p>
+    </div>
+    <div class="storia vedi cs2" role="img" aria-label="Esempio: senza piano 4.100 euro a giugno e 2.900 a novembre; con il piano circa 583 euro al mese">
+      <p class="csl">Senza un piano</p>
+      <div class="csb"><span><i class="zz" style="height:3%"></i><em>G</em></span><span><i class="zz" style="height:3%"></i><em>F</em></span><span><i class="zz" style="height:3%"></i><em>M</em></span><span><i class="zz" style="height:3%"></i><em>A</em></span><span><i class="zz" style="height:3%"></i><em>M</em></span><span><i class="pk" style="height:100%"></i><em>G</em></span><span><i class="zz" style="height:3%"></i><em>L</em></span><span><i class="zz" style="height:3%"></i><em>A</em></span><span><i class="zz" style="height:3%"></i><em>S</em></span><span><i class="zz" style="height:3%"></i><em>O</em></span><span><i class="pk" style="height:71%"></i><em>N</em></span><span><i class="zz" style="height:3%"></i><em>D</em></span></div>
+      <p class="csn">4.100&nbsp;€ a giugno e 2.900&nbsp;€ a novembre, tutti insieme.</p>
+      <p class="csl">Con TaxScan</p>
+      <div class="csb"><span><i class="fl" style="height:12%"></i><em>G</em></span><span><i class="fl" style="height:12%"></i><em>F</em></span><span><i class="fl" style="height:12%"></i><em>M</em></span><span><i class="fl" style="height:12%"></i><em>A</em></span><span><i class="fl" style="height:12%"></i><em>M</em></span><span><i class="fl" style="height:12%"></i><em>G</em></span><span><i class="fl" style="height:12%"></i><em>L</em></span><span><i class="fl" style="height:12%"></i><em>A</em></span><span><i class="fl" style="height:12%"></i><em>S</em></span><span><i class="fl" style="height:12%"></i><em>O</em></span><span><i class="fl" style="height:12%"></i><em>N</em></span><span><i class="fl" style="height:12%"></i><em>D</em></span></div>
+      <p class="csn">La stessa cifra, <b>7.000&nbsp;€</b>, messa da parte un po' alla volta: circa <b>583&nbsp;€ al mese</b>.</p>
+      <small>Esempio: 30.000&nbsp;€ di incassi, imposta al 5%, gestione separata, a regime. I tuoi numeri li calcola TaxScan.</small>
+    </div>
+  </div>
+</section>
+
 <section class="sez" id="requisiti" aria-labelledby="t-req" style="padding-top:0">
   <div class="w due centro">
     <div class="vedi">
@@ -894,9 +921,11 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
       <details open><summary>TaxScan sostituisce il commercialista?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. TaxScan prepara e spiega: puoi gestire tutto da solo, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare numeri e report a un professionista quando vuoi.</p></details>
       <details><summary>Posso parlare con un consulente vero?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì. TaxScan ti prepara i numeri, ma se la tua situazione è particolare o vuoi una conferma puoi parlare con un consulente in carne e ossa. La prima consulenza è gratuita: <a href="https://calendly.com/ltd24ore?utm_source=taxscan_home" target="_blank" rel="noopener">prenotala qui</a>.</p></details>
       <details><summary>Devo registrarmi per provarlo?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Per iniziare no. L'email te la chiediamo per salvarti la situazione, mandarti le scadenze e, se vuoi, il report.</p></details>
-      <details><summary>Le mie fatture vengono salvate?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>No. TaxScan legge le righe del lavoro e gli importi, non conserva i file né il nome dei tuoi clienti. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
+      <details><summary>Le mie fatture vengono salvate?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Quelle che carichi per l'analisi del risparmio no: TaxScan legge le righe del lavoro e gli importi, non conserva i file né il nome dei tuoi clienti. Le fatture che <b>crei</b> in TaxScan invece sì, insieme alla rubrica dei clienti: le vedi solo tu e le cancelli quando vuoi. I dettagli sono nella <a href="/privacy">privacy policy</a>.</p></details>
       <details><summary>Quanto posso risparmiare?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Dipende dal lavoro che fai davvero. Se alcune prestazioni rientrano in attività con un coefficiente più basso, o se hai diritto a riduzioni dei contributi, vedi una stima in euro. Altrimenti il risultato è zero, senza promesse forzate.</p></details>
       <details><summary>È legale?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì, quando le attività le svolgi davvero, le fatturi separatamente e il codice ATECO è attivo sulla partita IVA. TaxScan usa solo quello che la legge prevede per il forfettario; ogni cifra è una stima da verificare.</p></details>
+      <details><summary>Posso fare le fatture con TaxScan?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì. Crei e modifichi le fatture con le diciture del forfettario già giuste, il bollo e la numerazione automatica; scarichi il PDF per il cliente e il file XML da caricare gratis sul portale Fatture e corrispettivi dell'Agenzia delle Entrate. Ci sono anche la rubrica dei clienti, gli incassi e le autofatture per gli acquisti da fornitori esteri.</p></details>
+      <details><summary>Funziona anche dentro Claude o altri assistenti IA?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Sì. Oltre che dal sito, TaxScan si può usare come connettore dentro assistenti IA come Claude: fai le domande lì e i calcoli li fa TaxScan. Se vuoi usarlo così, scrivici a <a href="mailto:info@ltd24ore.com">info@ltd24ore.com</a> e ti mandiamo le istruzioni.</p></details>
       <details><summary>Quanto costa?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><p>Le domande, la Panoramica, le scadenze e quanto mettere da parte sono gratis. Con l'offerta di lancio sblocchi il report dell'Ottimizzazione fiscale, Da fare e Bandi: 12 mesi a 47&nbsp;€ invece di 589&nbsp;€, soddisfatto o rimborsato. <a href="/acquista?utm_source=home_faq">Vedi i dettagli</a>.</p></details>
     </div>
   </div>
@@ -931,7 +960,7 @@ h1,h2,h3{font-family:var(--f-tit);font-weight:750;letter-spacing:-.022em;line-he
     <div class="cols">
       <div><a class="logo" href="/">Tax<span>Scan</span></a><p>Il primo agente IA specializzato nel risparmio fiscale per chi ha la partita IVA in regime forfettario.</p></div>
       <div><h4>Prodotto</h4><nav aria-label="Prodotto"><a href="#come-funziona">Come funziona</a><a href="#simula">Simulatore</a><a href="#requisiti">Il forfettario fa per te?</a><a href="/acquista?utm_source=home_piede">Prezzi</a><a href="/accedi">Accedi</a></nav></div>
-      <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a><a href="/commercialisti">Sei un commercialista?</a></nav></div>
+      <div><h4>Informazioni</h4><nav aria-label="Informazioni"><a href="/termini">Termini e condizioni</a><a href="/privacy">Privacy policy</a><a href="#" class="tsck-open">Cookie</a><a href="/chi-siamo">Chi c'è dietro TaxScan</a><a href="/commercialisti">Sei un commercialista?</a></nav></div>
     </div>
     <div class="legale">
       <p>TaxScan prepara e spiega: sono stime a scopo informativo, calcolate sui dati che inserisci tu. Puoi gestire tutto da solo, assumendoti la responsabilità di ciò che dichiari e paghi, oppure far controllare le cifre a un professionista quando vuoi. Non è una consulenza.</p>
