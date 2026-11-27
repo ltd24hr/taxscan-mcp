@@ -89,6 +89,18 @@ def _per_pagina(d: dict, c: str = "") -> dict:
     import datetime
     sch = d.get("_scheda") or {}
     ag = d.get("agevolazioni") or {}
+    # partita IVA e codice ATECO: dalla scheda o, se li' manca, da quello che si e' letto dal certificato nel colloquio
+    cert = {}
+    try:
+        cert = _profilo_certificato(c, sch) if c else {}
+    except Exception:
+        cert = {}
+    piva = re.sub(r"\D", "", str(sch.get("partita_iva") or ""))[:11] or cert.get("piva") or ""
+    sch = dict(sch)   # copia: qui si completa solo quello che si mostra, la scheda salvata non si tocca
+    if piva and not sch.get("partita_iva"):
+        sch["partita_iva"] = piva
+    if cert.get("ateco") and not sch.get("codice_ateco"):
+        sch["codice_ateco"] = cert["ateco"]
     bandi = []
     for b in (ag.get("curati") or [])[:12]:
         if not isinstance(b, dict) or not b.get("titolo"):
@@ -105,7 +117,7 @@ def _per_pagina(d: dict, c: str = "") -> dict:
             "aliq_conf": bool((d.get("profilo") or {}).get("aliquota_da_confermare")) and sch.get("origine_attivita") == "altro",
             # contributi: cosa il server sa, per il Profilo
             "ap": _apertura_txt(sch.get("data_apertura")),
-            "piva": re.sub(r"\D", "", str(sch.get("partita_iva") or ""))[:11], "gest": sch.get("gestione_previdenziale") or "",
+            "piva": piva, "gest": sch.get("gestione_previdenziale") or "",
             "rid": {"si": "35% per i forfettari", "si_50": "50% per i nuovi iscritti 2025", "no": "Nessuno",
                     "non_so": "Non lo so"}.get(str(sch.get("riduzione_35") if sch.get("riduzione_35") is not None else "")
                                                .lower().replace("true", "si").replace("false", "no"), ""),
@@ -128,7 +140,17 @@ def _fatti(d: dict, sch: dict) -> str:
         num = d.get("numeri") or {}
         ini = S._inizio(sch.get("data_apertura"))
         f = [f"Oggi è il {oggi.strftime('%d/%m/%Y')}."]
-        if ini:
+        pv = re.sub(r"\D", "", str(sch.get("partita_iva") or ""))[:11]
+        f.append(f"Numero di partita IVA: {pv}." if pv else
+                 "Numero di partita IVA: non ancora letto (la persona può scriverlo nel Profilo, riga «Numero di partita IVA»).")
+        if sch.get("codice_ateco"):
+            f.append(f"Codice ATECO: {sch.get('codice_ateco')}"
+                     + (f" ({_pulisci(sch.get('descrizione_attivita_certificato') or sch.get('descrizione_attivita'), 120)})"
+                        if (sch.get('descrizione_attivita_certificato') or sch.get('descrizione_attivita')) else "") + ".")
+        ap = _apertura_txt(sch.get("data_apertura"))
+        if ap:
+            f.append(f"Inizio attività: {ap}.")
+        elif ini:
             f.append("Partita IVA aperta " + (f"a {_MESI_IT[ini[1] - 1]} " if ini[1] else "nel ") + str(ini[0]) + ".")
         if prof.get("anni_nel_regime") is not None:
             f.append(f"Anni nel forfettario prima di quest'anno: {prof['anni_nel_regime']} (quest'anno è il suo {prof['anni_nel_regime'] + 1}° anno nel regime).")
@@ -152,7 +174,7 @@ def _fatti(d: dict, sch: dict) -> str:
                 perche = "l'imposta dell'anno scorso è troppo bassa perché siano dovuti acconti."
             f.append(f"Prossima scadenza calcolata: {ps['data']} ({ps.get('etichetta') or ''}), circa {round(float(ps.get('importo') or 0))} €"
                      + (f". Perché: {perche}" if perche else "."))
-        return " ".join(f)[:1500]
+        return " ".join(f)[:1800]
     except Exception as e:
         print(f"prova: fatti {e}")
         return ""
