@@ -126,7 +126,7 @@ def _per_pagina(d: dict, c: str = "") -> dict:
             "rev": _revisione(c, d), "docs": _documenti(sch), "prec": sch.get("ricavi_anno_precedente"),
             "mailv": _mail_verificata(c), "pag": _pagamento(c),
             "fatti": _fatti(d, sch), "bolli": _bolli_pagina(sch), "passate": _passate(sch), "guide": _guide_pagina(),
-            "anno": _anno_pagina(d)}
+            "anno": _anno_pagina(d), "storico": ((d.get("_storico") or [])[-12:] or [_istantanea(d)])}
 
 
 def _guide_pagina() -> list:
@@ -888,6 +888,7 @@ def _rifai(c: str, dati: dict, sch: dict) -> dict:
         if k.startswith("_") and k not in nuovi:
             nuovi[k] = v
     nuovi["_scheda"] = dict(sch)
+    nuovi["_storico"] = _storico_aggiungi(dati.get("_storico"), dati, nuovi)
     db.salva_dashboard(c, nuovi)
     if dati.get("_email"):
         try:
@@ -897,12 +898,49 @@ def _rifai(c: str, dati: dict, sch: dict) -> dict:
     return nuovi
 
 
+def _istantanea(d: dict) -> dict:
+    """I numeri principali di una situazione, per lo storico dei calcoli."""
+    import datetime
+    ac = d.get("anno_corrente") or {}
+    num = d.get("numeri") or {}
+    ps = d.get("prossima_scadenza") or {}
+
+    def n(x):
+        try:
+            return round(float(x or 0))
+        except (TypeError, ValueError):
+            return 0
+    return {"d": datetime.date.today().isoformat(), "inc": n(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora")),
+            "q": str(d.get("quota_per_fattura") or "").replace(".0%", "%"), "net": n(ac.get("netto")),
+            "tax": n(ac.get("imposta")) + n(ac.get("contributi")), "ps": n(ps.get("importo")), "psd": ps.get("data") or ""}
+
+
+def _storico_aggiungi(vecchio, prima: dict, dopo: dict) -> list:
+    """Ogni volta che i conti si rifanno, ricordo com'erano: una riga al giorno (l'ultima del giorno vince), al massimo 60."""
+    L = [x for x in (vecchio or []) if isinstance(x, dict)]
+    if not L and prima.get("anno_corrente"):
+        p = _istantanea(prima)
+        p["primo"] = True
+        L.append(p)
+    nuovo = _istantanea(dopo)
+    chiavi = ("inc", "q", "net", "tax", "ps")
+    if L and all(L[-1].get(k) == nuovo.get(k) for k in chiavi):
+        return L[-60:]
+    if L and L[-1].get("d") == nuovo["d"] and not L[-1].get("primo"):
+        L[-1] = nuovo
+    else:
+        L.append(nuovo)
+    return L[-60:]
+
+
 def _anno_pagina(d: dict) -> dict:
     """Dove vanno gli incassi dell'anno: imposta, contributi e quello che resta (per la ciambella della Panoramica)."""
     ac = d.get("anno_corrente") or {}
     try:
+        num = d.get("numeri") or {}
         return {"imp": round(float(ac.get("imposta") or 0)), "con": round(float(ac.get("contributi") or 0)),
-                "net": round(float(ac.get("netto") or 0))}
+                "net": round(float(ac.get("netto") or 0)),
+                "ric": round(float(num.get("ricavi_anno_corrente") or ac.get("ricavi_finora") or 0))}
     except (TypeError, ValueError):
         return {}
 
